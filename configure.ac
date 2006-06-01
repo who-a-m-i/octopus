@@ -47,7 +47,7 @@ AC_C_CONST
 
 # Checks for library functions.
 AC_FUNC_SETVBUF_REVERSED
-AC_CHECK_FUNCS([sqrt strcasecmp strdup tcgetpgrp gettimeofday])
+AC_CHECK_FUNCS([sqrt strcasecmp strdup tcgetpgrp gettimeofday strndup])
 
 # Checks for size of pointer
 ACX_POINTER_SIZE

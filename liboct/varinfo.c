@@ -52,7 +52,7 @@ static var_type *vars = NULL;
 char *get_token(char *s, char **dest)
 {
   char *s1;
-
+  size_t len;
   /* get rid of initial whitespace */
   for(;*s!='\0' && isspace(*s); s++); 
   if(!isalnum(*s) && *s!='-'){
@@ -61,8 +61,16 @@ char *get_token(char *s, char **dest)
   }
 
   for(s1=s; isalnum(*s1) || *s1=='_' || *s1=='-'; s1++);
+  len=s1-s;
+  
+#ifdef HAVE_STRNDUP
+  *dest = (char *) strndup(s, len);
+#else 
+  *dest=(char *) malloc((len+1)*sizeof(char));
+  strncpy(*dest,s,len);
+  (*dest)[len]='\0';
+#endif 
 
-  *dest = strndup(s, s1-s);
   return s1;
 }
 
@@ -71,10 +79,12 @@ char *get_token(char *s, char **dest)
 void get_text(FILE *in, char **dest)
 {
   char c, line[256];
+  int b;
 
   for(;;){
     /* check if the next line starts by a space */
-    if((c=getc(in)) == EOF) return;
+    if((b=getc(in)) == EOF) return;
+    c=(char) b;
     ungetc(c, in);
 
     if(!isspace(c)) return;

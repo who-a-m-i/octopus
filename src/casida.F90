@@ -625,6 +625,7 @@ contains
 
       iunit = io_open(trim(tmpdir)//'restart_casida', action='read', status='old', die=.false., is_tmp=.true.)
       err = min(iunit, 0)
+      if(err.ne.0) return
 
       do
         read(iunit, fmt=*, iostat=err) ia, jb, val

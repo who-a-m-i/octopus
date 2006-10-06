@@ -21,13 +21,9 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-if ENABLE_PYTHON
-  PYTHON_DIR = python
-endif
-
 SUBDIRS =        \
 	external_libs liboct_parser liboct libxc src doc \
-	share testsuite $(PYTHON_DIR)
+	share testsuite
 
 EXTRA_DIST =     \
 	TODO build/*.pl build/*.in debian/*

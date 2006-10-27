@@ -303,11 +303,10 @@ contains
 #if defined(HAVE_NETCDF)
   ! ---------------------------------------------------------
   subroutine ncdf_error(func, status, filename, ierr)
-    character(len=*), intent(in)  :: func
-    integer,          intent(in)  :: status
-    character(len=*), intent(in)  :: filename
-    integer,          intent(out) :: ierr
-
+    character(len=*), intent(in)    :: func
+    integer,          intent(in)    :: status
+    character(len=*), intent(in)    :: filename
+    integer,          intent(inout) :: ierr
     if(status .eq. NF90_NOERR) return
     write(message(1),'(3a)') "NETCDF error in function '" , trim(func) , "'"
     write(message(2),'(3a)') "(reading/writing ", trim(filename) , ")"
@@ -316,6 +315,20 @@ contains
     ierr = 5
   end subroutine ncdf_error
 #endif
+
+  subroutine transpose3(in, out)
+    FLOAT, intent(in)  :: in(:, :, :)
+    FLOAT, intent(out) :: out(:, :, :)
+    integer :: ix, iy, iz
+    do ix = 1, size(in, 1)
+      do iy = 1, size(in, 2)
+        do iz = 1, size(in, 3)
+          out(iz, iy, ix) = in(ix, iy, iz)
+        end do
+      end do
+    end do
+  end subroutine transpose3
+
 
 #include "undef.F90"
 #include "real.F90"

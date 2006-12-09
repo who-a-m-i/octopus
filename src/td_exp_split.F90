@@ -25,7 +25,9 @@
 module td_exp_split_m
   use global_m
   use messages_m
+#if defined(HAVE_FFT)
   use fft_m
+#endif
   use lib_basic_alg_m
   use cube_function_m
   use mesh_function_m
@@ -39,6 +41,7 @@ module td_exp_split_m
 
   implicit none
 
+#if defined(HAVE_FFT)
 contains
 
   ! ---------------------------------------------------------
@@ -217,5 +220,6 @@ contains
 
     call pop_sub()
   end subroutine zexp_vnlpsi
+#endif
 
 end module td_exp_split_m

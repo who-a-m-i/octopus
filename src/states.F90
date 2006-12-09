@@ -79,13 +79,17 @@ module states_m
     states_calc_dens,               &
     states_output,                  &
     states_calc_elf,                &
-    states_calc_elf_fs,             &
     kpoints_write_info,             &
     occupied_states,                &
     states_init_excited_state,      &
     states_kill_excited_state,      &
     wfs_are_complex,                &
     wfs_are_real
+
+#if defined(HAVE_FFT)
+  public :: states_calc_elf_fs
+#endif
+
 
 
   public ::                         &
@@ -1990,6 +1994,7 @@ contains
         deallocate(elf)
       end if
 
+#if defined(HAVE_FFT)
       if(  iand(outp%what, output_elf_fs).ne.0  ) then ! Second, ELF in Fourier space.
         ALLOCATE(elf(1:gr%m%np,1:st%d%nspin),gr%m%np*st%d%nspin)
         call states_calc_elf_fs(st, gr, elf)
@@ -2000,6 +2005,7 @@ contains
         end do
         deallocate(elf)
       end if
+#endif
     end if
 
     if(iand(outp%what, output_ksdipole).ne.0) then
@@ -2192,6 +2198,7 @@ contains
 
   end subroutine states_calc_elf
 
+#if defined(HAVE_FFT)
   ! ---------------------------------------------------------
   ! ELF function in Fourier space. Not tested.
   ! ---------------------------------------------------------
@@ -2334,6 +2341,7 @@ contains
     end subroutine zmf2mf_RS2FS
 
   end subroutine states_calc_elf_fs
+#endif
 
 
   ! ---------------------------------------------------------

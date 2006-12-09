@@ -57,14 +57,14 @@ module poisson_m
     poisson_end
 
   integer, parameter :: &
+    DIRECT_SUM_1D = -1, &
+    DIRECT_SUM_2D = -2, &
     CG            =  5, &
     CG_CORRECTED  =  6, &
     MULTIGRILLA   =  7
 
 #ifdef HAVE_FFT
   integer, parameter :: &
-    DIRECT_SUM_1D = -1, &
-    DIRECT_SUM_2D = -2, &
     FFT_SPH       =  0, &
     FFT_CYL       =  1, &
     FFT_PLA       =  2, &

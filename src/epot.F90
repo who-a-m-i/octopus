@@ -28,7 +28,9 @@ module external_pot_m
   use lib_oct_parser_m
   use lib_oct_gsl_spline_m
   use datasets_m
+#ifdef HAVE_FFT
   use fft_m
+#endif
   use math_m
   use mesh_m
   use mesh_function_m
@@ -133,11 +135,13 @@ contains
     ALLOCATE(ep%vpsl(NP), NP)
     ep%vpsl = M_ZERO
 
+#if defined(HAVE_FFT)
     ! should we calculate the local pseudopotentials in Fourier space?
     ! This depends on wether we have periodic dimensions or not
     if(simul_box_is_periodic(gr%sb).and.(.not.gr%geo%only_user_def)) then
       call epot_local_fourier_init(ep, gr%m, gr%sb, gr%geo)
     end if
+#endif
 
     ep%classic_pot = 0
     if(gr%geo%ncatoms > 0) then
@@ -547,7 +551,9 @@ contains
     integer :: ia, i, l, lm, k, p, j
     type(specie_t), pointer :: s
     type(atom_t),   pointer :: a
+#ifdef HAVE_FFT
     type(dcf_t) :: cf_loc, cf_nlcc
+#endif
     type(mesh_t),      pointer :: m
     type(simul_box_t), pointer :: sb
     type(geometry_t),  pointer :: geo

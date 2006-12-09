@@ -46,7 +46,6 @@ module functions_m
     f_der_end,                  &
     dmf2cf, zmf2cf,             &
     dcf2mf, zcf2mf,             &
-    dcf_FS2mf, zcf_FS2mf,       &
     df_laplacian, zf_laplacian, &
     df_laplacian_diag,          &
     zf_laplacian_diag,          &
@@ -57,6 +56,11 @@ module functions_m
     df_angular_momentum,        &
     zf_angular_momentum,        &
     df_l2, zf_l2
+
+#if defined(HAVE_FFT)
+  public  ::                    &
+    dcf_FS2mf, zcf_FS2mf
+#endif
 
   integer, public, parameter :: &
     REAL_SPACE = 0,             &

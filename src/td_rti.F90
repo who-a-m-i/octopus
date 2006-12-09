@@ -194,14 +194,25 @@ contains
     !% advantageous.
     !%End
     call loct_parse_int(check_inp('TDEvolutionMethod'), REVERSAL, tr%method)
+    if(.not.varinfo_valid_option('TDEVolutionMethod', tr%method)) call input_error('TDEvolutionMethod')
+
+#if !defined(HAVE_FFT)
+    if(tr%method .eq. SPLIT_OPERATOR .or. tr%method .eq. SUZUKI_TROTTER) then
+      message(1) = "You cannnot use the split operator evolution method, or the"
+      message(2) = "Suzuki-Trotter, if the code was compiled without FFTW support."
+      call write_fatal(2)
+    end if
+#endif
 
     select case(tr%method)
+#if defined(HAVE_FFT)
     case(SPLIT_OPERATOR)
       call zcf_new(gr%m%l, tr%cf)
       call zcf_fft_init(tr%cf, gr%sb)
     case(SUZUKI_TROTTER)
       call zcf_new(gr%m%l, tr%cf)
       call zcf_fft_init(tr%cf, gr%sb)
+#endif
     case(REVERSAL)
     case(APP_REVERSAL)
     case(EXPONENTIAL_MIDPOINT)
@@ -283,8 +294,10 @@ contains
     call dextrapolate(2, NP, st%d%nspin, tr%v_old(:, :, 1:3), tr%v_old(:, :, 0), dt, dt)
 
     select case(tr%method)
+#if defined(HAVE_FFT)
     case(SPLIT_OPERATOR);       call td_rti0
     case(SUZUKI_TROTTER);       call td_rti1
+#endif
     case(REVERSAL);             call td_rti2
     case(APP_REVERSAL);         call td_rti3
     case(EXPONENTIAL_MIDPOINT); call td_rti4
@@ -313,8 +326,10 @@ contains
 
         st%zpsi = zpsi1
         select case(tr%method)
+#if defined(HAVE_FFT)
         case(SPLIT_OPERATOR);       call td_rti0
         case(SUZUKI_TROTTER);       call td_rti1
+#endif
         case(REVERSAL);             call td_rti2
         case(APP_REVERSAL);         call td_rti3
         case(EXPONENTIAL_MIDPOINT); call td_rti4

@@ -26,7 +26,9 @@ module run_prog_m
   use lib_oct_parser_m
   use datasets_m
   use units_m
+#if defined(HAVE_FFT)
   use fft_m
+#endif
   use restart_m
   use external_pot_m
   use hamiltonian_m

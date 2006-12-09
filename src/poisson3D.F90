@@ -24,7 +24,11 @@ subroutine poisson3D_init(gr)
 
   call push_sub('poisson3D.poisson3D_init')
 
-  ASSERT(poisson_solver >= FFT_SPH .or. poisson_solver <= MULTIGRILLA)
+#if defined(HAVE_FFT)
+  ASSERT(poisson_solver >= FFT_SPH .and. poisson_solver <= MULTIGRILLA)
+#else
+  ASSERT(poisson_solver >= CG .and. poisson_solver <= MULTIGRILLA)
+#endif
 
   !%Variable PoissonSolverMaxMultipole
   !%Type integer
@@ -78,9 +82,9 @@ subroutine poisson3D_init(gr)
 
   call pop_sub()
 
+#ifdef HAVE_FFT
 contains
 
-#ifdef HAVE_FFT
   ! ---------------------------------------------------------
   subroutine init_fft(m)
     type(mesh_t), intent(in) :: m

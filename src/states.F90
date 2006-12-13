@@ -2172,7 +2172,7 @@ contains
       do i = 1, NP
         elf(i, is) = elf(i, is)*rho(i)        &    ! + tau * rho
            - M_FOURTH*sum(grho(i, 1:NDIM)**2) &    ! - | nabla rho |^2 / 4
-           + sum(jj(i, 1:NDIM)**2)                 ! - j^2
+           - sum(jj(i, 1:NDIM)**2)                 ! - j^2
       end do
 
       deallocate(grho, jj)   ! these are no longer needed

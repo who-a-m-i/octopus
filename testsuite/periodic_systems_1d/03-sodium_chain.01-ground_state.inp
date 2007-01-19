@@ -15,7 +15,7 @@ PeriodicDimensions = 1
 %
 
 %Species
-  "Na"  | 23.0 | tm2 | 11 | 2 | 2
+  "Na"  | 23.0 | spec_ps_tm2 | 11 | 2 | 2
 %
 
 %Coordinates

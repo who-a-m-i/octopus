@@ -32,7 +32,15 @@ module mpi_m
 
   ! some machines do not have a mpi module, but a mpi input file
 #if defined(MPI_H)
-# include "mpif.h"
+#define PRECISION__ PRECISION
+#define DOUBLE__ DOUBLE
+#undef PRECISION
+#undef DOUBLE
+#include "mpif.h"
+#define PRECISION PRECISION__
+#define DOUBLE DOUBLE__  
+#undef PRECISION__
+#undef DOUBLE__
 #endif
 
   ! This is defined even when running serial

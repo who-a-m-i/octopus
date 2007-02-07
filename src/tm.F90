@@ -130,7 +130,7 @@ contains
       l = pstm%conf%l(n)
       if(ispin==2 .and. pstm%irel.ne.'isp') then
         x = pstm%conf%occ(n, 1)
-        pstm%conf%occ(n,1) = min(x, real(2*l+1, PRECISION))
+        pstm%conf%occ(n,1) = min(x, real(2*l+1, REAL_PRECISION))
         pstm%conf%occ(n,2) = x - pstm%conf%occ(n,1)
       end if
     end do
@@ -235,8 +235,8 @@ contains
 
     ! These variables are in double precision, no matter if single precision version of
     ! octopus is compiled, because they are passed to egofv.
-    DOUBLE :: e, z, dr, rmax
-    DOUBLE, allocatable :: s(:), hato(:), g(:), y(:)
+    REAL_DOUBLE :: e, z, dr, rmax
+    REAL_DOUBLE, allocatable :: s(:), hato(:), g(:), y(:)
 
     call push_sub('tm.solve_schroedinger')
 
@@ -654,8 +654,8 @@ contains
     FLOAT :: vtot, a2b4
     FLOAT, allocatable :: ve(:), elocal(:,:)
 
-    DOUBLE :: z, e, dr, rmax
-    DOUBLE, allocatable :: hato(:), s(:), g(:), y(:)
+    REAL_DOUBLE :: z, e, dr, rmax
+    REAL_DOUBLE, allocatable :: hato(:), s(:), g(:), y(:)
 
     call push_sub('tm.ghost_analysis')
 

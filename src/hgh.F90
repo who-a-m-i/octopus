@@ -381,7 +381,7 @@ contains
 
     FLOAT :: x, y, rr
 
-    x = l + real(4*i-1, PRECISION)/M_TWO
+    x = l + real(4*i-1, REAL_PRECISION)/M_TWO
     y = loct_gamma(x); x = sqrt(y)
     if(l==0 .and. i==1) then
       rr = M_ONE
@@ -390,7 +390,7 @@ contains
     end if
 
     projectorr_scalar = sqrt(M_TWO) * rr * exp(-r**2/(M_TWO*p%rc(l)**2)) / &
-      (  p%rc(l)**(l + real(4*i-1, PRECISION)/M_TWO) * x )
+      (  p%rc(l)**(l + real(4*i-1, REAL_PRECISION)/M_TWO) * x )
 
   end function projectorr_scalar
 
@@ -479,8 +479,8 @@ contains
     FLOAT :: vtot, a2b4, diff, nonl
     FLOAT, allocatable :: prev(:, :), rho(:, :), ve(:, :)
     FLOAT, parameter :: tol = CNST(1.0e-4)
-    DOUBLE :: e, z, dr, rmax
-    DOUBLE, allocatable :: s(:), hato(:), g(:), y(:)
+    REAL_DOUBLE :: e, z, dr, rmax
+    REAL_DOUBLE, allocatable :: s(:), hato(:), g(:), y(:)
 
     call push_sub('hgh.solve_schroedinger')
 

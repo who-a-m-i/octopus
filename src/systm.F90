@@ -198,7 +198,7 @@ contains
     case (SPEC_USDEF,SPEC_ALL_E) ! ... from userdef
       do i = 1, spin_channels
         rho(1:m%np, i) = M_ONE
-        x = (real(s%z_val, PRECISION)/real(spin_channels, PRECISION)) / dmf_integrate(m, rho(:, i))
+        x = (real(s%z_val, REAL_PRECISION)/real(spin_channels, REAL_PRECISION)) / dmf_integrate(m, rho(:, i))
         rho(1:m%np, i) = x * rho(1:m%np, i)
       end do
 
@@ -222,8 +222,8 @@ contains
         do i = 1, m%np
           call mesh_r(m, i, r, a=atom%x)
           if(r <= s%jradius) then
-            rho(i, 1:spin_channels) = real(s%z_val, PRECISION) /   &
-              (m%vol_pp(i)*real(in_points*spin_channels, PRECISION))
+            rho(i, 1:spin_channels) = real(s%z_val, REAL_PRECISION) /   &
+              (m%vol_pp(i)*real(in_points*spin_channels, REAL_PRECISION))
           end if
         end do
       end if

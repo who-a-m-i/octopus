@@ -101,6 +101,7 @@ contains
     integer,           intent(inout) :: n(MAX_DIM)
     integer,           intent(in)    :: is_real
     type(fft_t),       intent(out)   :: fft
+    logical, optional, intent(in)    :: optimize 
 
     integer :: i, j, dim
     logical :: optimize_

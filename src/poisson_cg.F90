@@ -159,7 +159,7 @@ contains
     tmp = M_ZERO
     call correct_rho(m, maxl, rho, rho_corrected, vh_correction)
     rho_corrected = - M_FOUR*M_PI*rho_corrected
-    pot = pot - vh_correction
+    pot(1:m%np) = pot(1:m%np) - vh_correction(1:m%np)
     iter = 400
     ! This assumes that the Laplacian is self-adjoint.
     tmp(1:m%np) = pot(1:m%np)

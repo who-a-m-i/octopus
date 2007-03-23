@@ -217,7 +217,7 @@ contains
 
     call correct_rho(gr%m, maxmulti, rho, rho_corrected, vh_correction)
     rho_corrected = - M_FOUR*M_PI*rho_corrected
-    pot = pot - vh_correction
+    pot(1:NP) = pot(1:NP) - vh_correction(1:NP)
 
     call gridhier_init(phi, gr%mgrid, add_points_for_boundaries=.true.)
     call gridhier_init(phi_ini, gr%mgrid, add_points_for_boundaries=.true.)

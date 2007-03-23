@@ -1,3 +1,12 @@
+octopus (2.1.0rc2-1) unstable; urgency=low
+
+  * Second release candidate for octopus 2.1.0
+
+  * Changed the rules file, now the package will be build with
+  gfortran 4.1. Only serial version for the moment.
+
+ -- Xavier Andrade <xavier@tddft.org>  Fri, 23 Mar 2007 11:33:26 +0100
+
 octopus (2.1.0rc1-1) unstable; urgency=low
 
   * First release candidate for octopus 2.1.0.

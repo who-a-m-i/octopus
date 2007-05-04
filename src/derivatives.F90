@@ -138,6 +138,26 @@ contains
       call loct_parse_float(check_inp('DerivativesLaplacianFilter'), M_ONE, der%lapl_cutoff)
     end if
 
+    !%Variable DerivativesOrder
+    !%Type integer
+    !%Default 4
+    !%Section Mesh::Derivatives
+    !%Description
+    !% This variable gives the dicretization order for the approximation
+    !% the differential operators. This means, basically, that
+    !% <tt>DerivativesOrder</tt> points are used in each positive/negative
+    !% spatial direction, e. g. <tt>DerivativesOrder = 1</tt> would give
+    !% the well-known three-point-formula in 1D.
+    !% The number of points actually used for the Laplacian
+    !% depends on the stencil used:
+    !%
+    !% <tt>stencil_star</tt>: 2*<tt>DerivativesOrder</tt>*dim+1
+    !%
+    !% <tt>stencil_cube</tt>: (2*<tt>DerivativesOrder</tt>+1)^dim
+    !%
+    !% <tt>stencil_starplus</tt>: 2*<tt>DerivativesOrder</tt>+1+n with n being 12
+    !% in 2D and 44 in 3D.
+    !%End
     call loct_parse_int(check_inp('DerivativesOrder'), 4, der%order)
 
     ! construct lapl and grad structures

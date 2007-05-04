@@ -119,8 +119,7 @@ if test x"$acx_fft_ok" = xyes; then
   $1
 else
   if test $acx_fft_ok != disable; then
-    AC_MSG_WARN([Could not find fftw library. 
-                *** Will compile without fftw support])
+    AC_MSG_ERROR([Could not find fftw library.]) 
   fi
   $2
 fi

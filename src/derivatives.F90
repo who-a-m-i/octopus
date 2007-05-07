@@ -143,7 +143,7 @@ contains
     !%Default 4
     !%Section Mesh::Derivatives
     !%Description
-    !% This variable gives the dicretization order for the approximation
+    !% This variable gives the dicretization order for the approximation of
     !% the differential operators. This means, basically, that
     !% <tt>DerivativesOrder</tt> points are used in each positive/negative
     !% spatial direction, e. g. <tt>DerivativesOrder = 1</tt> would give

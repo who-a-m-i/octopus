@@ -17,7 +17,9 @@ mkdir("$out_dir");
 print_index();
 print_alpha();
 print_vars();
-print_texi();
+
+# No Texinfo anymore.
+# print_texi();
 
 sub read_varinfo(){
   my $thisvar, $thisfield, $l;

@@ -1,0 +1,19 @@
+				 NEWS
+				 ====
+
+* The complex executable is gone, all the work is done by the normal
+  (a.k.a real) executable. The type of the wavefunctions is selected
+  automatically according to the input file.
+
+* Calculation of dynamical polarizabities using linear response
+  theory.
+
+* Basic support for full potential all electron species.
+
+* The texinfo documentation has been obsoleted and replaced by an
+  online wiki based documentation. The Octopus manual is now located
+  at http://www.tddft.org/programs/octopus/wiki/index.php/Manual.
+  After installation, there is also a PDF version of the manual at
+  <sharedir>/doc/octopus/octopus.pdf.
+
+* Debian packages are generated using the gfortran compiler.

@@ -1,7 +1,9 @@
+				README
+				======
+
 Please refer to the online manual for details about installing and
 using Octopus:
 
 http://www.tddft.org/programs/octopus/wiki/index.php/Manual
 
-Please note that the documentation under the doc directory is
-currently outdated.
+(There is an offline copy available at <sharedir>/doc/octopus/octopus.pdf)

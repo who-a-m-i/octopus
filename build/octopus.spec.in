@@ -9,7 +9,7 @@
 # modified for future releases, if the list of installed files
 # or build commands change.
 #
-# RPM.  To build, use the command: rpm --clean -ba @PACKAGE@.spec
+# RPM. To build, use the command: rpm --clean -ba @PACKAGE@.spec
 #
 # Alternatively, you can just use 'make rpm'.
 #
@@ -48,6 +48,7 @@ rm -rf $RPM_BUILD_ROOT
 # cleaned in between.
 %build
 %configure \
+  --docdir=/usr/share/doc/octopus-@VERSION@ \
   FC="@FC@" \
   FCFLAGS="@FCFLAGS@" \
   CFLAGS="@CFLAGS@" \
@@ -71,6 +72,7 @@ make install DESTDIR=${RPM_BUILD_ROOT}
 make clean
 
 %configure \
+  --docdir=/usr/share/doc/octopus-@VERSION@ \
   FC="@FC@" \
   FCFLAGS="@FCFLAGS@" \
   CFLAGS="@CFLAGS@" \
@@ -88,8 +90,6 @@ make clean
 
 make
 
-(cd doc; make octopus.ps; gzip octopus.ps)
-
 make install DESTDIR=${RPM_BUILD_ROOT}
 
 
@@ -97,18 +97,9 @@ make install DESTDIR=${RPM_BUILD_ROOT}
 rm -rf ${RPM_BUILD_ROOT}
 
 
-%post
-install-info %{_infodir}/octopus.info &> /dev/null
-
-
-%preun
-install-info --remove octopus &> /dev/null
-
-
 %files
 %defattr(-,root,root,0755)
-%doc README NEWS COPYING AUTHORS doc/octopus.ps.* doc/pdf/*.pdf
-%doc %{_infodir}/octopus.info
+%doc README NEWS COPYING AUTHORS doc/octopus.pdf
 %{_bindir}/*
 %{_datadir}/octopus/*
 %{_mandir}/man1/*

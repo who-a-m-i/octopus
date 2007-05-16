@@ -85,7 +85,7 @@ void lda_x(lda_type *p, double *rho, double *ex, double *vx, double *fx)
   *ex /= dens;
 
   if(p->relativistic != 0){
-    // Relativistic corrections
+    /* Relativistic corrections */
     beta = pow(3.0*pow(M_PI, 2.0)*dens, 1.0/3.0)/M_C;
     phi = 1.0 - 3.0/2.0*pow(sqrt(1 + pow(beta, 2.0))/beta - asinh(beta)/pow(beta, 2.0), 2.0);
     DphiDdens = -2.0/dens/pow(beta, 2.0) * (-1.0 + asinh(beta)*(pow(beta, 2.0) + 2)/(beta*sqrt(1.0 + pow(beta, 2.0))) -

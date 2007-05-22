@@ -34,6 +34,7 @@ CLEANFILES =     \
 DISTCLEANFILES = \
 	config.log config.status Makefile.in build/octopus.spec
 
+docdir = $(pkgdatadir)/doc
 doc_DATA = NEWS README AUTHORS COPYING
 
 DEB_DIR = deb-work

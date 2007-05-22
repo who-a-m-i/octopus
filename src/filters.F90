@@ -206,9 +206,9 @@ contains
             filt(:,:) = filt(:,:) + filter(ii)%numerical(:,:)
           end if
           ii = ii + 1
-          first = i
-          last  = i + grouplength
         end do
+        first = i
+        last  = i + grouplength
 
         write(message(1),'(a,i2,a,i2)') 'Adding filters from: ',first,'to: ',last
         call write_info(1)
@@ -239,10 +239,10 @@ contains
             grouplength = grouplength + 1
             filt(:, :) = filt(:, :) + filter(ii)%numerical(:,:)
           end if
-          first = i
-          last  = i + grouplength
           ii = ii + 1
         end do
+        first = i
+        last  = i + grouplength
         i = ii - 1
 
         write(message(1),*) 'Adding filters from: ',first,'to: ',last

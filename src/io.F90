@@ -601,6 +601,9 @@ contains
     character(len=*), intent(out) :: line
     integer,          intent(out) :: ierr
 
+    integer :: l, i
+    integer, allocatable :: imsg(:)
+
     call push_sub('out.iopar_read')
 
     if(mpi_grp_is_root(grp)) then
@@ -610,7 +613,21 @@ contains
 #if defined(HAVE_MPI)
     if(grp%size > 1) then
       call MPI_Bcast(ierr, 1, MPI_INTEGER, 0, grp%comm, mpi_err)
-      call MPI_Bcast(line, len(line), MPI_CHARACTER, 0, grp%comm, mpi_err)
+      ! In principle, the following line should be sufficient:
+      ! call MPI_Bcast(line, len(line), MPI_CHARACTER, 0, grp%comm, mpi_err)
+      ! However, some compilers seem to have troubles managing the MPI_CHARACTER data type.
+      ! Therefore, here a conversion to integers is done before the broadcast.
+      l = len(line)
+      ALLOCATE (imsg(l),l)
+      do i = 1, l
+        imsg(i) = ichar(line(i:i))
+      end do
+      call MPI_Bcast(imsg, l, MPI_INTEGER, 0, grp%comm, mpi_err)
+      do i = 1, l
+        line(i:i) = char(imsg(i))
+      end do
+      deallocate(imsg)
+      ! Afterwards, a conversion to characters is placed onto the "line" string.
     end if
 #endif
 

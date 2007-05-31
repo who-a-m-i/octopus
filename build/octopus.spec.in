@@ -48,7 +48,6 @@ rm -rf $RPM_BUILD_ROOT
 # cleaned in between.
 %build
 %configure \
-  --docdir=/usr/share/doc/octopus-@VERSION@ \
   FC="@FC@" \
   FCFLAGS="@FCFLAGS@" \
   CFLAGS="@CFLAGS@" \
@@ -72,7 +71,6 @@ make install DESTDIR=${RPM_BUILD_ROOT}
 make clean
 
 %configure \
-  --docdir=/usr/share/doc/octopus-@VERSION@ \
   FC="@FC@" \
   FCFLAGS="@FCFLAGS@" \
   CFLAGS="@CFLAGS@" \
@@ -99,7 +97,6 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files
 %defattr(-,root,root,0755)
-%doc README NEWS COPYING AUTHORS doc/octopus.pdf
 %{_bindir}/*
 %{_datadir}/octopus/*
 %{_mandir}/man1/*

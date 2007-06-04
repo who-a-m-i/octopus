@@ -1,3 +1,9 @@
+octopus (2.1.0-1) unstable; urgency=low
+
+  * Release of stable version 2.1.0
+
+ -- Xavier Andrade <xavier@tddft.org>  Mon, 4 Jun 2007 16:04:26 +0100
+ 
 octopus (2.1.0rc2-1) unstable; urgency=low
 
   * Second release candidate for octopus 2.1.0

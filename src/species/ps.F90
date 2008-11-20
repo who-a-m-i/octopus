@@ -282,7 +282,7 @@ contains
   end subroutine ps_init
 
   subroutine ps_separate(ps)
-    type(ps_t),        intent(out) :: ps
+    type(ps_t),        intent(inout) :: ps
 
     FLOAT, allocatable :: vsr(:), vlr(:), nlr(:), vion(:)
     FLOAT :: r
@@ -687,8 +687,8 @@ contains
 
   ! ---------------------------------------------------------
   subroutine ps_upf_load(ps, ps_upf)
-    type(ps_t),         intent(out) :: ps
-    type(ps_upf_t), intent(in)  :: ps_upf
+    type(ps_t),     intent(inout) :: ps
+    type(ps_upf_t), intent(in)    :: ps_upf
 
     integer :: i, l, ll, is, nrc, ir, j, ij
     FLOAT :: x

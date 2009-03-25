@@ -477,6 +477,7 @@ contains
 
     ! Local.
     ep%vpsl = M_ZERO
+    if(associated(st%rho_core)) st%rho_core = M_ZERO
     do ia = 1, geo%natoms
       call build_local_part_in_real_space(ep, gr, geo, geo%atom(ia), ep%vpsl, time_, st%rho_core)
     end do

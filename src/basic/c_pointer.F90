@@ -34,7 +34,7 @@ end module types_m
 
 module c_pointer_m
 #ifdef F2003_C_PTR
-  use iso_c_binding, only : c_ptr, c_associated, c_null_ptr
+  use iso_c_binding
 #else
   use types_m
 #endif

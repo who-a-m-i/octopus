@@ -421,7 +421,7 @@ contains
     !% (experimental) If set to yes, Current-DFT will be used. This is the
     !% extension to DFT that should be used when external magnetic fields are
     !% present. The current-dependent part of the XC functional is set using the
-    !% <tt>JFunctional<tt> variable. The default is no.
+    !% <tt>JFunctional</tt> variable. The default is no.
     !%End
     call parse_logical(datasets_check('CurrentDFT'), .false., st%d%cdft)
     if (st%d%cdft) then
@@ -800,7 +800,7 @@ contains
     !%
     !% (A) | &lt;<i>S_i</i>&gt; | &lt;= 1/2
     !%
-    !% (B) &lt;<i>S_x</i>&gt;^2 + &lt;<i>S_y</i>&gt;^2 + &lt;<i>S_z<i>&gt;^2 = 1/4
+    !% (B) &lt;<i>S_x</i>&gt;^2 + &lt;<i>S_y</i>&gt;^2 + &lt;<i>S_z</i>&gt;^2 = 1/4
     !%
     !%End
     spin_fix: if(parse_block(datasets_check('InitialSpins'), blk)==0) then
@@ -1760,11 +1760,12 @@ contains
     !%Section States
     !%Description
     !% Momentum-transfer vector <i>q</i> to be used when calculating matrix elements
-    !% <f|exp(iq.r)|i>. This enables the calculation of the dynamic structure factor,
+    !% &lt;f|exp(iq.r)|i&gt;. This enables the calculation of the dynamic structure factor,
     !% which is closely related to generalized oscillator strengths.
     !% If the vector is not given but TPA output is requested (<tt>Output = TPA </tt>),
     !% only the oscillator strengths are written in the output file.
     !% For example, to use <i>q</i> = (0.1, 0.2, 0.3), set
+    !%
     !% <tt>%MomentumTransfer
     !% <br>&nbsp;&nbsp; 0.1 | 0.2 | 0.3
     !% <br>%</tt>

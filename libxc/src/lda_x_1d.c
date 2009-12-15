@@ -128,7 +128,7 @@ func(const XC(lda_type) *p, XC(lda_rs_zeta) *r)
     r->zk -= (1.0 + spin_sign[is]*r->zeta) *
       (int1[is] - int2[is]/R);
   }
-  r->zk *= spin_fact[p->nspin]/(4.0*M_PI*bb);
+  r->zk *= spin_fact[p->nspin-1]/(4.0*M_PI*bb);
 
   if(r->order < 1) return;
   
@@ -140,8 +140,8 @@ func(const XC(lda_type) *p, XC(lda_rs_zeta) *r)
     r->dedrs +=               int2[is];
     r->dedz  -= spin_sign[is]*int1[is];
   }
-  r->dedrs *= spin_fact[p->nspin]/(2.0*M_PI*M_PI*bb*bb);
-  r->dedz  *= spin_fact[p->nspin]/(4.0*M_PI*bb);
+  r->dedrs *= spin_fact[p->nspin-1]/(2.0*M_PI*M_PI*bb*bb);
+  r->dedz  *= spin_fact[p->nspin-1]/(4.0*M_PI*bb);
 
   if(r->order < 2) return;
 
@@ -158,9 +158,9 @@ func(const XC(lda_type) *p, XC(lda_rs_zeta) *r)
     r->d2edrsz += spin_sign[is]*aux*ft;
     r->d2edz2  -= ft;
   }
-  r->d2edrs2 *= spin_fact[p->nspin]/(8.0*r->rs[2]*r->rs[1]);
-  r->d2edrsz *= spin_fact[p->nspin]/(8.0*r->rs[2]);
-  r->d2edz2  *= spin_fact[p->nspin]/(8.0*r->rs[1]);
+  r->d2edrs2 *= spin_fact[p->nspin-1]/(8.0*r->rs[2]*r->rs[1]);
+  r->d2edrsz *= spin_fact[p->nspin-1]/(8.0*r->rs[2]);
+  r->d2edz2  *= spin_fact[p->nspin-1]/(8.0*r->rs[1]);
 
   if(r->order < 3) return;
 

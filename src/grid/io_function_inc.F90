@@ -739,6 +739,7 @@ contains
   ! extended to plot a function on a 2D plane.
   subroutine out_xcrysden()
     integer :: ix, iy, iz, idir2, ix2, iy2, iz2, my_n(3)
+    FLOAT :: lattice_vectors(3,3)
     FLOAT :: offset(3)
     type(X(cf_t)) :: cube
 
@@ -771,6 +772,13 @@ contains
     my_n(1:sb%periodic_dim) = mesh%idx%ll(1:sb%periodic_dim) + 1
     my_n(sb%periodic_dim + 1:3) = mesh%idx%ll(sb%periodic_dim + 1:3)
 
+    ! This differs from mesh%sb%rlattice if it is not an integer multiple of the spacing
+    do idir = 1, 3
+      do idir2 = 1, 3
+        lattice_vectors(idir, idir2) = mesh%h(idir) * (my_n(idir) - 1) * sb%rlattice_primitive(idir2, idir)
+      enddo
+    enddo
+
     iunit = io_open(trim(dir)//'/'//trim(fname)//".xsf", action='write', is_tmp=is_tmp)
 
     ASSERT(present(geo))
@@ -785,7 +793,7 @@ contains
 
     do idir = 1, 3
       write(iunit, '(3f12.6)') (units_from_atomic(units_out%length, &
-        sb%rlattice(idir2, idir)), idir2 = 1, 3)
+        lattice_vectors(idir2, idir)), idir2 = 1, 3)
     enddo
 
     do iz = 1, my_n(3)

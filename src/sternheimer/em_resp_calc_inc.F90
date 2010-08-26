@@ -503,7 +503,7 @@ subroutine X(lr_calc_beta) (sh, sys, hm, em_lr, dipole, beta, kdotp_lr, kdotp_em
                   endif
 
                   do ip = 1, np
-                    tmp(ip) = tmp(ip) + R_REAL(hvar(ip, ispin, isigma, idim, u(2), w(2))) &
+                    tmp(ip) = tmp(ip) + hvar(ip, ispin, isigma, idim, u(2), w(2)) &
                       * em_lr(u(3), isigma, w(3))%X(dl_psi)(ip, idim, ist, ik)
                   enddo
 
@@ -612,7 +612,7 @@ contains
 
               isigma = 1
               forall (idim = 1:st%d%dim, ip = 1:np)
-                ppsi(ip, idim) = ppsi(ip, idim) + R_REAL(hvar(ip, ispin, isigma, idim, ii, ifreq))*st%X(psi)(ip, idim, ist, ik)
+                ppsi(ip, idim) = ppsi(ip, idim) + hvar(ip, ispin, isigma, idim, ii, ifreq)*st%X(psi)(ip, idim, ist, ik)
               end forall
 
               me010(ist2, ist, ii, ifreq, ik) = X(mf_dotp)(mesh, st%d%dim, st%X(psi)(:, :, ist2, ik), ppsi)

@@ -100,7 +100,7 @@ subroutine X(lr_build_dl_rho) (m, st, lr, nsigma)
 
   call push_sub('linear_response_inc.Xlr_build_dl_rho')
 
-  if(st%d%ispin == SPINORS) then
+  if(st%d%ispin /= UNPOLARIZED) then
     message(1) = "Not yet implemented - please fix me"
     call write_fatal(1)
   end if

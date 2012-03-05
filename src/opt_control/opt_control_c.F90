@@ -178,9 +178,9 @@
   ! We cannot use intents here because this routine is passed an argument to
   ! library functions, with an interface declared without intents.
   subroutine opt_control_direct_calc(n, x, f)
-    integer,     :: n    !< intent in
-    REAL_DOUBLE, :: x(n) !< intent out
-    REAL_DOUBLE, :: f !  !< intent out
+    integer     :: n    !< intent in
+    REAL_DOUBLE :: x(n) !< intent out
+    REAL_DOUBLE :: f !  !< intent out
 
     FLOAT :: j1, delta
     FLOAT, allocatable :: theta(:)

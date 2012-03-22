@@ -1000,7 +1000,7 @@
 	  trunk/testsuite/finite_systems_3d/14-h2o_pol_lr.04_h2o_dyn_pol_cmplx.inp,
 	  trunk/testsuite/finite_systems_3d/14-h2o_pol_lr.test:
 	  o Fixing svn:keywords for the testsuite
-	  o Adding a bunch of missing $Id:$
+	  o Adding a bunch of missing $Id$
 
 2006-07-28  xavier
 
@@ -3983,7 +3983,7 @@
 	  trunk/testsuite/oct-run_regression_test.pl:
 	  o Forgot to remove the deprecated RUN keyword from create_template
 	  
-	  o Added "# $Id:$" and DebugLevel = 0 to the .inp file
+	  o Added "# $Id$" and DebugLevel = 0 to the .inp file
 
 2006-03-13  acastro
 
@@ -9746,7 +9746,7 @@
 	  trunk/testsuite/oct-run_regression_test.pl,
 	  trunk/testsuite/periodic_systems_1d/cosine_potential.test,
 	  trunk/testsuite/periodic_systems_1d/free_electrons.test:
-	  Adding $Id:$ tags to all tests. Modify Perl script to add tags
+	  Adding $Id$ tags to all tests. Modify Perl script to add tags
 	  when a template is created with oct-run_regression_test.pl -c
 	* [r1217] trunk/testsuite/periodic_systems_1d,
 	  trunk/testsuite/periodic_systems_1d/cosine_potential.test,
@@ -9975,7 +9975,7 @@
 	  o A "use global" is now in many cases accompanied by a "use messages" and a
 	  "use syslabels" (the price we have to pay to clean up global).
 	  
-	  o Added some more $Id:$ tags that I forgot in the first round.
+	  o Added some more $Id$ tags that I forgot in the first round.
 	  
 	  o The utility programs compile but I didn't check if they produce proper output.
 	  Perhaps we should add checks to the testsuite for them as well?
@@ -10483,7 +10483,7 @@
 	  trunk/src/xc_functl.F90, trunk/src/xc_fxc.F90, trunk/src/xc_vxc.F90,
 	  trunk/src/xyz_adjust.F90, trunk/src/xyz_file.F90, trunk/src/xyzanim.F90,
 	  trunk/testsuite/Makefile.am:
-	  Add $Id:$ tags to most of the files (right below the GPL header). At every
+	  Add $Id$ tags to most of the files (right below the GPL header). At every
 	  commit cvs is replacing these tags with lines of the following form
 	  
 	  $Id$

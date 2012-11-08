@@ -318,11 +318,11 @@ contains
     logical,    optional, intent(in)    :: verbose
 
     logical :: verbose_
-    integer :: maxiter, ik, ns, idir
+    integer :: maxiter, ik, ns, idir, ist
     FLOAT :: tol, kpoint(1:MAX_DIM)
 #ifdef HAVE_MPI
     logical :: conv_reduced
-    integer :: outcount, ist
+    integer :: outcount
     FLOAT, allocatable :: ldiff(:), leigenval(:)
 #endif
     type(profile_t), save :: prof
@@ -450,6 +450,16 @@ contains
         end if
 
       end if
+
+      ! recheck convergence after subspace diagonalization, since states may have reordered
+      eigens%converged(ik) = 0
+      do ist = 1, st%nst
+        if(eigens%diff(ist, ik) < tol) then
+          eigens%converged(ik) = ist
+        else
+          exit
+        endif
+      enddo
 
       eigens%matvec = eigens%matvec + maxiter
     end do ik_loop

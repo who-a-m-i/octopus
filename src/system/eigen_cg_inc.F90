@@ -360,7 +360,7 @@ subroutine X(eigensolver_cg2_new) (gr, st, hm, tol, niter, converged, ik, diff, 
       res = X(states_residue)(gr%mesh, dim, phi, lambda, psi)
       if(present(diff)) diff(ist) = res
       if(res < tol) then
-        conv = conv + 1
+        if(conv == ist - 1) conv = ist
         exit band
       end if
 

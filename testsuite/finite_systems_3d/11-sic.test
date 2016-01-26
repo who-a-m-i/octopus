@@ -21,6 +21,6 @@ Enabled    : Yes
 # use a LDA pseudopotential, whereas the results in the paper are all-electron.
 
 # this calculation seems numerically unstable!
-Precision : 0.0015
+Precision : 0.002
 Input     : 11-sic.01-gs.inp
 match ; Ionization Potential ; GREP(static/info, '4   --', 13) ; -0.542700

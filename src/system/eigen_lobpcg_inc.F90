@@ -57,7 +57,7 @@ subroutine X(eigensolver_lobpcg)(gr, st, hm, pre, tol, niter, converged, ik, dif
   iblock = 0
   
   if(mpi_grp_is_root(mpi_world) .and. .not. in_debug_mode) then
-    call loct_progress_bar(st%nst*(ik - 1), st%nst*st%d%nik)
+    call loct_progress_bar(st%lnst*(ik - 1), st%lnst*st%d%kpt%nlocal)
   end if
   
   ! Iterate over all blocks.
@@ -88,7 +88,7 @@ subroutine X(eigensolver_lobpcg)(gr, st, hm, pre, tol, niter, converged, ik, dif
     converged = converged + conv  
     
     if(mpi_grp_is_root(mpi_world) .and. .not. in_debug_mode) then
-      call loct_progress_bar(st%nst*(ik - 1) + psi_end, st%nst*st%d%nik)
+      call loct_progress_bar(st%lnst*(ik - 1) + psi_end, st%lnst*st%d%kpt%nlocal)
     end if
   end do
   

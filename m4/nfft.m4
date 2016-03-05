@@ -70,8 +70,8 @@ fi
 
 AC_SUBST(CFLAGS_NFFT)
 AC_SUBST(LIBS_NFFT)
-CFLAGS="$CFLAGS_NFFT $acx_nfft_save_CFLAGS"
-LIBS="$LIBS_NFFT $acx_nfft_save_LIBS"
+CFLAGS="$acx_nfft_save_CFLAGS"
+LIBS="$acx_nfft_save_LIBS"
 
 
 dnl Finally, execute ACTION-IF-FOUND/ACTION-IF-NOT-FOUND:

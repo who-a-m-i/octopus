@@ -18,4 +18,4 @@ Spacing = 0.5
 0.2
 %
 
-XCFunctional = gga_xc_sb98_1a
+XCFunctional = hyb_gga_xc_sb98_1a

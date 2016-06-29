@@ -287,6 +287,7 @@ contains
     !% <br>&nbsp;&nbsp;'H_all'   |   1.0079 | spec_full_gaussian  | 1
     !% <br>&nbsp;&nbsp;'Xe'      | 131.29   | spec_ps_upf         | 54
     !% <br>%</tt>
+    !%
     !% Additionally, all the pseudopotential types (PSF, HGH, CPI, FHI, UPF) can take two extra
     !% fields: default spacing, and default radius (used for minimum simulation box if the
     !% radius is not specified).
@@ -361,7 +362,7 @@ contains
     !% position. For a precise description, see N. A. Modine,
     !% <i>Phys. Rev. B</i> <b>55</b>, 10289 (1997).
     !%
-    !% Column 5 is <math>sigma</math>, the width of the Gaussian that should be
+    !% Column 5 is <math>\sigma</math>, the width of the Gaussian that should be
     !% small, but you may run into numerical difficulties if it is too
     !% small (0.25 by default).
     !%Option spec_charge_density 125

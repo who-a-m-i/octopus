@@ -208,7 +208,7 @@ subroutine X(restart_write_binary1)(restart, filename, np, ff, ierr, root)
 
   character(len=MAX_PATH_LEN) :: full_filename
   integer :: root_(1:P_STRATEGY_MAX)
-    
+
   PUSH_SUB(X(restart_write_binary1))
 
   ASSERT(.not. restart%skip)

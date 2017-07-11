@@ -60,6 +60,7 @@ module geometry_oct_m
     geometry_mass,                   &
     cm_pos,                          &
     cm_vel,                          &
+    geometry_write_coordinates,      &
     geometry_write_xyz,              &
     geometry_read_xyz,               &
     geometry_write_openscad,         &
@@ -796,6 +797,24 @@ contains
     POP_SUB(atom_read_xyz)
   end subroutine geometry_read_xyz
 
+  subroutine geometry_write_coordinates(geo, iunit)
+    type(geometry_t), intent(in) :: geo
+    integer,          intent(in) :: iunit
+
+    integer :: iatom
+
+    PUSH_SUB(geometry_write_text)
+
+    call messages_print_stress(iunit, "Atomic coordinates")
+    write(iunit, '(a,i5,3a)') 'Atomic coordinates of ', geo%natoms, ' atoms [', trim(units_abbrev(units_out%length)), ']:'
+    do iatom = 1, geo%natoms
+      write(iunit, '(i5,X,a16,7X,f13.6,X,f13.6,X,f13.6)') iatom, atom_get_label(geo%atom(iatom)), &
+        geo%atom(iatom)%x(1), geo%atom(iatom)%x(2), geo%atom(iatom)%x(3)
+    end do
+    call messages_print_stress(iunit)
+
+    POP_SUB(geometry_write_text)
+  end subroutine geometry_write_coordinates
 
   ! ---------------------------------------------------------
   subroutine geometry_write_openscad(geo, fname, cad_file)

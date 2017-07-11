@@ -276,6 +276,7 @@ contains
 
     ! print info concerning the grid
     call grid_write_info(gr, geo, stdout)
+    call geometry_write_coordinates(geo, stdout)
 
     POP_SUB(grid_init_stage_2)
   end subroutine grid_init_stage_2
@@ -350,7 +351,7 @@ contains
     if (gr%mesh%use_curvilinear) then
       call curvilinear_write_info(gr%cv, iunit)
     end if
-    
+
     call messages_print_stress(iunit)
 
     POP_SUB(grid_write_info)

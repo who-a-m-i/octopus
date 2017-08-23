@@ -90,9 +90,7 @@ subroutine X(hamiltonian_apply_batch) (hm, der, psib, hpsib, ik, time, Imtime, t
     call profiling_in(prof_kinetic_start, "KINETIC_START")
     call X(derivatives_batch_start)(hm%hm_base%kinetic, der, epsib, hpsib, handle, set_bc = .false., factor = -M_HALF/hm%mass)
     call profiling_out(prof_kinetic_start)
-  end if
 
-  if(iand(TERM_KINETIC, terms_) /= 0) then
     call profiling_in(prof_kinetic_finish, "KINETIC_FINISH")
     call X(derivatives_batch_finish)(handle)
     call profiling_out(prof_kinetic_finish)
@@ -109,15 +107,10 @@ subroutine X(hamiltonian_apply_batch) (hm, der, psib, hpsib, ik, time, Imtime, t
     call X(hamiltonian_external)(hm, der%mesh, epsib, hpsib)
   end if
 
-  if (hm%ep%non_local .and. iand(TERM_NON_LOCAL_POTENTIAL, terms_) /= 0) then
-    if(hm%hm_base%apply_projector_matrices) then
-      call X(hamiltonian_base_nlocal_start)(hm%hm_base, der%mesh, hm%d, ik, epsib, projection)
-    end if
-  end if
-
   ! and the non-local one
   if (hm%ep%non_local .and. iand(TERM_NON_LOCAL_POTENTIAL, terms_) /= 0) then
     if(hm%hm_base%apply_projector_matrices) then
+      call X(hamiltonian_base_nlocal_start)(hm%hm_base, der%mesh, hm%d, ik, epsib, projection)
       call X(hamiltonian_base_nlocal_finish)(hm%hm_base, der%mesh, hm%d, ik, projection, hpsib)
     else
       ASSERT(.not. batch_is_packed(hpsib))

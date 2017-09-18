@@ -19,7 +19,7 @@ ExtraStates = 130
 MaximumIter = 3
 StatesBlocksize = 32
 
-StatesPack = yes
+#StatesPack = yes
 
 %Coordinates
 'C'| 5.465626 | -3.656647 | -1.274761

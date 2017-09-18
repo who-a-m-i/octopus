@@ -441,7 +441,7 @@ contains
     !% wave-functions when operating with them. This involves some
     !% additional copying but makes operations more efficient.
     !%End
-    call parse_variable('StatesPack', .true., hm%apply_packed)
+    call parse_variable('StatesPack', .false., hm%apply_packed)
 
     call pcm_init(hm%pcm, geo, gr, st%qtot, st%val_charge)  !< initializes PCM  
     if(hm%pcm%run_pcm .and. hm%theory_level /= KOHN_SHAM_DFT) &

@@ -36,7 +36,6 @@ EXTRA_PROGRAMS = oct-propagation_spectrum \
                  oct-convert \
                  oct-local_multipoles \
                  oct-conductivity \
-                 oct-floquet_observables \
                  oct-wannier90_interface
 
 bin_PROGRAMS = @UTILITY_PROGRAMS@
@@ -191,21 +190,6 @@ oct_help_SOURCES = help.F90
 oct_help_LDADD                   = $(top_builddir)/src/basic/libbasic.a \
                                    $(other_LIBS)
 
-oct_floquet_observables_SOURCES = floquet_observables.F90 
-oct_floquet_observables_LDADD = $(top_builddir)/src/td/libtd.a \
-                                   $(top_builddir)/src/scf/libscf.a \
-                                   $(top_builddir)/src/system/libsystem.a \
-                                   $(top_builddir)/src/hamiltonian/libhamiltonian.a \
-                                   $(top_builddir)/src/states/libstates.a \
-                                   $(top_builddir)/src/frozen/libfrozen.a \
-                                   $(top_builddir)/src/poisson/libpoisson.a \
-                                   $(top_builddir)/src/grid/libgrid.a \
-                                   $(top_builddir)/src/ions/libions.a \
-                                   $(top_builddir)/src/species/libspecies.a \
-                                   $(top_builddir)/src/math/libmath.a \
-                                   $(top_builddir)/src/basic/libbasic.a \
-                                   $(other_LIBS)
-
 oct_wannier90_interface_SOURCES = wannier90_interface.F90
 oct_wannier90_interface_LDADD = $(top_builddir)/src/td/libtd.a \
                                    $(top_builddir)/src/scf/libscf.a \
@@ -258,5 +242,4 @@ photoelectron_spectrum.o : photoelectron_spectrum.F90
 convert.o : convert.F90 
 local_multipoles.o : local_multipoles.F90 local_write.o 
 local_write.o : local_write.F90 
-floquet_observables.o: floquet_observables.F90
 wannier90_interface.o: wannier90_interface.F90

@@ -461,7 +461,7 @@ contains
 
     !%Variable OutputInterval
     !%Type integer
-    !%Default 50
+    !%Default 250
     !%Section Output
     !%Description
     !% The output requested by variable <tt>Output</tt> is written
@@ -473,7 +473,7 @@ contains
     !% Must be >= 0. If it is 0, then no output is written. For <tt>gs</tt> and <tt>unocc</tt>
     !% calculations, <tt>OutputDuringSCF</tt> must be set too for this output to be produced.
     !%End
-    call parse_variable('OutputInterval', 50, outp%output_interval)
+    call parse_variable('OutputInterval', 250, outp%output_interval)
     call messages_obsolete_variable("OutputEvery", "OutputInterval/RestartWriteInterval")
     if(outp%output_interval < 0) then
       message(1) = "OutputInterval must be >= 0."

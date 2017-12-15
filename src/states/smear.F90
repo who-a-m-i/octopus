@@ -61,6 +61,7 @@ module smear_oct_m
     integer :: fermi_count  !< The number of occupied states at the fermi level
     integer :: nik_factor   !< denominator, for treating k-weights as integers
     integer :: nspins       !< = 2 if spin_polarized, else 1.
+    logical :: fixed_fermi  !< do we recompute the fermi level?
   end type smear_t
 
   integer, parameter, public ::       &
@@ -74,10 +75,11 @@ module smear_oct_m
 contains
 
   !--------------------------------------------------
-  subroutine smear_init(this, ispin, fixed_occ, integral_occs, kpoints)
+  subroutine smear_init(this, ispin, fixed_occ, fixed_fermi, integral_occs, kpoints)
     type(smear_t),   intent(out) :: this
     integer,         intent(in)  :: ispin
     logical,         intent(in)  :: fixed_occ
+    logical,         intent(in)  :: fixed_fermi
     logical,         intent(in)  :: integral_occs
     type(kpoints_t), intent(in)  :: kpoints
 
@@ -163,6 +165,9 @@ contains
       call parse_variable('SmearingMPOrder', 1, this%MP_n)
     end if
 
+    this%fixed_fermi = .false.
+    if(fixed_fermi) this%fixed_fermi = .true.
+
     POP_SUB(smear_init)
   end subroutine smear_init
 
@@ -182,6 +187,7 @@ contains
     to%MP_n         = from%MP_n
     to%fermi_count  = from%fermi_count
     to%nik_factor   = from%nik_factor
+    to%fixed_fermi  = from%fixed_fermi 
 
     POP_SUB(smear_copy)
   end subroutine smear_copy
@@ -228,7 +234,7 @@ contains
           ist2 = ist2 + 1
         end if
       end do
-      this%e_fermi = eigenvalues(ist1, 1)
+      if(.not. this%fixed_fermi) this%e_fermi = eigenvalues(ist1, 1)
     else
       ASSERT(nik == 1)
       ist = 1 ! if qtot_integer is zero
@@ -236,7 +242,7 @@ contains
         ist = 1 + (ii - 1) / 2
         occupations(ist, 1) = occupations(ist, 1) + M_ONE + min(M_ZERO, qtot - ii)
       end do
-      this%e_fermi = eigenvalues(ist, 1)
+      if(.not. this%fixed_fermi) this%e_fermi = eigenvalues(ist, 1)
     end if
 
     ASSERT(abs(sum(occupations) - qtot) < CNST(1E-12))
@@ -277,7 +283,7 @@ contains
       ist_cycle: do ist = nst, 1, -1
         do ik = 1, nik
           if(occupations(ist, ik) > CNST(1e-5)) then
-            this%e_fermi  = eigenvalues(ist, ik)
+            if(.not.this%fixed_fermi) this%e_fermi  = eigenvalues(ist, ik)
             this%ef_occ   = occupations(ist, ik) / this%el_per_state
             exit ist_cycle
           end if
@@ -309,7 +315,7 @@ contains
       do iter = 1, nst * nik
         weight = int(kweights(k_list(reorder(iter))) * this%nik_factor + M_HALF)
         if(.not. weight > 0) cycle 
-        this%e_fermi = eigenval_list(iter)
+        if(.not.this%fixed_fermi) this%e_fermi = eigenval_list(iter)
         this%ef_occ  = (sumq_int + sumq_frac) / (weight * this%el_per_state)
 
         if(sumq_int - weight * this%el_per_state <= 0) then
@@ -333,36 +339,40 @@ contains
       SAFE_DEALLOCATE_A(reorder)
 
     else ! bisection
-      dsmear = max(CNST(1e-14), this%dsmear)
-      drange = dsmear * sqrt(-log(tol * CNST(.01)))
+      if(.not. this%fixed_fermi) then
+        dsmear = max(CNST(1e-14), this%dsmear)
+        drange = dsmear * sqrt(-log(tol * CNST(.01)))
 
-      emin = minval(eigenvalues) - drange
-      emax = maxval(eigenvalues) + drange
+        emin = minval(eigenvalues) - drange
+        emax = maxval(eigenvalues) + drange
 
-      do iter = 1, nitmax
-        this%e_fermi = M_HALF*(emin + emax)
-        sumq         = M_ZERO
+        do iter = 1, nitmax
+          this%e_fermi = M_HALF*(emin + emax)
+          sumq         = M_ZERO
 
-        do ik = 1, nik
-          do ist = 1, nst
-            xx   = (this%e_fermi - eigenvalues(ist, ik))/dsmear
-            sumq = sumq + kweights(ik) * this%el_per_state * &
-              smear_step_function(this, xx)
+          do ik = 1, nik
+            do ist = 1, nst
+              xx   = (this%e_fermi - eigenvalues(ist, ik))/dsmear
+              sumq = sumq + kweights(ik) * this%el_per_state * &
+                smear_step_function(this, xx)
+            end do
           end do
+
+          conv = (abs(sumq - qtot) <= tol)
+          if(conv) exit
+
+          if(sumq <= qtot ) emin = this%e_fermi
+          if(sumq >= qtot ) emax = this%e_fermi
+
+          this%ef_occ = smear_step_function(this, M_ZERO)
         end do
 
-        conv = (abs(sumq - qtot) <= tol)
-        if(conv) exit
-
-        if(sumq <= qtot ) emin = this%e_fermi
-        if(sumq >= qtot ) emax = this%e_fermi
-
+        if(.not.conv) then
+          message(1) = 'Fermi: did not converge.'
+          call messages_fatal(1)
+        end if
+      else
         this%ef_occ = smear_step_function(this, M_ZERO)
-      end do
-
-      if(.not.conv) then
-        message(1) = 'Fermi: did not converge.'
-        call messages_fatal(1)
       end if
 
     end if

@@ -241,7 +241,7 @@ contains
 
     ! If not all gs wavefunctions were read when starting, in particular for nscf with different k-points,
     ! the occupations must be recalculated each time, though they do not affect the result of course.
-    ! FIXME: This is wrong for metals where we must use the Fermi level from the original calculation!
+    ! In the case of metals, te option RestartFixedFermiLevelmust be used to yield correct results
     call states_fermi(sys%st, sys%gr%mesh)
 
     do iter = 1, max_iter
@@ -252,7 +252,7 @@ contains
 
       ! If not all gs wavefunctions were read when starting, in particular for nscf with different k-points,
       ! the occupations must be recalculated each time, though they do not affect the result of course.
-      ! FIXME: This is wrong for metals where we must use the Fermi level from the original calculation!
+      ! In the case of metals, te option RestartFixedFermiLevelmust be used to yield correct results
       call states_fermi(sys%st, sys%gr%mesh)
 
       call states_write_eigenvalues(stdout, sys%st%nst, sys%st, sys%gr%sb, eigens%diff, st_start = showstart, compact = .true.)

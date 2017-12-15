@@ -156,7 +156,7 @@ contains
     integer,    optional, intent(in)  :: st_start_writing
     logical,    optional, intent(in)  :: verbose
 
-    integer :: iunit_wfns, iunit_occs, iunit_states
+    integer :: iunit_wfns, iunit_occs, iunit_states, iunit_fermi
     integer :: err, err2(2), ik, idir, ist, idim, itot
     integer :: root(1:P_STRATEGY_MAX)
     character(len=MAX_PATH_LEN) :: filename, filename1
@@ -203,6 +203,13 @@ contains
     call restart_write(restart, iunit_states, lines, 3, err)
     if (err /= 0) ierr = ierr + 1
     call restart_close(restart, iunit_states)
+
+
+    iunit_fermi = restart_open(restart, 'fermi')
+    write(lines(1), '(a20,e21.14)')  'Fermi=              ', st%smear%e_fermi
+    call restart_write(restart, iunit_fermi, lines, 1, err)
+    if (err /= 0) ierr = ierr + 1
+    call restart_close(restart, iunit_fermi)
 
 
     iunit_wfns = restart_open(restart, 'wfns')
@@ -358,7 +365,7 @@ contains
     logical,          optional, intent(in)    :: verbose
 
     integer              :: states_file, wfns_file, occ_file, err, ik, ist, idir, idim
-    integer              :: idone, iread, ntodo, iread_tmp
+    integer              :: idone, iread, ntodo, iread_tmp, iunit_fermi
     character(len=12)    :: filename
     character(len=1)     :: char
     logical, allocatable :: filled(:, :, :)
@@ -481,6 +488,14 @@ contains
     end if
     call restart_close(restart, states_file)
 
+
+    if(st%restart_fixed_fermi) then
+      iunit_fermi = restart_open(restart, 'fermi')
+      call restart_read(restart, iunit_fermi, lines, 1, err)
+      read(lines(1), *)  str, st%smear%e_fermi
+      if (err /= 0) ierr = ierr + 1
+      call restart_close(restart, iunit_fermi)
+    end if
 
     ! open files to read
     wfns_file  = restart_open(restart, 'wfns')
@@ -607,7 +622,7 @@ contains
 
     if (st%restart_fixed_occ) then
       ! reset to overwrite whatever smearing may have been set earlier
-      call smear_init(st%smear, st%d%ispin, fixed_occ = .true., integral_occs = integral_occs, kpoints = gr%sb%kpoints)
+      call smear_init(st%smear, st%d%ispin, fixed_occ = .true., fixed_fermi=.true., integral_occs = integral_occs, kpoints = gr%sb%kpoints)
     end if
 
 

@@ -61,7 +61,6 @@ module smear_oct_m
     integer :: fermi_count  !< The number of occupied states at the fermi level
     integer :: nik_factor   !< denominator, for treating k-weights as integers
     integer :: nspins       !< = 2 if spin_polarized, else 1.
-    logical :: fixed_fermi  !< do we recompute the fermi level?
   end type smear_t
 
   integer, parameter, public ::       &
@@ -75,11 +74,10 @@ module smear_oct_m
 contains
 
   !--------------------------------------------------
-  subroutine smear_init(this, ispin, fixed_occ, fixed_fermi, integral_occs, kpoints)
+  subroutine smear_init(this, ispin, fixed_occ, integral_occs, kpoints)
     type(smear_t),   intent(out) :: this
     integer,         intent(in)  :: ispin
     logical,         intent(in)  :: fixed_occ
-    logical,         intent(in)  :: fixed_fermi
     logical,         intent(in)  :: integral_occs
     type(kpoints_t), intent(in)  :: kpoints
 
@@ -165,9 +163,6 @@ contains
       call parse_variable('SmearingMPOrder', 1, this%MP_n)
     end if
 
-    this%fixed_fermi = .false.
-    if(fixed_fermi) this%fixed_fermi = .true.
-
     POP_SUB(smear_init)
   end subroutine smear_init
 
@@ -187,7 +182,6 @@ contains
     to%MP_n         = from%MP_n
     to%fermi_count  = from%fermi_count
     to%nik_factor   = from%nik_factor
-    to%fixed_fermi  = from%fixed_fermi 
 
     POP_SUB(smear_copy)
   end subroutine smear_copy
@@ -195,7 +189,7 @@ contains
 
   !------------------------------------------------------------------
   subroutine smear_occupy_states_by_ordering(this, eigenvalues, Imeigenvalues, occupations, &
-    qtot, nik, nst, penalizationfactor)
+    qtot, nik, nst, penalizationfactor, fixed_fermi)
     type(smear_t),   intent(inout) :: this
     FLOAT,           intent(in)    :: eigenvalues(:,:)
     FLOAT,           intent(in)    :: Imeigenvalues(:,:)
@@ -203,6 +197,7 @@ contains
     FLOAT,           intent(in)    :: qtot
     integer,         intent(in)    :: nik, nst
     FLOAT,           intent(in)    :: penalizationfactor
+    logical,         intent(in)    :: fixed_fermi
     
     integer            :: ii, ist, ist1, ist2, qtot_integer
     FLOAT              :: score1, score2
@@ -234,7 +229,7 @@ contains
           ist2 = ist2 + 1
         end if
       end do
-      if(.not. this%fixed_fermi) this%e_fermi = eigenvalues(ist1, 1)
+      if(.not. fixed_fermi) this%e_fermi = eigenvalues(ist1, 1)
     else
       ASSERT(nik == 1)
       ist = 1 ! if qtot_integer is zero
@@ -242,7 +237,7 @@ contains
         ist = 1 + (ii - 1) / 2
         occupations(ist, 1) = occupations(ist, 1) + M_ONE + min(M_ZERO, qtot - ii)
       end do
-      if(.not. this%fixed_fermi) this%e_fermi = eigenvalues(ist, 1)
+      if(.not. fixed_fermi) this%e_fermi = eigenvalues(ist, 1)
     end if
 
     ASSERT(abs(sum(occupations) - qtot) < CNST(1E-12))
@@ -254,11 +249,12 @@ contains
 
   !--------------------------------------------------
   subroutine smear_find_fermi_energy(this, eigenvalues, occupations, &
-    qtot, nik, nst, kweights)
+    qtot, nik, nst, kweights, fixed_fermi)
     type(smear_t),   intent(inout) :: this
     FLOAT,           intent(in)    :: eigenvalues(:,:), occupations(:,:)
     FLOAT,           intent(in)    :: qtot, kweights(:)
     integer,         intent(in)    :: nik, nst
+    logical,         intent(in)    :: fixed_fermi
 
     integer, parameter :: nitmax = 200
     FLOAT, parameter   :: tol = CNST(1.0e-10)
@@ -283,7 +279,7 @@ contains
       ist_cycle: do ist = nst, 1, -1
         do ik = 1, nik
           if(occupations(ist, ik) > CNST(1e-5)) then
-            if(.not.this%fixed_fermi) this%e_fermi  = eigenvalues(ist, ik)
+            if(.not.fixed_fermi) this%e_fermi  = eigenvalues(ist, ik)
             this%ef_occ   = occupations(ist, ik) / this%el_per_state
             exit ist_cycle
           end if
@@ -315,7 +311,7 @@ contains
       do iter = 1, nst * nik
         weight = int(kweights(k_list(reorder(iter))) * this%nik_factor + M_HALF)
         if(.not. weight > 0) cycle 
-        if(.not.this%fixed_fermi) this%e_fermi = eigenval_list(iter)
+        if(.not.fixed_fermi) this%e_fermi = eigenval_list(iter)
         this%ef_occ  = (sumq_int + sumq_frac) / (weight * this%el_per_state)
 
         if(sumq_int - weight * this%el_per_state <= 0) then
@@ -339,7 +335,7 @@ contains
       SAFE_DEALLOCATE_A(reorder)
 
     else ! bisection
-      if(.not. this%fixed_fermi) then
+      if(.not. fixed_fermi) then
         dsmear = max(CNST(1e-14), this%dsmear)
         drange = dsmear * sqrt(-log(tol * CNST(.01)))
 

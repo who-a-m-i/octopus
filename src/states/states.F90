@@ -177,7 +177,6 @@ module states_oct_m
     logical        :: fixed_occ     !< should the occupation numbers be fixed?
     logical        :: restart_fixed_occ !< should the occupation numbers be fixed by restart?
     logical        :: restart_reorder_occs !< used for restart with altered occupation numbers
-    logical        :: restart_fixed_fermi !< shoudl the Fermi energy be fixed by restart?
     FLOAT, pointer :: occ(:,:)      !< the occupation numbers
     logical        :: fixed_spins   !< In spinors mode, the spin direction is set
                                     !< for the initial (random) orbitals.
@@ -695,17 +694,6 @@ contains
     call parse_variable('RestartFixedOccupations', .false., st%restart_fixed_occ)
     ! we will turn on st%fixed_occ if restart_read is ever called
 
-    !%Variable RestartFixedFermiLevel
-    !%Type logical
-    !%Default no
-    !%Section States
-    !%Description
-    !% Setting this variable will make the restart proceed using
-    !% a fixed Fermi energy. Otherwise, occupations will be determined by smearing.
-    !% This allow to compute for instance for non-SCF (unocc) calculations for metals, with different k-points.
-    !%End
-    call parse_variable('RestartFixedFermiLevel', .false., st%restart_fixed_fermi)
-
     !%Variable Occupations
     !%Type block
     !%Section States
@@ -906,7 +894,7 @@ contains
       st%restart_reorder_occs = .false.
     end if
 
-    call smear_init(st%smear, st%d%ispin, st%fixed_occ, st%restart_fixed_fermi, integral_occs, kpoints)
+    call smear_init(st%smear, st%d%ispin, st%fixed_occ, integral_occs, kpoints)
 
     unoccupied_states = (st%d%ispin /= SPINORS .and. st%nst*2 > st%qtot) .or. (st%d%ispin == SPINORS .and. st%nst > st%qtot)
     
@@ -1499,7 +1487,6 @@ contains
 
     stout%fixed_occ = stin%fixed_occ
     stout%restart_fixed_occ = stin%restart_fixed_occ
-    stout%restart_fixed_fermi = stin%restart_fixed_fermi
 
     stout%fixed_spins = stin%fixed_spins
 
@@ -1777,9 +1764,10 @@ contains
   end subroutine substates_set_charge
   
   ! ---------------------------------------------------------
-  subroutine states_fermi(st, mesh)
-    type(states_t), intent(inout) :: st
-    type(mesh_t),   intent(in)    :: mesh
+  subroutine states_fermi(st, mesh, fixed_fermi)
+    type(states_t),     intent(inout) :: st
+    type(mesh_t),       intent(in)    :: mesh
+    logical, optional,  intent(in)    :: fixed_fermi
 
     !> Local variables.
     integer            :: ist, ik
@@ -1794,11 +1782,11 @@ contains
 
     if(st%cmplxscl%space) then
       call smear_occupy_states_by_ordering(st%smear, st%zeigenval%Re, st%zeigenval%Im, st%occ, st%qtot, &
-        st%d%nik, st%nst, st%cmplxscl%penalizationfactor)
+        st%d%nik, st%nst, st%cmplxscl%penalizationfactor, optional_default(fixed_fermi, .false.) )
     else
       
       call smear_find_fermi_energy(st%smear, st%eigenval, st%occ, st%qtot, &
-        st%d%nik, st%nst, st%d%kweights)
+        st%d%nik, st%nst, st%d%kweights, optional_default(fixed_fermi, .false.))
 
       call smear_fill_occupations(st%smear, st%eigenval, st%occ, &
         st%d%nik, st%nst)

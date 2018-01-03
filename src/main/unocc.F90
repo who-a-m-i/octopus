@@ -241,8 +241,8 @@ contains
 
     ! If not all gs wavefunctions were read when starting, in particular for nscf with different k-points,
     ! the occupations must be recalculated each time, though they do not affect the result of course.
-    ! In the case of metals, te option RestartFixedFermiLevelmust be used to yield correct results
-    call states_fermi(sys%st, sys%gr%mesh)
+    ! Fermi level is fixed, which is requiered for metals
+    call states_fermi(sys%st, sys%gr%mesh, .true.)
 
     do iter = 1, max_iter
       call eigensolver_run(eigens, sys%gr, sys%st, hm, 1, converged)
@@ -252,8 +252,8 @@ contains
 
       ! If not all gs wavefunctions were read when starting, in particular for nscf with different k-points,
       ! the occupations must be recalculated each time, though they do not affect the result of course.
-      ! In the case of metals, te option RestartFixedFermiLevelmust be used to yield correct results
-      call states_fermi(sys%st, sys%gr%mesh)
+      ! Fermi level is fixed, which is requiered for metals
+      call states_fermi(sys%st, sys%gr%mesh, .true.)
 
       call states_write_eigenvalues(stdout, sys%st%nst, sys%st, sys%gr%sb, eigens%diff, st_start = showstart, compact = .true.)
       call messages_print_stress(stdout)

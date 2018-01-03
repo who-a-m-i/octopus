@@ -489,13 +489,11 @@ contains
     call restart_close(restart, states_file)
 
 
-    if(st%restart_fixed_fermi) then
-      iunit_fermi = restart_open(restart, 'fermi')
-      call restart_read(restart, iunit_fermi, lines, 1, err)
-      read(lines(1), *)  str, st%smear%e_fermi
-      if (err /= 0) ierr = ierr + 1
-      call restart_close(restart, iunit_fermi)
-    end if
+    iunit_fermi = restart_open(restart, 'fermi')
+    call restart_read(restart, iunit_fermi, lines, 1, err)
+    read(lines(1), *)  str, st%smear%e_fermi
+    if (err /= 0) ierr = ierr + 1
+    call restart_close(restart, iunit_fermi)
 
     ! open files to read
     wfns_file  = restart_open(restart, 'wfns')
@@ -622,7 +620,7 @@ contains
 
     if (st%restart_fixed_occ) then
       ! reset to overwrite whatever smearing may have been set earlier
-      call smear_init(st%smear, st%d%ispin, fixed_occ = .true., fixed_fermi=.true., integral_occs = integral_occs, kpoints = gr%sb%kpoints)
+      call smear_init(st%smear, st%d%ispin, fixed_occ = .true., integral_occs = integral_occs, kpoints = gr%sb%kpoints)
     end if
 
 

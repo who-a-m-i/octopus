@@ -156,13 +156,13 @@ contains
     integer,    optional, intent(in)  :: st_start_writing
     logical,    optional, intent(in)  :: verbose
 
-    integer :: iunit_wfns, iunit_occs, iunit_states, iunit_fermi
+    integer :: iunit_wfns, iunit_occs, iunit_states
     integer :: err, err2(2), ik, idir, ist, idim, itot
     integer :: root(1:P_STRATEGY_MAX)
     character(len=MAX_PATH_LEN) :: filename, filename1
     character(len=300) :: lines(3)
     logical :: lr_wfns_are_associated, should_write, cmplxscl, verbose_
-    FLOAT   :: kpoint(1:MAX_DIM)
+    FLOAT   :: kpoint(1:MAX_DIM), tmp_array(1)
     FLOAT,  allocatable :: dpsi(:), rff_global(:)
     CMPLX,  allocatable :: zpsi(:), zff_global(:)
 
@@ -205,12 +205,9 @@ contains
     call restart_close(restart, iunit_states)
 
 
-    iunit_fermi = restart_open(restart, 'fermi')
-    write(lines(1), '(a20,e21.14)')  'Fermi=              ', st%smear%e_fermi
-    call restart_write(restart, iunit_fermi, lines, 1, err)
+    tmp_array(1) = st%smear%e_fermi
+    call drestart_write_binary(restart, "fermi", 1, tmp_array, err)
     if (err /= 0) ierr = ierr + 1
-    call restart_close(restart, iunit_fermi)
-
 
     iunit_wfns = restart_open(restart, 'wfns')
     lines(1) = '#     #k-point            #st            #dim    filename'
@@ -365,14 +362,14 @@ contains
     logical,          optional, intent(in)    :: verbose
 
     integer              :: states_file, wfns_file, occ_file, err, ik, ist, idir, idim
-    integer              :: idone, iread, ntodo, iread_tmp, iunit_fermi
+    integer              :: idone, iread, ntodo, iread_tmp
     character(len=12)    :: filename
     character(len=1)     :: char
     logical, allocatable :: filled(:, :, :)
     character(len=256)   :: lines(3), label_
     character(len=50)    :: str
 
-    FLOAT                :: my_occ, imev, my_kweight
+    FLOAT                :: my_occ, imev, my_kweight, tmp_array(1)
     logical              :: read_occ, lr_allocated, verbose_
     logical              :: integral_occs, cmplxscl, read_left_
     FLOAT, allocatable   :: dpsi(:)
@@ -489,11 +486,10 @@ contains
     call restart_close(restart, states_file)
 
 
-    iunit_fermi = restart_open(restart, 'fermi')
-    call restart_read(restart, iunit_fermi, lines, 1, err)
-    read(lines(1), *)  str, st%smear%e_fermi
+    
+    call drestart_read_binary(restart, "fermi", 1, tmp_array, err)
+    st%smear%e_fermi = tmp_array(1)
     if (err /= 0) ierr = ierr + 1
-    call restart_close(restart, iunit_fermi)
 
     ! open files to read
     wfns_file  = restart_open(restart, 'wfns')

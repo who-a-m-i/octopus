@@ -486,11 +486,13 @@ contains
     call restart_close(restart, states_file)
 
 
-    
+    tmp_array = M_ZERO 
     call drestart_read_binary(restart, "fermi", 1, tmp_array, err)
-    st%smear%e_fermi = tmp_array(1)
     if (err /= 0) ierr = ierr + 1
-
+    call drestart_read_binary_bcast(restart, 1, tmp_array, err)
+    if (err /= 0) ierr = ierr + 1
+    st%smear%e_fermi = tmp_array(1)
+  
     ! open files to read
     wfns_file  = restart_open(restart, 'wfns')
     occ_file = restart_open(restart, 'occs')

@@ -503,6 +503,27 @@ subroutine X(restart_read_binary5)(restart, filename, np, ff, ierr)
   POP_SUB(X(restart_read_binary5))
 end subroutine X(restart_read_binary5)
 
+! ---------------------------------------------------------
+subroutine X(restart_read_binary_bcast)(restart, np, ff, ierr)
+  type(restart_t),  intent(in)  :: restart
+  integer,          intent(in)  :: np
+  R_TYPE,           intent(out) :: ff(:)
+  integer,          intent(out) :: ierr
+
+  PUSH_SUB(X(restart_read_binary_bcast))
+
+  ASSERT(.not. restart%skip)
+  ASSERT(restart%type == RESTART_TYPE_LOAD)
+
+  #if defined(HAVE_MPI)
+    if(restart%mpi_grp%size > 1) then
+      call MPI_Bcast(ff, np, MPI_FLOAT, 0, restart%mpi_grp%comm, ierr)
+      call MPI_Barrier(restart%mpi_grp%comm, ierr)
+    end if
+  #endif 
+
+  POP_SUB(X(restart_read_binary_bcast))
+end subroutine X(restart_read_binary_bcast)
 
 !! Local Variables:
 !! mode: f90

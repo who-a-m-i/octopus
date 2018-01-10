@@ -69,6 +69,8 @@ module restart_oct_m
     zrestart_write_binary,        &
     drestart_read_binary,         &
     zrestart_read_binary,         &
+    drestart_read_binary_bcast,   &
+    zrestart_read_binary_bcast,   &
     restart_are_basedirs_equal
 
   interface drestart_write_binary

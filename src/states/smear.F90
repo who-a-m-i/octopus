@@ -398,9 +398,9 @@ contains
       do ik = 1, nik
         do ist = 1, nst
           xx = eigenvalues(ist, ik) - this%e_fermi
-          if(xx < M_ZERO) then
+          if(xx < CNST(1e-14)) then
             occupations(ist, ik) = this%el_per_state
-          else if(xx == M_ZERO .and. ifermi < this%fermi_count) then
+          else if(abs(xx) < CNST(1e-14) .and. ifermi < this%fermi_count) then
             occupations(ist, ik) = this%ef_occ * this%el_per_state
             ifermi = ifermi + 1
           else

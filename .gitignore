@@ -28,11 +28,10 @@ semantic.cache
 /lib
 /man
 /include
+/blds
 
 # /build/
 /build/octopus.spec
-
-# /debian/
 
 # /doc/
 /doc/*.1
@@ -118,8 +117,6 @@ semantic.cache
 /share/recipes/da/varinfo_orig
 /share/recipes/da/variables
 /share/recipes/da/variables.xml 
-
-# /share/recipes/de/
 
 # /share/recipes/en/
 /share/recipes/en/varinfo

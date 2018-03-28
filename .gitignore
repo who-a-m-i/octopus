@@ -77,6 +77,18 @@ semantic.cache
 # /external_libs/qshep/
 /external_libs/qshep/*__genmod.*
 
+# /external_libs/dftd3/
+/external_libs/dftd3/Makefile
+/external_libs/dftd3/Makefile.in
+/external_libs/dftd3/*.o
+/external_libs/dftd3/*.a
+/external_libs/dftd3/*.mod
+
+
+# /external_libs/rapidxml/
+/external_libs/rapidxml/Makefile
+/external_libs/rapidxml/Makefile.in
+
 # /liboct_parser/
 /liboct_parser/lib64
 

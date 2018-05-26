@@ -351,10 +351,18 @@ subroutine X(subspace_diag_scalapack)(der, st, hm, ik, eigenval, psi, diff)
     R_TOTYPE(M_ZERO), psi(1, 1, st%st_start), 1, 1, psi_desc(1))
   call profiling_out(prof_gemm2)
 
+  ! TODO : Replace states_residue by a batch version and loop over groups of states
   ! Recalculate the residues if requested by the diff argument.
   if(present(diff)) then 
     do ist = st%st_start, st%st_end
-      call X(hamiltonian_apply)(hm, der, psi(:, :, ist) , hpsi(:, :, st%st_start), ist, ik)
+      call batch_init(psib, hm%d%dim, 1)
+      call batch_add_state(psib, ist, psi(:, :, ist))
+      call batch_init(hpsib, hm%d%dim, 1)
+      call batch_add_state(hpsib, ist, hpsi(:, :, st%st_start))
+      call X(hamiltonian_apply_batch)(hm, der, psib, hpsib, ik)
+      call batch_end(psib)
+      call batch_end(hpsib)
+
       diff(ist) = X(states_residue)(der%mesh, st%d%dim, hpsi(:, :, st%st_start), eigenval(ist), psi(:, :, ist))
     end do
   end if

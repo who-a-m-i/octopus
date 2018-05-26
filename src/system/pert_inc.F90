@@ -196,6 +196,7 @@ contains
   ! perturbation is grad + [V,r]
     R_TYPE, allocatable :: grad(:, :, :), Hxpsi(:,:)
     integer :: iatom
+    type(batch_t) :: psib, hpsib
 
     PUSH_SUB(X(pert_apply).kdotp)
 
@@ -222,9 +223,18 @@ contains
     
       SAFE_DEALLOCATE_A(grad)
     else
+      
       SAFE_ALLOCATE(Hxpsi(1:gr%mesh%np,1:hm%d%dim))     
       Hxpsi(:,:) = M_ZERO
-      call X(hamiltonian_apply)(hm,gr%der,f_in_copy(:,:),Hxpsi(:,:),1,ik,set_bc = .false.)
+
+      !We should convert all this code into a batch version
+      !At the moment we keep the (ugly) pointers
+      call batch_init(psib, hm%d%dim, 1)
+      call batch_add_state(psib, 1, f_in_copy)
+      call batch_init(hpsib, hm%d%dim, 1)
+      call batch_add_state(hpsib, 1, Hxpsi)
+
+      call X(hamiltonian_apply_batch)(hm, gr%der, psib, hpsib, ik, set_bc = .false.)
       do idim = 1, hm%d%dim
         do ip = 1, gr%mesh%np
           f_out(ip,idim) = gr%mesh%x(ip,this%dir)*Hxpsi(ip,idim)
@@ -237,12 +247,16 @@ contains
         end do
       end do
       Hxpsi(:,:) = M_ZERO
-      call X(hamiltonian_apply)(hm,gr%der, f_in_copy(:,:),Hxpsi(:,:),1,ik,set_bc = .false.)
+      call X(hamiltonian_apply_batch)(hm, gr%der, psib, hpsib, ik, set_bc = .false.)
       do idim = 1, hm%d%dim
         do ip = 1, gr%mesh%np
           f_out(ip,idim) = f_out(ip,idim) - Hxpsi(ip,idim)
         end do
       end do
+
+      call batch_end(psib)
+      call batch_end(hpsib)
+
       SAFE_DEALLOCATE_A(Hxpsi)
     end if
 

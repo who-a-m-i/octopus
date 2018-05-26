@@ -531,9 +531,17 @@ subroutine X(linear_solver_operator) (hm, gr, st, ist, ik, shift, x, hx)
   R_TYPE  :: proj
   R_TYPE, allocatable :: psi(:, :)
 
+  type(batch_t) :: psib, hpsib
+
   PUSH_SUB(X(linear_solver_operator))
 
-  call X(hamiltonian_apply)(hm, gr%der, x, Hx, ist, ik)
+  call batch_init(psib, hm%d%dim, 1)
+  call batch_add_state(psib, ist, x)
+  call batch_init(hpsib, hm%d%dim, 1)
+  call batch_add_state(hpsib, ist, Hx)
+  call X(hamiltonian_apply_batch)(hm, gr%der, psib, hpsib, ik)
+  call batch_end(psib)
+  call batch_end(hpsib)
 
   !Hx = Hx + shift*x
   do idim = 1, st%d%dim
@@ -545,6 +553,7 @@ subroutine X(linear_solver_operator) (hm, gr, st, ist, ik, shift, x, hx)
     return
   end if
 
+  !TODO: Create a batch version of this
   ! This is the Q term in Eq. (11) of PRB 51, 6773 (1995)
   ASSERT(.not. st%parallel_in_states)
   do jst = 1, st%nst

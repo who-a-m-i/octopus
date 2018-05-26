@@ -297,12 +297,20 @@ contains
       CMPLX, intent(inout) :: psi(:, :)
       CMPLX, intent(inout) :: oppsi(:, :)
 
+      type(batch_t) :: psib, hpsib
+
       PUSH_SUB(exponential_apply.operate)
 
       if(apply_magnus) then
         call zmagnus(hm, der, psi, oppsi, ik, vmagnus)
-        else
-        call zhamiltonian_apply(hm, der, psi, oppsi, ist, ik)
+      else
+        call batch_init(psib, hm%d%dim, 1)
+        call batch_add_state(psib, ist, psi)
+        call batch_init(hpsib, hm%d%dim, 1)
+        call batch_add_state(hpsib, ist,oppsi)
+        call zhamiltonian_apply_batch(hm, der, psib, hpsib, ik)
+        call batch_end(psib)
+        call batch_end(hpsib)
       end if
 
       POP_SUB(exponential_apply.operate)

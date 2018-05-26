@@ -178,6 +178,8 @@ subroutine X(lcao_wf)(this, st, gr, geo, hm, start)
   FLOAT, allocatable :: tmp(:, :)
 #endif
 
+  type(batch_t) :: psib, hpsib
+
   PUSH_SUB(X(lcao_wf))
   
   write(message(1),'(a,i6,a)') 'Info: Performing initial LCAO calculation with ', &
@@ -237,7 +239,13 @@ subroutine X(lcao_wf)(this, st, gr, geo, hm, start)
 
     do ik = kstart, kend
       ispin = states_dim_get_spin_index(st%d, ik)
-      call X(hamiltonian_apply)(hm, gr%der, lcaopsi(:, :, ispin), hpsi(:, :, ik), n1, ik)
+      call batch_init(psib, hm%d%dim, 1)
+      call batch_add_state(psib, n1, lcaopsi(:, :, ispin))
+      call batch_init(hpsib, hm%d%dim, 1)
+      call batch_add_state(hpsib, n1, hpsi(:, :, ik))
+      call X(hamiltonian_apply_batch)(hm, gr%der, psib, hpsib, ik)
+      call batch_end(psib)
+      call batch_end(hpsib)
     end do
 
     do n2 = n1, this%norbs

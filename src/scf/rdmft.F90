@@ -19,6 +19,8 @@
 #include "global.h"
 
 module rdmft_oct_m
+  use batch_oct_m
+  use comm_oct_m
   use density_oct_m
   use eigensolver_oct_m
   use energy_oct_m
@@ -33,6 +35,7 @@ module rdmft_oct_m
   use loct_math_oct_m 
   use mesh_oct_m
   use mesh_function_oct_m
+  use mesh_batch_oct_m
   use messages_oct_m
   use minimizer_oct_m
   use output_oct_m
@@ -842,6 +845,8 @@ contains
     FLOAT              :: E_deriv_corr, norm, projection
     FLOAT, allocatable :: rho_spin(:,:), rho(:), pot(:)
     FLOAT, allocatable :: hpsi1(:,:), hpsi2(:,:), dpsi(:,:), dpsi2(:,:)
+
+    type(batch_t) :: psib, hpsib1, hpsib2
   
 
     PUSH_SUB(E_deriv_calc)
@@ -877,10 +882,21 @@ contains
     
     call states_get_state(st, gr%mesh, ist, 1, dpsi)
 
-    call dhamiltonian_apply(hm, gr%der, dpsi, hpsi1, ist, 1, &
+    call batch_init(psib, hm%d%dim, 1)
+    call batch_add_state(psib,ist, dpsi)
+    call batch_init(hpsib1, hm%d%dim, 1)
+    call batch_add_state(hpsib1, ist, hpsi1)
+    call batch_init(hpsib2, hm%d%dim, 1)
+    call batch_add_state(hpsib2, ist, hpsi2)
+
+    call dhamiltonian_apply_batch(hm, gr%der, psib, hpsib1, 1, &
                             & terms = TERM_KINETIC + TERM_LOCAL_EXTERNAL + TERM_NON_LOCAL_POTENTIAL)
-    call dhamiltonian_apply(hm, gr%der, dpsi, hpsi2, ist, 1, &
+    call dhamiltonian_apply_batch(hm, gr%der, psib, hpsib2, 1, &
                             & terms = TERM_OTHERS)
+
+    call batch_end(psib)
+    call batch_end(hpsib1)
+    call batch_end(hpsib2) 
       
     !bare derivative wrt. state ist   
     forall(ip=1:gr%mesh%np_part)
@@ -928,6 +944,7 @@ contains
     FLOAT, allocatable :: hpsi(:,:), hpsi1(:,:), dpsi(:,:), dpsi2(:,:), fvec(:) 
     FLOAT, allocatable :: g_x(:,:), g_h(:,:), rho(:,:), rho_tot(:), pot(:), fock(:,:,:)
     integer :: ist, ip, iorb, jorb, jst
+    type(batch_t) :: psib, hpsib, hpsib1
 
     PUSH_SUB(construct_f)
 
@@ -961,13 +978,27 @@ contains
         rho_tot(:) = rho(:, ist)
       end do
       call dpoisson_solve(psolver, pot, rho_tot, all_nodes=.false.) !the Hartree potential
-    
+
+      !TODO: Loop over blocks and do not use get_states    
       do iorb = 1, st%nst
         call states_get_state(st, gr%mesh, iorb, 1, dpsi)
-        call dhamiltonian_apply(hm,gr%der, dpsi, hpsi, iorb, 1, &
-                             terms = TERM_KINETIC + TERM_LOCAL_EXTERNAL + TERM_NON_LOCAL_POTENTIAL)
-        call dhamiltonian_apply(hm, gr%der, dpsi, hpsi1, iorb, 1, &
-                              terms = TERM_OTHERS)
+
+        call batch_init(psib, hm%d%dim, 1)
+        call batch_add_state(psib, iorb, dpsi)
+        call batch_init(hpsib, hm%d%dim, 1)
+        call batch_add_state(hpsib, iorb, hpsi)
+        call batch_init(hpsib1, hm%d%dim, 1)
+        call batch_add_state(hpsib1, iorb, hpsi1)
+
+        call dhamiltonian_apply_batch(hm, gr%der, psib, hpsib, 1, &
+                            & terms = TERM_KINETIC + TERM_LOCAL_EXTERNAL + TERM_NON_LOCAL_POTENTIAL)
+        call dhamiltonian_apply_batch(hm, gr%der, psib, hpsib1, 1, &
+                            & terms = TERM_OTHERS)
+
+        call batch_end(psib)
+        call batch_end(hpsib)
+        call batch_end(hpsib1)
+
         forall (ip=1:gr%mesh%np_part)
           dpsi(ip,1) = st%occ(iorb, 1)*pot(ip)*dpsi(ip,1)
         end forall
@@ -1156,6 +1187,9 @@ contains
     
     integer :: ist, jst, nspin_, is, jdm, iorb, jorb
 
+    integer :: ib
+    type(states_t) :: hst
+
     PUSH_SUB(rdm_derivatives) 
 
 
@@ -1176,13 +1210,18 @@ contains
       rdm%hartree = M_ZERO
       rdm%exchange = M_ZERO
 
+      call states_copy(hst, st)
       !derivative of one-electron energy with respect to the natural orbitals occupation number
-      do ist = 1, st%nst
-        call states_get_state(st, gr%mesh, ist, 1, dpsi)
-        call dhamiltonian_apply(hm,gr%der, dpsi, hpsi, ist, 1, &
+      do ib = st%group%block_start, st%group%block_end
+        call dhamiltonian_apply_batch(hm, gr%der, st%group%psib(ib, 1), hst%group%psib(ib, 1), 1, &
                               terms = TERM_KINETIC + TERM_LOCAL_EXTERNAL + TERM_NON_LOCAL_POTENTIAL)
-        rdm%eone(ist) = dmf_dotp(gr%mesh, dpsi(:, 1), hpsi(:, 1))
+        call dmesh_batch_dotp_vector(gr%mesh, st%group%psib(ib, 1), hst%group%psib(ib, 1), &
+                        rdm%eone(st%group%block_range(ib, 1):st%group%block_range(ib, 1)))
       end do
+   #if defined(HAVE_MPI)
+      call comm_allreduce(st%mpi_grp%comm, rdm%eone)
+   #endif
+      call states_end(hst)
 
       !integrals used for the hartree and exchange parts of the total energy and their derivatives
       do is = 1, nspin_
@@ -1254,6 +1293,8 @@ contains
     FLOAT, allocatable :: dpsi(:,:), dpsi2(:,:)
     integer :: ist, jst, nspin_ 
 
+    type(batch_t) :: psib, hpsib
+
     PUSH_SUB(rdm_integrals)
  
     nspin_ = min(st%d%nspin, 2)
@@ -1265,13 +1306,21 @@ contains
     !calculate integrals of the one-electron energy term with respect to the initial orbital basis
     do ist = 1, st%nst
       call states_get_state(st, gr%mesh, ist, 1, dpsi)
+      call batch_init(psib, hm%d%dim, 1)
+      call batch_add_state(psib,ist, dpsi)
+      call batch_init(hpsib, hm%d%dim, 1)
+      call batch_add_state(hpsib, ist, hpsi)
+      call batch_end(psib)
+      call batch_end(hpsib)
       do jst = ist, st%nst
         call states_get_state(st, gr%mesh, jst, 1, dpsi2)
-        call dhamiltonian_apply(hm,gr%der, dpsi, hpsi, ist, 1, &
+        call dhamiltonian_apply_batch(hm,gr%der, psib, hpsib, 1, &
                               terms = TERM_KINETIC + TERM_LOCAL_EXTERNAL + TERM_NON_LOCAL_POTENTIAL)
         rdm%eone_int(jst, ist) = dmf_dotp(gr%mesh, dpsi2(:, 1), hpsi(:, 1))
         rdm%eone_int(ist, jst) = rdm%eone_int(jst, ist)
       end do
+      call batch_end(psib)
+      call batch_end(hpsib)
     end do
 
     SAFE_DEALLOCATE_A(hpsi)    

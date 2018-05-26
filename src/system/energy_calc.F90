@@ -302,6 +302,7 @@ contains
     integer :: ist
     integer :: ik
     CMPLX, allocatable :: psi(:, :), hpsi(:, :)
+    type(batch_t) :: psib, hpsib
 
     PUSH_SUB(cmplxscl_get_kinetic_elements)
 
@@ -312,10 +313,21 @@ contains
 
     ik = 1 ! XXX nik
     psi(der%mesh%np + 1:der%mesh%np_part, 1) = M_ZERO
+
+    !We should here loop over the blocks of states and avoir copies, but this part of the code
+    !if marked for deletion.
     
     do ist=1, st%nst
       call states_get_state(st, der%mesh, ist, ik, psi(1:der%mesh%np_part, :))
-      call zhamiltonian_apply(hm, der, psi, hpsi, ist, ik, terms = TERM_KINETIC)
+
+      call batch_init(psib, hm%d%dim, 1)
+      call batch_add_state(psib, ist, psi)
+      call batch_init(hpsib, hm%d%dim, 1)
+      call batch_add_state(hpsib, ist, hpsi)
+      call zhamiltonian_apply_batch(hm, der, psib, hpsib, ik, terms = TERM_KINETIC)
+      call batch_end(psib)
+      call batch_end(hpsib)
+ 
       kinetic_energies(ist, 1) = zmf_dotp(der%mesh, st%d%dim, psi, hpsi, dotu = .true.)
     end do
 

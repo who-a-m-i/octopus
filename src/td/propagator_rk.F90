@@ -19,6 +19,7 @@
 #include "global.h"
 
 module propagator_rk_oct_m
+  use batch_oct_m
   use batch_ops_oct_m
   use comm_oct_m
   use density_oct_m
@@ -492,6 +493,8 @@ contains
     CMPLX, allocatable :: k2(:, :, :, :), oldk2(:, :, :, :), rhs1(:, :, :, :)
     CMPLX, allocatable :: inhpsi(:)
     type(ion_state_t) :: ions_state
+    
+    type(batch_t) :: psib, hpsib
 
     PUSH_SUB(td_runge_kutta2)
 
@@ -544,7 +547,13 @@ contains
     rhs1 = M_z0
     do ik = kp1, kp2
       do ist = st1, st2
-        call zhamiltonian_apply(hm_p, grid_p%der, zphi(:, :, ist, ik), rhs1(:, :, ist, ik), ist, ik)
+        call batch_init(psib, hm%d%dim, 1)
+        call batch_add_state(psib, ist, zphi(:, :, ist, ik))
+        call batch_init(hpsib, hm%d%dim, 1)
+        call batch_add_state(hpsib, ist, rhs1(:, :, ist, ik))
+        call zhamiltonian_apply_batch(hm, grid_p%der, psib, hpsib, ik)
+        call batch_end(psib)
+        call batch_end(hpsib)
       end do
     end do
     do ik = kp1, kp2
@@ -709,6 +718,8 @@ contains
       oldk2(:, :, :, :), yn1(:, :, :, :), yn2(:, :, :, :), &
       rhs1(:, :, :, :), rhs2(:, :, :, :)
 
+    type(batch_t) :: psib, hpsib
+
     PUSH_SUB(td_runge_kutta4)
     
     c(1) = M_HALF - sqrt(M_THREE)/CNST(6.0)
@@ -800,7 +811,13 @@ contains
       rhs1 = M_z0
       do ik = kp1, kp2
         do ist = st1, st2
-          call zhamiltonian_apply(hm_p, grid_p%der, zphi(:, :, ist, ik), rhs1(:, :, ist, ik), ist, ik)
+          call batch_init(psib, hm%d%dim, 1)
+          call batch_add_state(psib, ist, zphi(:, :, ist, ik))
+          call batch_init(hpsib, hm%d%dim, 1)
+          call batch_add_state(hpsib, ist, rhs1(:, :, ist, ik))
+          call zhamiltonian_apply_batch(hm, grid_p%der, psib, hpsib, ik)
+          call batch_end(psib)
+          call batch_end(hpsib)
           if(hamiltonian_inh_term(hm)) then
             SAFE_ALLOCATE(inhpsi(1:gr%mesh%np))
             do idim = 1, st%d%dim
@@ -834,7 +851,14 @@ contains
       rhs2 = M_z0
       do ik = kp1, kp2
         do ist = st1, st2
-          call zhamiltonian_apply(hm_p, grid_p%der, zphi(:, :, ist, ik), rhs2(:, :, ist, ik), ist, ik)
+          call batch_init(psib, hm%d%dim, 1)
+          call batch_add_state(psib, ist, zphi(:, :, ist, ik))
+          call batch_init(hpsib, hm%d%dim, 1)
+          call batch_add_state(hpsib, ist, rhs2(:, :, ist, ik))
+          call zhamiltonian_apply_batch(hm, grid_p%der, psib, hpsib, ik)
+          call batch_end(psib)
+          call batch_end(hpsib)
+
           if(hamiltonian_inh_term(hm)) then
             SAFE_ALLOCATE(inhpsi(1:gr%mesh%np))
             do idim = 1, st%d%dim
@@ -973,6 +997,8 @@ contains
     FLOAT :: a(2, 2), c(2)
     integer :: np_part, np
 
+    type(batch_t) :: psib, hpsib
+
     PUSH_SUB(td_rk4op)
 
     np_part = grid_p%mesh%np_part
@@ -1011,7 +1037,13 @@ contains
           k = k + np
         end do
 
-        call zhamiltonian_apply(hm_p, grid_p%der, zpsi, opzpsi, ist, ik)
+        call batch_init(psib, dim, 1)
+        call batch_add_state(psib, ist, zpsi)
+        call batch_init(hpsib,dim, 1)
+        call batch_add_state(hpsib, ist, opzpsi)
+        call zhamiltonian_apply_batch(hm_p, grid_p%der, psib, hpsib, ik)
+        call batch_end(psib)
+        call batch_end(hpsib)
 
         do idim = 1, dim
           yre(jj:jj+np-1) = xre(jj:jj+np-1) + real(M_zI * dt_op * opzpsi(1:np, idim))
@@ -1036,7 +1068,13 @@ contains
           k = k + np
         end do
 
-        call zhamiltonian_apply(hm_p, grid_p%der, zpsi, opzpsi, ist, ik)
+        call batch_init(psib, dim, 1)
+        call batch_add_state(psib, ist, zpsi)
+        call batch_init(hpsib,dim, 1)
+        call batch_add_state(hpsib, ist, opzpsi)
+        call zhamiltonian_apply_batch(hm_p, grid_p%der, psib, hpsib, ik)
+        call batch_end(psib)
+        call batch_end(hpsib)
 
         do idim = 1, dim
           yre(jj:jj+np-1) = xre(jj:jj+np-1) + real(M_zI * dt_op * opzpsi(1:np, idim))
@@ -1067,6 +1105,8 @@ contains
     FLOAT :: a(2, 2), c(2)
     integer :: np_part, np
 
+    type(batch_t) :: psib, hpsib
+
     PUSH_SUB(td_rk4opt)
 
     np_part = grid_p%mesh%np_part
@@ -1095,6 +1135,7 @@ contains
     call hamiltonian_update(hm_p, grid_p%mesh, time = t_op + c(1)*dt_op)
     j = 1
     k = np * (kp2 - kp1 + 1) * (st2 - st1 + 1) * dim + 1
+
     do ik = kp1, kp2
       do ist = st1, st2
         jj = j
@@ -1104,8 +1145,16 @@ contains
           j = j + np
           k = k + np
         end do
+        
+        call batch_init(psib, dim, 1)
+        call batch_add_state(psib, ist, zpsi)
+        call batch_init(hpsib,dim, 1)
+        call batch_add_state(hpsib, ist, opzpsi)
 
-        call zhamiltonian_apply(hm_p, grid_p%der, zpsi, opzpsi, ist, ik)
+        call zhamiltonian_apply_batch(hm_p, grid_p%der, psib, hpsib, ik)
+
+        call batch_end(psib)
+        call batch_end(hpsib)
 
         do idim = 1, dim
           yre(jj:jj+np-1) = xre(jj:jj+np-1) + real(M_zI * dt_op * opzpsi(1:np, idim))
@@ -1114,6 +1163,7 @@ contains
         end do
       end do
     end do
+
 
     hm_p%vhxc = vhxc2_op
     if(move_ions_op) hm_p%ep%vpsl = vpsl2_op
@@ -1130,7 +1180,15 @@ contains
           k = k + np
         end do
 
-        call zhamiltonian_apply(hm_p, grid_p%der, zpsi, opzpsi, ist, ik)
+        call batch_init(psib, dim, 1)
+        call batch_add_state(psib, ist, zpsi)
+        call batch_init(hpsib,dim, 1)
+        call batch_add_state(hpsib, ist, opzpsi)
+
+        call zhamiltonian_apply_batch(hm_p, grid_p%der, psib, hpsib, ik)
+
+        call batch_end(psib)
+        call batch_end(hpsib)
 
         do idim = 1, dim
           yre(jj:jj+np-1) = xre(jj:jj+np-1) + real(M_zI * dt_op * opzpsi(1:np, idim))
@@ -1159,6 +1217,8 @@ contains
     CMPLX, allocatable :: zpsi(:, :)
     CMPLX, allocatable :: opzpsi(:, :)
     CMPLX, allocatable :: zpsi_(:, :, :, :)
+
+    type(batch_t) :: psib, hpsib
 
     PUSH_SUB(td_rk2op)
 
@@ -1204,7 +1264,17 @@ contains
           zpsi(1:np, idim) = cmplx(xre(j:j+np-1), xim(j:j+np-1), REAL_PRECISION)
           j = j + np
         end do
-        call zhamiltonian_apply(hm_p, grid_p%der, zpsi, opzpsi, ist, ik)
+
+        call batch_init(psib, dim, 1)
+        call batch_add_state(psib, ist, zpsi)
+        call batch_init(hpsib,dim, 1)
+        call batch_add_state(hpsib, ist, opzpsi)
+
+        call zhamiltonian_apply_batch(hm_p, grid_p%der, psib, hpsib, ik)
+
+        call batch_end(psib)
+        call batch_end(hpsib)
+
         do idim = 1, dim
           yre(jj:jj+np-1) = xre(jj:jj+np-1) + real(M_zI * dt_op * M_HALF * opzpsi(1:np, idim))
           yim(jj:jj+np-1) = xim(jj:jj+np-1) + aimag(M_zI * dt_op * M_HALF * opzpsi(1:np, idim))
@@ -1255,6 +1325,8 @@ contains
     CMPLX, allocatable :: opzpsi(:, :)
     CMPLX, allocatable :: zpsi_(:, :, :, :)
 
+    type(batch_t) :: psib, hpsib
+
     PUSH_SUB(td_rk2opt)
 
     np_part = grid_p%mesh%np_part
@@ -1299,7 +1371,15 @@ contains
           zpsi(1:np, idim) = cmplx(xre(j:j+np-1), -xim(j:j+np-1), REAL_PRECISION)
           j = j + np
         end do
-        call zhamiltonian_apply(hm_p, grid_p%der, zpsi, opzpsi, ist, ik)
+        call batch_init(psib, dim, 1)
+        call batch_add_state(psib, ist, zpsi)
+        call batch_init(hpsib,dim, 1)
+        call batch_add_state(hpsib, ist, opzpsi)
+
+        call zhamiltonian_apply_batch(hm_p, grid_p%der, psib, hpsib, ik)
+
+        call batch_end(psib)
+        call batch_end(hpsib)
 
         do idim = 1, dim
           yre(jj:jj+np-1) = xre(jj:jj+np-1) + real(M_zI * dt_op * M_HALF * opzpsi(1:np, idim))

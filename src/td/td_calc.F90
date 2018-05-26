@@ -19,6 +19,7 @@
 #include "global.h"
 
 module td_calc_oct_m
+  use batch_oct_m
   use iso_c_binding 
   use forces_oct_m
   use geometry_oct_m
@@ -68,6 +69,7 @@ subroutine td_calc_tacc(gr, geo, st, hm, acc, time)
   FLOAT :: field(MAX_DIM), x(MAX_DIM)
   CMPLX, allocatable :: zpsi(:, :), hzpsi(:,:), hhzpsi(:,:), xzpsi(:,:,:), vnl_xzpsi(:,:)
   integer  :: j, k, ik, ist, idim
+  type(batch_t) :: psib, hpsib 
 
 #if defined(HAVE_MPI)
   FLOAT   :: y(MAX_DIM)
@@ -103,8 +105,16 @@ subroutine td_calc_tacc(gr, geo, st, hm, acc, time)
     do ist = st%st_start, st%st_end
 
       call states_get_state(st, gr%mesh, ist, ik, zpsi)
+
+      call batch_init(psib, hm%d%dim, 1)
+      call batch_add_state(psib,ist, zpsi)
+      call batch_init(hpsib, hm%d%dim, 1)
+      call batch_add_state(hpsib, ist, hzpsi)
       
-      call zhamiltonian_apply(hm, gr%der, zpsi, hzpsi, ist, ik)
+      call zhamiltonian_apply_batch(hm, gr%der, psib, hpsib, ik)
+
+      call batch_end(psib)
+      call batch_end(hpsib)
 
       SAFE_ALLOCATE(xzpsi    (1:gr%mesh%np_part, 1:st%d%dim, 1:3))
       SAFE_ALLOCATE(vnl_xzpsi(1:gr%mesh%np_part, 1:st%d%dim))
@@ -116,7 +126,15 @@ subroutine td_calc_tacc(gr, geo, st, hm, acc, time)
       end do
 
       do j = 1, gr%mesh%sb%dim
-        call zhamiltonian_apply(hm, gr%der, xzpsi(:, :, j), vnl_xzpsi, ist, ik, terms = TERM_NON_LOCAL_POTENTIAL)
+        call batch_init(psib, hm%d%dim, 1)
+        call batch_add_state(psib,ist, xzpsi(:, :, j))
+        call batch_init(hpsib, hm%d%dim, 1)
+        call batch_add_state(hpsib, ist, vnl_xzpsi)
+
+        call zhamiltonian_apply_batch(hm, gr%der, psib, hpsib, ik, terms = TERM_NON_LOCAL_POTENTIAL)
+
+        call batch_end(psib)
+        call batch_end(hpsib)
 
         do idim = 1, st%d%dim
           x(j) = x(j) - 2*st%occ(ist, ik)*real(zmf_dotp(gr%mesh, hzpsi(1:gr%mesh%np, idim), vnl_xzpsi(:, idim)), REAL_PRECISION)
@@ -131,7 +149,15 @@ subroutine td_calc_tacc(gr, geo, st, hm, acc, time)
       end do
 
       do j = 1, gr%mesh%sb%dim
-        call zhamiltonian_apply(hm, gr%der, xzpsi(:, :, j), vnl_xzpsi, ist, ik, terms = TERM_NON_LOCAL_POTENTIAL)
+        call batch_init(psib, hm%d%dim, 1)
+        call batch_add_state(psib,ist, xzpsi(:, :, j))
+        call batch_init(hpsib, hm%d%dim, 1)
+        call batch_add_state(hpsib, ist, vnl_xzpsi)
+
+        call zhamiltonian_apply_batch(hm, gr%der, psib, hpsib, ik, terms = TERM_NON_LOCAL_POTENTIAL)
+
+        call batch_end(psib)
+        call batch_end(hpsib)
 
         do idim = 1, st%d%dim
           x(j) = x(j) + 2*st%occ(ist, ik)*real(zmf_dotp(gr%mesh, zpsi(:, idim), vnl_xzpsi(:, idim)), REAL_PRECISION)

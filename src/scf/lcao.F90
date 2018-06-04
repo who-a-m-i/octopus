@@ -450,15 +450,15 @@ contains
       !%End
       call parse_variable('LCAODimension', 0, n)
 
-      if(n > 0 .and. n <= st%nst .and. st%nst <= this%maxorbs) then
+      if(n > 0 .and. n <= st%nst .and. st%nst <= this%maxorbs/st%d%dim) then
         ! n was made too small
-        this%norbs = st%nst
-      else if(n > st%nst .and. n <= this%maxorbs) then
+        this%norbs = st%nst*st%d%dim
+      else if(n > st%nst .and. n <= this%maxorbs/st%d%dim) then
         ! n is a reasonable value
-        this%norbs = n
+        this%norbs = n*st%d%dim
       else if(n == 0) then
         ! using the default
-        this%norbs = min(this%maxorbs, 2*st%nst)
+        this%norbs = min(this%maxorbs, 2*st%nst)*st%d%dim
       else
         ! n was negative, or greater than maxorbs
         this%norbs = this%maxorbs

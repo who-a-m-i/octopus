@@ -782,10 +782,10 @@ contains
       end if
     end if
 
-    if(.not. lcao_done .or. lcao%norbs < sys%st%nst) then
+    if(.not. lcao_done .or. lcao%norbs/sys%st%d%dim < sys%st%nst) then
 
       if(lcao_done) then
-        st_start_random = lcao%norbs + 1
+        st_start_random = lcao%norbs/sys%st%d%dim + 1
       else
         st_start_random = 1
       end if

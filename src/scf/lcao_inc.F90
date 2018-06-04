@@ -62,7 +62,7 @@ subroutine X(lcao_atomic_orbital) (this, iorb, mesh, st, geo, psi, spin_channel,
   radius = this%orbital_scale_factor*species_get_iwf_radius(spec, ii, ispin)
   ! make sure that if the spacing is too large, the orbitals fit in a few points at least
   radius = max(radius, CNST(2.0)*maxval(mesh%spacing(1:mesh%sb%dim)))
-  
+
   call submesh_init(sphere, mesh%sb, mesh, geo%atom(iatom)%x, radius)
 
 #ifdef R_TCOMPLEX
@@ -126,7 +126,7 @@ subroutine X(lcao_simple)(this, st, gr, geo, hm, start)
     ispin = states_dim_get_spin_index(st%d, iqn)
 
     ist = 0
-    do iorb = 1, this%norbs
+    do iorb = 1, this%norbs, st%d%dim
       ist = ist + 1
       if(ist > st%nst) ist = 1
 
@@ -134,14 +134,18 @@ subroutine X(lcao_simple)(this, st, gr, geo, hm, start)
       if(ist > st%st_end) cycle
       if(ist < lcao_start) cycle
 
+      if(st%d%ispin == SPINORS) ispin = this%ddim(iorb)
+
       call states_get_state(st, gr%mesh, ist, iqn, orbital)
       call X(lcao_atomic_orbital)(this, iorb, gr%mesh, st, geo, orbital, ispin, add = .true.)
+      if(st%d%ispin == SPINORS) &
+        call X(lcao_atomic_orbital)(this, iorb+1, gr%mesh, st, geo, orbital, this%ddim(iorb+1), add = .true.)
       call states_set_state(st, gr%mesh, ist, iqn, orbital)
       
     end do
 
     ! if we don't have all states we can't orthogonalize right now
-    if(st%nst <= this%norbs) then
+    if(st%nst <= this%norbs/st%d%dim) then
       call X(states_orthogonalization_full)(st, gr%mesh, iqn)
     end if
 

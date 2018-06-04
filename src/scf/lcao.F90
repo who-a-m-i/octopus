@@ -458,7 +458,7 @@ contains
         this%norbs = n*st%d%dim
       else if(n == 0) then
         ! using the default
-        this%norbs = min(this%maxorbs, 2*st%nst)*st%d%dim
+        this%norbs = min(this%maxorbs, 2*st%nst*st%d%dim)
       else
         ! n was negative, or greater than maxorbs
         this%norbs = this%maxorbs
@@ -570,8 +570,8 @@ contains
         this%norbs = this%norbs + species_niwfs(geo%atom(iatom)%species)
       end do
 
-      this%maxorb = this%maxorb*this%mult
-      this%norbs = this%norbs*this%mult
+      this%maxorb = this%maxorb*this%mult*st%d%dim
+      this%norbs = this%norbs*this%mult*st%d%dim
 
       SAFE_ALLOCATE(this%basis_atom(1:this%norbs))
       SAFE_ALLOCATE(this%basis_orb(1:this%norbs))
@@ -769,7 +769,7 @@ contains
 
       if (lcao%mode /= OPTION__LCAOSTART__LCAO_SIMPLE .and. .not. present(st_start)) then
         call states_fermi(sys%st, sys%gr%mesh)
-        call states_write_eigenvalues(stdout, min(sys%st%nst, lcao%norbs), sys%st, sys%gr%sb)
+        call states_write_eigenvalues(stdout, min(sys%st%nst, lcao%norbs/sys%st%d%dim), sys%st, sys%gr%sb)
 
         ! Update the density and the Hamiltonian
         if (lcao%mode == OPTION__LCAOSTART__LCAO_FULL) then

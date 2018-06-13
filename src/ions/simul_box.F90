@@ -460,7 +460,7 @@ contains
           if(def_rsize > M_ZERO .and. sb%periodic_dim < sb%dim) &
             call messages_check_def(sb%lsize(1), .false., def_rsize, 'Lsize', units_out%length)
           sb%lsize(1:sb%dim) = sb%lsize(1)
-        else
+        else if (.not. parse_is_defined('LatticeParameters')) then
           message(1) = "Lsize was not found in input file. Continuing anyway."
           call messages_warning(1)
         end if

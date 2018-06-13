@@ -754,10 +754,6 @@ contains
       end if
     end if
 
-    if(sb%nonorthogonal) &
-      call messages_experimental('Non-orthogonal unit cells')
-    end if
-
     sb%rlattice = M_ZERO
     do idim = 1, sb%dim
       norm = sqrt(sum(sb%rlattice_primitive(1:sb%dim, idim)**2))

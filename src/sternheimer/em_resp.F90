@@ -71,6 +71,7 @@ module em_resp_oct_m
     integer :: nsigma !< 1: consider only positive values of the frequency
                       !! 2: consider both positive and negative
     integer :: nfactor!< 1: only one frequency needed
+                      !! 2: two frequencies (complex conjugate for magneto-optics)
                       !! 3: three frequencies (for the hyperpolarizabilities)
     integer :: nomega !< number of frequencies to consider
 
@@ -118,11 +119,11 @@ contains
     type(lr_t), allocatable :: kdotp_em_lr2(:, :, :, :)
     type(lr_t), allocatable :: b_lr(:, :)
     type(lr_t), allocatable :: kb_lr(:, :, :), k2_lr(:, :, :)
-    type(lr_t), allocatable :: ke_lr(:, :, :)
+    type(lr_t), allocatable :: ke_lr(:, :, :, :)
     type(pert_t)            :: pert_kdotp, pert2_none, pert_b
 
     integer :: sigma, sigma_alt, ndim, idir, idir2, ierr, iomega, ifactor, nsigma_eff, ipert
-    integer :: ierr_e(3), ierr_e2(3) 
+    integer :: ierr_e(3), ierr_e2(3), nfactor_ke
     character(len=100) :: dirname_output, str_tmp
     logical :: complex_response, have_to_calculate, use_kdotp, opp_freq, &
       exact_freq(3), complex_wfs, allocate_rho_em, allocate_rho_mo
@@ -368,12 +369,16 @@ contains
       end do
       
       if(use_kdotp) then
-        SAFE_ALLOCATE(ke_lr(1:gr%sb%dim, 1:gr%sb%dim, 1:em_vars%nsigma))
+        nfactor_ke = 1
+        if(gr%sb%kpoints%use_time_reversal) nfactor_ke = em_vars%nfactor
+        SAFE_ALLOCATE(ke_lr(1:gr%sb%dim, 1:gr%sb%dim, 1:em_vars%nsigma, 1:nfactor_ke))
         do idir = 1, gr%sb%dim
           do idir2 = 1, gr%sb%dim
             do sigma = 1, em_vars%nsigma
-              call lr_init(ke_lr(idir, idir2, sigma))
-              call lr_allocate(ke_lr(idir, idir2, sigma), sys%st, sys%gr%mesh, allocate_rho = .false.)
+              do ifactor = 1, nfactor_ke              
+                call lr_init(ke_lr(idir, idir2, sigma, ifactor))
+                call lr_allocate(ke_lr(idir, idir2, sigma, ifactor), sys%st, sys%gr%mesh, allocate_rho = .false.)
+              end do
             end do
           end do
         end do
@@ -599,7 +604,9 @@ contains
         do idir = 1, gr%sb%dim 
           do idir2 = 1, gr%sb%dim
             do sigma = 1, em_vars%nsigma
-              call lr_dealloc(ke_lr(idir, idir2, sigma))
+              do ifactor = 1, nfactor_ke
+                call lr_dealloc(ke_lr(idir, idir2, sigma, ifactor))
+              end do
             end do
           end do
         end do

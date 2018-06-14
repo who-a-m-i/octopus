@@ -958,19 +958,19 @@ contains
 
     if(pert_type(em_vars%perturbation) == PERTURBATION_ELECTRIC) then
       if((.not. em_vars%calc_magnetooptics) .or. ifactor == 1) then
-      call out_polarizability()
-      if(em_vars%calc_Born) then
-        call out_Born_charges(em_vars%Born_charges(ifactor), geo, gr%sb%dim, dirname, &
-          write_real = em_vars%eta < M_EPSILON)
-      end if
+        call out_polarizability()
+        if(em_vars%calc_Born) then
+          call out_Born_charges(em_vars%Born_charges(ifactor), geo, gr%sb%dim, dirname, &
+            write_real = em_vars%eta < M_EPSILON)
+        end if
 
-      if(gr%sb%periodic_dim  ==  gr%sb%dim) then
-        call out_dielectric_constant()
-      end if
+        if(gr%sb%periodic_dim  ==  gr%sb%dim) then
+          call out_dielectric_constant()
+        end if
 
-      if((.not. simul_box_is_periodic(gr%sb) .or. em_vars%force_no_kdotp) .and. em_vars%calc_rotatory) then
-        call out_circular_dichroism()
-      end if
+        if((.not. simul_box_is_periodic(gr%sb) .or. em_vars%force_no_kdotp) .and. em_vars%calc_rotatory) then
+          call out_circular_dichroism()
+        end if
 
       else 
         call out_magnetooptics() 

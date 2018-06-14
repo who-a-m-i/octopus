@@ -471,8 +471,8 @@ subroutine X(calc_properties_linear)()
   PUSH_SUB(em_resp_run.X(calc_properties_linear))
   
 
-    if(pert_type(em_vars%perturbation) == PERTURBATION_ELECTRIC) then
-      if((.not. em_vars%calc_magnetooptics) .or. ifactor == 1) then 
+  if(pert_type(em_vars%perturbation) == PERTURBATION_ELECTRIC) then
+    if((.not. em_vars%calc_magnetooptics) .or. ifactor == 1) then 
       ! calculate polarizability
       message(1) = "Info: Calculating polarizabilities."
       call messages_info(1)
@@ -495,48 +495,48 @@ subroutine X(calc_properties_linear)()
           Born_charges = em_vars%Born_charges(ifactor), lda_u_level= hm%lda_u_level)
       end if
 
-      else
+    else
     
-        write(message(1), '(a)') 'Info: Calculating magneto-optical response.'
-        call messages_info(1)
-        em_vars%alpha_be(:, :, :) = M_ZERO
-        em_vars%chi_para(:, :) = M_ZERO
-        em_vars%chi_dia(:, :) = M_ZERO
-    
-        if(use_kdotp) then
-          if(abs(frequency) > M_EPSILON) then
-            call X(lr_calc_magneto_optics_periodic)(sh, sh_mo, sys, hm, em_vars%nsigma, em_vars%nfactor, &
-              nfactor_ke, em_vars%freq_factor, em_vars%lr(:, :, :), b_lr(:, :), kdotp_lr(:, :), &
-              k2_lr(:, :, :), ke_lr(:, :, :, :), kb_lr(:, :, :), -frequency_eta, em_vars%alpha_be(:, :, :))   
-          end if
-          call X(lr_calc_susceptibility_periodic)(sys, hm, em_vars%nsigma, kdotp_lr(:, 1), b_lr(:, 1),&
-            k2_lr(:, :, 1), kb_lr(:, :, 1), em_vars%chi_dia(:, :))
-          em_vars%chi_para(:, :) = M_ZERO  
-          call X(lr_calc_magnetization_periodic)(sys, hm, kdotp_lr(:, 1), em_vars%magn(:))  
-        else
-          call X(lr_calc_magneto_optics_finite)(sh, sh_mo, sys, hm, em_vars%nsigma, &
-            em_vars%nfactor, em_vars%lr(:, :, :), b_lr(:, :), em_vars%alpha_be(:, :, :))
-          call X(lr_calc_susceptibility)(sys, hm, b_lr(:, :), 1, pert_b, &
-            em_vars%chi_para(: ,:), em_vars%chi_dia(:, :))
-        end if
-      end if
-    
-    else if(pert_type(em_vars%perturbation) == PERTURBATION_MAGNETIC) then
-      message(1) = "Info: Calculating magnetic susceptibilities."
+      write(message(1), '(a)') 'Info: Calculating magneto-optical response.'
       call messages_info(1)
+      em_vars%alpha_be(:, :, :) = M_ZERO
+      em_vars%chi_para(:, :) = M_ZERO
+      em_vars%chi_dia(:, :) = M_ZERO
     
       if(use_kdotp) then
-        call X(lr_calc_susceptibility_periodic)(sys, hm, em_vars%nsigma, kdotp_lr(:, 1), em_vars%lr(:, 1, ifactor),&
+        if(abs(frequency) > M_EPSILON) then
+          call X(lr_calc_magneto_optics_periodic)(sh, sh_mo, sys, hm, em_vars%nsigma, em_vars%nfactor, &
+            nfactor_ke, em_vars%freq_factor, em_vars%lr(:, :, :), b_lr(:, :), kdotp_lr(:, :), &
+            k2_lr(:, :, :), ke_lr(:, :, :, :), kb_lr(:, :, :), -frequency_eta, em_vars%alpha_be(:, :, :))   
+        end if
+        call X(lr_calc_susceptibility_periodic)(sys, hm, em_vars%nsigma, kdotp_lr(:, 1), b_lr(:, 1),&
           k2_lr(:, :, 1), kb_lr(:, :, 1), em_vars%chi_dia(:, :))
-          em_vars%chi_para(:, :) = M_ZERO
-        call X(lr_calc_magnetization_periodic)(sys, hm, kdotp_lr(:, 1), em_vars%magn(:))
+        em_vars%chi_para(:, :) = M_ZERO  
+        call X(lr_calc_magnetization_periodic)(sys, hm, kdotp_lr(:, 1), em_vars%magn(:))  
       else
-        call X(lr_calc_susceptibility)(sys, hm, em_vars%lr(:, :, ifactor), em_vars%nsigma, em_vars%perturbation, &
-          em_vars%chi_para(:, :), em_vars%chi_dia(:, :))
+        call X(lr_calc_magneto_optics_finite)(sh, sh_mo, sys, hm, em_vars%nsigma, &
+          em_vars%nfactor, em_vars%lr(:, :, :), b_lr(:, :), em_vars%alpha_be(:, :, :))
+        call X(lr_calc_susceptibility)(sys, hm, b_lr(:, :), 1, pert_b, &
+          em_vars%chi_para(: ,:), em_vars%chi_dia(:, :))
       end if
-   end if
+    end if
+    
+  else if(pert_type(em_vars%perturbation) == PERTURBATION_MAGNETIC) then
+    message(1) = "Info: Calculating magnetic susceptibilities."
+    call messages_info(1)
   
-    call em_resp_output(sys%st, sys%gr, hm, sys%geo, sys%outp, em_vars, iomega, ifactor)
+    if(use_kdotp) then
+      call X(lr_calc_susceptibility_periodic)(sys, hm, em_vars%nsigma, kdotp_lr(:, 1), em_vars%lr(:, 1, ifactor),&
+        k2_lr(:, :, 1), kb_lr(:, :, 1), em_vars%chi_dia(:, :))
+        em_vars%chi_para(:, :) = M_ZERO
+      call X(lr_calc_magnetization_periodic)(sys, hm, kdotp_lr(:, 1), em_vars%magn(:))
+    else
+      call X(lr_calc_susceptibility)(sys, hm, em_vars%lr(:, :, ifactor), em_vars%nsigma, em_vars%perturbation, &
+        em_vars%chi_para(:, :), em_vars%chi_dia(:, :))
+    end if
+  end if
+  
+  call em_resp_output(sys%st, sys%gr, hm, sys%geo, sys%outp, em_vars, iomega, ifactor)
   
   POP_SUB(em_resp_run.X(calc_properties_linear))
 end subroutine X(calc_properties_linear)

@@ -1362,59 +1362,55 @@ contains
    ! ---------------------------------------------------------
     subroutine out_magnetooptics   
       integer :: idir
-      CMPLX :: mcd(4), diff(3)
-      CMPLX :: eps1, eps2
+      CMPLX :: epsilon_m(4), diff(4)
       
       PUSH_SUB(em_resp_output.out_magnetooptics)
       
-      mcd(:) = M_ZERO
+      diff(:) = M_ZERO
+      epsilon_m(:) = M_ZERO
       do idir = 1, gr%sb%dim 
         diff(idir) = M_HALF * (em_vars%alpha_be(magn_dir(idir, 1), magn_dir(idir, 2), idir) - &
           em_vars%alpha_be(magn_dir(idir, 2), magn_dir(idir, 1), idir))
 
-        eps1 = epsilon(magn_dir(idir, 1), magn_dir(idir, 1))
-        eps2 = epsilon(magn_dir(idir, 2), magn_dir(idir, 2))
-        if(use_kdotp) mcd(idir) = M_TWO * M_PI * &
-          em_vars%omega(iomega)/(gr%sb%rcell_volume * P_C) * diff(idir)/(M_HALF * (sqrt(eps1) + sqrt(eps2)))
+        epsilon_m(idir) = 4 * M_PI * diff(idir) / gr%sb%rcell_volume
       end do
-      mcd(4) = M_TWO * M_PI * & 
-        em_vars%omega(iomega)/P_C * (diff(1) + diff(2) + diff(3)) / M_THREE
+      diff(4) =(diff(1) + diff(2) + diff(3)) / M_THREE
+      epsilon_m(4) = 4 * M_PI * diff(4) / gr%sb%rcell_volume
   
       iunit = io_open(trim(dirname)//'/alpha_be', action='write')
   
       if (.not. em_vars%ok(ifactor)) write(iunit, '(a)') "# WARNING: not converged"
-  
-      write(iunit, '(1a)') '# Real part of magneto-optical response [a.u.]'
-      
-      do idir = 1, gr%sb%dim 
-        call output_tensor(iunit, real(em_vars%alpha_be(:,:,idir)), &
-          gr%sb%dim, unit_one)
-        write(iunit, '(3a,f25.15)') 'Re_', index2axis(idir), ' ', real(diff(idir))
-      end do
-      
-      write(iunit, '(1a)') '# Imaginary part of magneto-optical response [a.u.]'
-      
-      do idir = 1, gr%sb%dim 
-        call output_tensor(iunit, aimag(em_vars%alpha_be(:,:,idir)), &
-          gr%sb%dim, unit_one)
-        write(iunit, '(3a,f25.15)') 'Im_', index2axis(idir), ' ', aimag(diff(idir))
-      end do
-      
-      mcd(:) = mcd(:) / unit_ppm%factor
-      
-      write(iunit, '()')        
-      if(use_kdotp) then
-        write(iunit, '(1a)') '# Faraday rotation [ppm a.u.]'
-        write(iunit, '(3f20.10)') -aimag(mcd(1)), -aimag(mcd(2)), -aimag(mcd(3))
-      end if
-      write(iunit, '(1a,f20.10)')' Average for Faraday rotation [1e-3 a.u.]  ', -aimag(mcd(4) * CNST(1e-3))
 
+      write(iunit, '(a1, a25)', advance = 'no') '#', str_center(" ", 25)
+      write(iunit, '(a20)', advance = 'no') str_center("   xy,z = -yx,z", 20)
+      write(iunit, '(a20)', advance = 'no') str_center("   yz,x = -zy,x", 20)
+      write(iunit, '(a20)', advance = 'no') str_center("   zx,y = -xz,y", 20)
+      write(iunit, '(a20)', advance = 'no') str_center(" Average", 20)
+      write(iunit, *)
+ 
+      write(iunit, '(a25)', advance = 'no') str_center("Re alpha [a.u.]", 25)
+      do idir = 1, gr%sb%dim + 1 
+        write(iunit, '(e20.8)', advance = 'no') real(diff(idir))
+      end do
+      write(iunit, *)
 
-      if(use_kdotp) then
-        write(iunit, '(1a)') '# Magnetic circular dichroism [ppm a.u.]'
-        write(iunit, '(3f20.10)')   real(mcd(1)), real(mcd(2)), real(mcd(3))
-      end if
-      write(iunit, '(1a,f20.10)')' Average for magnetic circular dichroism [1e-3 a.u.]  ', real(mcd(4) * CNST(1e-3))
+      write(iunit, '(a25)', advance = 'no') str_center("Im alpha [a.u.]", 25)
+      do idir = 1, gr%sb%dim + 1
+        write(iunit, '(e20.8)', advance = 'no') aimag(diff(idir))
+      end do
+      write(iunit, *)
+
+      write(iunit, '(a25)', advance = 'no') str_center("Re epsilon (B = 1 a.u.)", 25)
+      do idir = 1, gr%sb%dim + 1
+        write(iunit, '(e20.8)', advance = 'no') real(epsilon_m(idir))
+      end do
+      write(iunit, *)
+
+      write(iunit, '(a25)', advance = 'no') str_center("Im epsilon (B = 1 a.u.)", 25)
+      do idir = 1, gr%sb%dim + 1
+        write(iunit, '(e20.8)', advance = 'no') aimag(epsilon_m(idir))
+      end do
+      write(iunit, *)      
       
       call io_close(iunit)
       

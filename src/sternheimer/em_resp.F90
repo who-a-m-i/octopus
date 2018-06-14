@@ -957,6 +957,7 @@ contains
     call write_eta()
 
     if(pert_type(em_vars%perturbation) == PERTURBATION_ELECTRIC) then
+      if((.not. em_vars%calc_magnetooptics) .or. ifactor == 1) then
       call out_polarizability()
       if(em_vars%calc_Born) then
         call out_Born_charges(em_vars%Born_charges(ifactor), geo, gr%sb%dim, dirname, &
@@ -971,7 +972,7 @@ contains
         call out_circular_dichroism()
       end if
 
-      if(em_vars%calc_magnetooptics) then 
+      else 
         call out_magnetooptics() 
         if(iomega == 1) call out_susceptibility()
       end if

@@ -1292,144 +1292,144 @@ subroutine X(lr_calc_magneto_optics_periodic)(sh, sh2, sys, hm, nsigma, nfactor,
     weight = sys%st%d%kweights(ik) * sys%st%smear%el_per_state
     zpol_k(:,:,:) = M_ZERO
     do ii = 1, nfactor_ke
-    do idir1 = 1, ndir
-      gpsi(:,:,:,:) = M_ZERO 
-      do idir2 = 1, ndir
-        psi_be(:,:,:,:) = M_ZERO
-        do isigma = 1, nsigma
-          if(nsigma == 2) isigma_alt = swap_sigma(isigma)
-          call X(inhomog_EB)(sys, hm, ik, add_hartree1, add_fxc1, hvar(:, ispin, isigma, idir2, ii), &
-            lr_b(idir1, 1)%X(dl_psi)(:,:,:, ik), lr_kb(idir2, idir1, 1)%X(dl_psi)(:,:,:, ik), &
-            factor1, psi_be(:,:,:, isigma), lr_k(magn_dir(idir1, 1), 1)%X(dl_psi)(:,:,:, ik), &
-            lr_k(magn_dir(idir1, 2), 1)%X(dl_psi)(:,:,:, ik))
+      do idir1 = 1, ndir
+        gpsi(:,:,:,:) = M_ZERO 
+        do idir2 = 1, ndir
+          psi_be(:,:,:,:) = M_ZERO
+          do isigma = 1, nsigma
+            if(nsigma == 2) isigma_alt = swap_sigma(isigma)
+            call X(inhomog_EB)(sys, hm, ik, add_hartree1, add_fxc1, hvar(:, ispin, isigma, idir2, ii), &
+              lr_b(idir1, 1)%X(dl_psi)(:,:,:, ik), lr_kb(idir2, idir1, 1)%X(dl_psi)(:,:,:, ik), &
+              factor1, psi_be(:,:,:, isigma), lr_k(magn_dir(idir1, 1), 1)%X(dl_psi)(:,:,:, ik), &
+              lr_k(magn_dir(idir1, 2), 1)%X(dl_psi)(:,:,:, ik))
 
-          call X(inhomog_BE)(sys, hm, magn_dir(idir1, 1), magn_dir(idir1, 2), ik, & 
-            add_hartree2, add_fxc2, hvar2(:, ispin, 1, idir1),  & 
-            lr_e(idir2, isigma, ii)%X(dl_psi)(:,:,:, ik), lr_e(idir2, isigma_alt, ii)%X(dl_psi)(:,:,:, ik), &
-            lr_ke(magn_dir(idir1, 1), idir2, isigma, ii)%X(dl_psi)(:,:,:, ik), &
-            lr_ke(magn_dir(idir1, 2), idir2, isigma, ii)%X(dl_psi)(:,:,:, ik), &
-            lr_k(magn_dir(idir1, 1), 1)%X(dl_psi)(:,:,:, ik), &
-            lr_k(magn_dir(idir1, 2), 1)%X(dl_psi)(:,:,:, ik), &
-            factor_e, factor_e, psi_be(:,:,:, isigma))
-        end do
-        do ist = 1, sys%st%nst
-          if (abs(sys%st%occ(ist, ik)) .gt. M_EPSILON) then
-            do idir3 = 1, ndir 
-              do idim = 1, ndim    
-                zpol_k(idir3, idir2, idir1) = zpol_k(idir3, idir2, idir1) - freq_factor(ii) * & 
-                  frequency / P_C * factor_e * (X(mf_dotp)(sys%gr%mesh, psi_be(:, idim, ist, nsigma), &
-                  factor0 * lr_e(idir3, 1, swap_sigma(ii))%X(dl_psi)(:, idim, ist, ik))&
-                  - X(mf_dotp)(sys%gr%mesh, factor0 * lr_e(idir3, nsigma, swap_sigma(ii))%X(dl_psi)(:, idim, ist, ik), &
-                  psi_be(:, idim, ist, 1)))
-
-                zpol_k(idir3, idir2, idir1) = zpol_k(idir3, idir2, idir1) - M_ONE / P_C *&
-                  (X(mf_dotp)(sys%gr%mesh, psi_be(:, idim, ist, nsigma), &
-                  factor0 * lr_k(idir3, 1)%X(dl_psi)(:, idim, ist, ik))&
-                  + X(mf_dotp)(sys%gr%mesh, factor0 * lr_k(idir3, 1)%X(dl_psi)(:, idim, ist, ik), &
-                  psi_be(:, idim, ist, 1)))
-              end do
-            end do
-          end if
-        end do
-      end do
-      do ist = 1, sys%st%nst
-        if (abs(sys%st%occ(ist, ik)) .gt. M_EPSILON) then
-          call states_get_state(sys%st, sys%gr%mesh, ist, ik, lr0(1)%X(dl_psi)(:, :, ist, ik))
-          call apply_v(add_hartree1, add_fxc1, nsigma, 1, idir1, ist, ik, freq_factor(ii) * frequency, &
-            hvar(:, ispin, :, idir1, swap_sigma(ii)), lr0(:), gpsi(:, :, ist, :))
-          do idir2 = 1, ndir
-            call apply_v(add_hartree1, add_fxc1, nsigma, 1, idir1, ist, ik, freq_factor(ii) * frequency, &
-              hvar(:, ispin, :, idir1, swap_sigma(ii)), lr_k(idir2, :), gdl_k(idir2, :, :, :))
+            call X(inhomog_BE)(sys, hm, magn_dir(idir1, 1), magn_dir(idir1, 2), ik, & 
+              add_hartree2, add_fxc2, hvar2(:, ispin, 1, idir1),  & 
+              lr_e(idir2, isigma, ii)%X(dl_psi)(:,:,:, ik), lr_e(idir2, isigma_alt, ii)%X(dl_psi)(:,:,:, ik), &
+              lr_ke(magn_dir(idir1, 1), idir2, isigma, ii)%X(dl_psi)(:,:,:, ik), &
+              lr_ke(magn_dir(idir1, 2), idir2, isigma, ii)%X(dl_psi)(:,:,:, ik), &
+              lr_k(magn_dir(idir1, 1), 1)%X(dl_psi)(:,:,:, ik), &
+              lr_k(magn_dir(idir1, 2), 1)%X(dl_psi)(:,:,:, ik), &
+              factor_e, factor_e, psi_be(:,:,:, isigma))
           end do
-          do idir2 = 1, ndir
-            call apply_v(add_hartree1, add_fxc1, nsigma, 1, idir1, ist, ik, freq_factor(ii) * frequency, &
-              hvar(:, ispin, :, idir1, swap_sigma(ii)), lr_b(idir2, :), gdl_b(:, :, :))
-            call apply_v(add_hartree1, add_fxc1, nsigma, nsigma, idir1, ist, ik, freq_factor(ii) * frequency, &
-              hvar(:, ispin, :, idir1, swap_sigma(ii)), lr_e(idir2, :, ii), gdl_e(:, :, :))
-            do idir3 = 1, ndir
-              call apply_v(add_hartree1, add_fxc1, nsigma, nsigma, idir1, ist, ik, freq_factor(ii) * frequency, &
-                hvar(:, ispin, :, idir1, swap_sigma(ii)), lr_ke(idir3, idir2, :, ii), gdl_ke(idir3, :, :, :))
-            end do
-            do idir3 = 1, ndir
-              do idim = 1, ndim 
-                zpol_k(idir1, idir3, idir2) = zpol_k(idir1, idir3, idir2) + M_HALF / P_C * factor_e * &
-                  (X(mf_dotp)(sys%gr%mesh, lr_e(idir3, nsigma, ii)%X(dl_psi)(:, idim, ist, ik), factor0 * gdl_b(:, idim, 1)) &
-                  + X(mf_dotp)(sys%gr%mesh, factor0 * gdl_b(:, idim, nsigma), lr_e(idir3, 1, ii)%X(dl_psi)(:, idim, ist, ik)))
-  
-                zpol_k(idir1, idir2, idir3) = zpol_k(idir1, idir2, idir3) + M_HALF / P_C * factor_e * &
-                  (X(mf_dotp)(sys%gr%mesh, factor * gdl_e(:, idim, nsigma), lr_b(idir3, 1)%X(dl_psi)(:, idim, ist, ik))&
-                  + X(mf_dotp)(sys%gr%mesh, lr_b(idir3, 1)%X(dl_psi)(:, idim, ist, ik), factor * gdl_e(:, idim, 1)))
-
-                zpol_k(idir1, idir2, idir3) = zpol_k(idir1, idir2, idir3) - M_FOURTH / P_C * &
-                  (X(mf_dotp)(sys%gr%mesh, lr_ke(magn_dir(idir3, 1), idir2, nsigma, ii)%X(dl_psi)(:, idim, ist, ik),&
-                    factor0 * gdl_k(magn_dir(idir3, 2), :, idim, 1)) &
-                  + X(mf_dotp)(sys%gr%mesh, factor * gdl_ke(magn_dir(idir3, 1), :, idim, nsigma),&
-                    lr_k(magn_dir(idir3, 2), 1)%X(dl_psi)(:, idim, ist, ik))&
-                  + X(mf_dotp)(sys%gr%mesh, -lr_k(magn_dir(idir3, 1), 1)%X(dl_psi)(:, idim, ist, ik),&
-                    factor0 * gdl_ke(magn_dir(idir3, 2), :, idim, 1)) &
-                  + X(mf_dotp)(sys%gr%mesh, -gdl_k(magn_dir(idir3, 1), :, idim, nsigma),&
-                    -factor0 * lr_ke(magn_dir(idir3, 2), idir2, 1, ii)%X(dl_psi)(:, idim, ist, ik))&
-                  - X(mf_dotp)(sys%gr%mesh, lr_ke(magn_dir(idir3, 2), idir2, nsigma, ii)%X(dl_psi)(:, idim, ist, ik),&
-                    factor0 * gdl_k(magn_dir(idir3, 1), :, idim, 1)) &
-                  - X(mf_dotp)(sys%gr%mesh, factor * gdl_ke(magn_dir(idir3, 2), :, idim, nsigma),&
-                    lr_k(magn_dir(idir3, 1), 1)%X(dl_psi)(:,idim, ist, ik))&
-                  - X(mf_dotp)(sys%gr%mesh, -lr_k(magn_dir(idir3, 2), 1)%X(dl_psi)(:, idim, ist, ik),&
-                    factor0 * gdl_ke(magn_dir(idir3, 1), :, idim, 1))&
-                  - X(mf_dotp)(sys%gr%mesh, -gdl_k(magn_dir(idir3, 2), :, idim, nsigma),&
-                    -factor0 * lr_ke(magn_dir(idir3, 1), idir2, 1, ii)%X(dl_psi)(:, idim, ist, ik)))
-              end do
-            end do 
-          end do
-        end if
-      end do
-      do isigma = 1, nsigma
-        call states_blockt_mul(sys%gr%mesh, sys%st, sys%st%st_start, sys%st%st_start, &
-          lr0(1)%X(dl_psi)(:, :, :, ik), factor * gpsi(:, :, :, isigma), mat_g(idir1, isigma)%X(matrix))
-      end do
-    end do
-    do idir1 = 1, ndir
-      do idir2 = 1, ndir
-        do idir3 = 1, ndir  
-          call states_blockt_mul(sys%gr%mesh, sys%st, sys%st%st_start, sys%st%st_start, &
-            factor0 * lr_k(idir3, 1)%X(dl_psi)(:,:,:, ik), lr_ke(idir2, idir1, 1, ii)%X(dl_psi)(:,:,:, ik),&
-            mat_kke(idir3, idir2)%X(matrix))
-          call states_blockt_mul(sys%gr%mesh, sys%st, sys%st%st_start, sys%st%st_start, &
-            lr_ke(idir3, idir1, nsigma, ii)%X(dl_psi)(:,:,:, ik), factor0 * lr_k(idir2, 1)%X(dl_psi)(:,:,:, ik),&
-            mat_kek(idir3, idir2)%X(matrix))
-        end do
-      end do
-      do idir2 = 1, ndir
-        call states_blockt_mul(sys%gr%mesh, sys%st, sys%st%st_start, sys%st%st_start, &
-          factor1 * lr_b(idir2, 1)%X(dl_psi)(:,:,:, ik), lr_e(idir1, 1, ii)%X(dl_psi)(:,:,:, ik),&
-          mat_be%X(matrix))
-        call states_blockt_mul(sys%gr%mesh, sys%st, sys%st%st_start, sys%st%st_start, &
-          lr_e(idir1, nsigma, ii)%X(dl_psi)(:,:,:, ik), lr_b(idir2, 1)%X(dl_psi)(:,:,:, ik),&
-          mat_eb%X(matrix))
-        do idir3 = 1, ndir
           do ist = 1, sys%st%nst
             if (abs(sys%st%occ(ist, ik)) .gt. M_EPSILON) then
-              do ist_occ  = sys%st%st_start, sys%st%st_end
-                if (abs(sys%st%occ(ist_occ, ik)) .gt. M_EPSILON) then
+              do idir3 = 1, ndir 
+                do idim = 1, ndim    
+                  zpol_k(idir3, idir2, idir1) = zpol_k(idir3, idir2, idir1) - freq_factor(ii) * & 
+                    frequency / P_C * factor_e * (X(mf_dotp)(sys%gr%mesh, psi_be(:, idim, ist, nsigma), &
+                    factor0 * lr_e(idir3, 1, swap_sigma(ii))%X(dl_psi)(:, idim, ist, ik))&
+                    - X(mf_dotp)(sys%gr%mesh, factor0 * lr_e(idir3, nsigma, swap_sigma(ii))%X(dl_psi)(:, idim, ist, ik), &
+                    psi_be(:, idim, ist, 1)))
 
-                  zpol_k(idir3, idir1, idir2) = zpol_k(idir3, idir1, idir2) &  
-                    - M_HALF / P_C * factor_e * (factor1 * mat_g(idir3, 1)%X(matrix)(ist_occ, ist)&
-                    + R_CONJ(mat_g(idir3, nsigma)%X(matrix)(ist, ist_occ))) * (mat_be%X(matrix)(ist, ist_occ)&
-                    + mat_eb%X(matrix)(ist, ist_occ))
-
-                  zpol_k(idir3, idir1, idir2) = zpol_k(idir3, idir1, idir2) &
-                    - M_FOURTH / P_C * factor * (factor1 * mat_g(idir3, 1)%X(matrix)(ist_occ, ist)&
-                    + R_CONJ(mat_g(idir3, nsigma)%X(matrix)(ist, ist_occ))) * (&
-                    mat_kke(magn_dir(idir2, 2),magn_dir(idir2, 1))%X(matrix)(ist, ist_occ)&
-                    - mat_kke(magn_dir(idir2, 1),magn_dir(idir2, 2))%X(matrix)(ist, ist_occ)&
-                    + mat_kek(magn_dir(idir2, 2),magn_dir(idir2, 1))%X(matrix)(ist, ist_occ)&
-                    - mat_kek(magn_dir(idir2, 1),magn_dir(idir2, 2))%X(matrix)(ist, ist_occ))
-                end if
+                  zpol_k(idir3, idir2, idir1) = zpol_k(idir3, idir2, idir1) - M_ONE / P_C *&
+                    (X(mf_dotp)(sys%gr%mesh, psi_be(:, idim, ist, nsigma), &
+                    factor0 * lr_k(idir3, 1)%X(dl_psi)(:, idim, ist, ik))&
+                    + X(mf_dotp)(sys%gr%mesh, factor0 * lr_k(idir3, 1)%X(dl_psi)(:, idim, ist, ik), &
+                    psi_be(:, idim, ist, 1)))
+                end do
               end do
             end if
           end do
         end do
+        do ist = 1, sys%st%nst
+          if (abs(sys%st%occ(ist, ik)) .gt. M_EPSILON) then
+            call states_get_state(sys%st, sys%gr%mesh, ist, ik, lr0(1)%X(dl_psi)(:, :, ist, ik))
+            call apply_v(add_hartree1, add_fxc1, nsigma, 1, idir1, ist, ik, freq_factor(ii) * frequency, &
+              hvar(:, ispin, :, idir1, swap_sigma(ii)), lr0(:), gpsi(:, :, ist, :))
+            do idir2 = 1, ndir
+              call apply_v(add_hartree1, add_fxc1, nsigma, 1, idir1, ist, ik, freq_factor(ii) * frequency, &
+                hvar(:, ispin, :, idir1, swap_sigma(ii)), lr_k(idir2, :), gdl_k(idir2, :, :, :))
+            end do
+            do idir2 = 1, ndir
+              call apply_v(add_hartree1, add_fxc1, nsigma, 1, idir1, ist, ik, freq_factor(ii) * frequency, &
+                hvar(:, ispin, :, idir1, swap_sigma(ii)), lr_b(idir2, :), gdl_b(:, :, :))
+              call apply_v(add_hartree1, add_fxc1, nsigma, nsigma, idir1, ist, ik, freq_factor(ii) * frequency, &
+                hvar(:, ispin, :, idir1, swap_sigma(ii)), lr_e(idir2, :, ii), gdl_e(:, :, :))
+              do idir3 = 1, ndir
+                call apply_v(add_hartree1, add_fxc1, nsigma, nsigma, idir1, ist, ik, freq_factor(ii) * frequency, &
+                  hvar(:, ispin, :, idir1, swap_sigma(ii)), lr_ke(idir3, idir2, :, ii), gdl_ke(idir3, :, :, :))
+              end do
+              do idir3 = 1, ndir
+                do idim = 1, ndim 
+                  zpol_k(idir1, idir3, idir2) = zpol_k(idir1, idir3, idir2) + M_HALF / P_C * factor_e * &
+                    (X(mf_dotp)(sys%gr%mesh, lr_e(idir3, nsigma, ii)%X(dl_psi)(:, idim, ist, ik), factor0 * gdl_b(:, idim, 1)) &
+                    + X(mf_dotp)(sys%gr%mesh, factor0 * gdl_b(:, idim, nsigma), lr_e(idir3, 1, ii)%X(dl_psi)(:, idim, ist, ik)))
+  
+                  zpol_k(idir1, idir2, idir3) = zpol_k(idir1, idir2, idir3) + M_HALF / P_C * factor_e * &
+                    (X(mf_dotp)(sys%gr%mesh, factor * gdl_e(:, idim, nsigma), lr_b(idir3, 1)%X(dl_psi)(:, idim, ist, ik))&
+                    + X(mf_dotp)(sys%gr%mesh, lr_b(idir3, 1)%X(dl_psi)(:, idim, ist, ik), factor * gdl_e(:, idim, 1)))
+
+                  zpol_k(idir1, idir2, idir3) = zpol_k(idir1, idir2, idir3) - M_FOURTH / P_C * &
+                    (X(mf_dotp)(sys%gr%mesh, lr_ke(magn_dir(idir3, 1), idir2, nsigma, ii)%X(dl_psi)(:, idim, ist, ik),&
+                      factor0 * gdl_k(magn_dir(idir3, 2), :, idim, 1)) &
+                    + X(mf_dotp)(sys%gr%mesh, factor * gdl_ke(magn_dir(idir3, 1), :, idim, nsigma),&
+                      lr_k(magn_dir(idir3, 2), 1)%X(dl_psi)(:, idim, ist, ik))&
+                    + X(mf_dotp)(sys%gr%mesh, -lr_k(magn_dir(idir3, 1), 1)%X(dl_psi)(:, idim, ist, ik),&
+                      factor0 * gdl_ke(magn_dir(idir3, 2), :, idim, 1)) &
+                    + X(mf_dotp)(sys%gr%mesh, -gdl_k(magn_dir(idir3, 1), :, idim, nsigma),&
+                      -factor0 * lr_ke(magn_dir(idir3, 2), idir2, 1, ii)%X(dl_psi)(:, idim, ist, ik))&
+                    - X(mf_dotp)(sys%gr%mesh, lr_ke(magn_dir(idir3, 2), idir2, nsigma, ii)%X(dl_psi)(:, idim, ist, ik),&
+                      factor0 * gdl_k(magn_dir(idir3, 1), :, idim, 1)) &
+                    - X(mf_dotp)(sys%gr%mesh, factor * gdl_ke(magn_dir(idir3, 2), :, idim, nsigma),&
+                      lr_k(magn_dir(idir3, 1), 1)%X(dl_psi)(:,idim, ist, ik))&
+                    - X(mf_dotp)(sys%gr%mesh, -lr_k(magn_dir(idir3, 2), 1)%X(dl_psi)(:, idim, ist, ik),&
+                      factor0 * gdl_ke(magn_dir(idir3, 1), :, idim, 1))&
+                    - X(mf_dotp)(sys%gr%mesh, -gdl_k(magn_dir(idir3, 2), :, idim, nsigma),&
+                      -factor0 * lr_ke(magn_dir(idir3, 1), idir2, 1, ii)%X(dl_psi)(:, idim, ist, ik)))
+                end do
+              end do 
+            end do
+          end if
+        end do
+        do isigma = 1, nsigma
+          call states_blockt_mul(sys%gr%mesh, sys%st, sys%st%st_start, sys%st%st_start, &
+            lr0(1)%X(dl_psi)(:, :, :, ik), factor * gpsi(:, :, :, isigma), mat_g(idir1, isigma)%X(matrix))
+        end do
       end do
-    end do
+      do idir1 = 1, ndir
+        do idir2 = 1, ndir
+          do idir3 = 1, ndir  
+            call states_blockt_mul(sys%gr%mesh, sys%st, sys%st%st_start, sys%st%st_start, &
+              factor0 * lr_k(idir3, 1)%X(dl_psi)(:,:,:, ik), lr_ke(idir2, idir1, 1, ii)%X(dl_psi)(:,:,:, ik),&
+              mat_kke(idir3, idir2)%X(matrix))
+            call states_blockt_mul(sys%gr%mesh, sys%st, sys%st%st_start, sys%st%st_start, &
+              lr_ke(idir3, idir1, nsigma, ii)%X(dl_psi)(:,:,:, ik), factor0 * lr_k(idir2, 1)%X(dl_psi)(:,:,:, ik),&
+              mat_kek(idir3, idir2)%X(matrix))
+          end do
+        end do
+        do idir2 = 1, ndir
+          call states_blockt_mul(sys%gr%mesh, sys%st, sys%st%st_start, sys%st%st_start, &
+            factor1 * lr_b(idir2, 1)%X(dl_psi)(:,:,:, ik), lr_e(idir1, 1, ii)%X(dl_psi)(:,:,:, ik),&
+            mat_be%X(matrix))
+          call states_blockt_mul(sys%gr%mesh, sys%st, sys%st%st_start, sys%st%st_start, &
+            lr_e(idir1, nsigma, ii)%X(dl_psi)(:,:,:, ik), lr_b(idir2, 1)%X(dl_psi)(:,:,:, ik),&
+            mat_eb%X(matrix))
+          do idir3 = 1, ndir
+            do ist = 1, sys%st%nst
+              if (abs(sys%st%occ(ist, ik)) .gt. M_EPSILON) then
+                do ist_occ  = sys%st%st_start, sys%st%st_end
+                  if (abs(sys%st%occ(ist_occ, ik)) .gt. M_EPSILON) then
+
+                    zpol_k(idir3, idir1, idir2) = zpol_k(idir3, idir1, idir2) &  
+                      - M_HALF / P_C * factor_e * (factor1 * mat_g(idir3, 1)%X(matrix)(ist_occ, ist)&
+                      + R_CONJ(mat_g(idir3, nsigma)%X(matrix)(ist, ist_occ))) * (mat_be%X(matrix)(ist, ist_occ)&
+                      + mat_eb%X(matrix)(ist, ist_occ))
+
+                    zpol_k(idir3, idir1, idir2) = zpol_k(idir3, idir1, idir2) &
+                      - M_FOURTH / P_C * factor * (factor1 * mat_g(idir3, 1)%X(matrix)(ist_occ, ist)&
+                      + R_CONJ(mat_g(idir3, nsigma)%X(matrix)(ist, ist_occ))) * (&
+                      mat_kke(magn_dir(idir2, 2),magn_dir(idir2, 1))%X(matrix)(ist, ist_occ)&
+                      - mat_kke(magn_dir(idir2, 1),magn_dir(idir2, 2))%X(matrix)(ist, ist_occ)&
+                      + mat_kek(magn_dir(idir2, 2),magn_dir(idir2, 1))%X(matrix)(ist, ist_occ)&
+                      - mat_kek(magn_dir(idir2, 1),magn_dir(idir2, 2))%X(matrix)(ist, ist_occ))
+                  end if
+                end do
+              end if
+            end do
+          end do
+        end do
+      end do
     end do
     do idir1 = 1, ndir
       do idir2 = 1, ndir
@@ -1452,7 +1452,7 @@ subroutine X(lr_calc_magneto_optics_periodic)(sh, sh2, sys, hm, nsigma, nfactor,
     zpol(1:ndir, 1:ndir, 1:ndir) = zpol_temp(1:ndir, 1:ndir, 1:ndir)
   endif
 #endif
-   do idir1 = 1, ndir
+  do idir1 = 1, ndir
     do idir2 = 1, ndir
       do idir3 = 1, ndir
         zpol(idir3, idir1, idir2) = zpol(idir3, idir1, idir2) + zpol0(idir3, idir1, idir2)   

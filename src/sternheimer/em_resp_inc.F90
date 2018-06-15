@@ -123,7 +123,7 @@ subroutine X(run_sternheimer)()
                 end if
               end if
               if(use_kdotp) then
-                if(nfactor_ke==1 .or. ifactor==1) then
+                if(nfactor_ke > 1 .or. ifactor == 1) then
                 do idir2 = 1, sys%gr%sb%dim 
                   str_tmp = em_wfs_tag(idir, ifactor, idir2, ipert = PKE)              
                   call restart_open_dir(restart_load, wfs_tag_sigma(str_tmp, sigma), ierr)

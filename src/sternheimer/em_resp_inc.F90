@@ -478,8 +478,13 @@ subroutine X(calc_properties_linear)()
       call messages_info(1)
     
       if(use_kdotp) then
+        if(.not. em_vars%kpt_output) then
         call X(calc_polarizability_periodic)(sys, em_vars%lr(:, :, ifactor), kdotp_lr(:, 1), &
           em_vars%nsigma, em_vars%alpha(:, :, ifactor))
+        else
+          call X(calc_polarizability_periodic)(sys, em_vars%lr(:, :, ifactor), kdotp_lr(:, 1), &
+            em_vars%nsigma, em_vars%alpha(:, :, ifactor), zpol_k = em_vars%alpha_k(:, :, ifactor, :))
+        end if
       end if
 
       call X(calc_polarizability_finite)(sys, hm, em_vars%lr(:, :, ifactor), em_vars%nsigma, &
@@ -505,9 +510,16 @@ subroutine X(calc_properties_linear)()
     
       if(use_kdotp) then
         if(abs(frequency) > M_EPSILON) then
-          call X(lr_calc_magneto_optics_periodic)(sh, sh_mo, sys, hm, em_vars%nsigma, em_vars%nfactor, &
-            nfactor_ke, em_vars%freq_factor, em_vars%lr(:, :, :), b_lr(:, :), kdotp_lr(:, :), &
-            k2_lr(:, :, :), ke_lr(:, :, :, :), kb_lr(:, :, :), -frequency_eta, em_vars%alpha_be(:, :, :))   
+          if(.not. em_vars%kpt_output) then
+            call X(lr_calc_magneto_optics_periodic)(sh, sh_mo, sys, hm, em_vars%nsigma, em_vars%nfactor, &
+              nfactor_ke, em_vars%freq_factor, em_vars%lr(:, :, :), b_lr(:, :), kdotp_lr(:, :), &
+              k2_lr(:, :, :), ke_lr(:, :, :, :), kb_lr(:, :, :), -frequency_eta, em_vars%alpha_be(:, :, :))   
+          else
+            call X(lr_calc_magneto_optics_periodic)(sh, sh_mo, sys, hm, em_vars%nsigma, em_vars%nfactor, &
+              nfactor_ke, em_vars%freq_factor, em_vars%lr(:, :, :), b_lr(:, :), kdotp_lr(:, :), &
+              k2_lr(:, :, :), ke_lr(:, :, :, :), kb_lr(:, :, :), -frequency_eta, em_vars%alpha_be(:, :, :), &
+              zpol_kout = em_vars%alpha_be_k(:, :, :, :))
+          end if
         end if
         call X(lr_calc_susceptibility_periodic)(sys, hm, em_vars%nsigma, kdotp_lr(:, 1), b_lr(:, 1),&
           k2_lr(:, :, 1), kb_lr(:, :, 1), em_vars%chi_dia(:, :))

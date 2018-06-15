@@ -260,19 +260,22 @@ end subroutine X(lr_calc_elf)
 
 ! ---------------------------------------------------------
 !> alpha_ij(w) = -e sum(m occ, k) [(<u_mk(0)|-id/dk_i)|u_mkj(1)(w)> + <u_mkj(1)(-w)|(-id/dk_i|u_mk(0)>)]
-subroutine X(calc_polarizability_periodic)(sys, em_lr, kdotp_lr, nsigma, zpol, ndir)
+subroutine X(calc_polarizability_periodic)(sys, em_lr, kdotp_lr, nsigma, zpol, ndir, zpol_k)
   type(system_t), target, intent(inout) :: sys
   type(lr_t),             intent(inout) :: em_lr(:,:)
   type(lr_t),             intent(inout) :: kdotp_lr(:)
   integer,                intent(in)    :: nsigma
   CMPLX,                  intent(out)   :: zpol(:, :) !< (sb%dim, sb%dim)
   integer, optional,      intent(in)    :: ndir
+  CMPLX, optional,        intent(out)   :: zpol_k(:, :, :)
 
   integer :: dir1, dir2, ndir_, ist, ik
   CMPLX :: term, subterm
   type(mesh_t), pointer :: mesh
+  logical :: kpt_output
 #ifdef HAVE_MPI
   CMPLX :: zpol_temp(1:MAX_DIM, 1:MAX_DIM)
+  CMPLX, allocatable :: zpol_k_temp(:, :, :)
 #endif
 
   PUSH_SUB(X(calc_polarizability_periodic))
@@ -281,6 +284,16 @@ subroutine X(calc_polarizability_periodic)(sys, em_lr, kdotp_lr, nsigma, zpol, n
 
   ndir_ = mesh%sb%periodic_dim
   if(present(ndir)) ndir_ = ndir
+ 
+  kpt_output = present(zpol_k)
+
+  if(kpt_output) zpol_k(:, :, :) = M_ZERO
+
+#ifdef HAVE_MPI
+  if(kpt_output) then
+    SAFE_ALLOCATE(zpol_k_temp(1:MAX_DIM, 1:MAX_DIM, 1:sys%st%d%nik))
+  end if
+#endif
 
   do dir1 = 1, ndir_
     do dir2 = 1, sys%gr%sb%dim
@@ -306,6 +319,7 @@ subroutine X(calc_polarizability_periodic)(sys, em_lr, kdotp_lr, nsigma, zpol, n
 
           zpol(dir1, dir2) = zpol(dir1, dir2) + &
             term * sys%st%d%kweights(ik) * sys%st%occ(ist, ik)
+          if(kpt_output) zpol_k(dir1, dir2, ik) = zpol_k(dir1, dir2, ik) + term * sys%st%occ(ist, ik)
         end do
 
       end do
@@ -321,10 +335,25 @@ subroutine X(calc_polarizability_periodic)(sys, em_lr, kdotp_lr, nsigma, zpol, n
     call MPI_Allreduce(zpol, zpol_temp, MAX_DIM**2, MPI_CMPLX, MPI_SUM, sys%st%d%kpt%mpi_grp%comm, mpi_err)
     zpol(1:mesh%sb%periodic_dim, 1:mesh%sb%dim) = zpol_temp(1:mesh%sb%periodic_dim, 1:mesh%sb%dim)
   end if
+  if(kpt_output) then
+    if(sys%st%parallel_in_states) then
+      call MPI_Allreduce(zpol_k, zpol_k_temp, MAX_DIM**2*sys%st%d%nik, MPI_CMPLX, MPI_SUM, &
+        sys%st%mpi_grp%comm, mpi_err)
+      zpol_k(1:mesh%sb%periodic_dim, 1:mesh%sb%dim, 1:sys%st%d%nik) = &
+        zpol_k_temp(1:mesh%sb%periodic_dim, 1:mesh%sb%dim, 1:sys%st%d%nik)
+    end if
+    if(sys%st%d%kpt%parallel) then
+      call MPI_Allreduce(zpol_k, zpol_k_temp, MAX_DIM**2*sys%st%d%nik, MPI_CMPLX, MPI_SUM, &
+        sys%st%d%kpt%mpi_grp%comm, mpi_err)
+      zpol_k(1:mesh%sb%periodic_dim, 1:mesh%sb%dim, 1:sys%st%d%nik) = &
+        zpol_k_temp(1:mesh%sb%periodic_dim, 1:mesh%sb%dim, 1:sys%st%d%nik)
+    end if
+    SAFE_DEALLOCATE_A(zpol_k_temp)
+  end if
 #endif
 
   call zsymmetrize_tensor_cart(mesh%sb%symm, zpol)
-
+  
   POP_SUB(X(calc_polarizability_periodic))
 
 end subroutine X(calc_polarizability_periodic)
@@ -1127,7 +1156,8 @@ end subroutine X(calc_kvar_energy)
 
 ! ---------------------------------------------------------
 subroutine X(lr_calc_magneto_optics_periodic)(sh, sh2, sys, hm, nsigma, nfactor, &
-  nfactor_ke, freq_factor, lr_e, lr_b, lr_k, lr_k2, lr_ke, lr_kb, frequency, zpol)
+  nfactor_ke, freq_factor, lr_e, lr_b, lr_k, lr_k2, lr_ke, lr_kb, frequency, zpol,&
+  zpol_kout)
   type(sternheimer_t),  intent(inout) :: sh, sh2
   type(system_t),       intent(inout) :: sys 
   type(hamiltonian_t),  intent(inout) :: hm
@@ -1143,6 +1173,7 @@ subroutine X(lr_calc_magneto_optics_periodic)(sh, sh2, sys, hm, nsigma, nfactor,
   type(lr_t),           intent(inout) :: lr_kb(:,:,:)
   CMPLX,                intent(in)    :: frequency
   CMPLX,                intent(inout) :: zpol(:,:,:)
+  CMPLX, optional,      intent(inout) :: zpol_kout(:,:,:,:)
   
   integer :: idir1, idir2, idir3, ist, ii, dir(nfactor), &
     ispin, idim, ndim, np, ik, ndir, ist_occ, isigma, isigma_alt, ip
@@ -1153,16 +1184,16 @@ subroutine X(lr_calc_magneto_optics_periodic)(sh, sh2, sys, hm, nsigma, nfactor,
   type(matrix_t) :: mat_be, mat_eb
   type(matrix_t), allocatable:: mat_kek(:,:), mat_kke(:,:), mat_g(:,:)
   R_TYPE, allocatable :: psi_be(:,:,:,:), density(:)
-  logical :: add_hartree1, add_fxc1, add_hartree2, add_fxc2
+  logical :: add_hartree1, add_fxc1, add_hartree2, add_fxc2, kpt_output
   type(lr_t) :: lr0(1)
   CMPLX :: term
-  CMPLX :: zpol0(1:MAX_DIM,1:MAX_DIM,1:MAX_DIM), zpol_k(1:MAX_DIM,1:MAX_DIM,1:MAX_DIM)
-
+  CMPLX :: zpol0(1:MAX_DIM,1:MAX_DIM,1:MAX_DIM), zpol_k(1:MAX_DIM,1:MAX_DIM,1:MAX_DIM)  
 
 #ifdef HAVE_MPI
   CMPLX :: zpol_temp(1:MAX_DIM,1:MAX_DIM,1:MAX_DIM)
+  CMPLX, allocatable :: zpol_kout_temp(:, :, :, :)
 #endif
-  
+
 #if defined(R_TCOMPLEX)
   factor = -M_zI
   factor0 = -M_zI
@@ -1199,7 +1230,14 @@ subroutine X(lr_calc_magneto_optics_periodic)(sh, sh2, sys, hm, nsigma, nfactor,
   SAFE_ALLOCATE(psi_be(1:np, 1:ndim, 1:sys%st%nst, 1:nsigma))
   SAFE_ALLOCATE(hvar(1:np, 1:sys%st%d%nspin, 1:nsigma, 1:ndir, 1:nfactor))
   SAFE_ALLOCATE(hvar2(1:np, 1:sys%st%d%nspin, 1:1, 1:ndir))
-  
+
+  kpt_output = present(zpol_kout)
+#ifdef HAVE_MPI
+  if(kpt_output) then
+    SAFE_ALLOCATE(zpol_kout_temp(1:MAX_DIM, 1:MAX_DIM, 1:MAX_DIM, 1:sys%st%d%nik))    
+  end if
+#endif
+
   do idir1 = 1, ndir
     do isigma = 1, nsigma
       SAFE_ALLOCATE(mat_g(idir1, isigma)%X(matrix)(1:sys%st%nst, 1:sys%st%nst))
@@ -1214,7 +1252,8 @@ subroutine X(lr_calc_magneto_optics_periodic)(sh, sh2, sys, hm, nsigma, nfactor,
   hvar2(:,:,:,:) = M_ZERO
   zpol(:,:,:) = M_ZERO 
   zpol0(:,:,:) = M_ZERO 
-  
+  if(kpt_output) zpol_kout(:,:,:,:) = M_ZERO  
+
   add_hartree1 = sternheimer_add_hartree(sh) 
   add_fxc1 = sternheimer_add_fxc(sh)
   add_hartree2 = sternheimer_add_hartree(sh2) 
@@ -1435,6 +1474,8 @@ subroutine X(lr_calc_magneto_optics_periodic)(sh, sh2, sys, hm, nsigma, nfactor,
       do idir2 = 1, ndir
         do idir3 = 1, ndir
           zpol(idir3, idir1, idir2) = zpol(idir3, idir1, idir2) + weight * zpol_k(idir3, idir1, idir2)
+          if(kpt_output) zpol_kout(idir3, idir1, idir2, ik) = zpol_kout(idir3, idir1, idir2, ik) + &
+            zpol_k(idir3, idir1, idir2) * sys%st%smear%el_per_state
         end do
       end do
     end do
@@ -1451,7 +1492,23 @@ subroutine X(lr_calc_magneto_optics_periodic)(sh, sh2, sys, hm, nsigma, nfactor,
     call MPI_Allreduce(zpol, zpol_temp, MAX_DIM**3, MPI_CMPLX, MPI_SUM, sys%st%d%kpt%mpi_grp%comm, mpi_err)
     zpol(1:ndir, 1:ndir, 1:ndir) = zpol_temp(1:ndir, 1:ndir, 1:ndir)
   endif
+  if(kpt_output) then
+    if(sys%st%parallel_in_states) then
+      call MPI_Allreduce(zpol_kout, zpol_kout_temp, MAX_DIM**3*sys%st%d%nik, MPI_CMPLX, MPI_SUM, &
+        sys%st%mpi_grp%comm, mpi_err)
+      zpol_kout(1:ndir, 1:ndir, 1:ndir, 1:sys%st%d%nik) = &
+        zpol_kout_temp(1:ndir, 1:ndir, 1:ndir, 1:sys%st%d%nik)
+    endif
+    if(sys%st%d%kpt%parallel) then
+      call MPI_Allreduce(zpol_kout, zpol_kout_temp, MAX_DIM**3*sys%st%d%nik, MPI_CMPLX, MPI_SUM, &
+        sys%st%d%kpt%mpi_grp%comm, mpi_err)
+      zpol_kout(1:ndir, 1:ndir, 1:ndir, 1:sys%st%d%nik) = &
+        zpol_kout_temp(1:ndir, 1:ndir, 1:ndir, 1:sys%st%d%nik)
+    end if
+    SAFE_DEALLOCATE_A(zpol_kout_temp)
+  end if
 #endif
+
   do idir1 = 1, ndir
     do idir2 = 1, ndir
       do idir3 = 1, ndir
@@ -1461,9 +1518,13 @@ subroutine X(lr_calc_magneto_optics_periodic)(sh, sh2, sys, hm, nsigma, nfactor,
   end do
 
   zpol(:,:,:) = -M_zI / (frequency) * zpol(:,:,:) 
-  if(nfactor_ke > 1) zpol(:,:,:) = M_HALF * zpol(:,:,:) 
+  if(nfactor_ke > 1) zpol(:,:,:) = M_HALF * zpol(:,:,:)
   call zsymmetrize_magneto_optics_cart(sys%gr%mesh%sb%symm, zpol(:,:,:))
   
+  if(kpt_output) then
+    zpol_kout(:,:,:,:) = -M_zI / (frequency) * zpol_kout(:,:,:,:)
+    if(nfactor_ke > 1) zpol_kout(:,:,:,:) = M_HALF * zpol_kout(:,:,:,:) 
+  end if
   SAFE_DEALLOCATE_P(mat_eb%X(matrix))
   SAFE_DEALLOCATE_P(mat_be%X(matrix))
   do idir2 = 1, ndir

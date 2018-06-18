@@ -385,7 +385,7 @@ contains
           SAFE_ALLOCATE(em_vars%alpha_be_k(1:gr%sb%dim, 1:gr%sb%dim, 1:gr%sb%dim, 1:sys%st%d%nik))
         end if
         nfactor_ke = 1
-        if(gr%sb%kpoints%use_time_reversal) nfactor_ke = em_vars%nfactor
+        if(gr%sb%kpoints%use_time_reversal .and. gr%sb%kpoints%full%npoints > 1) nfactor_ke = em_vars%nfactor
         SAFE_ALLOCATE(ke_lr(1:gr%sb%dim, 1:gr%sb%dim, 1:em_vars%nsigma, 1:nfactor_ke))
         do idir = 1, gr%sb%dim
           do idir2 = 1, gr%sb%dim

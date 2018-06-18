@@ -1493,7 +1493,7 @@ contains
   
       if (.not. em_vars%ok(ifactor)) write(iunit, '(a)') "# WARNING: not converged"
 
-      write(iunit, '(a1, a20)', advance = 'no') '#', str_center(" ", 25)
+      write(iunit, '(a1, a25)', advance = 'no') '#', str_center(" ", 25)
       write(iunit, '(a20)', advance = 'no') str_center("   yz,x = -zy,x", 20)
       write(iunit, '(a20)', advance = 'no') str_center("   zx,y = -xz,y", 20)
       write(iunit, '(a20)', advance = 'no') str_center("   xy,z = -yx,z", 20)

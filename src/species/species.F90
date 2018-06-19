@@ -68,6 +68,10 @@ module species_oct_m
     species_def_h,                 &
     species_jradius,               &
     species_jthick,                &
+    species_hubbard_l,             &
+    species_hubbard_u,             &
+    species_hubbard_j,             &
+    species_hubbard_alpha,         &
     species_sigma,                 &
     species_omega,                 &
     species_mass,                  &
@@ -152,6 +156,10 @@ module species_oct_m
     integer, pointer :: iwf_l(:, :), iwf_m(:, :), iwf_i(:, :), iwf_n(:, :) !< i, n, l, m as a function of iorb and ispin
     FLOAT, pointer :: iwf_j(:)    !< j as a function of iorb
 
+    integer :: hubbard_l          !< For the LDA+U, the angular momentum for the applied U
+    FLOAT   :: hubbard_U          !< For the LDA+U, the effective U
+    FLOAT   :: hubbard_j          !< For the LDA+U, j (l-1/2 or l+1/2)
+    FLOAT   :: hubbard_alpha      !< For the LDA+U, a potential contraining the occupations
     integer :: user_lmax          !< For the TM pseudos, user defined lmax 
     integer :: user_llocal        !< For the TM pseudos, used defined llocal
     integer :: pseudopotential_set !< to which set this pseudopotential belongs
@@ -199,6 +207,10 @@ contains
     nullify(this%iwf_i)
     nullify(this%iwf_n)
     nullify(this%iwf_j)
+    this%hubbard_l=-1
+    this%hubbard_U=M_ZERO
+    this%hubbard_j=M_ZERO
+    this%hubbard_alpha = M_ZERO
     this%user_lmax   = INVALID_L
     this%user_llocal = INVALID_L
     this%pseudopotential_set = OPTION__PSEUDOPOTENTIALSET__NONE
@@ -509,6 +521,15 @@ contains
     !% The van der Waals radius that will be used for this species.
     !%Option volume -10016
     !% Name of a volume block
+    !%Option hubbard_l -10018
+    !% The angular-momentum for which the effective U will be applied.
+    !%Option hubbard_u -10019
+    !% The effective U that will be used for the LDA+U calculations.
+    !%Option hubbard_j -10020
+    !% The value of j (hubbard_l-1/2 or hubbard_l+1/2) on which the effective U is applied.
+    !%Option hubbard_alpha -10021
+    !% The strength of the potential constraining the occupations of the localized subspace
+    !% as defined in PRB 71, 035105 (2005)
     !%End
 
     call messages_obsolete_variable('SpecieAllElectronSigma', 'Species')
@@ -1133,6 +1154,35 @@ contains
   end function species_niwfs
   ! ---------------------------------------------------------
 
+  ! ---------------------------------------------------------
+  integer pure function species_hubbard_l(spec)
+    type(species_t), intent(in) :: spec
+    species_hubbard_l = spec%hubbard_l
+  end function species_hubbard_l
+  ! ---------------------------------------------------------
+
+
+  ! ---------------------------------------------------------
+  FLOAT pure function species_hubbard_u(spec)
+    type(species_t), intent(in) :: spec
+    species_hubbard_u = spec%hubbard_u
+  end function species_hubbard_u
+  ! ---------------------------------------------------------
+
+  ! ---------------------------------------------------------
+  FLOAT pure function species_hubbard_j(spec)
+    type(species_t), intent(in) :: spec
+    species_hubbard_j = spec%hubbard_j
+  end function species_hubbard_j
+  ! ---------------------------------------------------------
+
+  ! ---------------------------------------------------------
+  FLOAT pure function species_hubbard_alpha(spec)
+    type(species_t), intent(in) :: spec
+    species_hubbard_alpha = spec%hubbard_alpha
+  end function species_hubbard_alpha
+  ! ---------------------------------------------------------
+
 
   ! ---------------------------------------------------------
   pure subroutine species_iwf_ilm(spec, j, is, i, l, m)
@@ -1461,6 +1511,10 @@ contains
     call loct_pointer_copy(this%iwf_m, that%iwf_m)
     call loct_pointer_copy(this%iwf_i, that%iwf_i)
     call loct_pointer_copy(this%iwf_j, that%iwf_j)
+    this%hubbard_l=that%hubbard_l
+    this%hubbard_U=that%hubbard_U
+    this%hubbard_alpha=that%hubbard_alpha
+    this%hubbard_j=that%hubbard_j
     this%user_lmax=that%user_lmax
     this%user_llocal=that%user_llocal
 
@@ -1558,6 +1612,10 @@ contains
     write(iunit, '(a,l1)')    'nlcc   = ', spec%nlcc
     write(iunit, '(a,f15.2)') 'def_rsize = ', spec%def_rsize
     write(iunit, '(a,f15.2)') 'def_h = ', spec%def_h
+    write(iunit, '(a,i3)')    'hubbard_l = ', spec%hubbard_l
+    write(iunit, '(a,f15.2)') 'hubbard_U = ', spec%hubbard_U
+    write(iunit, '(a,f15.2)') 'hubbard_j = ', spec%hubbard_j
+    write(iunit, '(a,f15.2)') 'hubbard_alpha = ', spec%hubbard_alpha
 
     if(species_is_ps(spec)) then
        if(debug%info) call ps_debug(spec%ps, trim(dirname))
@@ -1726,6 +1784,35 @@ contains
 
         if(spec%user_llocal < 0) then
           call messages_input_error('Species', "The 'lloc' parameter in species "//trim(spec%label)//" cannot be negative")
+        end if
+
+      case(OPTION__SPECIES__HUBBARD_L)
+        call check_duplication(OPTION__SPECIES__HUBBARD_L)
+        call parse_block_integer(blk, row, icol + 1, spec%hubbard_l)
+
+        if(spec%type /= SPECIES_PSEUDO .and. spec%type /= SPECIES_PSPIO) then
+          call messages_input_error('Species', &
+            "The 'hubbard_l' parameter in species "//trim(spec%label)//" can only be used with pseudopotential species")
+        end if
+
+        if(spec%hubbard_l < 0) then
+          call messages_input_error('Species', "The 'hubbard_l' parameter in species "//trim(spec%label)//" cannot be negative")
+        end if
+
+     case(OPTION__SPECIES__HUBBARD_U)
+        call check_duplication(OPTION__SPECIES__HUBBARD_U)
+        call parse_block_float(blk, row, icol + 1, spec%hubbard_u, unit = units_inp%energy)
+
+     case(OPTION__SPECIES__HUBBARD_ALPHA)
+        call check_duplication(OPTION__SPECIES__HUBBARD_ALPHA)
+        call parse_block_float(blk, row, icol + 1, spec%hubbard_alpha, unit = units_inp%energy)
+
+     case(OPTION__SPECIES__HUBBARD_J)
+        call check_duplication(OPTION__SPECIES__HUBBARD_J)
+        call parse_block_float(blk, row, icol + 1, spec%hubbard_j)
+
+        if(abs(spec%hubbard_j-spec%hubbard_l) /= M_HALF) then
+          call messages_input_error('Species', "The 'hubbard_j' parameter in species "//trim(spec%label)//" can only be hubbard_l +/- 1/2")
         end if
 
 

@@ -1247,7 +1247,7 @@ contains
       PUSH_SUB(em_resp_output.out_susceptibility)
 
       if(pert_type(em_vars%perturbation) == PERTURBATION_ELECTRIC) then
-        write(dirname1, '(a, a)') EM_RESP_DIR//'freq_0.0000'
+        write(dirname1, '(a)') EM_RESP_DIR//'freq_0.0000'
         call io_mkdir(trim(dirname1))
         iunit = io_open(trim(dirname1)//'/susceptibility', action='write')
       else  

@@ -521,10 +521,14 @@ subroutine X(calc_properties_linear)()
               zpol_kout = em_vars%alpha_be_k(:, :, :, :))
           end if
         end if
-        call X(lr_calc_susceptibility_periodic)(sys, hm, em_vars%nsigma, kdotp_lr(:, 1), b_lr(:, 1),&
-          k2_lr(:, :, 1), kb_lr(:, :, 1), em_vars%chi_dia(:, :))
-        em_vars%chi_para(:, :) = M_ZERO  
-        call X(lr_calc_magnetization_periodic)(sys, hm, kdotp_lr(:, 1), em_vars%magn(:))  
+        if(iomega == 1) then
+          message(1) = "Info: Calculating magnetic susceptibilities."
+          call messages_info(1)
+          call X(lr_calc_susceptibility_periodic)(sys, hm, em_vars%nsigma, kdotp_lr(:, 1), b_lr(:, 1),&
+            k2_lr(:, :, 1), kb_lr(:, :, 1), em_vars%chi_dia(:, :))
+          em_vars%chi_para(:, :) = M_ZERO  
+          call X(lr_calc_magnetization_periodic)(sys, hm, kdotp_lr(:, 1), em_vars%magn(:))
+        end if
       else
         call X(lr_calc_magneto_optics_finite)(sh, sh_mo, sys, hm, em_vars%nsigma, &
           em_vars%nfactor, em_vars%lr(:, :, :), b_lr(:, :), em_vars%alpha_be(:, :, :))

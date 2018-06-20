@@ -37,8 +37,7 @@ ExtraStates = 1
 %
 
 LinearSolver = qmr_dotp
-LRTolFinalTol = 1e-3
-LRConvAbsDens = 1e-3
+LRTolInitTol = 1e-4
 EMEta = 0.01
 KdotPEta = 0.01
 EMPerturbationType = electric

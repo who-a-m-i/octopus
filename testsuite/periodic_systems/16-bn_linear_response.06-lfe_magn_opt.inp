@@ -41,7 +41,7 @@ KPointsUseTimeReversal =yes
 %
 
 LinearSolver = qmr_dotp
-LRTolFinalTol = 1e-4
+LRTolInitTol = 1e-4
 EMEta = 0.01
 KdotPEta = 0.01
 EMPerturbationType = electric

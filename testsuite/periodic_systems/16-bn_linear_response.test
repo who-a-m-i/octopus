@@ -2,7 +2,7 @@
 
 Test       : Magneto-Optics and Magnetic Susceptibility for Solids
 Program    : octopus
-TestGroups : long-run, periodic systems
+TestGroups : short-run, periodic systems
 Enabled    : Yes
 
 Input: 16-bn_linear_response.01-gs.inp
@@ -16,64 +16,66 @@ match ; Inverse eff mass    ; GREPFIELD(kdotp/kpoint_4_1, "State #8",  2,  2) ; 
 
 Input: 16-bn_linear_response.03-susc.inp
 Precision : 0.001
-match ; Susceptibility XX          ; LINEFIELD(em_resp/freq_0.0000/susceptibility, 2, 1) ; 233.988448
-match ; Susceptibility YY          ; LINEFIELD(em_resp/freq_0.0000/susceptibility, 3, 2) ; 261.229929
-match ; Susceptibility ZZ          ; LINEFIELD(em_resp/freq_0.0000/susceptibility, 4, 3) ; 20994.325096
+match ; Susceptibility XX          ; GREPFIELD(em_resp/freq_0.0000/susceptibility, "susceptibility", 1, 1) ; 233.988448
+match ; Susceptibility YY          ; GREPFIELD(em_resp/freq_0.0000/susceptibility, "susceptibility", 2, 2) ; 261.229929
+match ; Susceptibility ZZ          ; GREPFIELD(em_resp/freq_0.0000/susceptibility, "susceptibility", 3, 3) ; 20994.325096
 
 Input: 16-bn_linear_response.04-lfe_susc.inp
 Precision : 0.001
-match ; Susceptibility XX          ; LINEFIELD(em_resp/freq_0.0000/susceptibility, 2, 1) ; 233.988448
-match ; Susceptibility YY          ; LINEFIELD(em_resp/freq_0.0000/susceptibility, 3, 2) ; 261.229929
-match ; Susceptibility ZZ          ; LINEFIELD(em_resp/freq_0.0000/susceptibility, 4, 3) ; 20994.325096
+match ; Susceptibility XX          ; GREPFIELD(em_resp/freq_0.0000/susceptibility, "susceptibility", 1, 1) ; 233.988221
+match ; Susceptibility YY          ; GREPFIELD(em_resp/freq_0.0000/susceptibility, "susceptibility", 2, 2) ; 261.229920
+match ; Susceptibility ZZ          ; GREPFIELD(em_resp/freq_0.0000/susceptibility, "susceptibility", 3, 3) ; 20994.324948
 
 Input: 16-bn_linear_response.05-pol_magn_opt.inp
 Precision : 0.001
-match ; Susceptibility XX          ; LINEFIELD(em_resp/freq_0.0000/susceptibility, 2, 1) ; 233.988462
-match ; Susceptibility YY          ; LINEFIELD(em_resp/freq_0.0000/susceptibility, 3, 2) ; 261.231258
-match ; Susceptibility ZZ          ; LINEFIELD(em_resp/freq_0.0000/susceptibility, 4, 3) ; 20994.324303
+match ; Susceptibility XX          ; GREPFIELD(em_resp/freq_0.0000/susceptibility, "susceptibility", 1, 1) ; 233.988462
+match ; Susceptibility YY          ; GREPFIELD(em_resp/freq_0.0000/susceptibility, "susceptibility", 2, 2) ; 261.229920
+match ; Susceptibility ZZ          ; GREPFIELD(em_resp/freq_0.0000/susceptibility, "susceptibility", 3, 3) ; 20994.324303
 
-match ; Re dielectric constant YY  ; LINEFIELD(em_resp/freq_0.2000/epsilon, 3, 2) ; -1.013171
-match ; Re dielectric constant ZZ  ; LINEFIELD(em_resp/freq_0.2000/epsilon, 4, 3) ; 1.576967
-match ; Im dielectric constant XX  ; LINEFIELD(em_resp/freq_0.2000/epsilon, 8, 1) ; 0.372283
-match ; Im dielectric constant av  ; LINEFIELD(em_resp/freq_0.2000/epsilon, 11, 3) ; 0.484063
+Precision : 0.001
+match ; Re dielectric constant YY  ; GREPFIELD(em_resp/freq_0.2000/epsilon, "Real", 2, 2) ; -1.013191
+match ; Re dielectric constant ZZ  ; GREPFIELD(em_resp/freq_0.2000/epsilon, "Real", 3, 3) ; 1.576969
+match ; Im dielectric constant XX  ; GREPFIELD(em_resp/freq_0.2000/epsilon, "Imaginary", 1, 1) ; 0.372312
+match ; Im dielectric constant av  ; GREPFIELD(em_resp/freq_0.2000/epsilon, "Imaginary", 3, 4) ; 0.484057
 
-match ; Polarizability XX          ; LINEFIELD(em_resp/freq_0.2000/alpha, 2, 1) ; -122.238321
-match ; Polarizability av          ; LINEFIELD(em_resp/freq_0.2000/alpha, 5, 3) ; -98.678932
+match ; Polarizability XX          ; GREPFIELD(em_resp/freq_0.2000/alpha, "Polarizability", 1, 1) ; -122.237367
+match ; Polarizability av          ; GREPFIELD(em_resp/freq_0.2000/alpha, "Polarizability", 3, 4) ; -98.679350
 
-match ; Re epsilon at k-point      ; LINEFIELD(em_resp/freq_0.2000/epsilon_k_re, 3, 14) ; 0.55851875E+00
-match ; Re epsilon at k-point      ; LINEFIELD(em_resp/freq_0.2000/epsilon_k_re, 5, 10) ; -0.53262570E+01
-match ; Im epsilon at k-point      ; LINEFIELD(em_resp/freq_0.2000/epsilon_k_im, 4, 10) ; 0.83029798E+00
-match ; Im epsilon at k-point      ; LINEFIELD(em_resp/freq_0.2000/epsilon_k_im, 6, 6) ; 0.29229845E+00
+match ; Re epsilon at k-point      ; GREPFIELD(em_resp/freq_0.2000/epsilon_k_re, "index", 14, 1) ; 0.55854968E+00
+match ; Re epsilon at k-point      ; GREPFIELD(em_resp/freq_0.2000/epsilon_k_re, "index", 10, 3) ; -0.53261875E+01
+match ; Im epsilon at k-point      ; GREPFIELD(em_resp/freq_0.2000/epsilon_k_im, "index", 10, 2) ; 0.83029258E+00
+match ; Im epsilon at k-point      ; GREPFIELD(em_resp/freq_0.2000/epsilon_k_im, "index", 6, 4) ; 0.29231539E+00
 
 Precision : 0.00001
-match ; Mag.-opt. Re alpha         ; GREPFIELD(em_resp/freq_0.2000/alpha_mo, 'Re alpha', 5) ; 0.30521148E+00
-match ; Mag.-opt. Im alpha         ; GREPFIELD(em_resp/freq_0.2000/alpha_mo, 'Im alpha', 6) ; 0.83050827E+01
-match ; Mag.-opt. Re eps           ; GREPFIELD(em_resp/freq_0.2000/alpha_mo, 'Re epsilon', 7) ; -0.79679781E-02
-match ; Mag.-opt. av Im eps        ; GREPFIELD(em_resp/freq_0.2000/alpha_mo, 'Im epsilon', 10) ; 0.94868399E-02
+match ; Mag.-opt. Re alpha         ; GREPFIELD(em_resp/freq_0.2000/alpha_mo, 'Re alpha', 5) ; 0.30603741E+00
+match ; Mag.-opt. Im alpha         ; GREPFIELD(em_resp/freq_0.2000/alpha_mo, 'Im alpha', 6) ; 0.83059648E+01
+match ; Mag.-opt. Re eps           ; GREPFIELD(em_resp/freq_0.2000/alpha_mo, 'Re epsilon', 7) ; -0.79702989E-02
+match ; Mag.-opt. av Im eps        ; GREPFIELD(em_resp/freq_0.2000/alpha_mo, 'Im epsilon', 10) ; 0.94894607E-02
 
-match ; Mag.-opt. Re eps at kpt    ; LINEFIELD(em_resp/freq_0.2000/epsilon_mo_k, 3, 6) ; 0.25256908E-02
-match ; Mag.-opt. Re eps at kpt    ; LINEFIELD(em_resp/freq_0.2000/epsilon_mo_k, 6, 8) ; 0.56744593E-02
-match ; Mag.-opt. Im eps at kpt    ; LINEFIELD(em_resp/freq_0.2000/epsilon_mo_k, 4, 11) ; 0.31731659E-01
+match ; Mag.-opt. Re eps at kpt    ; GREPFIELD(em_resp/freq_0.2000/epsilon_mo_k, "index", 6, 1) ; 0.25290560E-02
+match ; Mag.-opt. Re eps at kpt    ; GREPFIELD(em_resp/freq_0.2000/epsilon_mo_k, "index", 8, 4) ; 0.56698163E-02
+match ; Mag.-opt. Im eps at kpt    ; GREPFIELD(em_resp/freq_0.2000/epsilon_mo_k, "index", 11, 2) ; 0.31733483E-01
 
 Input: 16-bn_linear_response.06-lfe_magn_opt.inp
 Precision : 0.001
-match ; Susceptibility XX          ; LINEFIELD(em_resp/freq_0.0000/susceptibility, 2, 1) ; 233.988687
-match ; Susceptibility YY          ; LINEFIELD(em_resp/freq_0.0000/susceptibility, 3, 2) ; 261.231297
-match ; Susceptibility ZZ          ; LINEFIELD(em_resp/freq_0.0000/susceptibility, 4, 3) ; 20994.324270
+match ; Susceptibility XX          ; GREPFIELD(em_resp/freq_0.0000/susceptibility, "susceptibility", 1, 1) ; 233.988241
+match ; Susceptibility YY          ; GREPFIELD(em_resp/freq_0.0000/susceptibility, "susceptibility", 2, 2) ; 261.229916
+match ; Susceptibility ZZ          ; GREPFIELD(em_resp/freq_0.0000/susceptibility, "susceptibility", 3, 3) ; 20994.324967
 
-match ; Re dielectric constant XX  ; LINEFIELD(em_resp/freq_0.2000/epsilon, 2, 1) ; -0.034160
-match ; Re dielectric constant ZZ  ; LINEFIELD(em_resp/freq_0.2000/epsilon, 4, 3) ; 1.158435
-match ; Im dielectric constant YY  ; LINEFIELD(em_resp/freq_0.2000/epsilon, 9, 2) ; 0.991176
-match ; Im dielectric constant av  ; LINEFIELD(em_resp/freq_0.2000/epsilon, 11, 3) ; 0.453585
+Precision : 0.001
+match ; Re dielectric constant XX  ; GREPFIELD(em_resp/freq_0.2000/epsilon, "Real", 1, 1) ; -0.034169
+match ; Re dielectric constant ZZ  ; GREPFIELD(em_resp/freq_0.2000/epsilon, "Real", 3, 3) ; 1.158435
+match ; Im dielectric constant YY  ; GREPFIELD(em_resp/freq_0.2000/epsilon, "Imaginary", 2, 2) ; 0.990997
+match ; Im dielectric constant av  ; GREPFIELD(em_resp/freq_0.2000/epsilon, "Imaginary", 3, 4) ; 0.453538
 
-match ; Polarizability YY          ; LINEFIELD(em_resp/freq_0.2000/alpha, 2, 1) ; -125.146168
-match ; Polarizability ZZ          ; LINEFIELD(em_resp/freq_0.2000/alpha, 4, 3) ; 19.172567
-match ; Polarizability av          ; LINEFIELD(em_resp/freq_0.2000/alpha, 5, 3) ; -120.979302
+match ; Polarizability YY          ; GREPFIELD(em_resp/freq_0.2000/alpha, "Polarizability", 1, 1) ; -125.147252
+match ; Polarizability ZZ          ; GREPFIELD(em_resp/freq_0.2000/alpha, "Polarizability", 3, 3) ; 19.172616
+match ; Polarizability av          ; GREPFIELD(em_resp/freq_0.2000/alpha, "Polarizability", 3, 4) ; -120.969062
 
 Precision : 0.00001
-match ; Mag.-opt. Re alpha         ; GREPFIELD(em_resp/freq_0.2000/alpha_mo, 'Re alpha', 4) ; -0.33322222E+00
-match ; Mag.-opt. Im alpha         ; GREPFIELD(em_resp/freq_0.2000/alpha_mo, 'Im alpha', 6) ; 0.98661259E+01
-match ; Mag.-opt. Re eps           ; GREPFIELD(em_resp/freq_0.2000/alpha_mo, 'Re epsilon', 7) ; -0.27531286E-02
-match ; Mag.-opt. av Im eps        ; GREPFIELD(em_resp/freq_0.2000/alpha_mo, 'Im epsilon', 10) ; 0.17125669E-01
+match ; Mag.-opt. Re alpha         ; GREPFIELD(em_resp/freq_0.2000/alpha_mo, 'Re alpha', 4) ; -0.33317828E+00
+match ; Mag.-opt. Im alpha         ; GREPFIELD(em_resp/freq_0.2000/alpha_mo, 'Im alpha', 6) ; 0.98655100E+01
+match ; Mag.-opt. Re eps           ; GREPFIELD(em_resp/freq_0.2000/alpha_mo, 'Re epsilon', 7) ; -0.27532569E-02
+match ; Mag.-opt. av Im eps        ; GREPFIELD(em_resp/freq_0.2000/alpha_mo, 'Im epsilon', 10) ; 0.17125820E-01
 
 

@@ -2286,7 +2286,8 @@ subroutine X(inhomog_EB)(sys, hm, ik, add_hartree, add_fxc, &
   R_TYPE,     optional, intent(inout) :: psi_k1(:,:,:), psi_k2(:,:,:)
   
   R_TYPE :: factor, factor_e, factor_sum
- 
+  integer :: ip, idim, ist
+
   PUSH_SUB(X(inhomog_EB))
   
 #if defined(R_TCOMPLEX)
@@ -2296,7 +2297,13 @@ subroutine X(inhomog_EB)(sys, hm, ik, add_hartree, add_fxc, &
 #endif
   factor_e = -M_ONE
 
-  psi_out(:,:,:) = psi_out(:,:,:) + factor * psi_kb(:,:,:)
+  do ist = 1, sys%st%nst
+    do idim = 1, hm%d%dim
+      do ip = 1, sys%gr%mesh%np
+        psi_out(ip, idim, ist) = psi_out(ip, idim, ist) + factor * psi_kb(ip, idim, ist)
+      end do
+    end do
+  end do
   
   if(add_hartree .or. add_fxc) then
     call X(calc_hvar_lr)(sys, hm, ik, hvar(:), psi_b, factor_e, factor_b, psi_out) 
@@ -2317,7 +2324,7 @@ contains
     R_TYPE,       intent(in)    :: factor_tot
     
     R_TYPE, allocatable :: psi(:,:,:), psi0(:,:)
-    integer :: ip, ist, idim, ist1
+    integer :: ist1
     R_TYPE :: factor0, factor_k
     type(matrix_t):: prod_mat2, prod_mat
     

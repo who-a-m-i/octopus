@@ -38,6 +38,7 @@ ExtraStates = 1
 
 LinearSolver = qmr_dotp
 LRTolInitTol = 1e-4
+LinearSolverMaxIter = 300
 EMEta = 0.01
 KdotPEta = 0.01
 EMPerturbationType = electric
@@ -45,6 +46,9 @@ EMCalcMagnetooptics = true
 EMKPointOutput = true
 
 FilterPotentials = filter_none
+
+ParKPoints = auto
+ParDomains = auto
 
 MixField = density
 

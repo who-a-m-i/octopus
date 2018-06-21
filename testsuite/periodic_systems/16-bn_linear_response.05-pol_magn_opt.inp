@@ -41,6 +41,7 @@ KPointsUseTimeReversal =yes
 %
 
 LinearSolver = qmr_dotp
+LinearSolverMaxIter = 300
 EMEta = 0.01
 KdotPEta = 0.01
 EMPerturbationType = electric

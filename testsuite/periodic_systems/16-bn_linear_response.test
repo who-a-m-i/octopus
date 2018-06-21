@@ -2,7 +2,7 @@
 
 Test       : Magneto-Optics and Magnetic Susceptibility for Solids
 Program    : octopus
-TestGroups : short-run, periodic systems
+TestGroups : long-run, periodic systems
 Enabled    : Yes
 
 Input: 16-bn_linear_response.01-gs.inp

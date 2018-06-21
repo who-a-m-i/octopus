@@ -2,7 +2,7 @@
 
 Test       : Silicon crystal
 Program    : octopus
-TestGroups : long-run, periodic_systems, symmetries
+TestGroups : short-run, periodic_systems, symmetries
 Enabled    : Yes
 
 Input      : 04-silicon.01-gs.inp
@@ -140,18 +140,19 @@ match ; Im epsilon at k-point      ; GREPFIELD(em_resp/freq_0.1000/epsilon_k_im,
 match ; Im epsilon at k-point      ; GREPFIELD(em_resp/freq_0.1000/epsilon_k_im, "index", 6, 4) ; 0.44500354E+02
 match ; Im epsilon at k-point      ; GREPFIELD(em_resp/freq_0.1000/epsilon_k_im, "index", 7, 4) ; -0.21939421E+02
 
-Precision : 0.00001
+Precision : 0.03
 match ; Mag.-opt. Re alpha         ; GREPFIELD(em_resp/freq_0.1000/alpha_mo, 'Re alpha', 4) ; 0.28174637E+02
 match ; Mag.-opt. Re alpha         ; GREPFIELD(em_resp/freq_0.1000/alpha_mo, 'Re alpha', 5) ; 0.28174637E+02
 match ; Mag.-opt. Re alpha         ; GREPFIELD(em_resp/freq_0.1000/alpha_mo, 'Re alpha', 6) ; 0.28174637E+02
 match ; Mag.-opt. Re alpha         ; GREPFIELD(em_resp/freq_0.1000/alpha_mo, 'Re alpha', 7) ; 0.28174637E+02
 
+Precision : 0.0001
 match ; Mag.-opt. Im epsilon       ; GREPFIELD(em_resp/freq_0.1000/alpha_mo, 'Im epsilon', 7) ; 0.44333228E+01
 match ; Mag.-opt. Im epsilon       ; GREPFIELD(em_resp/freq_0.1000/alpha_mo, 'Im epsilon', 8) ; 0.44333228E+01
 match ; Mag.-opt. Im epsilon       ; GREPFIELD(em_resp/freq_0.1000/alpha_mo, 'Im epsilon', 9) ; 0.44333228E+01
 match ; Mag.-opt. Im epsilon       ; GREPFIELD(em_resp/freq_0.1000/alpha_mo, 'Im epsilon', 10) ; 0.44333228E+01
 
-match ; Mag.-opt. Re eps at kpt    ; GREPFIELD(em_resp/freq_0.1000/epsilon_mo_k, "index", 6, 1) ; -0.39187803E+01
+Precision : 0.00001
 match ; Mag.-opt. Re eps at kpt    ; GREPFIELD(em_resp/freq_0.1000/epsilon_mo_k, "index", 8, 4) ; 0.79111277E+01
 match ; Mag.-opt. Im eps at kpt    ; GREPFIELD(em_resp/freq_0.1000/epsilon_mo_k, "index", 11, 2) ; -0.31594101E+00
 match ; Mag.-opt. Im eps at kpt    ; GREPFIELD(em_resp/freq_0.1000/epsilon_mo_k, "index", 10, 2) ; -0.31905611E+00

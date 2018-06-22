@@ -41,11 +41,11 @@ KPointsUseTimeReversal =yes
 %
 
 LinearSolver = qmr_dotp
-
+LinearSolverMaxIter = 300
+LRTolFinalTol = 1e-4
 EMEta = 0.01
 KdotPEta = 0.01
 EMPerturbationType = magnetic
-HamiltonianVariation = V_ext_only
 
 ParKPoints = auto
 ParDomains = auto

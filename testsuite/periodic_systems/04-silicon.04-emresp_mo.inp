@@ -29,7 +29,6 @@ Spacing = Lsize/7
 KPointsUseSymmetries = yes
 SymmetrizeDensity = yes
 
-
 ExtraStates = 1
 
 %EMFreqs 
@@ -47,8 +46,7 @@ EMKPointOutput = true
 
 FilterPotentials = filter_none
 
-ParKPoints = auto
-ParDomains = auto
-
 MixField = density
 
+ParKPoints = auto
+ParDomains = auto

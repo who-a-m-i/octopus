@@ -38,8 +38,12 @@ ExtraStates = 1
 LinearSolver = qmr_dotp
 EMEta = 0.01
 KdotPEta = 0.01
+LRTolFinalTol = 1e-4
 EMPerturbationType = magnetic
 
 FilterPotentials = filter_none
 
 MixField = density
+
+ParKPoints = auto
+ParDomains = auto

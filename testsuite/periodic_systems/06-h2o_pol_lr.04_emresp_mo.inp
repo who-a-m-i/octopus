@@ -22,6 +22,7 @@ PeriodicDimensions = 3
 
 EMEta = 0.01
 KdotPEta = 0.01
+LRTolFinalTol = 1e-4
 EMPerturbationType = electric
 EMCalcMagnetooptics = true
 

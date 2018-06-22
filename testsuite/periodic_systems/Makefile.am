@@ -67,12 +67,11 @@ dist_share_DATA =                                \
 	13-primitive.test                        \
 	13-primitive.01-diamond.inp              \
 	13-primitive.02-graphene.inp             \
-	16-bn_linear_response.01-gs.inp          \
-	16-bn_linear_response.02-kdotp.inp       \
-	16-bn_linear_response.03-susc.inp        \
-	16-bn_linear_response.04-lfe_susc.inp    \
-	16-bn_linear_response.05-pol_magn_opt.inp\
-	16-bn_linear_response.06-lfe_magn_opt.inp\
-	16-bn_linear_response.test
+	14-silicon_doubleshift.01-gs.inp         \
+	14-silicon_doubleshift.02-td.inp         \
+	14-silicon_doubleshift.test              \
+	15-bandstructure.01-gs.inp               \
+	15-bandstructure.02-unocc.inp            \
+	15-bandstructure.test                    
 
 CLEANFILES = *~ *.bak

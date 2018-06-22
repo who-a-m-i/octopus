@@ -2420,7 +2420,11 @@ contains
           Nex_kpt(ikpt) = Nex_kpt(ikpt) - weight * st%occ(uist, ik) * abs(projections(ist, uist))**2
         end do
       end do
-      Nex_kpt(ikpt) = Nex_kpt(ikpt) + st%qtot*st%d%kweights(ik)
+     if(st%d%ispin == SPIN_POLARIZED) then
+       Nex_kpt(ikpt) = Nex_kpt(ikpt) + st%qtot*M_HALF*st%d%kweights(ik)
+     else
+       Nex_kpt(ikpt) = Nex_kpt(ikpt) + st%qtot*st%d%kweights(ik)
+     end if
     end do
 
 #if defined(HAVE_MPI)        
@@ -2727,7 +2731,7 @@ contains
     ! perform time-integral over one cycle
     do it=1,nT
       ! get non-interacting Hamiltonian at time (offset by one cycle to allow for ramp)
-      call hamiltonian_update(hm,gr%mesh,time=Tcycle+it*dt)
+      call hamiltonian_update(hm,gr%mesh,gr%der%boundaries,time=Tcycle+it*dt)
       ! get hpsi
       call zhamiltonian_apply_all(hm, ks%xc, gr%der, st, hm_st)
 
@@ -2875,7 +2879,7 @@ contains
      end if
   
     ! reset time in Hamiltonian
-    call hamiltonian_update(hm,gr%mesh,time=M_ZERO)
+    call hamiltonian_update(hm,gr%mesh,gr%der%boundaries,time=M_ZERO)
 
     SAFE_DEALLOCATE_A(hmss)
     SAFE_DEALLOCATE_A(psi)

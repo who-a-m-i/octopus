@@ -72,6 +72,11 @@ dist_share_DATA =                                \
 	14-silicon_doubleshift.test              \
 	15-bandstructure.01-gs.inp               \
 	15-bandstructure.02-unocc.inp            \
-	15-bandstructure.test                    
+	15-bandstructure.test                    \
+	16-sodium_chain_cylinder.01-ground_state.inp      \
+	16-sodium_chain_cylinder.02-unocc.inp             \
+	16-sodium_chain_cylinder.03-ground_state_disp.inp \
+	16-sodium_chain_cylinder.04-unocc_disp.inp        \
+	16-sodium_chain_cylinder.test
 
 CLEANFILES = *~ *.bak

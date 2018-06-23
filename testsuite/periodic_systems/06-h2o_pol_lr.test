@@ -44,7 +44,7 @@ match ; Born charge O ZZ w=0.1    ; LINEFIELD(em_resp/freq_0.1000/Born_charges, 
 match ; Born charge diff w=0.1    ; GREPFIELD(em_resp/freq_0.1000/Born_charges, "Discrepancy",  3,  5) ; -0.019057
 
 Input: 06-h2o_pol_lr.04_emresp_mo.inp
-Precision : 0.001
+Precision : 0.01
 match; Susceptibility XX           ; LINEFIELD(em_resp/freq_0.0000/susceptibility, 2, 1) ; -157.494499
 match; Susceptibility YY           ; LINEFIELD(em_resp/freq_0.0000/susceptibility, 3, 2) ; -160.074578
 match; Susceptibility ZZ           ; LINEFIELD(em_resp/freq_0.0000/susceptibility, 4, 3) ; -157.801990
@@ -63,7 +63,7 @@ match ; Mag.-opt. Re eps w=0.1     ; GREPFIELD(em_resp/freq_0.1000/alpha_mo, 'Re
 match ; Mag.-opt. Im eps w=0.1     ; GREPFIELD(em_resp/freq_0.1000/alpha_mo, 'Im epsilon', 9) ;  0.25869059E-04
 
 Input: 06-h2o_pol_lr.05_emresp_susc.inp
-Precision : 0.001
+Precision : 0.01
 match; Susceptibility XX           ; LINEFIELD(em_resp/freq_0.0000/susceptibility, 2, 1) ; -157.494499
 match; Susceptibility YY           ; LINEFIELD(em_resp/freq_0.0000/susceptibility, 3, 2) ; -160.074578
 match; Susceptibility ZZ           ; LINEFIELD(em_resp/freq_0.0000/susceptibility, 4, 3) ; -157.801990

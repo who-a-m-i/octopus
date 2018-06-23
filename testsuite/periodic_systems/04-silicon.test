@@ -140,7 +140,7 @@ match ; Im epsilon at k-point      ; GREPFIELD(em_resp/freq_0.1000/epsilon_k_im,
 match ; Im epsilon at k-point      ; GREPFIELD(em_resp/freq_0.1000/epsilon_k_im, "index", 6, 4) ; 0.44500354E+02
 match ; Im epsilon at k-point      ; GREPFIELD(em_resp/freq_0.1000/epsilon_k_im, "index", 7, 4) ; -0.21939421E+02
 
-Precision : 0.3
+Precision : 0.5
 match ; Mag.-opt. Re alpha         ; GREPFIELD(em_resp/freq_0.1000/alpha_mo, 'Re alpha', 4) ; 0.26777835E+02
 match ; Mag.-opt. Re alpha         ; GREPFIELD(em_resp/freq_0.1000/alpha_mo, 'Re alpha', 5) ; 0.26777835E+02
 match ; Mag.-opt. Re alpha         ; GREPFIELD(em_resp/freq_0.1000/alpha_mo, 'Re alpha', 6) ; 0.26777835E+02

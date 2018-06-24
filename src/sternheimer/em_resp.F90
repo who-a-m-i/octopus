@@ -362,7 +362,7 @@ contains
       .or. sys%st%d%nik == 1) em_vars%kpt_output = .false.
 
     if(em_vars%kpt_output) then
-      SAFE_ALLOCATE(em_vars%alpha_k(1:gr%sb%dim, 1:gr%sb%dim, 1:em_vars%nfactor, 1:sys%st%d%nik))
+      SAFE_ALLOCATE(em_vars%alpha_k(1:MAX_DIM, 1:MAX_DIM, 1:em_vars%nfactor, 1:sys%st%d%nik))
     end if
 
     if(em_vars%calc_magnetooptics) then
@@ -382,7 +382,7 @@ contains
       
       if(use_kdotp) then
         if(em_vars%kpt_output) then 
-          SAFE_ALLOCATE(em_vars%alpha_be_k(1:gr%sb%dim, 1:gr%sb%dim, 1:gr%sb%dim, 1:sys%st%d%nik))
+          SAFE_ALLOCATE(em_vars%alpha_be_k(1:MAX_DIM, 1:MAX_DIM, 1:MAX_DIM, 1:sys%st%d%nik))
         end if
         nfactor_ke = 1
         if(gr%sb%kpoints%use_time_reversal .and. gr%sb%kpoints%full%npoints > 1) nfactor_ke = em_vars%nfactor

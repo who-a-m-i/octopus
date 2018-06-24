@@ -292,6 +292,7 @@ subroutine X(calc_polarizability_periodic)(sys, em_lr, kdotp_lr, nsigma, zpol, n
 #ifdef HAVE_MPI
   if(kpt_output) then
     SAFE_ALLOCATE(zpol_k_temp(1:MAX_DIM, 1:MAX_DIM, 1:sys%st%d%nik))
+    zpol_k(:, :, :) = M_ZERO
   end if
 #endif
 
@@ -339,14 +340,24 @@ subroutine X(calc_polarizability_periodic)(sys, em_lr, kdotp_lr, nsigma, zpol, n
     if(sys%st%parallel_in_states) then
       call MPI_Allreduce(zpol_k, zpol_k_temp, MAX_DIM**2*sys%st%d%nik, MPI_CMPLX, MPI_SUM, &
         sys%st%mpi_grp%comm, mpi_err)
-      zpol_k(1:mesh%sb%periodic_dim, 1:mesh%sb%dim, 1:sys%st%d%nik) = &
-        zpol_k_temp(1:mesh%sb%periodic_dim, 1:mesh%sb%dim, 1:sys%st%d%nik)
+      do dir1 = 1, ndir_
+        do dir2 = 1, sys%gr%sb%dim
+          do ik = sys%st%d%kpt%start, sys%st%d%nik 
+            zpol_k(dir1, dir2, ik) = zpol_k_temp(dir1, dir2, ik)
+          end do
+        end do
+      end do
     end if
     if(sys%st%d%kpt%parallel) then
       call MPI_Allreduce(zpol_k, zpol_k_temp, MAX_DIM**2*sys%st%d%nik, MPI_CMPLX, MPI_SUM, &
         sys%st%d%kpt%mpi_grp%comm, mpi_err)
-      zpol_k(1:mesh%sb%periodic_dim, 1:mesh%sb%dim, 1:sys%st%d%nik) = &
-        zpol_k_temp(1:mesh%sb%periodic_dim, 1:mesh%sb%dim, 1:sys%st%d%nik)
+      do dir1 = 1, ndir_
+        do dir2 = 1, sys%gr%sb%dim
+          do ik = sys%st%d%kpt%start, sys%st%d%nik 
+            zpol_k(dir1, dir2, ik) = zpol_k_temp(dir1, dir2, ik)
+          end do
+        end do
+      end do
     end if
     SAFE_DEALLOCATE_A(zpol_k_temp)
   end if

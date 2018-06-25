@@ -275,7 +275,6 @@ subroutine X(calc_polarizability_periodic)(sys, em_lr, kdotp_lr, nsigma, zpol, n
   logical :: kpt_output
 #ifdef HAVE_MPI
   CMPLX :: zpol_temp(1:MAX_DIM, 1:MAX_DIM)
-  CMPLX, allocatable :: zpol_k_temp(:, :, :)
 #endif
 
   PUSH_SUB(X(calc_polarizability_periodic))
@@ -288,13 +287,6 @@ subroutine X(calc_polarizability_periodic)(sys, em_lr, kdotp_lr, nsigma, zpol, n
   kpt_output = present(zpol_k)
 
   if(kpt_output) zpol_k(:, :, :) = M_ZERO
-
-#ifdef HAVE_MPI
-  if(kpt_output) then
-    SAFE_ALLOCATE(zpol_k_temp(1:MAX_DIM, 1:MAX_DIM, 1:sys%st%d%nik))
-    zpol_k(:, :, :) = M_ZERO
-  end if
-#endif
 
   do dir1 = 1, ndir_
     do dir2 = 1, sys%gr%sb%dim
@@ -338,28 +330,29 @@ subroutine X(calc_polarizability_periodic)(sys, em_lr, kdotp_lr, nsigma, zpol, n
   end if
   if(kpt_output) then
     if(sys%st%parallel_in_states) then
-      call MPI_Allreduce(zpol_k, zpol_k_temp, MAX_DIM**2*sys%st%d%nik, MPI_CMPLX, MPI_SUM, &
-        sys%st%mpi_grp%comm, mpi_err)
-      do dir1 = 1, ndir_
-        do dir2 = 1, sys%gr%sb%dim
-          do ik = sys%st%d%kpt%start, sys%st%d%nik 
-            zpol_k(dir1, dir2, ik) = zpol_k_temp(dir1, dir2, ik)
+      do ik = 1, sys%st%d%nik
+        zpol_temp(:, :) = M_ZERO
+        call MPI_Allreduce(zpol_k(1:MAX_DIM, 1:MAX_DIM, ik), zpol_temp, MAX_DIM**2, MPI_CMPLX, MPI_SUM, &
+          sys%st%mpi_grp%comm, mpi_err)
+        do dir1 = 1, ndir_
+          do dir2 = 1, sys%gr%sb%dim
+            zpol_k(dir1, dir2, ik) = zpol_temp(dir1, dir2)
           end do
         end do
       end do
     end if
     if(sys%st%d%kpt%parallel) then
-      call MPI_Allreduce(zpol_k, zpol_k_temp, MAX_DIM**2*sys%st%d%nik, MPI_CMPLX, MPI_SUM, &
-        sys%st%d%kpt%mpi_grp%comm, mpi_err)
-      do dir1 = 1, ndir_
-        do dir2 = 1, sys%gr%sb%dim
-          do ik = sys%st%d%kpt%start, sys%st%d%nik 
-            zpol_k(dir1, dir2, ik) = zpol_k_temp(dir1, dir2, ik)
+      do ik = 1, sys%st%d%nik
+        zpol_temp(:, :) = M_ZERO
+        call MPI_Allreduce(zpol_k(1:MAX_DIM, 1:MAX_DIM, ik), zpol_temp, MAX_DIM**2, MPI_CMPLX, MPI_SUM, &
+          sys%st%d%kpt%mpi_grp%comm, mpi_err)
+        do dir1 = 1, ndir_
+          do dir2 = 1, sys%gr%sb%dim
+            zpol_k(dir1, dir2, ik) = zpol_temp(dir1, dir2)
           end do
         end do
       end do
     end if
-    SAFE_DEALLOCATE_A(zpol_k_temp)
   end if
 #endif
 
@@ -1202,7 +1195,6 @@ subroutine X(lr_calc_magneto_optics_periodic)(sh, sh2, sys, hm, nsigma, nfactor,
 
 #ifdef HAVE_MPI
   CMPLX :: zpol_temp(1:MAX_DIM,1:MAX_DIM,1:MAX_DIM)
-  CMPLX, allocatable :: zpol_kout_temp(:, :, :, :)
 #endif
 
 #if defined(R_TCOMPLEX)
@@ -1243,12 +1235,6 @@ subroutine X(lr_calc_magneto_optics_periodic)(sh, sh2, sys, hm, nsigma, nfactor,
   SAFE_ALLOCATE(hvar2(1:np, 1:sys%st%d%nspin, 1:1, 1:ndir))
 
   kpt_output = present(zpol_kout)
-#ifdef HAVE_MPI
-  if(kpt_output) then
-    SAFE_ALLOCATE(zpol_kout_temp(1:MAX_DIM, 1:MAX_DIM, 1:MAX_DIM, 1:sys%st%d%nik))    
-  end if
-#endif
-
   do idir1 = 1, ndir
     do isigma = 1, nsigma
       SAFE_ALLOCATE(mat_g(idir1, isigma)%X(matrix)(1:sys%st%nst, 1:sys%st%nst))
@@ -1505,18 +1491,33 @@ subroutine X(lr_calc_magneto_optics_periodic)(sh, sh2, sys, hm, nsigma, nfactor,
   endif
   if(kpt_output) then
     if(sys%st%parallel_in_states) then
-      call MPI_Allreduce(zpol_kout, zpol_kout_temp, MAX_DIM**3*sys%st%d%nik, MPI_CMPLX, MPI_SUM, &
-        sys%st%mpi_grp%comm, mpi_err)
-      zpol_kout(1:ndir, 1:ndir, 1:ndir, 1:sys%st%d%nik) = &
-        zpol_kout_temp(1:ndir, 1:ndir, 1:ndir, 1:sys%st%d%nik)
+      do ik = 1, sys%st%d%nik
+        zpol_temp(:, :, :) = M_ZERO
+        call MPI_Allreduce(zpol_kout(1:MAX_DIM, 1:MAX_DIM, 1:MAX_DIM, ik), zpol_temp, MAX_DIM**3, &
+          MPI_CMPLX, MPI_SUM, sys%st%mpi_grp%comm, mpi_err)
+        do idir1 = 1, ndir
+          do idir2 = 1, ndir
+            do idir3 = 1, ndir
+              zpol_kout(idir1, idir2, idir3, ik) = zpol_temp(idir1, idir2, idir3)
+            end do
+          end do
+        end do
+      end do
     endif
     if(sys%st%d%kpt%parallel) then
-      call MPI_Allreduce(zpol_kout, zpol_kout_temp, MAX_DIM**3*sys%st%d%nik, MPI_CMPLX, MPI_SUM, &
-        sys%st%d%kpt%mpi_grp%comm, mpi_err)
-      zpol_kout(1:ndir, 1:ndir, 1:ndir, 1:sys%st%d%nik) = &
-        zpol_kout_temp(1:ndir, 1:ndir, 1:ndir, 1:sys%st%d%nik)
+      do ik = 1, sys%st%d%nik
+        zpol_temp(:, :, :) = M_ZERO
+        call MPI_Allreduce(zpol_kout(1:MAX_DIM, 1:MAX_DIM, 1:MAX_DIM, ik), zpol_temp, MAX_DIM**3, &
+          MPI_CMPLX, MPI_SUM, sys%st%d%kpt%mpi_grp%comm, mpi_err)
+        do idir1 = 1, ndir
+          do idir2 = 1, ndir
+            do idir3 = 1, ndir
+              zpol_kout(idir1, idir2, idir3, ik) = zpol_temp(idir1, idir2, idir3)
+            end do
+          end do
+        end do
+      end do
     end if
-    SAFE_DEALLOCATE_A(zpol_kout_temp)
   end if
 #endif
 

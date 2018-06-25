@@ -153,9 +153,9 @@ match ; Mag.-opt. Im epsilon       ; GREPFIELD(em_resp/freq_0.1000/alpha_mo, 'Im
 match ; Mag.-opt. Im epsilon       ; GREPFIELD(em_resp/freq_0.1000/alpha_mo, 'Im epsilon', 10) ; 0.44408627E+01
 
 Precision : 0.001
-match ; Mag.-opt. Re eps at kpt    ; GREPFIELD(em_resp/freq_0.1000/epsilon_mo_k, "  4  ", 8) ; 0.79130645E+01
-match ; Mag.-opt. Im eps at kpt    ; GREPFIELD(em_resp/freq_0.1000/epsilon_mo_k, "  2  ", 11) ; -0.31597025E+00
-match ; Mag.-opt. Im eps at kpt    ; GREPFIELD(em_resp/freq_0.1000/epsilon_mo_k, "  2  ", 10) ; -0.31903447E+00
+match ; Mag.-opt. Re eps at kpt    ; GREPFIELD(em_resp/freq_0.1000/epsilon_mo_k, "  4   ", 8) ; 0.79130645E+01
+match ; Mag.-opt. Im eps at kpt    ; GREPFIELD(em_resp/freq_0.1000/epsilon_mo_k, "  2   ", 11) ; -0.31597025E+00
+match ; Mag.-opt. Im eps at kpt    ; GREPFIELD(em_resp/freq_0.1000/epsilon_mo_k, "  2   ", 10) ; -0.31903447E+00
 
 Input: 04-silicon.05-emresp_magn.inp
 

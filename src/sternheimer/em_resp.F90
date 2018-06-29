@@ -127,7 +127,7 @@ contains
     type(lr_t), allocatable :: ke_lr(:, :, :, :)
     type(pert_t)            :: pert_kdotp, pert2_none, pert_b
 
-    integer :: sigma, sigma_alt, ndim, idir, idir2, ierr, iomega, ifactor, nsigma_eff, ipert
+    integer :: sigma, sigma_alt, ndim, idir, idir1, idir2, ierr, iomega, ifactor, nsigma_eff, ipert
     integer :: ierr_e(3), ierr_e2(3), nfactor_ke
     character(len=100) :: dirname_output, str_tmp
     logical :: complex_response, have_to_calculate, use_kdotp, opp_freq, &
@@ -135,7 +135,7 @@ contains
 
     FLOAT :: closest_omega, last_omega, frequency
     FLOAT, allocatable :: dl_eig(:,:,:)
-    CMPLX :: frequency_eta, frequency_zero
+    CMPLX :: frequency_eta, frequency_zero, lrc_coef(MAX_DIM, MAX_DIM)
     type(restart_t) :: gs_restart, restart_load, restart_dump, kdotp_restart
     integer, parameter :: PB = 1, PK2 = 2, PKB = 3, PKE = 4, PE = 5
 
@@ -153,6 +153,11 @@ contains
     if(pert_type(em_vars%perturbation) == PERTURBATION_MAGNETIC .and. &
       any(abs(em_vars%omega(1:em_vars%nomega)) > M_EPSILON)) then
       call messages_not_implemented('Dynamical magnetic response')
+    end if
+
+    if(abs(sys%ks%xc%kernel_lrc_alpha) > M_EPSILON .and. gr%sb%periodic_dim < gr%sb%dim) then
+      message(1) = 'The use of the LRC kernel for non-periodic dimensions makes no sense.'
+      call messages_warning(1)
     end if
 
     complex_wfs = states_are_complex(sys%st)
@@ -280,7 +285,7 @@ contains
     if(pert_type(em_vars%perturbation) == PERTURBATION_MAGNETIC) then
       em_vars%nsigma = 1
       if(use_kdotp) call messages_experimental("Magnetic perturbation for periodic systems")
-    end if
+    end if  
 
     if(em_vars%calc_magnetooptics .or. &
       (pert_type(em_vars%perturbation) == PERTURBATION_MAGNETIC)) then
@@ -306,11 +311,11 @@ contains
 
         if(gr%sb%periodic_dim < gr%sb%dim) then
           if(pert_type(em_vars%perturbation) == PERTURBATION_MAGNETIC) then
-            message(2) = "All directions should be periodic for magnetic perturbations with kdotp."
+            message(1) = "All directions should be periodic for magnetic perturbations with kdotp."
           else
-            message(2) = "All directions should be periodic for magnetooptics with kdotp."
+            message(1) = "All directions should be periodic for magnetooptics with kdotp."
           end if
-          call messages_fatal(2)
+          call messages_fatal(1)
         end if
         if(.not. complex_response) then
           do idir = 1,gr%sb%dim
@@ -342,11 +347,17 @@ contains
       ! otherwise, use default, which is hartree + fxc
     end if
 
+    if(abs(sys%ks%xc%kernel_lrc_alpha) > M_EPSILON .and. (.not. sternheimer_add_hartree(sh)) &
+      .and. (.not. sternheimer_add_fxc(sh))) then
+      message(1) = "Only the G = G'= 0 term of the LRC kernel is taken into account."
+      call messages_warning(1)
+    end if   
+        
+
     if(mpi_grp_is_root(mpi_world)) then
       call info()
       call io_mkdir(EM_RESP_DIR) ! output
     end if
-
 
     allocate_rho_em = sternheimer_add_fxc(sh) .or. sternheimer_add_hartree(sh)
     do ifactor = 1, em_vars%nfactor

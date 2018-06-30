@@ -241,7 +241,8 @@ contains
       !% <i>et al.</i>, <i>Phys. Rev. B</i> 70, 245119 (2004)). The rest of the terms are included by  
       !% multiplying the Hartree term by <math>1 - \alpha / 4 \pi</math>. The use of non-zero 
       !% <math>\alpha</math> in combination with <tt>HamiltonianVariation</tt> = <tt>V_ext_only</tt>  
-      !% corresponds to account of only the <math>\Gamma = \Gamma' = 0</math> term. (Experimental)
+      !% corresponds to account of only the <math>\Gamma = \Gamma' = 0</math> term. 
+      !% Applicable only to isotropic systems. (Experimental)
       !%End
 
       call parse_variable('XCKernelLRCAlpha', M_ZERO, xcs%kernel_lrc_alpha)

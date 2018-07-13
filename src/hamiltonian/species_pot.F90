@@ -705,15 +705,23 @@ contains
     type(ps_t), pointer :: ps
     CMPLX :: zpot
 
+    type(periodic_copy_t) :: pp
+    integer :: icell
+    FLOAT :: pos(MAX_DIM), rmax
+
     type(profile_t), save :: prof
 
     PUSH_SUB(species_get_local)
 
     call profiling_in(prof, "SPECIES_GET_LOCAL")
 
+    vl(:) = M_ZERO
+    if(present(Imvl)) Imvl(:) = M_ZERO
+
       select case(species_type(species))
 
       case(SPECIES_SOFT_COULOMB)
+        ASSERT(.not.simul_box_is_periodic(mesh%sb))
 
         do ip = 1, mesh%np
           xx(1:mesh%sb%dim) = mesh%x(ip,1:mesh%sb%dim) - x_atom(1:mesh%sb%dim)
@@ -722,6 +730,7 @@ contains
         end do
 
       case(SPECIES_USDEF)
+        ASSERT(.not.simul_box_is_periodic(mesh%sb))
 
         do ip = 1, mesh%np
           
@@ -752,6 +761,7 @@ contains
         end if
 
       case(SPECIES_JELLIUM)
+        ASSERT(.not.simul_box_is_periodic(mesh%sb))
         a1 = species_z(species)/(M_TWO*species_jradius(species)**3)
         a2 = species_z(species)/species_jradius(species)
         Rb2= species_jradius(species)**2
@@ -770,6 +780,8 @@ contains
         end do
       
       case(SPECIES_JELLIUM_SLAB)
+        ASSERT(.not.simul_box_is_periodic(mesh%sb))
+
         a1 = M_TWO *M_PI * species_z(species)/ (M_FOUR *mesh%sb%lsize(1) *mesh%sb%lsize(2) )
 
         do ip = 1, mesh%np
@@ -788,14 +800,21 @@ contains
        
         ps => species_ps(species)
 
-        do ip = 1, mesh%np
-          r2 = sum((mesh%x(ip, 1:mesh%sb%dim) - x_atom(1:mesh%sb%dim))**2)
-          if(r2 < spline_range_max(ps%vlr_sq)) then
-            vl(ip) = spline_eval(ps%vlr_sq, r2)
-          else
-            vl(ip) = P_PROTON_CHARGE*species_zval(species)/sqrt(r2)
-          end if
+        rmax = spline_cutoff_radius(ps%vlr_sq, ps%projectors_sphere_threshold)
+
+        call periodic_copy_init(pp, mesh%sb, x_atom, rmax)
+
+        do icell = 1, periodic_copy_num(pp)
+          pos(1:mesh%sb%dim) = periodic_copy_position(pp, mesh%sb, icell)
+          do ip = 1, mesh%np
+            call mesh_r(mesh, ip, r2, origin = pos)
+            r2 = max(r2, r_small)
+            if(r2 >= spline_range_max(ps%vlr_sq)) cycle
+            vl(ip) = vl(ip) + spline_eval(ps%vlr_sq, r2)
+          end do
         end do
+
+        call periodic_copy_end(pp)
 
         nullify(ps)
         

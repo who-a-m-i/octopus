@@ -718,112 +718,112 @@ contains
     vl(:) = M_ZERO
     if(present(Imvl)) Imvl(:) = M_ZERO
 
-      select case(species_type(species))
+    select case(species_type(species))
 
-      case(SPECIES_SOFT_COULOMB)
-        ASSERT(.not.simul_box_is_periodic(mesh%sb))
+    case(SPECIES_SOFT_COULOMB)
+      ASSERT(.not.simul_box_is_periodic(mesh%sb))
 
-        do ip = 1, mesh%np
-          xx(1:mesh%sb%dim) = mesh%x(ip,1:mesh%sb%dim) - x_atom(1:mesh%sb%dim)
-          r2 = sum(xx(1:mesh%sb%dim)**2)
-          vl(ip) = -species_zval(species)/sqrt(r2+species_sc_alpha(species))
-        end do
+      do ip = 1, mesh%np
+        xx(1:mesh%sb%dim) = mesh%x(ip,1:mesh%sb%dim) - x_atom(1:mesh%sb%dim)
+        r2 = sum(xx(1:mesh%sb%dim)**2)
+        vl(ip) = -species_zval(species)/sqrt(r2+species_sc_alpha(species))
+      end do
 
-      case(SPECIES_USDEF)
-        ASSERT(.not.simul_box_is_periodic(mesh%sb))
+    case(SPECIES_USDEF)
+      ASSERT(.not.simul_box_is_periodic(mesh%sb))
 
-        do ip = 1, mesh%np
+      do ip = 1, mesh%np
           
-          xx = M_ZERO
-          xx(1:mesh%sb%dim) = mesh%x(ip,1:mesh%sb%dim) - x_atom(1:mesh%sb%dim)
-          r = sqrt(sum(xx(1:mesh%sb%dim)**2))
+        xx = M_ZERO
+        xx(1:mesh%sb%dim) = mesh%x(ip,1:mesh%sb%dim) - x_atom(1:mesh%sb%dim)
+        r = sqrt(sum(xx(1:mesh%sb%dim)**2))
           
-          ! Note that as the spec%user_def is in input units, we have to convert
-          ! the units back and forth
-          forall(idim = 1:mesh%sb%dim) xx(idim) = units_from_atomic(units_inp%length, xx(idim))
-          r = units_from_atomic(units_inp%length, r)
-          zpot = species_userdef_pot(species, mesh%sb%dim, xx, r)
-          vl(ip)   = units_to_atomic(units_inp%energy, real(zpot))
-          if(present(Imvl)) then!cmplxscl
-            Imvl(ip) = units_to_atomic(units_inp%energy, aimag(zpot))            
-          end if
-
-        end do
-
-
-      case(SPECIES_FROM_FILE)
-
-        call dio_function_input(trim(species_filename(species)), mesh, vl, err)
-        if(err /= 0) then
-          write(message(1), '(a)')    'Error loading file '//trim(species_filename(species))//'.'
-          write(message(2), '(a,i4)') 'Error code returned = ', err
-          call messages_fatal(2)
+        ! Note that as the spec%user_def is in input units, we have to convert
+        ! the units back and forth
+        forall(idim = 1:mesh%sb%dim) xx(idim) = units_from_atomic(units_inp%length, xx(idim))
+        r = units_from_atomic(units_inp%length, r)
+        zpot = species_userdef_pot(species, mesh%sb%dim, xx, r)
+        vl(ip)   = units_to_atomic(units_inp%energy, real(zpot))
+        if(present(Imvl)) then!cmplxscl
+          Imvl(ip) = units_to_atomic(units_inp%energy, aimag(zpot))            
         end if
 
-      case(SPECIES_JELLIUM)
-        ASSERT(.not.simul_box_is_periodic(mesh%sb))
-        a1 = species_z(species)/(M_TWO*species_jradius(species)**3)
-        a2 = species_z(species)/species_jradius(species)
-        Rb2= species_jradius(species)**2
-        
-        do ip = 1, mesh%np
-          
-          xx(1:mesh%sb%dim) = mesh%x(ip, 1:mesh%sb%dim) - x_atom(1:mesh%sb%dim)
-          r = sqrt(sum(xx(1:mesh%sb%dim)**2))
-          
-          if(r <= species_jradius(species)) then
-            vl(ip) = (a1*(r*r - Rb2) - a2)
-          else
-            vl(ip) = -species_z(species)/r
-          end if
-          
-        end do
+      end do
+
+
+    case(SPECIES_FROM_FILE)
+
+      call dio_function_input(trim(species_filename(species)), mesh, vl, err)
+      if(err /= 0) then
+        write(message(1), '(a)')    'Error loading file '//trim(species_filename(species))//'.'
+        write(message(2), '(a,i4)') 'Error code returned = ', err
+        call messages_fatal(2)
+      end if
+
+    case(SPECIES_JELLIUM)
+      ASSERT(.not.simul_box_is_periodic(mesh%sb))
+      a1 = species_z(species)/(M_TWO*species_jradius(species)**3)
+      a2 = species_z(species)/species_jradius(species)
+      Rb2= species_jradius(species)**2
       
-      case(SPECIES_JELLIUM_SLAB)
-        ASSERT(.not.simul_box_is_periodic(mesh%sb))
+      do ip = 1, mesh%np
+          
+        xx(1:mesh%sb%dim) = mesh%x(ip, 1:mesh%sb%dim) - x_atom(1:mesh%sb%dim)
+        r = sqrt(sum(xx(1:mesh%sb%dim)**2))
+         
+        if(r <= species_jradius(species)) then
+          vl(ip) = (a1*(r*r - Rb2) - a2)
+        else
+          vl(ip) = -species_z(species)/r
+        end if
+          
+      end do
+      
+    case(SPECIES_JELLIUM_SLAB)
+      ASSERT(.not.simul_box_is_periodic(mesh%sb))
 
-        a1 = M_TWO *M_PI * species_z(species)/ (M_FOUR *mesh%sb%lsize(1) *mesh%sb%lsize(2) )
+      a1 = M_TWO *M_PI * species_z(species)/ (M_FOUR *mesh%sb%lsize(1) *mesh%sb%lsize(2) )
 
-        do ip = 1, mesh%np
+      do ip = 1, mesh%np
 
-          r = abs( mesh%x(ip, 3 ) )
+        r = abs( mesh%x(ip, 3 ) )
 
-          if(r <= species_jthick(species)/M_TWO ) then
-            vl(ip) = a1 *( r*r/species_jthick(species) + species_jthick(species)/M_FOUR )
-          else
-            vl(ip) = a1 *r
-          end if
+        if(r <= species_jthick(species)/M_TWO ) then
+          vl(ip) = a1 *( r*r/species_jthick(species) + species_jthick(species)/M_FOUR )
+        else
+          vl(ip) = a1 *r
+        end if
 
-        end do
+      end do
 
-      case(SPECIES_PSEUDO, SPECIES_PSPIO)
+    case(SPECIES_PSEUDO, SPECIES_PSPIO)
        
-        ps => species_ps(species)
+      ps => species_ps(species)
 
-        rmax = spline_cutoff_radius(ps%vlr_sq, ps%projectors_sphere_threshold)
+      rmax = spline_cutoff_radius(ps%vlr_sq, ps%projectors_sphere_threshold)
 
-        call periodic_copy_init(pp, mesh%sb, x_atom, rmax)
+      call periodic_copy_init(pp, mesh%sb, x_atom, rmax)
 
-        do icell = 1, periodic_copy_num(pp)
-          pos(1:mesh%sb%dim) = periodic_copy_position(pp, mesh%sb, icell)
-          do ip = 1, mesh%np
-            call mesh_r(mesh, ip, r2, origin = pos)
-            r2 = max(r2, r_small)
-            if(r2 >= spline_range_max(ps%vlr_sq)) cycle
-            vl(ip) = vl(ip) + spline_eval(ps%vlr_sq, r2)
-          end do
+      do icell = 1, periodic_copy_num(pp)
+        pos(1:mesh%sb%dim) = periodic_copy_position(pp, mesh%sb, icell)
+        do ip = 1, mesh%np
+          call mesh_r(mesh, ip, r2, origin = pos)
+          r2 = max(r2, r_small)
+          if(r2 >= spline_range_max(ps%vlr_sq)) cycle
+          vl(ip) = vl(ip) + spline_eval(ps%vlr_sq, r2)
         end do
+      end do
 
-        call periodic_copy_end(pp)
+      call periodic_copy_end(pp)
 
-        nullify(ps)
+      nullify(ps)
         
-      case(SPECIES_FULL_DELTA, SPECIES_FULL_GAUSSIAN, SPECIES_CHARGE_DENSITY, SPECIES_JELLIUM_CHARGE_DENSITY)
-        vl(1:mesh%np) = M_ZERO
-        
-      end select
+    case(SPECIES_FULL_DELTA, SPECIES_FULL_GAUSSIAN, SPECIES_CHARGE_DENSITY, SPECIES_JELLIUM_CHARGE_DENSITY)
+      vl(1:mesh%np) = M_ZERO
+      
+    end select
 
-      call profiling_out(prof)
+    call profiling_out(prof)
     POP_SUB(species_get_local)
   end subroutine species_get_local
 

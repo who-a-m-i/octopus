@@ -532,9 +532,11 @@ contains
     ep%local_potential_precalculated = .false.
     
 
+    !NTD: I am not sure that this make sens for mixed species
+    ! some might have density, some not...
     ep%have_density = .false.
     do ia = 1, geo%natoms
-      if(local_potential_has_density(gr%mesh%sb, geo%atom(ia))) then
+      if(species_has_density(geo%atom(ia)%species)) then
         ep%have_density = .true.
         exit
       end if
@@ -828,17 +830,6 @@ contains
   end subroutine epot_generate
 
   ! ---------------------------------------------------------
-
-  logical pure function local_potential_has_density(sb, atom) result(has_density)
-    type(simul_box_t),        intent(in)    :: sb
-    type(atom_t),             intent(in)    :: atom
-    
-    has_density = &
-      species_has_density(atom%species) .or. (species_is_ps(atom%species) .and. simul_box_is_periodic(sb))
-
-  end function local_potential_has_density
-  
-  ! ---------------------------------------------------------
   subroutine epot_local_potential(ep, der, dgrid, geo, iatom, vpsl, Imvpsl, rho_core, density, Imdensity)
     type(epot_t),             intent(in)    :: ep
     type(derivatives_t),      intent(in)    :: der
@@ -879,7 +870,7 @@ contains
       !(for all-electron species or pseudopotentials in periodic
       !systems) or by applying it directly to the grid
 
-      if(local_potential_has_density(der%mesh%sb, geo%atom(iatom))) then
+      if(species_has_density(geo%atom(iatom)%species)) then
         SAFE_ALLOCATE(rho(1:der%mesh%np))
 
         if (cmplxscl) then

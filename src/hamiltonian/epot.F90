@@ -131,8 +131,8 @@ module epot_oct_m
     FLOAT, pointer :: fii(:, :)
     FLOAT, allocatable :: vdw_forces(:, :)
     
-    real(4), pointer :: local_potential(:,:)
-    real(4), pointer :: Imlocal_potential(:,:) !cmplxscl
+    FLOAT, pointer :: local_potential(:,:)
+    FLOAT, pointer :: Imlocal_potential(:,:) !cmplxscl
     logical          :: local_potential_precalculated
 
     logical          :: ignore_external_ions
@@ -1022,7 +1022,6 @@ contains
     type(geometry_t), intent(in)    :: geo
 
     integer :: iatom
-    FLOAT, allocatable :: tmp(:), Imtmp(:)
     logical  :: cmplxscl
     
     PUSH_SUB(epot_precalc_local_potential)
@@ -1035,33 +1034,24 @@ contains
 
     if(.not. associated(ep%Imlocal_potential) .and. cmplxscl) then
       SAFE_ALLOCATE(ep%Imlocal_potential(1:gr%mesh%np, 1:geo%natoms))
-      SAFE_ALLOCATE(Imtmp(1:gr%mesh%np))
     end if
 
 
     ep%local_potential_precalculated = .false.
 
-    SAFE_ALLOCATE(tmp(1:gr%mesh%np))
-    
     if(cmplxscl) then
       do iatom = 1, geo%natoms
-        tmp(1:gr%mesh%np) = M_ZERO
-        Imtmp(1:gr%mesh%np) = M_ZERO
-        call epot_local_potential(ep, gr%der, gr%dgrid, geo, iatom, tmp, Imtmp)!, time)
-        ep%local_potential(1:gr%mesh%np, iatom) = real(tmp(1:gr%mesh%np), 4)
-        ep%Imlocal_potential(1:gr%mesh%np, iatom) = real(Imtmp(1:gr%mesh%np), 4)
+        call epot_local_potential(ep, gr%der, gr%dgrid, geo, iatom, &
+            ep%local_potential(1:gr%mesh%np, iatom), ep%Imlocal_potential(1:gr%mesh%np, iatom))!, time)
       end do
     else
       do iatom = 1, geo%natoms
-        tmp(1:gr%mesh%np) = M_ZERO
-        call epot_local_potential(ep, gr%der, gr%dgrid, geo, iatom, tmp)!, time)
-        ep%local_potential(1:gr%mesh%np, iatom) = real(tmp(1:gr%mesh%np), 4)
+        call epot_local_potential(ep, gr%der, gr%dgrid, geo, iatom, &
+                  ep%local_potential(1:gr%mesh%np, iatom))!, time)
       end do
     end if
     ep%local_potential_precalculated = .true.
 
-    SAFE_DEALLOCATE_A(tmp)
-    SAFE_DEALLOCATE_A(Imtmp)
     POP_SUB(epot_precalc_local_potential)
   end subroutine epot_precalc_local_potential
 

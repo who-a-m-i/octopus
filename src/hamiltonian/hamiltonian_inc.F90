@@ -17,7 +17,7 @@
 !!
 
 ! ---------------------------------------------------------
-subroutine X(hamiltonian_apply_batch) (hm, der, psib, hpsib, ik, terms, set_bc, set_phase)
+subroutine X(hamiltonian_apply_batch) (hm, der, psib, hpsib, ik, terms, set_bc, set_phase, unpack)
   type(hamiltonian_t),   intent(in)    :: hm
   type(derivatives_t),   intent(in)    :: der
   type(batch_t), target, intent(inout) :: psib
@@ -26,6 +26,7 @@ subroutine X(hamiltonian_apply_batch) (hm, der, psib, hpsib, ik, terms, set_bc, 
   integer, optional,     intent(in)    :: terms
   logical, optional,     intent(in)    :: set_bc !< If set to .false. the boundary conditions are assumed to be set previously.
   logical, optional,     intent(in)    :: set_phase !< If set to .false. the phase will not be added to the states.
+  logical, optional,     intent(in)    :: unpack !< If set to .false., the batches are not unpacked
 
   logical :: apply_phase, pack, set_phase_
   type(batch_t), pointer :: epsib
@@ -174,7 +175,7 @@ subroutine X(hamiltonian_apply_batch) (hm, der, psib, hpsib, ik, terms, set_bc, 
     SAFE_DEALLOCATE_P(epsib)
   end if
 
-  if(pack) then
+  if(pack .and. optional_default(unpack, .true.)) then
     call batch_unpack(psib, copy = .false.)
     call batch_unpack(hpsib)
   end if

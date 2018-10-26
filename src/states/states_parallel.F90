@@ -219,7 +219,7 @@ contains
     if(this%group%block_is_local(ib, iqn)) then
       nullify(psib)
     else
-      call batch_end(psib)
+      call batch_end(psib, copy = .false.)
       SAFE_DEALLOCATE_P(psib)
     end if
     

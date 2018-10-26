@@ -629,7 +629,7 @@ subroutine X(boundaries_set_single)(boundaries, ff, phase_correction)
 
   call X(boundaries_set_batch)(boundaries, batch_ff, phase_correction=phase_correction)
 
-  call batch_end(batch_ff)
+  call batch_end(batch_ff, copy = .true.)
   POP_SUB(X(boundaries_set_single))
 
 end subroutine X(boundaries_set_single)

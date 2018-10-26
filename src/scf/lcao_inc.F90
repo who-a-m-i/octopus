@@ -721,8 +721,8 @@ subroutine X(lcao_alt_wf) (this, st, gr, geo, hm, start)
 
         end do ! jatom
 
-        call batch_end(psib)
-        call batch_end(hpsib)
+        call batch_end(psib, copy = .true.)
+        call batch_end(hpsib, copy = .true.)
 
         if(.not. this%keep_orb) call lcao_alt_end_orbital(this%orbitals(iatom))
 
@@ -865,7 +865,7 @@ subroutine X(lcao_alt_wf) (this, st, gr, geo, hm, start)
   do iatom = 1, geo%natoms
     call submesh_end(this%sphere(iatom))
     call lcao_alt_end_orbital(this%orbitals(iatom))
-    call batch_end(this%orbitals(iatom))
+    call batch_end(this%orbitals(iatom), copy = .false.)
   end do
 
   if (this%parallel .or. mpi_grp_is_root(gr%mesh%mpi_grp)) then

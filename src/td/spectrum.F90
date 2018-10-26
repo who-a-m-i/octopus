@@ -659,8 +659,8 @@ contains
     call spectrum_fourier_transform(spectrum%method, spectrum%transform, spectrum%noise, &
       istart + 1, iend + 1, kick%time, dt, dipoleb, 1, no_e + 1, spectrum%energy_step, sigmab)
     
-    call batch_end(dipoleb)
-    call batch_end(sigmab)
+    call batch_end(dipoleb, copy = .false.)
+    call batch_end(sigmab, copy = .false.)
 
     SAFE_DEALLOCATE_A(dipole)
     if(present(ref_file)) then
@@ -839,9 +839,9 @@ contains
       power(ie, :, :) = (transform_sin(ie, :, :)**2 + transform_cos(ie, :, :)**2)
     end do
 
-    call batch_end(dipoleb)
-    call batch_end(transformb_cos)
-    call batch_end(transformb_sin)
+    call batch_end(dipoleb, copy = .false.)
+    call batch_end(transformb_cos, copy = .false.)
+    call batch_end(transformb_sin, copy = .false.)
 
     SAFE_DEALLOCATE_A(dipole)
     SAFE_DEALLOCATE_A(transform_sin)
@@ -1101,9 +1101,9 @@ contains
     call spectrum_fourier_transform(spectrum%method, SPECTRUM_TRANSFORM_SIN, spectrum%noise, &
       istart + 1, iend + 1, kick%time, dt, angularb, 1, no_e + 1, spectrum%energy_step, imspb)
 
-    call batch_end(angularb)
-    call batch_end(respb)
-    call batch_end(imspb)
+    call batch_end(angularb, copy = .false.)
+    call batch_end(respb, copy = .false.)
+    call batch_end(imspb, copy = .false.)
     
     sum1 = M_Z0
     sum2 = M_Z0
@@ -1662,9 +1662,9 @@ contains
 
       call spectrum_hs_output(out_file, spectrum, pol, no_e, sps)   
 
-      call batch_end(acc_batch)
-      call batch_end(sps_batch)
-      call batch_end(spc_batch)
+      call batch_end(acc_batch, copy = .false.)
+      call batch_end(sps_batch, copy = .false.)
+      call batch_end(spc_batch, copy = .false.)
 
       SAFE_DEALLOCATE_A(racc)
 
@@ -1768,9 +1768,9 @@ contains
 
       call spectrum_hs_output(out_file, spectrum, pol, no_e, sps)   
 
-      call batch_end(acc_batch)
-      call batch_end(sps_batch)
-      call batch_end(spc_batch)
+      call batch_end(acc_batch, copy = .false.)
+      call batch_end(sps_batch, copy = .false.)
+      call batch_end(spc_batch, copy = .false.)
 
       SAFE_DEALLOCATE_A(racc)
 
@@ -1871,9 +1871,9 @@ contains
 
       call spectrum_hs_output(out_file, spectrum, pol, no_e, sps)   
 
-      call batch_end(cur_batch)
-      call batch_end(sps_batch)
-      call batch_end(spc_batch)
+      call batch_end(cur_batch, copy = .false.)
+      call batch_end(sps_batch, copy = .false.)
+      call batch_end(spc_batch, copy = .false.)
 
       SAFE_DEALLOCATE_A(rcur)
 

@@ -39,8 +39,8 @@ subroutine X(project_psi)(mesh, pj, npj, dim, psi, ppsi, ik)
 
   call X(project_psi_batch)(mesh, pj, npj, dim, psib, ppsib, ik)
 
-  call batch_end(psib)
-  call batch_end(ppsib)
+  call batch_end(psib, copy = .false.)
+  call batch_end(ppsib, copy = .true.)
 
   POP_SUB(X(project_psi))
 end subroutine X(project_psi)

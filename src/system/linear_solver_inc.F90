@@ -1011,13 +1011,13 @@ subroutine X(linear_solver_qmr_dotp)(this, hm, gr, st, ik, xb, bb, shift, iter_u
 
   end do
 
-  call batch_end(vvb)
-  call batch_end(res)
-  call batch_end(zzb)
-  call batch_end(qqb)
-  call batch_end(ppb)
-  call batch_end(deltax)
-  call batch_end(deltar)
+  call batch_end(vvb, copy = .false.)
+  call batch_end(res, copy = .false.)
+  call batch_end(zzb, copy = .false.)
+  call batch_end(qqb, copy = .false.)
+  call batch_end(ppb, copy = .false.)
+  call batch_end(deltax, copy = .false.)
+  call batch_end(deltar, copy = .false.)
 
   SAFE_DEALLOCATE_A(exception_saved)
   SAFE_DEALLOCATE_A(rho)

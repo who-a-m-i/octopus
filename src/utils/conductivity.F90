@@ -337,14 +337,14 @@
     call batch_init(ftcurrb, 3, 1, 1, ftcurr)
     call spectrum_fourier_transform(spectrum%method, SPECTRUM_TRANSFORM_COS, spectrum%noise, &
       1, ntime, M_ZERO, deltat, currb, 1, max_freq, spectrum%energy_step, ftcurrb)
-    call batch_end(ftcurrb)
+    call batch_end(ftcurrb, copy = .false.)
 
     call batch_init(ftcurrb, 3, 1, 1, ftcurr(:, :, 2:2))
     call spectrum_fourier_transform(spectrum%method, SPECTRUM_TRANSFORM_SIN, spectrum%noise, &
       1, ntime, M_ZERO, deltat, currb, 1, max_freq, spectrum%energy_step, ftcurrb)
-    call batch_end(ftcurrb)
+    call batch_end(ftcurrb, copy = .false.)
     
-    call batch_end(currb)
+    call batch_end(currb, copy = .false.)
 
 
     !and print the spectrum

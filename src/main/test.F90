@@ -258,7 +258,7 @@ contains
       call messages_info(1)
     end do
 
-    call batch_end(epsib)
+    call batch_end(epsib, copy = .false.)
     SAFE_DEALLOCATE_P(epsib)
     call epot_end(ep)
     call states_deallocate_wfns(sys%st)
@@ -343,7 +343,7 @@ contains
     SAFE_DEALLOCATE_A(ddot)
     SAFE_DEALLOCATE_A(zdot)
 
-    call batch_end(epsib)
+    call batch_end(epsib, copy = .false.)
     SAFE_DEALLOCATE_P(epsib)
     call orbitalbasis_end(basis)
     call states_deallocate_wfns(sys%st)

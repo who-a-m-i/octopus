@@ -161,8 +161,8 @@ subroutine X(derivatives_perform)(op, der, ff, op_ff, ghost_update, set_bc, fact
 
   call X(derivatives_batch_perform) (op, der, batch_ff, batch_op_ff, ghost_update, set_bc, factor)
 
-  call batch_end(batch_ff)
-  call batch_end(batch_op_ff)
+  call batch_end(batch_ff, copy = .false.)
+  call batch_end(batch_op_ff, copy = .true.)
         
   POP_SUB(X(derivatives_perform))
 
@@ -420,8 +420,8 @@ subroutine X(derivatives_test)(this, repetitions, min_blocksize, max_blocksize)
 
     call messages_info(1)
 
-    call batch_end(ffb)
-    call batch_end(opffb)
+    call batch_end(ffb, copy = .false.)
+    call batch_end(opffb, copy = .true.)
 
     blocksize = 2*blocksize
     if(blocksize > max_blocksize) exit

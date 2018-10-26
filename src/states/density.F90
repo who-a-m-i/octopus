@@ -423,7 +423,7 @@ contains
 
           call batch_init(psib, st%d%dim, states_block_min(st, ib), n, psi)
           call density_calc_accumulate(dens_calc, ik, psib)
-          call batch_end(psib)
+          call batch_end(psib, copy = .false.)
           SAFE_DEALLOCATE_A(psi)
           
           exit

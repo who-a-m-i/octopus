@@ -167,12 +167,12 @@ subroutine X(sternheimer_solve)(                           &
           if(sternheimer_have_rhs(this)) then
             call batch_init(orhsb, st%d%dim, sst, est, this%X(rhs)(:, :, sst:, ik - st%d%kpt%start + 1))
             call batch_copy_data(mesh%np, orhsb, rhsb)
-            call batch_end(orhsb)
+            call batch_end(orhsb, copy = .true.)
           else
             call X(pert_apply_batch)(perturbation, sys%gr, sys%geo, hm, ik, st%group%psib(ib, ik), rhsb)
           end if
 
-          call batch_end(rhsb)
+          call batch_end(rhsb, copy = .true.)
 
           ii = 0
           do ist = sst, est
@@ -211,8 +211,8 @@ subroutine X(sternheimer_solve)(                           &
             dlpsib, rhsb, -sys%st%eigenval(sst:est, ik) + omega_sigma, tol, &
             residue(sigma, sst:est), conv_iters(sigma, sst:est), occ_response = this%occ_response)
 
-          call batch_end(dlpsib)
-          call batch_end(rhsb)
+          call batch_end(dlpsib, copy = .true.)
+          call batch_end(rhsb, copy = .true.)
 
           !re-orthogonalize the resulting vector
           ii = 0

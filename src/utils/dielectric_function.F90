@@ -206,9 +206,9 @@ program dielectric_function
     istart, iend, spectrum%start_time, dt, vecpotb, 1, energy_steps + 1, spectrum%energy_step, ftimagb)
 
 
-  call batch_end(vecpotb)
-  call batch_end(ftrealb)
-  call batch_end(ftimagb)
+  call batch_end(vecpotb, copy = .false.)
+  call batch_end(ftrealb, copy = .false.)
+  call batch_end(ftimagb, copy = .false.)
 
   SAFE_ALLOCATE(invdielectric(1:space%dim, 0:energy_steps))
   SAFE_ALLOCATE(dielectric(1:space%dim, 0:energy_steps))

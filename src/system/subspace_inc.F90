@@ -207,8 +207,8 @@ subroutine X(subspace_diag_scalapack)(der, st, hm, ik, eigenval, psi, diff)
     
     call X(hamiltonian_apply_batch)(hm, der, psib, hpsib, ik)
     
-    call batch_end(psib)
-    call batch_end(hpsib)
+    call batch_end(psib, copy = .true.)
+    call batch_end(hpsib, copy = .true.)
   end do
 
   ! We need to set to zero some extra parts of the array

@@ -232,8 +232,8 @@
     call spectrum_fourier_transform(spectrum%method, SPECTRUM_TRANSFORM_COS, spectrum%noise, &
       1, nvaf, M_ZERO, deltat, vafb, 1, max_freq, spectrum%energy_step, ftvafb)
 
-    call batch_end(vafb)
-    call batch_end(ftvafb)
+    call batch_end(vafb, copy = .false.)
+    call batch_end(ftvafb, copy = .false.)
 
 
     !and print the spectrum

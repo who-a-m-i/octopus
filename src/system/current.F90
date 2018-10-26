@@ -236,11 +236,11 @@ contains
  
             end do
 
-            call batch_end(commpsib(idir))
+            call batch_end(commpsib(idir), copy = .false.)
 
           end do
 
-          call batch_end(epsib)
+          call batch_end(epsib, copy = .false.)
           call batch_unpack(st%group%psib(ib, ik), copy = .false.)
 
         end do
@@ -308,10 +308,10 @@ contains
 
           call batch_unpack(st%group%psib(ib, ik), copy = .false.)
           
-          call batch_end(hpsib)
-          call batch_end(rhpsib)
-          call batch_end(rpsib)
-          call batch_end(hrpsib)
+          call batch_end(hpsib, copy = .false.)
+          call batch_end(rhpsib, copy = .false.)
+          call batch_end(rpsib, copy = .false.)
+          call batch_end(hrpsib, copy = .false.)
 
         end do
       end do

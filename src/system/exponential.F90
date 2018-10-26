@@ -765,8 +765,8 @@ contains
         call batch_unpack(psib, copy=copy_at_end)
       end if
 
-      call batch_end(hpsi1b)
-      call batch_end(psi1b)
+      call batch_end(hpsi1b, copy = .false.)
+      call batch_end(psi1b, copy = .false.)
 
       call profiling_count_operations(psib%nst*hm%d%dim*dble(der%mesh%np)*te%exp_order*CNST(6.0))
 

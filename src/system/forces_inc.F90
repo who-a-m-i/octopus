@@ -319,9 +319,9 @@ subroutine X(forces_from_potential)(gr, geo, hm, st, force, force_loc, force_nl,
       call X(lda_u_force)(hm%lda_u, gr%mesh, st, iq, gr%mesh%sb%dim, psib, grad_psib, &
                             force_u, associated(hm%hm_base%phase))  
 
-      call batch_end(psib)
+      call batch_end(psib, copy = .false.)
       do idir = 1, gr%mesh%sb%dim
-        call batch_end(grad_psib(idir))
+        call batch_end(grad_psib(idir), copy = .false.)
       end do
 
     end do

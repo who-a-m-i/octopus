@@ -270,8 +270,8 @@ subroutine X(hamiltonian_apply) (hm, der, psi, hpsi, ist, ik, terms, set_bc, set
   call X(hamiltonian_apply_batch)(hm, der, psib, hpsib, ik, terms = terms, set_bc = set_bc, &
                                      set_phase = set_phase)
 
-  call batch_end(psib)
-  call batch_end(hpsib)
+  call batch_end(psib, copy = .false.)
+  call batch_end(hpsib, copy = .true.)
 
   POP_SUB(X(hamiltonian_apply))
 end subroutine X(hamiltonian_apply)
@@ -347,8 +347,8 @@ subroutine X(exchange_operator_single)(hm, der, ist, ik, exx_coef, psi, hpsi)
 
   call X(exchange_operator)(hm, der, ik, exx_coef, psib, hpsib)
 
-  call batch_end(psib)
-  call batch_end(hpsib)
+  call batch_end(psib, copy = .false.)
+  call batch_end(hpsib, copy = .true.)
 
   POP_SUB(X(exchange_operator_single))
 end subroutine X(exchange_operator_single)
@@ -786,10 +786,10 @@ subroutine X(h_mgga_terms) (hm, der, ik, psib, hpsib)
   call batch_axpy(der%mesh%np, CNST(-1.0), divb, hpsib)
 
   do idir = 1, der%mesh%sb%dim
-    call batch_end(gradb(idir))
+    call batch_end(gradb(idir), copy = .false.)
   end do
 
-  call batch_end(divb)
+  call batch_end(divb, copy = .false.)
   
   SAFE_DEALLOCATE_A(gradb)
   SAFE_DEALLOCATE_A(grad)

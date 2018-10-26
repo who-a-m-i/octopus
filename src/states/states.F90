@@ -1157,7 +1157,7 @@ contains
        do ib = 1, st%group%nblocks
           do iq = st%d%kpt%start, st%d%kpt%end
             if(st%group%block_is_local(ib, iq)) then
-              call batch_end(st%group%psib(ib, iq))
+              call batch_end(st%group%psib(ib, iq), copy = .false.)
             end if
           end do
        end do

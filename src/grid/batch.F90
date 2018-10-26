@@ -155,7 +155,7 @@ contains
   !--------------------------------------------------------------
   subroutine batch_end(this, copy)
     type(batch_t),           intent(inout) :: this
-    logical,       optional, intent(in)    :: copy
+    logical,                 intent(in)    :: copy
 
     PUSH_SUB(batch_end)
 

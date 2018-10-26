@@ -100,7 +100,7 @@ contains
           !use the dt propagation to calculate the density
           call density_calc_accumulate(dens_calc, ik, zpsib_dt)
 
-          call batch_end(zpsib_dt)
+          call batch_end(zpsib_dt, copy = .false.)
 
         end do
       end do
@@ -212,7 +212,7 @@ contains
         !use the dt propagation to calculate the density
         call density_calc_accumulate(dens_calc, ik, zpsib_dt)
 
-        call batch_end(zpsib_dt)
+        call batch_end(zpsib_dt, copy = .false.)
 
       end do
     end do
@@ -310,7 +310,7 @@ contains
 
     do ik = st%d%kpt%start, st%d%kpt%end
       do ib = st%group%block_start, st%group%block_end
-        call batch_end(psi2(ib, ik))
+        call batch_end(psi2(ib, ik), copy = .false.)
       end do
     end do
 

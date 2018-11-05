@@ -836,6 +836,7 @@ contains
 
       integer        :: ip, ispin, ist, ik
       FLOAT, pointer :: vxc_sic(:,:),  Imvxc_sic(:, :), vh_sic(:), rho(:, :), Imrho(:, :), qsp(:)
+      FLOAT, allocable :: rho_s(:,:), vxc_sic_s(:,:)
       
       PUSH_SUB(add_adsic)
       
@@ -850,6 +851,9 @@ contains
       SAFE_ALLOCATE(vh_sic(1:ks%gr%mesh%np))
       SAFE_ALLOCATE(rho(1:ks%gr%fine%mesh%np, 1:st%d%nspin))
       SAFE_ALLOCATE(qsp(1:st%d%nspin))
+      SAFE_ALLOCATE(rho_s(1:ks%gr%fine%mesh%np, 2))
+      SAFE_ALLOCATE(vxc_sic_s(1:ks%gr%fine%mesh%np, 2))
+
       
       vxc_sic = M_ZERO
       vh_sic = M_ZERO
@@ -863,7 +867,22 @@ contains
       end do
 
       select case (st%d%ispin)
-      case (UNPOLARIZED, SPIN_POLARIZED)
+      case (UNPOLARIZED)
+        do ispin = 1, st%d%nspin
+          if (abs(qsp(ispin)) <= M_EPSILON) cycle
+
+          rho_s = M_ZERO
+          vxc_sic_s = M_ZERO
+
+          rho_s(:, ispin) = ks%calc%density(:, ispin) / qsp(ispin)
+          ! TODO : check for solid:   -minval(st%eigenval(st%nst,:))
+          call xc_get_vxc(ks%gr%fine%der, ks%xc, &
+               st, rho_s, SPIN_POLARIZED, -minval(st%eigenval(st%nst,:)), qsp(ispin), &
+               vxc_sic_s)
+
+          ks%calc%vxc = ks%calc%vxc - vxc_sic_s(1:ks%gr%fine%mesh%np, 1:st%d%nspin)
+        end do
+      case (SPIN_POLARIZED)
         do ispin = 1, st%d%nspin
           if (abs(qsp(ispin)) <= M_EPSILON) cycle
 

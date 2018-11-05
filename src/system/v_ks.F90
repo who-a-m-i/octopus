@@ -836,7 +836,7 @@ contains
 
       integer        :: ip, ispin, ist, ik
       FLOAT, pointer :: vxc_sic(:,:),  Imvxc_sic(:, :), vh_sic(:), rho(:, :), Imrho(:, :), qsp(:)
-      FLOAT, allocable :: rho_s(:,:), vxc_sic_s(:,:)
+      FLOAT, allocatable :: rho_s(:,:), vxc_sic_s(:,:)
       
       PUSH_SUB(add_adsic)
       

@@ -877,7 +877,7 @@ contains
           rho_s(:, ispin) = ks%calc%density(:, ispin) / qsp(ispin)
           ! TODO : check for solid:   -minval(st%eigenval(st%nst,:))
           call xc_get_vxc(ks%gr%fine%der, ks%xc, &
-               st, rho_s, SPIN_POLARIZED, -minval(st%eigenval(st%nst,:)), qsp(ispin), &
+               st, rho_s, SPIN_POLARIZED, -minval(st%eigenval(st%nst,:)), M_ONE, &
                vxc_sic_s)
 
           ks%calc%vxc = ks%calc%vxc - vxc_sic_s(1:ks%gr%fine%mesh%np, 1:st%d%nspin)
@@ -892,10 +892,10 @@ contains
           rho(:, ispin) = ks%calc%density(:, ispin) / qsp(ispin)
           ! TODO : check for solid:   -minval(st%eigenval(st%nst,:))
           call xc_get_vxc(ks%gr%fine%der, ks%xc, &
-               st, rho, st%d%ispin, -minval(st%eigenval(st%nst,:)), qsp(ispin), &
+               st, rho, st%d%ispin, -minval(st%eigenval(st%nst,:)), M_ONE, &
                vxc_sic)
 
-          ks%calc%vxc = ks%calc%vxc - vxc_sic
+          ks%calc%vxc(:,ispin) = ks%calc%vxc(:,ispin) - vxc_sic(:,ispin)
         end do
 
       case (SPINORS)

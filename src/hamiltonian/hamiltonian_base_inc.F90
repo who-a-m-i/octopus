@@ -145,7 +145,7 @@ subroutine X(hamiltonian_base_local_sub)(potential, mesh, std, ispin, psib, vpsi
       ASSERT(mod(psib%nst_linear, 2) == 0)
       !the spinor case is more complicated since it mixes the two components.
       if(pot_is_cmplx)then
-        !$omp parallel do private(psi1, psi2, ist)
+        !$omp parallel do private(psi1, psi2, ist, pot)
         do ip = 1, mesh%np
           do ist = 1, psib%nst_linear, 2
             psi1 = psib%pack%zpsi(ist    , ip)
@@ -355,70 +355,6 @@ subroutine X(hamiltonian_base_phase)(this, der, np, iqn, conjugate, psib, src)
   call profiling_out(phase_prof)
   POP_SUB(X(hamiltonian_base_phase))
 end subroutine X(hamiltonian_base_phase)
-
-! ---------------------------------------------------------------------------------------
-
-subroutine X(hamiltonian_base_phase_correction)(this, der, iqn, psib, src)
-  type(hamiltonian_base_t),              intent(in)    :: this
-  type(derivatives_t),                   intent(in)    :: der
-  integer,                               intent(in)    :: iqn
-  type(batch_t),                 target, intent(inout) :: psib
-  type(batch_t),       optional, target, intent(in)    :: src
-
-  integer :: ip, ii
-  type(batch_t), pointer :: src_
-  type(profile_t), save :: phase_prof
-
-  PUSH_SUB(X(hamiltonian_base_phase))
-  call profiling_in(phase_prof, "PBC_PHASE_APPLY_CORR")
-
-  call profiling_count_operations(R_MUL*dble(der%boundaries%nper)*psib%nst_linear)
-
-  ASSERT(allocated(this%phase_corr))
-
-  src_ => psib
-  if(present(src)) then
-    src_ => src
-  end if
-
-  !TODO: Implement this for domain parallelization
-  ASSERT(.not.der%mesh%parallel_in_domains)
-
-  select case(batch_status(psib))
-  case(BATCH_PACKED)
-
-    !$omp parallel do
-    do ip = der%mesh%np+1, der%mesh%np_part
-      do ii = 1, psib%nst_linear
-        psib%pack%X(psi)(ii, ip) = this%phase_corr(ip, iqn)*src_%pack%X(psi)(ii, ip)
-      end do
-    end do
-    !$omp end parallel do
-
-
-  case(BATCH_NOT_PACKED)
-
-    !$omp parallel
-    do ii = 1, psib%nst_linear
-      !$omp do
-      do ip =  der%mesh%np+1, der%mesh%np_part
-        psib%states_linear(ii)%X(psi)(ip) = this%phase_corr(ip, iqn)*src_%states_linear(ii)%X(psi)(ip)
-      end do
-      !$omp end do nowait
-    end do
-    !$omp end parallel
-
-
-  case(BATCH_CL_PACKED)
-    call messages_not_implemented("hamiltonian_base_phase_correction with OpenCL")
-  end select
-
-  call batch_pack_was_modified(psib)
-
-  call profiling_out(phase_prof)
-  POP_SUB(X(hamiltonian_base_phase_correction))
-end subroutine X(hamiltonian_base_phase_correction)
-
 
 ! ---------------------------------------------------------------------------------------
 
@@ -670,7 +606,6 @@ subroutine X(hamiltonian_base_nlocal_start)(this, mesh, std, ik, psib, projectio
 
   SAFE_ALLOCATE(lpsi(1:nst, 1:maxnpoints))
 
-  !$omp parallel do private(imat, pmat, iprojection, npoints, nprojs, iproj, ist, aa, bb, cc, dd, ip, lpsi, ep, sp)
   do imat = 1, this%nprojector_matrices
     pmat => this%projector_matrices(imat)
     iprojection = ind(imat)
@@ -682,15 +617,17 @@ subroutine X(hamiltonian_base_nlocal_start)(this, mesh, std, ik, psib, projectio
     if(.not. allocated(this%projector_phases)) then
       if(batch_is_packed(psib)) then
         
+        !$omp parallel do private(ist)
         do ip = 1, npoints
-          do ist = 1, nst
+          forall(ist=1:nst)
             lpsi(ist, ip) = psib%pack%X(psi)(ist, pmat%map(ip))
-          end do
+          end forall
         end do
         
       else
         
         do ist = 1, nst
+          !$omp parallel do
           do ip = 1, npoints
             lpsi(ist, ip) = psib%states_linear(ist)%X(psi)(pmat%map(ip))
           end do
@@ -701,16 +638,17 @@ subroutine X(hamiltonian_base_nlocal_start)(this, mesh, std, ik, psib, projectio
     else
       
       if(batch_is_packed(psib)) then
-
+        !$omp parallel do private(ist)
         do ip = 1, npoints
-          do ist = 1, nst
+          forall(ist = 1:nst)
             lpsi(ist, ip) = psib%pack%X(psi)(ist, pmat%map(ip))*this%projector_phases(ip, imat, ik)
-          end do
+          end forall
         end do
 
       else
 
         do ist = 1, nst
+          !$omp parallel do
           do ip = 1, npoints
             lpsi(ist, ip) = psib%states_linear(ist)%X(psi)(pmat%map(ip))*this%projector_phases(ip, imat, ik)
           end do
@@ -720,35 +658,14 @@ subroutine X(hamiltonian_base_nlocal_start)(this, mesh, std, ik, psib, projectio
 
     end if
 
-    projection%X(projection)(:,iprojection+1:iprojection+nprojs) = M_ZERO
-    do sp = 1, npoints, block_size
-      ep = sp -1 +  min(block_size, npoints - sp + 1)
-      do iproj = 1, nprojs
-        do ist = 1, nst - 4 + 1, 4
-          aa = CNST(0.0)
-          bb = CNST(0.0)
-          cc = CNST(0.0)
-          dd = CNST(0.0)
-          do ip = sp, ep
-            aa = aa + pmat%projectors(ip, iproj)*lpsi(ist    , ip)
-            bb = bb + pmat%projectors(ip, iproj)*lpsi(ist + 1, ip)
-            cc = cc + pmat%projectors(ip, iproj)*lpsi(ist + 2, ip)
-            dd = dd + pmat%projectors(ip, iproj)*lpsi(ist + 3, ip)
-          end do
-          projection%X(projection)(ist  , iprojection + iproj) = projection%X(projection)(ist  , iprojection + iproj) + pmat%scal(iproj)*aa
-          projection%X(projection)(ist+1, iprojection + iproj) = projection%X(projection)(ist+1, iprojection + iproj) + pmat%scal(iproj)*bb
-          projection%X(projection)(ist+2, iprojection + iproj) = projection%X(projection)(ist+2, iprojection + iproj) + pmat%scal(iproj)*cc
-          projection%X(projection)(ist+3, iprojection + iproj) = projection%X(projection)(ist+3, iprojection + iproj) + pmat%scal(iproj)*dd
-        end do
-      
-        do ist = ist, nst
-          aa = CNST(0.0)
-          do ip = sp, ep
-            aa = aa + pmat%projectors(ip, iproj)*lpsi(ist, ip)
-          end do
-          projection%X(projection)(ist, iprojection + iproj) = projection%X(projection)(ist, iprojection + iproj) + pmat%scal(iproj)*aa
-        end do
-      end do
+    call blas_gemm('N', 'N', nreal, nprojs, npoints, &
+        M_ONE, lpsi(1, 1), nreal, pmat%projectors(1, 1), npoints, M_ZERO,  projection%X(projection)(1, iprojection + 1), nreal)
+    call profiling_count_operations(nreal*nprojs*M_TWO*npoints)
+
+    do iproj = 1, nprojs
+      do ist = 1, nst
+        projection%X(projection)(ist, iprojection + iproj) = projection%X(projection)(ist, iprojection + iproj)*pmat%scal(iproj)
+       end do
     end do
 
   end do
@@ -1218,7 +1135,7 @@ subroutine X(hamiltonian_base_nlocal_position_commutator)(this, mesh, std, ik, p
     !    call profiling_count_operations(nprojs*(R_ADD + R_MUL)*npoints + nst*nprojs)
   end do
 
-  !$omp parallel do private(imat, pmat, iprojection, npoints, nprojs, iproj, ist, aa, bb, cc, dd, ip)
+  !$omp parallel do private(imat, pmat, iprojection, npoints, nprojs, iproj, ist, aa, bb, cc, dd, ip, phase)
   do imat = 1, this%nprojector_matrices
     pmat => this%projector_matrices(imat)
     iprojection = ind(imat)
@@ -1278,7 +1195,6 @@ subroutine X(hamiltonian_base_nlocal_position_commutator)(this, mesh, std, ik, p
 
   ! reduce the projections
   if(mesh%parallel_in_domains) then
-    if(allocated(this%projector_phases)) call messages_not_implemented('Accel commutator with phases')
     call profiling_in(reduce_prof, "COMMUTATOR_REDUCE")
     call comm_allreduce(mesh%mpi_grp%comm, projections)
     call profiling_out(reduce_prof)

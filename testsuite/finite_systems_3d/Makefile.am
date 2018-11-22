@@ -87,10 +87,17 @@ dist_share_DATA = \
 	20-eigensolver.04-plan.inp \
 	20-eigensolver.05-evolution.inp \
 	20-eigensolver.06-rmmdiis.inp \
+	20-eigensolver.07-psd.inp \
 	20-eigensolver.test \
 	21-lobpcg.01-spin_polarized.inp \
 	21-lobpcg.02-spinors.inp \
 	21-lobpcg.test \
+	22-preconditioner.test                       \
+	22-preconditioner.01-none.inp                \
+	22-preconditioner.02-filter.inp              \
+	22-preconditioner.03-jacobi.inp              \
+	22-preconditioner.04-poisson.inp             \
+	22-preconditioner.05-multigrid.inp           \
 	23-go-na2.test                               \
 	23-go-na2.01-steep.inp                       \
 	23-go-na2.02-simplex.inp                     \

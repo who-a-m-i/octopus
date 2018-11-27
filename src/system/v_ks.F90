@@ -799,7 +799,7 @@ contains
 
       ! get density taking into account non-linear core corrections
       SAFE_ALLOCATE(ks%calc%density(1:ks%gr%fine%mesh%np, 1:st%d%nspin))
-      call states_total_density(st, ks%gr%fine%mesh, ks%calc%density)
+      call states_total_density(st, ks%gr%fine%mesh, ks%calc%density, nlcc = .false.)
 
       ! Amaldi correction
       if(ks%sic_type == SIC_AMALDI) &
@@ -814,13 +814,6 @@ contains
         forall(ip = 1:ks%gr%fine%mesh%np)
           ks%calc%total_density(ip) = sum(ks%calc%density(ip, 1:hm%d%spin_channels))
         end forall
-
-        ! remove non-local core corrections
-        if(associated(st%rho_core)) then
-          forall(ip = 1:ks%gr%fine%mesh%np)
-            ks%calc%total_density(ip) = ks%calc%total_density(ip) - st%rho_core(ip)*ks%calc%amaldi_factor
-          end forall
-        end if
       else
         ks%calc%total_density_alloc = .false.
         ks%calc%total_density => ks%calc%density(:, 1)

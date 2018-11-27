@@ -531,10 +531,11 @@ contains
   !> this routine calculates the total electronic density,
   !! which is the sum of the part coming from the orbitals, the
   !! non-linear core corrections and the frozen orbitals
-  subroutine states_total_density(st, mesh, total_rho)
-    type(states_t),  intent(in)  :: st
-    type(mesh_t),    intent(in)  :: mesh
-    FLOAT,           intent(out) :: total_rho(:,:)
+  subroutine states_total_density(st, mesh, total_rho, nlcc)
+    type(states_t),    intent(in)  :: st
+    type(mesh_t),      intent(in)  :: mesh
+    FLOAT,             intent(out) :: total_rho(:,:)
+    logical, optional, intent(in)  :: nlcc
 
     integer :: is, ip
 
@@ -544,7 +545,7 @@ contains
       total_rho(ip, is) = st%rho(ip, is)
     end forall
 
-    if(associated(st%rho_core)) then
+    if(associated(st%rho_core) .and. optional_default(nlcc, .true.)) then
       forall(ip = 1:mesh%np, is = 1:st%d%spin_channels)
         total_rho(ip, is) = total_rho(ip, is) + st%rho_core(ip)/st%d%spin_channels
       end forall

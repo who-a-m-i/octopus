@@ -108,11 +108,12 @@ module kick_oct_m
 contains
 
   ! ---------------------------------------------------------
-  subroutine kick_init(kick, nspin, dim, periodic_dim)
+  subroutine kick_init(kick, nspin, dim, periodic_dim, nst)
     type(kick_t), intent(out) :: kick
     integer,      intent(in)  :: nspin
     integer,      intent(in)  :: dim
     integer,      intent(in)  :: periodic_dim
+    integer,      intent(in), optional  :: nst
 
     type(block_t) :: blk
     integer :: n_rows, irow, idir
@@ -439,6 +440,8 @@ contains
 
     kick%qlength = sqrt(sum(kick%qvector(:)**2))
 
+    SAFE_ALLOCATE(kick%delta_strength_block(1:nst))
+
     POP_SUB(kick_init)
   end subroutine kick_init
 
@@ -502,6 +505,8 @@ contains
     end if
     kick%n_multipoles = 0
     kick%qkick_mode = QKICKMODE_NONE
+
+    SAFE_DEALLOCATE_A(kick%delta_strength_block)
 
     POP_SUB(kick_end)
   end subroutine kick_end

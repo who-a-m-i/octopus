@@ -191,9 +191,6 @@ contains
     !%Option cube bit(16)
     !% Generates output in the <a href=http://paulbourke.net/dataformats/cube>cube file format</a>.
     !% Available only in 3D. Only writes the real part of complex functions.
-    !%Option space_linear bit(16)
-    !% Generates output for any observable on grid points
-    !% Geometry will be output in space_linear format. Does not affect other outputs.
     !%Option openscad bit(17)
     !% Generates output in <a href=http://www.openscad.org>OpenSCAD format</a> for 3D printing.
     !% Available only in 3D.
@@ -207,7 +204,10 @@ contains
     !%Option integrate_xz bit(22)
     !% Integrates the function in the x-z plane and the result on the <i>y</i> axis is printed
     !%Option integrate_yz bit(23)
-    !% Integrates the function in the y-z plane and the result on the <i>x</i> axis is printed
+    !% Integrates the function in the y-z plane and the result on the <i>x</i> axis is printe
+    !%Option space_linear bit(24)
+    !% Generates output for overlap matrix of wfns on grid points
+    !% Geometry will be output in space_linear format. Does not affect other outputs.
     !%End
     call parse_variable('OutputFormat', 0, how)
     if(.not.varinfo_valid_option('OutputFormat', how, is_flag=.true.)) then

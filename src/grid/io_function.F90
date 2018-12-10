@@ -191,6 +191,9 @@ contains
     !%Option cube bit(16)
     !% Generates output in the <a href=http://paulbourke.net/dataformats/cube>cube file format</a>.
     !% Available only in 3D. Only writes the real part of complex functions.
+    !%Option space_linear bit(16)
+    !% Generates output for any observable on grid points
+    !% Geometry will be output in space_linear format. Does not affect other outputs.
     !%Option openscad bit(17)
     !% Generates output in <a href=http://www.openscad.org>OpenSCAD format</a> for 3D printing.
     !% Available only in 3D.
@@ -323,6 +326,7 @@ contains
     if(index(where, "NETCDF")    /= 0) how = ior(how, OPTION__OUTPUTFORMAT__NETCDF)
 #endif
     if(index(where, "Cube")      /= 0) how = ior(how, OPTION__OUTPUTFORMAT__CUBE)
+    if(index(where, "SPACE_LINEAR")  /= 0) how = ior(how, OPTION__OUTPUTFORMAT__SPACE_LINEAR)
     if(index(where, "OpenSCAD")  /= 0) how = ior(how, OPTION__OUTPUTFORMAT__OPENSCAD)
     if(index(where, "VTK")       /= 0) how = ior(how, OPTION__OUTPUTFORMAT__VTK)
 

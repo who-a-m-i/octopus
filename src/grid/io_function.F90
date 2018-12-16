@@ -204,10 +204,7 @@ contains
     !%Option integrate_xz bit(22)
     !% Integrates the function in the x-z plane and the result on the <i>y</i> axis is printed
     !%Option integrate_yz bit(23)
-    !% Integrates the function in the y-z plane and the result on the <i>x</i> axis is printe
-    !%Option space_linear bit(24)
-    !% Generates output for overlap matrix of wfns on grid points
-    !% Geometry will be output in space_linear format. Does not affect other outputs.
+    !% Integrates the function in the y-z plane and the result on the <i>x</i> axis is printed
     !%End
     call parse_variable('OutputFormat', 0, how)
     if(.not.varinfo_valid_option('OutputFormat', how, is_flag=.true.)) then
@@ -326,7 +323,6 @@ contains
     if(index(where, "NETCDF")    /= 0) how = ior(how, OPTION__OUTPUTFORMAT__NETCDF)
 #endif
     if(index(where, "Cube")      /= 0) how = ior(how, OPTION__OUTPUTFORMAT__CUBE)
-    if(index(where, "SPACE_LINEAR")  /= 0) how = ior(how, OPTION__OUTPUTFORMAT__SPACE_LINEAR)
     if(index(where, "OpenSCAD")  /= 0) how = ior(how, OPTION__OUTPUTFORMAT__OPENSCAD)
     if(index(where, "VTK")       /= 0) how = ior(how, OPTION__OUTPUTFORMAT__VTK)
 

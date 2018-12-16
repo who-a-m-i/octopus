@@ -103,17 +103,20 @@ module kick_oct_m
     !> In case we use a general function
     integer           :: function_mode
     character(len=200):: user_defined_function
-  end type kick_t
+    !FLOAT, allocatable :: TDKick_list_atom(:, :)
+    !FLOAT, allocatable :: TDKick_list_elec(:, :)
+    INTEGER, allocatable :: TDKick_list_elec(:)
+    logical           :: TDPartialKick_mode
+ end type kick_t
 
 contains
 
   ! ---------------------------------------------------------
-  subroutine kick_init(kick, nspin, dim, periodic_dim, nst)
+  subroutine kick_init(kick, nspin, dim, periodic_dim)
     type(kick_t), intent(out) :: kick
     integer,      intent(in)  :: nspin
     integer,      intent(in)  :: dim
     integer,      intent(in)  :: periodic_dim
-    integer,      intent(in), optional  :: nst
 
     type(block_t) :: blk
     integer :: n_rows, irow, idir
@@ -386,6 +389,38 @@ contains
       call messages_warning(1)
     end if
 
+    !%Variable TDPartialKick
+    !%Type block
+    !%Section Time-Dependent::Response
+    !%Description
+    !% When a pluse is used to kick the system, this block
+    !% defines in which atom or electron the field will be applied.
+    !% By setting this block, one can writes clearly the way to boost the system.
+    !% If the block is not set in the inp file, the sudden pluse kicks the
+    !% whole system. Once the block is put in, Octopus will kick the listed atoms or
+    !% electrons.
+    !%End
+    if(parse_block('TDPartialKick', blk, check_varinfo_=.false.)==0) then
+
+      kick%TDPartialKick_mode = .true.
+
+      n_rows = parse_block_n(blk)
+      SAFE_ALLOCATE(kick%TDKick_list_elec(1:n_rows))
+      kick%TDKick_list_elec(1:n_rows) = M_ZERO
+
+      do irow = 1, n_rows
+          idir = 0
+          call parse_block_integer(blk, irow - 1, idir, kick%TDKick_list_elec(irow))
+          if ( kick%TDKick_list_elec(irow) < 0 ) call messages_input_error('TDPartialKick')
+      end do
+      call parse_block_end(blk)
+
+    else
+
+      kick%TDPartialKick_mode = .false.
+
+    end if
+write(*,*) 'hahahahaha', kick%TDKick_list_elec, size(kick%TDKick_list_elec)
     !%Variable TDMomentumTransfer
     !%Type block
     !%Section Time-Dependent::Response
@@ -439,8 +474,6 @@ contains
     end if
 
     kick%qlength = sqrt(sum(kick%qvector(:)**2))
-
-    SAFE_ALLOCATE(kick%delta_strength_block(1:nst))
 
     POP_SUB(kick_init)
   end subroutine kick_init
@@ -506,8 +539,10 @@ contains
     kick%n_multipoles = 0
     kick%qkick_mode = QKICKMODE_NONE
 
-    SAFE_DEALLOCATE_A(kick%delta_strength_block)
-
+    if (kick%TDPartialKick_mode) then
+      SAFE_DEALLOCATE_A(kick%TDKick_list_elec)
+    end if
+    
     POP_SUB(kick_end)
   end subroutine kick_end
 
@@ -795,10 +830,11 @@ contains
     FLOAT, optional,      intent(in)    :: theta
     type(pcm_t), optional, intent(inout) :: pcm
 
-    integer :: iqn, ist, idim, ip, ispin, iatom
+    integer :: iqn, ist, idim, ip, ispin, iatom, ik_dim
     CMPLX   :: cc(2), kick_value
     CMPLX, allocatable :: kick_function(:), psi(:, :)
-
+    logical :: jk_list
+    
     CMPLX, allocatable :: kick_pcm_function(:)
 
     PUSH_SUB(kick_apply)
@@ -841,49 +877,65 @@ contains
       do iqn = st%d%kpt%start, st%d%kpt%end
         do ist = st%st_start, st%st_end
 
-          call states_get_state(st, mesh, ist, iqn, psi)
-
-          select case (kick%delta_strength_mode)
-          case (KICK_DENSITY_MODE)
-            forall(idim = 1:st%d%dim, ip = 1:mesh%np)
-              psi(ip, idim) = exp(M_zI*kick%delta_strength*kick_function(ip))*psi(ip, idim)
-            end forall
-
-          case (KICK_SPIN_MODE)
-            ispin = states_dim_get_spin_index(st%d, iqn)
-            do ip = 1, mesh%np
-              kick_value = M_zI*kick%delta_strength*kick_function(ip)
-              
-              cc(1) = exp(kick_value)
-              cc(2) = exp(-kick_value)
-
-              select case (st%d%ispin)
-              case (SPIN_POLARIZED)
-                psi(ip, 1) = cc(ispin)*psi(ip, 1)
-              case (SPINORS)
-                psi(ip, 1) = cc(1)*psi(ip, 1)
-                psi(ip, 2) = cc(2)*psi(ip, 2)
-              end select
+          if (kick%TDPartialKick_mode .eqv. .true.) then
+            jk_list = .false.
+            do ik_dim = 1, size(kick%TDKick_list_elec)
+              if (ist .eq. kick%TDKick_list_elec(ik_dim)) then
+                 jk_list = .true.
+                 write(message(1),*) 'Info: kicked the KS orbital:  ',&
+                      ist, '    iqn from st%d%kpt%start', iqn 
+!         ist, st%st_start, st%st_end, ik_dim, iqn, size(kick%TDKick_list_elec)
+                 call messages_info(1)
+              end if
             end do
+          else
+            jk_list = .true.
+          end if
 
-          case (KICK_SPIN_DENSITY_MODE)
-            do ip = 1, mesh%np
-              kick_value = M_zI*kick%delta_strength*kick_function(ip)
-              cc(1) = exp(M_TWO*kick_value)
-
-              select case (st%d%ispin)
-              case (SPIN_POLARIZED)
-                if(is_spin_up(iqn)) then
+          if (jk_list .eqv. .true.) then
+            call states_get_state(st, mesh, ist, iqn, psi)
+  
+            select case (kick%delta_strength_mode)
+            case (KICK_DENSITY_MODE)
+              forall(idim = 1:st%d%dim, ip = 1:mesh%np)
+                psi(ip, idim) = exp(M_zI*kick%delta_strength*kick_function(ip))*psi(ip, idim)
+              end forall
+  
+            case (KICK_SPIN_MODE)
+              ispin = states_dim_get_spin_index(st%d, iqn)
+              do ip = 1, mesh%np
+                kick_value = M_zI*kick%delta_strength*kick_function(ip)
+                
+                cc(1) = exp(kick_value)
+                cc(2) = exp(-kick_value)
+  
+                select case (st%d%ispin)
+                case (SPIN_POLARIZED)
+                  psi(ip, 1) = cc(ispin)*psi(ip, 1)
+                case (SPINORS)
                   psi(ip, 1) = cc(1)*psi(ip, 1)
-                end if
-              case (SPINORS)
-                psi(ip, 1) = cc(1)*psi(ip, 1)
-              end select
-            end do
-          end select
-
-          call states_set_state(st, mesh, ist, iqn, psi)
-
+                  psi(ip, 2) = cc(2)*psi(ip, 2)
+                end select
+              end do
+  
+            case (KICK_SPIN_DENSITY_MODE)
+              do ip = 1, mesh%np
+                kick_value = M_zI*kick%delta_strength*kick_function(ip)
+                cc(1) = exp(M_TWO*kick_value)
+  
+                select case (st%d%ispin)
+                case (SPIN_POLARIZED)
+                  if(is_spin_up(iqn)) then
+                    psi(ip, 1) = cc(1)*psi(ip, 1)
+                  end if
+                case (SPINORS)
+                  psi(ip, 1) = cc(1)*psi(ip, 1)
+                end select
+              end do
+            end select
+  
+            call states_set_state(st, mesh, ist, iqn, psi)
+          end if
         end do
       end do
 
@@ -892,13 +944,18 @@ contains
       ! The nuclear velocities will be changed by
       ! Delta v_z = ( Z*e*E_0 / M) = - ( Z*k*\hbar / M)
       ! where M and Z are the ionic mass and charge, respectively.
-      if(ion_dynamics_ions_move(ions)  .and. kick%delta_strength /= M_ZERO) then
-        do iatom = 1, geo%natoms
-          geo%atom(iatom)%v(1:mesh%sb%dim) = geo%atom(iatom)%v(1:mesh%sb%dim) + &
-               kick%delta_strength * kick%pol(1:mesh%sb%dim, kick%pol_dir) * &
-               P_PROTON_CHARGE * species_zval(geo%atom(iatom)%species) / &
-               species_mass(geo%atom(iatom)%species)
-        end do
+      if (kick%TDPartialKick_mode .eqv. .false.) then
+        if(ion_dynamics_ions_move(ions)  .and. kick%delta_strength /= M_ZERO) then
+          do iatom = 1, geo%natoms
+            geo%atom(iatom)%v(1:mesh%sb%dim) = geo%atom(iatom)%v(1:mesh%sb%dim) + &
+                 kick%delta_strength * kick%pol(1:mesh%sb%dim, kick%pol_dir) * &
+                 P_PROTON_CHARGE * species_zval(geo%atom(iatom)%species) / &
+                 species_mass(geo%atom(iatom)%species)
+          end do
+        end if
+      else
+        message(1) = "Info: Kick function does not apply on atoms"
+        call messages_info(1)      
       end if
 
       SAFE_DEALLOCATE_A(kick_function)

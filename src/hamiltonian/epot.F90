@@ -142,14 +142,14 @@ module epot_oct_m
 contains
 
   ! ---------------------------------------------------------
-  subroutine epot_init( ep, gr, geo, ispin, nik, xc_family)
+  subroutine epot_init( ep, gr, geo, ispin, nik, xc_family, st)
     type(epot_t),                       intent(out)   :: ep
     type(grid_t),                       intent(in)    :: gr
     type(geometry_t),                   intent(inout) :: geo
     integer,                            intent(in)    :: ispin
     integer,                            intent(in)    :: nik
     integer,                            intent(in)    :: xc_family
-
+    type(states_t),      optional,      intent(in)    :: st
 
     integer :: ispec, ip, idir, ia, gauge_2d, ierr
     type(block_t) :: blk
@@ -234,7 +234,7 @@ contains
     ! lasers
     call laser_init(ep%no_lasers, ep%lasers, gr%mesh)
 
-    call kick_init(ep%kick, ispin, gr%mesh%sb%dim, gr%mesh%sb%periodic_dim)
+    call kick_init(ep%kick, ispin, gr%mesh%sb%dim, gr%mesh%sb%periodic_dim, st)
 
     ! No more "UserDefinedTDPotential" from this version on.
     call messages_obsolete_variable('UserDefinedTDPotential', 'TDExternalFields')

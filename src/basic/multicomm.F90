@@ -103,10 +103,10 @@ module multicomm_oct_m
   character(len=11), parameter :: par_types(0:n_par_types) = &
     (/                              &
     "serial    ",                   &
-    "ParOther  "                    &
+    "ParOther  ",                   &
     "ParKPoints",                   &
     "ParStates ",                   &
-    "ParDomains",                   &
+    "ParDomains"                   &
     /)
 
   integer, parameter :: MAX_INDEX = 5

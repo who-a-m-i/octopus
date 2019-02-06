@@ -85,10 +85,10 @@ module multicomm_oct_m
   !> possible parallelization strategies
   integer, public, parameter ::      &
     P_STRATEGY_SERIAL  = 0,          & !< single domain, all states, k-points on a single processor
-    P_STRATEGY_DOMAINS = 1,          & !< parallelization in domains
-    P_STRATEGY_STATES  = 2,          & !< parallelization in states
-    P_STRATEGY_KPOINTS = 3,          & !< parallelization in k-points
-    P_STRATEGY_OTHER   = 4,          &   !< something else like e-h pairs
+    P_STRATEGY_DOMAINS = 4,          & !< parallelization in domains
+    P_STRATEGY_STATES  = 3,          & !< parallelization in states
+    P_STRATEGY_KPOINTS = 2,          & !< parallelization in k-points
+    P_STRATEGY_OTHER   = 1,          &   !< something else like e-h pairs
     P_STRATEGY_MAX     = 4 
 
   integer, public, parameter ::      &
@@ -103,10 +103,10 @@ module multicomm_oct_m
   character(len=11), parameter :: par_types(0:n_par_types) = &
     (/                              &
     "serial    ",                   &
-    "ParDomains",                   &
-    "ParStates ",                   &
-    "ParKPoints",                   &
     "ParOther  "                    &
+    "ParKPoints",                   &
+    "ParStates ",                   &
+    "ParDomains",                   &
     /)
 
   integer, parameter :: MAX_INDEX = 5
@@ -683,7 +683,7 @@ contains
       if(debug%info .and. mc%par_strategy /= P_STRATEGY_SERIAL) then
         write(message(1),'(a)') 'Debug: MPI Task Assignment to MPI Groups'
         write(message(2),'(5a10)') 'World', 'Domains', 'States', 'K-Points', 'Other'
-        call messages_info(1)
+        call messages_info(2)
 
         if(mc%node_type == P_SLAVE) then
           node_type = "slave"

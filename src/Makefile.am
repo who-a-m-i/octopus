@@ -42,7 +42,6 @@ include/config_F90.h: $(top_builddir)/config.h
 # Sources in basic
 basic_f_srcs =                                 \
 	basic/accel.F90                        \
-	basic/alloc_cache.F90                  \
 	basic/blacs.F90                        \
 	basic/blacs_proc_grid.F90              \
 	basic/calc_mode_par.F90                \
@@ -79,7 +78,6 @@ basic_f_srcs =                                 \
 	basic/write_iter.F90
 
 basic_c_srcs =                                 \
-	basic/alloc_cache_low.cc               \
 	basic/cublas.cc                        \
 	basic/cuda_low.cc                      \
 	basic/getopt_f.c                       \

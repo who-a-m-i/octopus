@@ -83,8 +83,7 @@ subroutine X(subspace_diag_standard)(der, st, hm, ik, eigenval, diff)
   R_TYPE, allocatable :: hmss(:, :), rdiff(:)
   integer             :: ib, minst, maxst
   type(batch_t)       :: hpsib
-  type(profile_t), save :: prof_diff
-  
+
   PUSH_SUB(X(subspace_diag_standard))
 
   SAFE_ALLOCATE(hmss(1:st%nst, 1:st%nst))
@@ -108,8 +107,6 @@ subroutine X(subspace_diag_standard)(der, st, hm, ik, eigenval, diff)
   
   ! Recalculate the residues if requested by the diff argument.
   if(present(diff)) then 
-
-    call profiling_in(prof_diff, 'SUBSPACE_DIFF')
     
     SAFE_ALLOCATE(rdiff(1:st%nst))
     
@@ -118,25 +115,19 @@ subroutine X(subspace_diag_standard)(der, st, hm, ik, eigenval, diff)
       minst = states_block_min(st, ib)
       maxst = states_block_max(st, ib)
 
-      if(hamiltonian_apply_packed(hm, der%mesh)) call batch_pack(st%group%psib(ib, ik))
-      
-      call batch_copy(st%group%psib(ib, ik), hpsib)
+      call batch_copy(st%group%psib(ib, ik), hpsib, fill_zeros = .false.)
 
       call X(hamiltonian_apply_batch)(hm, der, st%group%psib(ib, ik), hpsib, ik)
       call batch_axpy(der%mesh%np, -eigenval, st%group%psib(ib, ik), hpsib)
       call X(mesh_batch_dotp_vector)(der%mesh, hpsib, hpsib, rdiff(minst:maxst))
 
-      call batch_end(hpsib)
+      call batch_end(hpsib, copy = .false.)
 
-      if(hamiltonian_apply_packed(hm, der%mesh)) call batch_unpack(st%group%psib(ib, ik), copy = .false.)
-      
       diff(minst:maxst) = sqrt(abs(rdiff(minst:maxst)))
 
     end do
 
     SAFE_DEALLOCATE_A(rdiff)
-
-    call profiling_out(prof_diff)
     
   end if
 
@@ -401,7 +392,7 @@ subroutine X(subspace_diag_hamiltonian)(der, st, hm, ik, hmss)
   SAFE_ALLOCATE(hpsib(st%group%block_start:st%group%block_end))
   
   do ib = st%group%block_start, st%group%block_end
-    call batch_copy(st%group%psib(ib, ik), hpsib(ib))
+    call batch_copy(st%group%psib(ib, ik), hpsib(ib), fill_zeros= .false.)
     call X(hamiltonian_apply_batch)(hm, der, st%group%psib(ib, ik), hpsib(ib), ik)
   end do
   
@@ -514,7 +505,7 @@ subroutine X(subspace_diag_hamiltonian)(der, st, hm, ik, hmss)
   call profiling_count_operations((R_ADD + R_MUL)*st%nst*(st%nst - CNST(1.0))*der%mesh%np)
   
   do ib = st%group%block_start, st%group%block_end
-    call batch_end(hpsib(ib))
+    call batch_end(hpsib(ib), copy = .false.)
   end do
   
   SAFE_DEALLOCATE_A(hpsib)

@@ -84,8 +84,6 @@ dist_share_DATA =                                \
 	16-sodium_chain_cylinder.test                     \
 	17-aluminium.01-gs.inp                            \
 	17-aluminium.02-td.inp                            \
-	17-aluminium.test                                 \
-        18-TiO2.01-gs.inp                        \
-        18-TiO2.test
+	17-aluminium.test
 
 CLEANFILES = *~ *.bak

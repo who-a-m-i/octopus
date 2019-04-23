@@ -32,6 +32,7 @@ subroutine X(hamiltonian_apply_batch) (hm, der, psib, hpsib, ik, terms, set_bc, 
   type(derivatives_handle_batch_t) :: handle
   integer :: terms_
   type(projection_t) :: projection
+  logical :: copy_at_end
   
   call profiling_in(prof_hamiltonian, "HAMILTONIAN")
   PUSH_SUB(X(hamiltonian_apply_batch))
@@ -57,7 +58,10 @@ subroutine X(hamiltonian_apply_batch) (hm, der, psib, hpsib, ik, terms, set_bc, 
     .and. (accel_is_enabled() .or. psib%nst_linear > 1) &
     .and. terms_ == TERM_ALL
 
+  copy_at_end = .false.
   if(pack) then
+    ! unpack at end with copying only if the status on entry is unpacked
+    copy_at_end = .not. batch_is_packed(psib)
     call batch_pack(psib)
     call batch_pack(hpsib, copy = .false.)
   end if
@@ -79,7 +83,7 @@ subroutine X(hamiltonian_apply_batch) (hm, der, psib, hpsib, ik, terms, set_bc, 
 
   if(apply_phase .and. set_phase_) then
     SAFE_ALLOCATE(epsib)
-    call batch_copy(psib, epsib)
+    call batch_copy(psib, epsib, fill_zeros = .false.)
   else
     epsib => psib
   end if
@@ -178,11 +182,12 @@ subroutine X(hamiltonian_apply_batch) (hm, der, psib, hpsib, ik, terms, set_bc, 
 
   if(pack) then
     call batch_unpack(psib, copy = .false.)
-    call batch_unpack(hpsib)
+    call batch_unpack(hpsib, copy=copy_at_end)
   end if
 
   POP_SUB(X(hamiltonian_apply_batch))
   call profiling_out(prof_hamiltonian)
+
 end subroutine X(hamiltonian_apply_batch)
 
 ! ---------------------------------------------------------

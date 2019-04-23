@@ -40,14 +40,22 @@ subroutine X(fft_forward)(fft, in, out, norm)
     slot = fft%slot
     select case (fft_array(slot)%library)
     case (FFTLIB_FFTW)
-      ii = min(1, fft_array(slot)%rs_n(1))
-      jj = min(1, fft_array(slot)%rs_n(2))
-      kk = min(1, fft_array(slot)%rs_n(3))
+      if(all(fft_array(slot)%rs_n(1:3) >= 1)) then
 #ifdef R_TREAL
-      call fftw_execute_dft_r2c(fft_array(slot)%planf, in(ii:,jj:,kk:), out(ii:,jj:,kk:))
+        call fftw_execute_dft_r2c(fft_array(slot)%planf, in(:,:,:), out(:,:,:))
 #else
-      call fftw_execute_dft(fft_array(slot)%planf, in(ii:,jj:,kk:), out(ii:,jj:,kk:))
+        call fftw_execute_dft(fft_array(slot)%planf, in(:,:,:), out(:,:,:))
 #endif
+      else
+        ii = min(1, fft_array(slot)%rs_n(1))
+        jj = min(1, fft_array(slot)%rs_n(2))
+        kk = min(1, fft_array(slot)%rs_n(3))
+#ifdef R_TREAL
+        call fftw_execute_dft_r2c(fft_array(slot)%planf, in(ii:,jj:,kk:), out(ii:,jj:,kk:))
+#else
+        call fftw_execute_dft(fft_array(slot)%planf, in(ii:,jj:,kk:), out(ii:,jj:,kk:))
+#endif
+      end if
     case (FFTLIB_NFFT)
 #ifdef HAVE_NFFT
       call X(nfft_forward)(fft_array(slot)%nfft, in(:,:,:), out(:,:,:))
@@ -144,7 +152,7 @@ subroutine X(fft_forward)(fft, in, out, norm)
     ASSERT(fft_array(slot)%library == FFTLIB_ACCEL)
 
 #ifdef HAVE_CUDA
-    call cuda_fft_execute_d2z(fft_array(slot)%cuda_plan_fw, in%cuda_ptr, out%cuda_ptr)
+    call cuda_fft_execute_d2z(fft_array(slot)%cuda_plan_fw, in%mem, out%mem)
     call accel_finish()
 #endif
     
@@ -332,7 +340,7 @@ subroutine X(fft_forward)(fft, in, out, norm)
     ASSERT(fft_array(slot)%library == FFTLIB_ACCEL)
 
 #ifdef HAVE_CUDA
-    call cuda_fft_execute_z2d(fft_array(slot)%cuda_plan_bw, in%cuda_ptr, out%cuda_ptr)
+    call cuda_fft_execute_z2d(fft_array(slot)%cuda_plan_bw, in%mem, out%mem)
     call accel_finish()
 #endif
     

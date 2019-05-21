@@ -102,6 +102,7 @@ contains
 
     sm%np = -1
     sm%radius = M_ZERO
+    sm%overlap = .false.
     nullify(sm%map)
     nullify(sm%x)
     nullify(sm%mesh)
@@ -322,6 +323,7 @@ contains
       if(root == mpi_grp%rank) nparray = (/this%np, this%np_part/)
 #ifdef HAVE_MPI
       call MPI_Bcast(nparray, 2, MPI_INTEGER, root, mpi_grp%comm, mpi_err)
+      call MPI_Bcast(this%overlap, 1, MPI_LOGICAL, root, mpi_grp%comm, mpi_err)  
       call MPI_Barrier(mpi_grp%comm, mpi_err)
 #endif
       this%np = nparray(1)

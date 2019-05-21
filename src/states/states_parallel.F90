@@ -187,10 +187,12 @@ contains
       call MPI_Win_lock(MPI_LOCK_SHARED, this%group%block_node(ib), 0, this%group%rma_win(ib, iqn),  mpi_err)
 
       if(states_are_real(this)) then
+        ASSERT(allocated(psib%pack%dpsi))
         call MPI_Get(psib%pack%dpsi(1, 1), product(psib%pack%size), MPI_FLOAT, &
           this%group%block_node(ib), int(0, MPI_ADDRESS_KIND), product(psib%pack%size), MPI_FLOAT, &
           this%group%rma_win(ib, iqn), mpi_err)
       else
+        ASSERT(allocated(psib%pack%zpsi))
         call MPI_Get(psib%pack%zpsi(1, 1), product(psib%pack%size), MPI_CMPLX, &
           this%group%block_node(ib), int(0, MPI_ADDRESS_KIND), product(psib%pack%size), MPI_CMPLX, &
           this%group%rma_win(ib, iqn), mpi_err)

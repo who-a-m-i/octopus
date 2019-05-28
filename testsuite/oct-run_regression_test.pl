@@ -25,7 +25,6 @@ use File::Spec;
 use Fcntl qw(:mode :flock);
 use Time::HiRes qw(gettimeofday tv_interval);
 use Scalar::Util qw(looks_like_number);
-use YAML 'Dump';
 
 sub usage {
 
@@ -45,6 +44,7 @@ Usage: oct-run_regression_test.pl [options]
     -l        copy output log to current directory
     -m        run matches only (assumes there are work directories)
     -r        print a report into a YAML files
+    -G        deviceID offset for CUDA run
 
 Exit codes:
     0         all tests passed
@@ -90,7 +90,7 @@ if (not @ARGV) { usage; }
 
 $opt_f = "";
 $opt_r = "";
-getopts("nlvhD:c:f:spm:r:");
+getopts("nlvhD:c:f:spm:r:G:");
 
 # avoid warnings 'used only once: possible typo'
 $useless = $opt_h;
@@ -115,6 +115,12 @@ if($opt_D) {
 
 if(length($opt_f) == 0) {
     die255("You must supply the name of a test file with the -f option.");
+}
+
+if($opt_G) {
+    $offset_GPU = $opt_G;
+} else {
+    $offset_GPU = -1
 }
 
 $aexec = get_env("EXEC");
@@ -161,6 +167,14 @@ $enabled = ""; # FIXME: should Enabled be optional?
 $options_required = "";
 $options_required_mpi = "";
 $options_are_mpi = 0;
+
+# adjust offset_GPU for MPI runs:
+
+if( "$mpiexec" eq "" ) {
+    $offset_GPU = $offset_GPU * $np;
+}
+
+$ENV{OCT_OpenCLDevice} = $offset_GPU;
 
 # This variable counts the number of failed testcases.
 $failures = 0;
@@ -408,6 +422,7 @@ while ($_ = <TESTSUITE>) {
 
                     if($return_value == 0) {
                         printf "%-40s%s", " Execution", ": \t [ $color_start{green}  OK  $color_end{green} ] \n";
+                        $input_report{"execution"} = "success";
               
                     } else {
                         print "Test run failed with exit code $return_value.\n";
@@ -417,6 +432,7 @@ while ($_ = <TESTSUITE>) {
                         print "----------------------------------------\n\n";
 
                         printf "%-40s%s", " Execution", ": \t [ $color_start{red} FAIL $color_end{red} ] \n\n";
+                        $input_report{"execution"} = "fail";
 
                         $failures++;
                         $test_succeeded = 0;  
@@ -451,10 +467,9 @@ while ($_ = <TESTSUITE>) {
 
             my %match_report;
             $r_match_report = \%match_report;
-            push( @{$r_matches_array}, $r_match_report);
-
           
             if (!$opt_n && $return_value == 0) {
+                push( @{$r_matches_array}, $r_match_report);
                 if(run_match_new($_)){
                     printf "%-40s%s", "$name", ":\t [ $color_start{green}  OK  $color_end{green} ] \t (Calculated value = $value) \n";
                     if ($opt_v) { print_hline(); }
@@ -480,11 +495,12 @@ close(TESTSUITE);
 
 print "Status: ".$failures." failures\n";
 
-if($opt_r) { 
-    open(YAML, ">>$opt_r" ) or die255("Could not create '$opt_r'.");
-    flock(YAML, LOCK_EX) or die "Cannot lock file - $opt_r!\n";
-    print YAML Dump(\%report);
-    close(YAML);
+if($opt_r) {
+    require YAML;
+    open(YML, ">>$opt_r" ) or die255("Could not create '$opt_r'.");
+    flock(YML, LOCK_EX) or die "Cannot lock file - $opt_r!\n";
+    print YML YAML::Dump(\%report);
+    close(YML);
 }
 
 
@@ -513,7 +529,7 @@ sub run_match_new {
     $params =~ s/\\,/_COMMA_/g;
     my @par = split(/,/, $params);
     for ($params=0; $params <= $#par; $params++) {
-        $par[$params] =~ s/_COMMA_/,/g;
+        $par[$params] =~ s/_COMMA_/\\,/g;
         $par[$params] =~ s/^\s*//;
         $par[$params] =~ s/\s*$//;
     }
@@ -569,7 +585,8 @@ sub run_match_new {
 
     } elsif ($func eq "GREPCOUNT") { # function GREPCOUNT(filename, 're')
         check_num_args(2, 2, $#par, $func);
-        $shell_command = "grep -c $par[1] $par[0]";
+        # unfortunately grep returns an error code if it finds zero matches, so we make sure the command always returns true
+        $shell_command = "grep -c $par[1] $par[0] || :";
 
     } elsif ($func eq "SIZE") { # function SIZE(filename)
         check_num_args(1, 1, $#par, $func);
@@ -582,7 +599,7 @@ sub run_match_new {
 
     # 'set -e; set -o pipefail' (bash 3 only) would make the whole pipe series give an error if any step does;
     # otherwise the error comes only if the last step failed.
-    $value = qx(cd $matchdir && $shell_command);
+    $value = qx(cd $matchdir && $shell_command);    
     # Perl gives error code shifted, for some reason.
     $exit_code = $? >> 8;
     if ($exit_code) {

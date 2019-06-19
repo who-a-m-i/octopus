@@ -245,7 +245,7 @@ contains
         evectors(1:nn, ii) = zevalues(1:nn)*evectors(1:nn, ii)
       end do
       
-      ex(1:nn, 1:nn) = matmul(ex(1:nn, 1:nn), evectors(1:nn, 1:nn))
+      ex(1:nn, 1:nn) = matmul(ex(1:nn, 1:nn), deter(1:nn, 1:nn))
 
       SAFE_DEALLOCATE_A(zevalues)
     end if
@@ -324,7 +324,7 @@ contains
         evectors(1:nn, ii) = zevalues(1:nn)*evectors(1:nn, ii)
       end do
       
-      ex(1:nn, 1:nn) = matmul(ex(1:nn, 1:nn), evectors(1:nn, 1:nn))
+      ex(1:nn, 1:nn) = matmul(ex(1:nn, 1:nn), deter(1:nn, 1:nn))
 
       SAFE_DEALLOCATE_A(zevalues)
     end if

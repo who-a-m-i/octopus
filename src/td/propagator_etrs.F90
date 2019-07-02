@@ -444,7 +444,7 @@ contains
 
     else
 
-      call worker_elec_exp_apply(tr%te, st, gr, hm, M_HALF*dt)
+      call worker_elec_fuse_density_exp_apply(tr%te, st, gr, hm, M_HALF*dt)
 
     end if
 

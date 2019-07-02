@@ -1,4 +1,4 @@
-!! Copyright (C) 2002-2006 M. Marques, A. Castro, A. Rubio, G. Bertsch
+!! Copyright (C) 2019 N. Tancogne-Dejean
 !!
 !! This program is free software; you can redistribute it and/or modify
 !! it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ module states_abst_oct_m
     integer, public  :: nst                   !< Number of states in each irreducible subspace
     logical, public  :: packed
 
-    contains
+  contains
 
     procedure(nullify),    deferred :: nullify
     procedure(pack),       deferred :: pack
@@ -52,40 +52,32 @@ module states_abst_oct_m
   end type states_abst_t
 
   abstract interface
-  subroutine nullify(st)
-    import states_abst_t
-    class(states_abst_t), intent(inout) :: st
-  end subroutine nullify
-  end interface
+    subroutine nullify(st)
+      import states_abst_t
+      class(states_abst_t), intent(inout) :: st
+    end subroutine nullify
 
-  abstract interface
-  subroutine set_zero(st)
-    import states_abst_t
-    class(states_abst_t), intent(inout) :: st
-  end subroutine set_zero
-  end interface
+    subroutine set_zero(st)
+      import states_abst_t
+      class(states_abst_t), intent(inout) :: st
+    end subroutine set_zero
 
-  abstract interface
-  subroutine write_info(st)
-    import states_abst_t
-    class(states_abst_t), intent(in) :: st
-  end subroutine write_info
-  end interface
+    subroutine write_info(st)
+      import states_abst_t
+      class(states_abst_t), intent(in) :: st
+    end subroutine write_info
 
-  abstract interface
-  subroutine pack(st, copy)
-    import states_abst_t
-    class(states_abst_t), intent(inout) :: st
-    logical, optional,    intent(in)    :: copy 
-  end subroutine pack
-  end interface
+    subroutine pack(st, copy)
+      import states_abst_t
+      class(states_abst_t), intent(inout) :: st
+      logical, optional,    intent(in)    :: copy 
+    end subroutine pack
 
-  abstract interface
-  subroutine unpack(st, copy)
-    import states_abst_t
-    class(states_abst_t), intent(inout) :: st
-    logical, optional,    intent(in)    :: copy
-  end subroutine unpack
+    subroutine unpack(st, copy)
+      import states_abst_t
+      class(states_abst_t), intent(inout) :: st
+      logical, optional,    intent(in)    :: copy
+    end subroutine unpack
   end interface
 
 contains

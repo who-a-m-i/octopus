@@ -397,6 +397,9 @@ contains
     !%End
     call parse_variable(parser, 'TDSCFThreshold', CNST(1.0e-6), tr%scf_threshold)
 
+
+    call tr%worker_elec%init()
+
     POP_SUB(propagator_init)
   end subroutine propagator_init
   ! ---------------------------------------------------------
@@ -452,6 +455,8 @@ contains
     end select
     
     call exponential_end(tr%te)       ! clean propagator method
+
+    call tr%worker_elec%end()
 
     POP_SUB(propagator_end)
   end subroutine propagator_end

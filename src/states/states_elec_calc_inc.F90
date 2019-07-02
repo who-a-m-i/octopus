@@ -424,7 +424,8 @@ subroutine X(states_elec_trsm)(st, mesh, ik, ss)
 end subroutine X(states_elec_trsm)
 
 ! ---------------------------------------------------------
-subroutine X(states_elec_orthogonalize_single)(st, mesh, nst, iqn, phi, normalize, mask, overlap, norm, Theta_fi, beta_ij, against_all)
+subroutine X(states_elec_orthogonalize_single)(st, mesh, nst, iqn, phi, normalize, &
+                     mask, overlap, norm, Theta_fi, beta_ij, against_all)
   type(states_elec_t), intent(in)    :: st
   type(mesh_t),        intent(in)    :: mesh
   integer,             intent(in)    :: nst

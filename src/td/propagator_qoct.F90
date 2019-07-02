@@ -33,6 +33,7 @@ module propagator_qoct_oct_m
   use potential_interpolation_oct_m
   use propagator_base_oct_m
   use states_oct_m
+  use worker_elec_oct_m
   use xc_oct_m
 
   implicit none
@@ -77,8 +78,8 @@ contains
       call hamiltonian_epot_generate(hm, parser, gr, geo, st, time = t - dt/M_TWO)
     end if
 
-    call hamiltonian_update(hm, gr%mesh, gr%der%boundaries, time = t-dt/M_TWO)
-    call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy )
+    call worker_elec_update_hamiltonian(st, gr, hm, t-dt/M_TWO)
+
     call exponential_apply_all(tr%te, gr%der, hm, xc, st, dt)
 
     call density_calc(st, gr, st%rho)

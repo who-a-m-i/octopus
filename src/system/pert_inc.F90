@@ -136,7 +136,7 @@ subroutine X(pert_apply)(this, parser, gr, geo, hm, ik, f_in, f_out, set_bc)
 
   if (apply_kpoint) then
 #ifdef R_TCOMPLEX
-    call states_set_phase(hm%d, f_in_copy, hm%hm_base%phase(1:gr%mesh%np_part, ik), gr%mesh%np_part, .false.)
+    call states_elec_set_phase(hm%d, f_in_copy, hm%hm_base%phase(1:gr%mesh%np_part, ik), gr%mesh%np_part, .false.)
 #endif
   end if
 
@@ -160,7 +160,7 @@ subroutine X(pert_apply)(this, parser, gr, geo, hm, ik, f_in, f_out, set_bc)
   
   if (apply_kpoint) then
 #ifdef R_TCOMPLEX
-    call states_set_phase(hm%d, f_out, hm%hm_base%phase(1:gr%mesh%np, ik), gr%mesh%np, .true.)
+    call states_elec_set_phase(hm%d, f_out, hm%hm_base%phase(1:gr%mesh%np, ik), gr%mesh%np, .true.)
 #endif
   end if
 
@@ -426,7 +426,7 @@ subroutine X(pert_apply_order_2) (this, parser, gr, geo, hm, ik, f_in, f_out)
 
   if (apply_kpoint) then
 #ifdef R_TCOMPLEX
-    call states_set_phase(hm%d, f_in_copy, hm%hm_base%phase(1:gr%mesh%np_part, ik), gr%mesh%np_part, .false.)
+    call states_elec_set_phase(hm%d, f_in_copy, hm%hm_base%phase(1:gr%mesh%np_part, ik), gr%mesh%np_part, .false.)
 #endif
   end if
 
@@ -446,7 +446,7 @@ subroutine X(pert_apply_order_2) (this, parser, gr, geo, hm, ik, f_in, f_out)
 
   if (apply_kpoint) then
 #ifdef R_TCOMPLEX
-    call states_set_phase(hm%d, f_out, hm%hm_base%phase(1:gr%mesh%np, ik), gr%mesh%np, .true.)
+    call states_elec_set_phase(hm%d, f_out, hm%hm_base%phase(1:gr%mesh%np, ik), gr%mesh%np, .true.)
 #endif
   end if
 
@@ -749,7 +749,7 @@ subroutine X(ionic_pert_matrix_elements_2)(gr, parser, geo, hm, ik, st, vib, fac
   type(geometry_t),    intent(in)    :: geo
   type(hamiltonian_t), intent(inout) :: hm
   integer,             intent(in)    :: ik
-  type(states_t),      intent(in)    :: st
+  type(states_elec_t), intent(in)    :: st
   type(vibrations_t),  intent(in)    :: vib
   FLOAT,               intent(in)    :: factor
   FLOAT,               intent(inout) :: matrix(:, :) !< this is an expectation value of a Hermitian operator
@@ -770,7 +770,7 @@ subroutine X(ionic_pert_matrix_elements_2)(gr, parser, geo, hm, ik, st, vib, fac
 
   do ist = 1, st%nst
 
-    call states_get_state(st, gr%der%mesh, ist, ik, psi)
+    call states_elec_get_state(st, gr%der%mesh, ist, ik, psi)
     
     do idim = 1, st%d%dim
       call X(derivatives_grad)(gr%der, psi(:, idim), gpsi(:, idim, :))
@@ -824,7 +824,7 @@ subroutine X(pert_expectation_density) (this, parser, gr, geo, hm, st, psia, psi
   type(grid_t),         intent(in)    :: gr
   type(geometry_t),     intent(in)    :: geo
   type(hamiltonian_t),  intent(inout) :: hm
-  type(states_t),       intent(in)    :: st
+  type(states_elec_t),  intent(in)    :: st
   R_TYPE,               pointer       :: psia(:, :, :, :)
   R_TYPE,               pointer       :: psib(:, :, :, :)
   R_TYPE,               intent(out)   :: density(:)
@@ -875,7 +875,7 @@ R_TYPE function X(pert_expectation_value) (this, parser, gr, geo, hm, st, psia, 
   type(grid_t),         intent(in)    :: gr
   type(geometry_t),     intent(in)    :: geo
   type(hamiltonian_t),  intent(inout) :: hm
-  type(states_t),       intent(in)    :: st
+  type(states_elec_t),  intent(in)    :: st
   R_TYPE,               pointer       :: psia(:, :, :, :)
   R_TYPE,               pointer       :: psib(:, :, :, :)
   integer, optional,    intent(in)    :: pert_order
@@ -914,20 +914,20 @@ end function X(pert_expectation_value)
 
 ! --------------------------------------------------------------------------
 
-R_TYPE function X(pert_states_expectation_value)(this, parser, gr, geo, hm, st, pert_order) result(expval)
+R_TYPE function X(pert_states_elec_expectation_value)(this, parser, gr, geo, hm, st, pert_order) result(expval)
   type(pert_t),         intent(in)    :: this
   type(parser_t),       intent(in)    :: parser
   type(grid_t),         intent(in)    :: gr
   type(geometry_t),     intent(in)    :: geo
   type(hamiltonian_t),  intent(inout) :: hm
-  type(states_t),       intent(in)    :: st
+  type(states_elec_t),  intent(in)    :: st
   integer, optional,    intent(in)    :: pert_order
 
   integer :: order, ik, ib, minst, maxst, ist
   R_TYPE, allocatable :: tt(:)
   type(batch_t) :: hpsib
 
-  PUSH_SUB(X(pert_states_expectation_value))
+  PUSH_SUB(X(pert_states_elec_expectation_value))
 
   order = 1
   if(present(pert_order)) order = pert_order
@@ -941,8 +941,8 @@ R_TYPE function X(pert_states_expectation_value)(this, parser, gr, geo, hm, st, 
     tt = M_ZERO
 
     do ib = st%group%block_start, st%group%block_end
-      minst = states_block_min(st, ib)
-      maxst = states_block_max(st, ib)
+      minst = states_elec_block_min(st, ib)
+      maxst = states_elec_block_max(st, ib)
 
       call batch_copy(st%group%psib(ib, ik), hpsib)
 
@@ -962,9 +962,9 @@ R_TYPE function X(pert_states_expectation_value)(this, parser, gr, geo, hm, st, 
   if(st%parallel_in_states) call comm_allreduce(st%mpi_grp%comm, expval)
 
 
-  POP_SUB(X(pert_states_expectation_value))
+  POP_SUB(X(pert_states_elec_expectation_value))
 
-end function X(pert_states_expectation_value)
+end function X(pert_states_elec_expectation_value)
 
 !! Local Variables:
 !! mode: f90

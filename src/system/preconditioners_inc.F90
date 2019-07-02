@@ -17,11 +17,10 @@
 !!
 
 ! ---------------------------------------------------------
-subroutine X(preconditioner_apply)(pre, gr, hm, ik, a, b, omega)
+subroutine X(preconditioner_apply)(pre, gr, hm, a, b, omega)
   type(preconditioner_t), intent(in)    :: pre
   type(grid_t), target,   intent(in)    :: gr
   type(hamiltonian_t),    intent(in)    :: hm
-  integer,                intent(in)    :: ik
   R_TYPE,                 intent(inout) :: a(:,:)
   R_TYPE,                 intent(inout) :: b(:,:)
   R_TYPE,       optional, intent(in)    :: omega
@@ -223,11 +222,10 @@ end subroutine X(preconditioner_apply)
 
 ! ----------------------------------------
 
-subroutine X(preconditioner_apply_batch)(pre, gr, hm, ik, aa, bb, omega)
+subroutine X(preconditioner_apply_batch)(pre, gr, hm, aa, bb, omega)
   type(preconditioner_t), intent(in)    :: pre
   type(grid_t),           intent(in)    :: gr
   type(hamiltonian_t),    intent(in)    :: hm
-  integer,                intent(in)    :: ik
   type(batch_t),          intent(inout) :: aa
   type(batch_t),          intent(inout) :: bb
   R_TYPE,       optional, intent(in)    :: omega(:)
@@ -252,7 +250,7 @@ subroutine X(preconditioner_apply_batch)(pre, gr, hm, ik, aa, bb, omega)
     SAFE_ALLOCATE(psib(1:gr%mesh%np, 1:hm%d%dim))
     do ii = 1, aa%nst
       call batch_get_state(aa, ii, gr%mesh%np, psia)
-      call X(preconditioner_apply)(pre, gr, hm, ik, psia, psib, omega(ii))
+      call X(preconditioner_apply)(pre, gr, hm, psia, psib, omega(ii))
       call batch_set_state(bb, ii, gr%mesh%np, psib)
     end do
     SAFE_DEALLOCATE_A(psia)

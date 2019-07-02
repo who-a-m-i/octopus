@@ -111,7 +111,7 @@ subroutine X(hamiltonian_apply_batch) (hm, der, psib, hpsib, ik, terms, set_bc, 
 
   ! apply the local potential
   if (bitand(TERM_LOCAL_POTENTIAL, terms_) /= 0) then
-    call X(hamiltonian_base_local)(hm%hm_base, der%mesh, hm%d, states_dim_get_spin_index(hm%d, ik), epsib, hpsib)
+    call X(hamiltonian_base_local)(hm%hm_base, der%mesh, hm%d, states_elec_dim_get_spin_index(hm%d, ik), epsib, hpsib)
   else if(bitand(TERM_LOCAL_EXTERNAL, terms_) /= 0) then
     call X(hamiltonian_external)(hm, der%mesh, epsib, hpsib)
   end if
@@ -127,7 +127,7 @@ subroutine X(hamiltonian_apply_batch) (hm, der, psib, hpsib, ik, terms, set_bc, 
   
   if (bitand(TERM_OTHERS, terms_) /= 0 .and. hamiltonian_base_has_magnetic(hm%hm_base)) then
     call X(hamiltonian_base_magnetic)(hm%hm_base, der, hm%d, hm%ep, &
-             states_dim_get_spin_index(hm%d, ik), epsib, hpsib)
+             states_elec_dim_get_spin_index(hm%d, ik), epsib, hpsib)
   end if
   
   if (bitand(TERM_OTHERS, terms_) /= 0 ) then
@@ -282,9 +282,6 @@ subroutine X(hamiltonian_rdmft_occ_apply) (hm, der, ik, hpsib)
   integer,             intent(in)    :: ik
   type(batch_t),       intent(inout) :: hpsib
   
-  R_TYPE, allocatable :: hpsi(:, :)
-  integer :: ibatch
-  
   PUSH_SUB(X(hamiltonian_rdmft_occ_apply))
   
   ! multiply linear terms in hamiltonian with occupation number
@@ -300,8 +297,8 @@ subroutine X(hamiltonian_apply_all) (hm, xc, der, st, hst)
   type(hamiltonian_t), intent(inout) :: hm
   type(xc_t),          intent(in)    :: xc
   type(derivatives_t), intent(in)    :: der
-  type(states_t),      intent(inout) :: st
-  type(states_t),      intent(inout) :: hst
+  type(states_elec_t), intent(inout) :: st
+  type(states_elec_t), intent(inout) :: hst
 
   integer :: ik, ib, ist
   R_TYPE, allocatable :: psi(:, :)
@@ -319,7 +316,7 @@ subroutine X(hamiltonian_apply_all) (hm, xc, der, st, hst)
 
     SAFE_ALLOCATE(psiall(der%mesh%np_part, 1:hst%d%dim, st%st_start:st%st_end, st%d%kpt%start:st%d%kpt%end))
 
-    call states_get_state(st, der%mesh, psiall)
+    call states_elec_get_state(st, der%mesh, psiall)
     
     call oct_exchange_prepare(hm%oct_exchange, der%mesh, psiall, xc)
 
@@ -329,9 +326,9 @@ subroutine X(hamiltonian_apply_all) (hm, xc, der, st, hst)
     
     do ik = 1, st%d%nik
       do ist = 1, st%nst
-        call states_get_state(hst, der%mesh, ist, ik, psi)
+        call states_elec_get_state(hst, der%mesh, ist, ik, psi)
         call X(oct_exchange_operator)(hm%oct_exchange, der, psi, ist, ik)
-        call states_set_state(hst, der%mesh, ist, ik, psi)
+        call states_elec_set_state(hst, der%mesh, ist, ik, psi)
       end do
     end do
 
@@ -404,11 +401,11 @@ subroutine X(exchange_operator)(hm, der, ik, exx_coef, psib, hpsib)
     call batch_get_state(hpsib, ibatch, der%mesh%np, hpsi)
 
     do ik2 = 1, hm%d%nik
-      if(states_dim_get_spin_index(hm%d, ik2) /= states_dim_get_spin_index(hm%d, ik)) cycle
+      if(states_elec_dim_get_spin_index(hm%d, ik2) /= states_elec_dim_get_spin_index(hm%d, ik)) cycle
 
       do ib = 1, hm%hf_st%group%nblocks
 
-        call states_parallel_get_block(hm%hf_st, der%mesh, ib, ik2, psi2b)
+        call states_elec_parallel_get_block(hm%hf_st, der%mesh, ib, ik2, psi2b)
 
         do ii = 1, psi2b%nst
 
@@ -444,7 +441,7 @@ subroutine X(exchange_operator)(hm, der, ik, exx_coef, psib, hpsib)
 
         end do
 
-        call states_parallel_release_block(hm%hf_st, ib, ik2, psi2b)
+        call states_elec_parallel_release_block(hm%hf_st, ib, ik2, psi2b)
 
       end do
     end do
@@ -492,14 +489,14 @@ subroutine X(exchange_operator_hartree) (hm, der, ik, exx_coef, psib, hpsib)
     call batch_get_state(hpsib, ibatch, der%mesh%np, hpsi)
     
     do ik2 = 1, hm%d%nik
-      if(states_dim_get_spin_index(hm%d, ik2) /= states_dim_get_spin_index(hm%d, ik)) cycle
+      if(states_elec_dim_get_spin_index(hm%d, ik2) /= states_elec_dim_get_spin_index(hm%d, ik)) cycle
 
       if(hm%hf_st%occ(ist, ik2) < M_EPSILON) cycle
 
       pot = R_TOTYPE(M_ZERO)
       rho = R_TOTYPE(M_ZERO)
 
-      call states_get_state(hm%hf_st, der%mesh, ist, ik2, psi2)
+      call states_elec_get_state(hm%hf_st, der%mesh, ist, ik2, psi2)
 
       do idim = 1, hm%hf_st%d%dim
         forall(ip = 1:der%mesh%np)
@@ -586,7 +583,7 @@ subroutine X(scdm_exchange_operator) (hm, der, psib, hpsib, ik, exx_coef)
     temp_state_global(:,:) = M_ZERO
 
     do ik2 = 1, hm%d%nik
-      if(states_dim_get_spin_index(hm%d, ik2) /= states_dim_get_spin_index(hm%d, ik)) cycle
+      if(states_elec_dim_get_spin_index(hm%d, ik2) /= states_elec_dim_get_spin_index(hm%d, ik)) cycle
       count = 0
       do jst = hm%scdm%st_exx_start, hm%scdm%st_exx_end
 
@@ -693,7 +690,7 @@ subroutine X(magnus) (hm, der, psi, hpsi, ik, vmagnus, set_phase)
   SAFE_ALLOCATE( auxpsi(1:der%mesh%np_part, 1:hm%d%dim))
   SAFE_ALLOCATE(aux2psi(1:der%mesh%np,      1:hm%d%dim))
 
-  ispin = states_dim_get_spin_index(hm%d, ik)
+  ispin = states_elec_dim_get_spin_index(hm%d, ik)
 
   call X(hamiltonian_apply)(hm, der, psi, hpsi, ist = 1, ik = ik, terms = TERM_KINETIC, set_phase = set_phase)
 
@@ -772,7 +769,7 @@ subroutine X(h_mgga_terms) (hm, der, ik, psib, hpsib)
 
   ASSERT(.not. batch_is_packed(psib))
   
-  ispin = states_dim_get_spin_index(hm%d, ik)
+  ispin = states_elec_dim_get_spin_index(hm%d, ik)
 
   SAFE_ALLOCATE(grad(1:der%mesh%np_part, 1:der%mesh%sb%dim))
   SAFE_ALLOCATE(diverg(1:der%mesh%np))
@@ -829,7 +826,7 @@ end subroutine X(h_mgga_terms)
 subroutine X(vmask) (gr, hm, st)
   type(grid_t),        intent(in)    :: gr
   type(hamiltonian_t), intent(in)    :: hm
-  type(states_t),      intent(inout) :: st
+  type(states_elec_t), intent(inout) :: st
 
   integer :: ik, ist, idim
   R_TYPE, allocatable :: psi(:)
@@ -842,9 +839,9 @@ subroutine X(vmask) (gr, hm, st)
     do ik = st%d%kpt%start, st%d%kpt%end
       do ist = st%st_start, st%st_end
         do idim = 1, st%d%dim
-          call states_get_state(st, gr%mesh, idim, ist, ik, psi)
+          call states_elec_get_state(st, gr%mesh, idim, ist, ik, psi)
           psi(1:gr%mesh%np) = psi(1:gr%mesh%np)*hm%bc%mf(1:gr%mesh%np)
-          call states_set_state(st, gr%mesh, idim, ist, ik, psi)
+          call states_elec_set_state(st, gr%mesh, idim, ist, ik, psi)
         end do
       end do
     end do
@@ -882,7 +879,7 @@ subroutine X(hamiltonian_diagonal) (hm, der, diag, ik)
   select case(hm%d%ispin)
 
   case(UNPOLARIZED, SPIN_POLARIZED)
-    ispin = states_dim_get_spin_index(hm%d, ik)
+    ispin = states_elec_dim_get_spin_index(hm%d, ik)
     diag(1:der%mesh%np, 1) = diag(1:der%mesh%np, 1) + hm%vhxc(1:der%mesh%np, ispin) + hm%ep%vpsl(1:der%mesh%np)
 
   case(SPINORS)

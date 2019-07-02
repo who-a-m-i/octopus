@@ -48,7 +48,7 @@ module propagator_oct_m
   use scdm_oct_m
   use scf_oct_m
   use sparskit_oct_m
-  use states_oct_m
+  use states_elec_oct_m
   use v_ks_oct_m
   use varinfo_oct_m
   use xc_oct_m
@@ -134,7 +134,7 @@ contains
   subroutine propagator_init(gr, parser, st, tr, have_fields, family_is_mgga)
     type(grid_t),        intent(in)    :: gr
     type(parser_t),      intent(in)    :: parser
-    type(states_t),      intent(in)    :: st
+    type(states_elec_t), intent(in)    :: st
     type(propagator_t),  intent(inout) :: tr
     !> whether there is an associated "field"
     !! that must be propagated (currently ions
@@ -488,7 +488,7 @@ contains
     type(parser_t),                  intent(in)    :: parser
     type(hamiltonian_t), target,     intent(inout) :: hm
     type(grid_t),        target,     intent(inout) :: gr
-    type(states_t),      target,     intent(inout) :: st
+    type(states_elec_t), target,     intent(inout) :: st
     type(propagator_t),  target,     intent(inout) :: tr
     FLOAT,                           intent(in)    :: time
     FLOAT,                           intent(in)    :: dt
@@ -635,7 +635,7 @@ contains
     type(parser_t),      intent(in)    :: parser
     type(grid_t), intent(inout)        :: gr
     type(v_ks_t), intent(inout)        :: ks
-    type(states_t), intent(inout)      :: st
+    type(states_elec_t), intent(inout) :: st
     type(hamiltonian_t), intent(inout) :: hm
     type(geometry_t), intent(inout)    :: geo
     type(multicomm_t), intent(inout)   :: mc    !< index and domain communicators

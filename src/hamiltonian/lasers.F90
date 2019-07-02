@@ -27,7 +27,7 @@ module lasers_oct_m
   use messages_oct_m
   use profiling_oct_m
   use simul_box_oct_m
-  use states_dim_oct_m
+  use states_elec_dim_oct_m
   use symmetries_oct_m
   use symm_op_oct_m
   use unit_oct_m

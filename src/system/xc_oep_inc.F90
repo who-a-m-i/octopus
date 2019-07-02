@@ -26,15 +26,15 @@
 !! the rest of the Hamiltonian module does not know about the gory details
 !! of how xc is defined and calculated.
 subroutine X(xc_oep_calc)(oep, parser, xcs, apply_sic_pz, gr, hm, st, ex, ec, vxc)
-  type(xc_oep_t),      intent(inout) :: oep
-  type(parser_t),      intent(in)    :: parser
-  type(xc_t),          intent(in)    :: xcs
-  logical,             intent(in)    :: apply_sic_pz
-  type(grid_t),        intent(in)    :: gr
-  type(hamiltonian_t), intent(in)    :: hm
-  type(states_t),      intent(inout) :: st
-  FLOAT,               intent(inout) :: ex, ec
-  FLOAT, optional,     intent(inout) :: vxc(:,:) !< vxc(gr%mesh%np, st%d%nspin)
+  type(xc_oep_t),           intent(inout) :: oep
+  type(parser_t),           intent(in)    :: parser
+  type(xc_t),               intent(in)    :: xcs
+  logical,                  intent(in)    :: apply_sic_pz
+  type(grid_t),             intent(in)    :: gr
+  type(hamiltonian_t),      intent(in)    :: hm
+  type(states_elec_t), intent(inout) :: st
+  FLOAT,                    intent(inout) :: ex, ec
+  FLOAT, optional,          intent(inout) :: vxc(:,:) !< vxc(gr%mesh%np, st%d%nspin)
 
   FLOAT :: eig
   integer :: is, ist, ixc, nspin_, isp, idm, jdm
@@ -90,7 +90,7 @@ subroutine X(xc_oep_calc)(oep, parser, xcs, apply_sic_pz, gr, hm, st, ex, ec, vx
 
     oep%uxc_bar(:, is) = M_ZERO
     do ist = st%st_start, st%st_end
-      call states_get_state(st, gr%mesh, idm, ist, isp, psi)
+      call states_elec_get_state(st, gr%mesh, idm, ist, isp, psi)
       oep%uxc_bar(ist, is) = R_REAL(X(mf_dotp)(gr%mesh, R_CONJ(psi), oep%X(lxc)(1:gr%mesh%np, ist, is), reduce = .false.))
     end do
     if(gr%mesh%parallel_in_domains) call comm_allreduce(gr%mesh%mpi_grp%comm, oep%uxc_bar(1:st%st_end, is), dim = st%st_end)
@@ -146,12 +146,12 @@ end subroutine X(xc_OEP_calc)
 
 ! ---------------------------------------------------------
 subroutine X(xc_oep_solve) (gr, hm, st, is, vxc, oep)
-  type(grid_t),        intent(in)    :: gr
-  type(hamiltonian_t), intent(in)    :: hm
-  type(states_t),      intent(in)    :: st
-  integer,             intent(in)    :: is
-  FLOAT,               intent(inout) :: vxc(:) !< (gr%mesh%np)
-  type(xc_oep_t),      intent(inout) :: oep
+  type(grid_t),             intent(in)    :: gr
+  type(hamiltonian_t),      intent(in)    :: hm
+  type(states_elec_t), intent(in)    :: st
+  integer,                  intent(in)    :: is
+  FLOAT,                    intent(inout) :: vxc(:) !< (gr%mesh%np)
+  type(xc_oep_t),           intent(inout) :: oep
 
   integer :: iter, ist, iter_used
   FLOAT :: vxc_bar, ff, residue
@@ -185,7 +185,7 @@ subroutine X(xc_oep_solve) (gr, hm, st, is, vxc, oep)
     ss = M_ZERO
     do ist = 1, st%nst
 
-      call states_get_state(st, gr%mesh, ist, is, psi)
+      call states_elec_get_state(st, gr%mesh, ist, is, psi)
       
       ! evaluate right-hand side
       vxc_bar = dmf_dotp(gr%mesh, (R_ABS(psi(:, 1)))**2, oep%vxc(1:gr%mesh%np, 1))
@@ -208,7 +208,7 @@ subroutine X(xc_oep_solve) (gr, hm, st, is, vxc, oep)
 
     do ist = 1, st%nst
       if(oep%eigen_type(ist) == 2) then
-        call states_get_state(st, gr%mesh, ist, is, psi)
+        call states_elec_get_state(st, gr%mesh, ist, is, psi)
         vxc_bar = dmf_dotp(gr%mesh, (R_ABS(psi(:, 1)))**2, oep%vxc(1:gr%mesh%np,1))
         oep%vxc(1:gr%mesh%np,1) = oep%vxc(1:gr%mesh%np,1) - (vxc_bar - oep%uxc_bar(ist,is))
       end if

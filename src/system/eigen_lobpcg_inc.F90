@@ -24,7 +24,7 @@
 !! per-k-point iteration.
 subroutine X(eigensolver_lobpcg)(gr, st, hm, pre, tol, niter, converged, ik, diff, block_size)
   type(grid_t),           intent(in)    :: gr
-  type(states_t),         intent(inout) :: st
+  type(states_elec_t),    intent(inout) :: st
   type(hamiltonian_t),    intent(in)    :: hm
   type(preconditioner_t), intent(in)    :: pre
   FLOAT,                  intent(in)    :: tol
@@ -74,7 +74,7 @@ subroutine X(eigensolver_lobpcg)(gr, st, hm, pre, tol, niter, converged, ik, dif
     SAFE_ALLOCATE(psi(1:gr%mesh%np_part, 1:st%d%dim, psi_start:psi_end))
 
     do ist = psi_start, psi_end
-      call states_get_state(st, gr%mesh, ist, ik, psi(:, :, ist))
+      call states_elec_get_state(st, gr%mesh, ist, ik, psi(:, :, ist))
     end do
     
     if(constr_end >= constr_start) then
@@ -82,7 +82,7 @@ subroutine X(eigensolver_lobpcg)(gr, st, hm, pre, tol, niter, converged, ik, dif
       SAFE_ALLOCATE(psi_constr(1:gr%mesh%np_part, 1:st%d%dim, constr_start:constr_end))
 
       do ist = constr_start, constr_end
-        call states_get_state(st, gr%mesh, ist, ik, psi_constr(:, :, ist))
+        call states_elec_get_state(st, gr%mesh, ist, ik, psi_constr(:, :, ist))
       end do
     
       call X(lobpcg)(gr, st, hm, psi_start, psi_end, psi, constr_start, constr_end, &
@@ -96,7 +96,7 @@ subroutine X(eigensolver_lobpcg)(gr, st, hm, pre, tol, niter, converged, ik, dif
     end if
 
     do ist = psi_start, psi_end
-      call states_set_state(st, gr%mesh, ist, ik, psi(:, :, ist))
+      call states_elec_set_state(st, gr%mesh, ist, ik, psi(:, :, ist))
     end do
 
     SAFE_DEALLOCATE_A(psi)
@@ -140,7 +140,7 @@ end subroutine X(eigensolver_lobpcg)
 subroutine X(lobpcg)(gr, st, hm, st_start, st_end, psi, constr_start, constr_end,  &
   ik, pre, tol, niter, converged, diff, constr)
   type(grid_t),           intent(in)    :: gr
-  type(states_t),         intent(inout) :: st
+  type(states_elec_t),    intent(inout) :: st
   type(hamiltonian_t),    intent(in)    :: hm
   integer,                intent(in)    :: st_start
   integer,                intent(in)    :: st_end
@@ -367,7 +367,7 @@ subroutine X(lobpcg)(gr, st, hm, st_start, st_end, psi, constr_start, constr_end
     ! Apply the preconditioner.
     do i = 1, lnuc
       ist = luc(i)
-      call X(preconditioner_apply)(pre, gr, hm, ik, res(:, :, ist), tmp(:, :, ist))
+      call X(preconditioner_apply)(pre, gr, hm, res(:, :, ist), tmp(:, :, ist))
       call lalg_copy(gr%mesh%np_part, st%d%dim, tmp(:, :, ist), res(:, :, ist))
     end do
 
@@ -689,7 +689,7 @@ contains
 
     chol_failure = .false.
     SAFE_ALLOCATE(vv(1:nuc, 1:nuc))
-    call states_blockt_mul(gr%mesh, st, v_start, v_start, vs, vs, vv, xpsi1 = uc(1:nuc), xpsi2 = uc(1:nuc), symm = .true.)
+    call states_elec_blockt_mul(gr%mesh, st, v_start, v_start, vs, vs, vv, xpsi1 = uc(1:nuc), xpsi2 = uc(1:nuc), symm = .true.)
     call profiling_in(C_PROFILING_LOBPCG_CHOL, 'LOBPCG_CHOL')
     call lalg_cholesky(nuc, vv, bof = chol_failure)
     call profiling_out(C_PROFILING_LOBPCG_CHOL)
@@ -733,13 +733,13 @@ contains
     SAFE_ALLOCATE(tmp2(1:nconstr, 1:nidx))
     SAFE_ALLOCATE(tmp3(1:nconstr, 1:nidx))
 
-    call states_blockt_mul(gr%mesh, st, constr_start, constr_start, &
+    call states_elec_blockt_mul(gr%mesh, st, constr_start, constr_start, &
       constr, constr, tmp1, xpsi1 = all_constr, xpsi2 = all_constr)
     det = lalg_inverter(nconstr, tmp1, invert = .true.)
-    call states_blockt_mul(gr%mesh, st, constr_start, vs_start, &
+    call states_elec_blockt_mul(gr%mesh, st, constr_start, vs_start, &
       constr, vs, tmp2, xpsi1 = all_constr, xpsi2 = idx(1:nidx))
     call lalg_gemm(nconstr, nidx, nconstr, R_TOTYPE(M_ONE), tmp1, tmp2, R_TOTYPE(M_ZERO), tmp3)
-    call states_block_matr_mul_add(gr%mesh, st, -R_TOTYPE(M_ONE), constr_start, vs_start, &
+    call states_elec_block_matr_mul_add(gr%mesh, st, -R_TOTYPE(M_ONE), constr_start, vs_start, &
       constr, tmp3, R_TOTYPE(M_ONE), vs, xpsi = all_constr, xres = idx(1:nidx))
 
     SAFE_DEALLOCATE_A(tmp1)
@@ -762,7 +762,7 @@ contains
 
     PUSH_SUB(X(lobpcg).X(block_matr_mul_add))
 
-    call states_block_matr_mul_add(gr%mesh, st, alpha, st_start, st_start, &
+    call states_elec_block_matr_mul_add(gr%mesh, st, alpha, st_start, st_start, &
       psi, matr, beta, res, xpsi = xpsi, xres = xres)
 
     POP_SUB(X(lobpcg).X(block_matr_mul_add))
@@ -779,7 +779,7 @@ contains
 
     PUSH_SUB(X(lobpcg).X(block_matr_mul))
 
-    call states_block_matr_mul_add(gr%mesh, st, R_TOTYPE(M_ONE), st_start, st_start, &
+    call states_elec_block_matr_mul_add(gr%mesh, st, R_TOTYPE(M_ONE), st_start, st_start, &
       psi, matr, R_TOTYPE(M_ZERO), res, xpsi = xpsi, xres = xres)
 
     POP_SUB(X(lobpcg).X(block_matr_mul))
@@ -789,19 +789,19 @@ end subroutine X(lobpcg)
 
 ! ---------------------------------------------------------
 subroutine X(blockt_mul)(mesh, st, st_start, psi1, psi2, res, xpsi1, xpsi2, symm)
-  type(mesh_t),      intent(in)  :: mesh
-  type(states_t),    intent(in)  :: st
-  integer,           intent(in)  :: st_start
-  R_TYPE,            intent(in)  :: psi1(:, :, st_start:) !< (gr%mesh%np_part, st%d%dim, st_start:st_end)
-  R_TYPE,            intent(in)  :: psi2(:, :, st_start:) !< (gr%mesh%np_part, st%d%dim, st_start:st_end)
-  R_TYPE,            intent(out) :: res(:, :)
-  integer,           intent(in)  :: xpsi1(:)
-  integer,           intent(in)  :: xpsi2(:)
-  logical, optional, intent(in)  :: symm
+  type(mesh_t),        intent(in)  :: mesh
+  type(states_elec_t), intent(in)  :: st
+  integer,             intent(in)  :: st_start
+  R_TYPE,              intent(in)  :: psi1(:, :, st_start:) !< (gr%mesh%np_part, st%d%dim, st_start:st_end)
+  R_TYPE,              intent(in)  :: psi2(:, :, st_start:) !< (gr%mesh%np_part, st%d%dim, st_start:st_end)
+  R_TYPE,              intent(out) :: res(:, :)
+  integer,             intent(in)  :: xpsi1(:)
+  integer,             intent(in)  :: xpsi2(:)
+  logical, optional,   intent(in)  :: symm
   
   PUSH_SUB(X(blockt_mul))
   
-  call states_blockt_mul(mesh, st, st_start, st_start, psi1, psi2, res, xpsi1 = xpsi1, xpsi2 = xpsi2, symm = symm)
+  call states_elec_blockt_mul(mesh, st, st_start, st_start, psi1, psi2, res, xpsi1 = xpsi1, xpsi2 = xpsi2, symm = symm)
   
   POP_SUB(X(blockt_mul))
 end subroutine X(blockt_mul)

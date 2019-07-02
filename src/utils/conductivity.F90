@@ -32,7 +32,7 @@
     use space_oct_m
     use spectrum_oct_m
     use species_oct_m
-    use states_oct_m
+    use states_elec_oct_m
     use unit_oct_m
     use unit_system_oct_m
 
@@ -47,7 +47,7 @@
     type(simul_box_t) :: sb
     type(spectrum_t) :: spectrum
     type(grid_t)     :: gr
-    type(states_t)    :: st
+    type(states_elec_t)    :: st
     type(batch_t) :: currb, ftcurrb, heatcurrb, ftheatcurrb
     FLOAT :: ww, curtime, deltat, velcm(1:MAX_DIM), vel0(1:MAX_DIM), current(1:MAX_DIM), integral(1:2), v0
     integer :: ifreq, max_freq
@@ -108,7 +108,7 @@
     call simul_box_init(sb, parser, geo, space)
 
     call grid_init_stage_0(gr, parser, geo, space)
-    call states_init(st, parser, gr, geo)
+    call states_elec_init(st, parser, gr, geo)
     
     if(from_forces) then
 

@@ -32,7 +32,7 @@ module propagator_expmid_oct_m
   use parser_oct_m
   use potential_interpolation_oct_m
   use propagator_base_oct_m
-  use states_oct_m
+  use states_elec_oct_m
 
   implicit none
 
@@ -49,7 +49,7 @@ contains
     type(hamiltonian_t), target,     intent(inout) :: hm
     type(parser_t),                  intent(in)    :: parser
     type(grid_t),        target,     intent(inout) :: gr
-    type(states_t),      target,     intent(inout) :: st
+    type(states_elec_t), target,     intent(inout) :: st
     type(propagator_t),  target,     intent(inout) :: tr
     FLOAT,                           intent(in)    :: time
     FLOAT,                           intent(in)    :: dt
@@ -87,7 +87,7 @@ contains
       call gauge_field_get_vec_pot_vel(hm%ep%gfield, vecpot_vel)
       call gauge_field_propagate(hm%ep%gfield, M_HALF*dt, time)
     end if
-    call hamiltonian_update(hm, gr%mesh, gr%der%boundaries, time = time - M_HALF*dt)
+    call hamiltonian_update(hm, gr%mesh, time = time - M_HALF*dt)
     !We update the occupation matrices
     call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy )
     do ik = st%d%kpt%start, st%d%kpt%end
@@ -106,7 +106,7 @@ contains
     if(gauge_field_is_applied(hm%ep%gfield)) then
       call gauge_field_set_vec_pot(hm%ep%gfield, vecpot)
       call gauge_field_set_vec_pot_vel(hm%ep%gfield, vecpot_vel)
-      call hamiltonian_update(hm, gr%mesh, gr%der%boundaries)
+      call hamiltonian_update(hm, gr%mesh)
     end if
 
     call density_calc(st, gr, st%rho)

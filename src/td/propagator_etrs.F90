@@ -43,6 +43,7 @@ module propagator_etrs_oct_m
   use states_oct_m
   use types_oct_m
   use v_ks_oct_m
+  use worker_elec_oct_m
 
   implicit none
 
@@ -115,11 +116,7 @@ contains
     else
 
       ! propagate dt/2 with H(time - dt)
-      do ik = st%d%kpt%start, st%d%kpt%end
-        do ib = st%group%block_start, st%group%block_end
-          call exponential_apply_batch(tr%te, gr%der, hm, st%group%psib(ib, ik), ik, CNST(0.5)*dt)
-        end do
-      end do
+      call worker_elec_exp_apply(tr%te, st, gr, hm, CNST(0.5)*dt)
 
     end if
 
@@ -142,11 +139,9 @@ contains
     !We update the occupation matrices
     call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy )
 
-    do ik = st%d%kpt%start, st%d%kpt%end
-      do ib = st%group%block_start, st%group%block_end
-        call exponential_apply_batch(tr%te, gr%der, hm, st%group%psib(ib, ik), ik, CNST(0.5)*dt)
-      end do
-    end do
+    
+    ! propagate dt/2 with H(time - dt)
+    call worker_elec_exp_apply(tr%te, st, gr, hm, CNST(0.5)*dt)
 
     if(hm%theory_level /= INDEPENDENT_PARTICLES) then
       SAFE_DEALLOCATE_A(vhxc_t1)
@@ -179,8 +174,6 @@ contains
     FLOAT :: diff
     FLOAT, allocatable :: vhxc_t1(:,:), vhxc_t2(:,:)
     integer :: ik, ib, iter, ip
-    type(batch_t) :: zpsib_dt
-    type(density_calc_t) :: dens_calc
     type(batch_t), allocatable :: psi2(:, :)
     ! these are hardcoded for the moment
     integer, parameter :: niter = 10
@@ -196,28 +189,9 @@ contains
     call messages_new_line()
     call messages_write('        Self-consistency iteration:')
     call messages_info()
-    
-    call density_calc_init(dens_calc, st, gr, st%rho)
 
-    do ik = st%d%kpt%start, st%d%kpt%end
-      do ib = st%group%block_start, st%group%block_end
-
-        call batch_copy(st%group%psib(ib, ik), zpsib_dt)
-        if(batch_is_packed(st%group%psib(ib, ik))) call batch_pack(zpsib_dt, copy = .false.)
-
-        !propagate the state dt/2 and dt, simultaneously, with H(time - dt)
-        call exponential_apply_batch(tr%te, gr%der, hm, st%group%psib(ib, ik), ik, CNST(0.5)*dt, &
-          psib2 = zpsib_dt, deltat2 = dt)
-
-        !use the dt propagation to calculate the density
-        call density_calc_accumulate(dens_calc, ik, zpsib_dt)
-
-        call batch_end(zpsib_dt)
-
-      end do
-    end do
-
-    call density_calc_end(dens_calc)
+    !Propagate the states to t+dt/2 and compute the density at t+dt
+    call worker_elec_fuse_density_exp_apply(tr%te, st, gr, hm, M_HALF*dt, dt)
 
     call v_ks_calc(ks, parser, hm, st, geo, calc_current = .false.)
 
@@ -260,14 +234,7 @@ contains
 
       call lalg_copy(gr%mesh%np, st%d%nspin, hm%vhxc, vhxc_t2)
 
-      call density_calc_init(dens_calc, st, gr, st%rho)
-      do ik = st%d%kpt%start, st%d%kpt%end
-        do ib = st%group%block_start, st%group%block_end
-          call exponential_apply_batch(tr%te, gr%der, hm, st%group%psib(ib, ik), ik, CNST(0.5)*dt)
-          call density_calc_accumulate(dens_calc, ik, st%group%psib(ib, ik))
-        end do
-      end do
-      call density_calc_end(dens_calc)
+      call worker_elec_fuse_density_exp_apply(tr%te, st, gr, hm, M_HALF*dt)
 
       call v_ks_calc(ks, parser, hm, st, geo, time = time, calc_current = .false.)
       call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy )
@@ -366,11 +333,7 @@ contains
     end if
 
     ! propagate half of the time step with H(time - dt)
-    do ik = st%d%kpt%start, st%d%kpt%end
-      do ib = st%group%block_start, st%group%block_end
-        call exponential_apply_batch(tr%te, gr%der, hm, st%group%psib(ib, ik), ik, CNST(0.5)*dt)
-      end do
-    end do
+    call worker_elec_exp_apply(tr%te, st, gr, hm, M_HALF*dt)
 
     if(tr%method == PROP_CAETRS) then
       call v_ks_calc_finish(ks, hm)
@@ -430,15 +393,16 @@ contains
     !We update the occupation matrices
     call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy )
 
-    call density_calc_init(dens_calc, st, gr, st%rho)
+    if(tr%method == PROP_CAETRS) then
+ 
+      call density_calc_init(dens_calc, st, gr, st%rho)
 
-    ! propagate the other half with H(t)
-    do ik = st%d%kpt%start, st%d%kpt%end
-      ispin = states_dim_get_spin_index(st%d, ik)
+      ! propagate the other half with H(t)
+      do ik = st%d%kpt%start, st%d%kpt%end
+        ispin = states_dim_get_spin_index(st%d, ik)
 
-      do ib = st%group%block_start, st%group%block_end
+        do ib = st%group%block_start, st%group%block_end
 
-        if(tr%method == PROP_CAETRS) then
           call profiling_in(phase_prof, "CAETRS_PHASE")
           select case(batch_status(st%group%psib(ib, ik)))
           case(BATCH_NOT_PACKED)
@@ -469,19 +433,24 @@ contains
               (/st%group%psib(ib, ik)%pack%size(1), iprange/))
           end select
           call profiling_out(phase_prof)
-        end if
 
-        call exponential_apply_batch(tr%te, gr%der, hm, st%group%psib(ib, ik), ik, CNST(0.5)*dt)
-        call density_calc_accumulate(dens_calc, ik, st%group%psib(ib, ik))
-
+          call exponential_apply_batch(tr%te, gr%der, hm, st%group%psib(ib, ik), ik, CNST(0.5)*dt)
+          call density_calc_accumulate(dens_calc, ik, st%group%psib(ib, ik))
+ 
+        end do
       end do
-    end do
+
+      call density_calc_end(dens_calc)
+
+    else
+
+      call worker_elec_exp_apply(tr%te, st, gr, hm, M_HALF*dt)
+
+    end if
 
     if(tr%method == PROP_CAETRS .and. accel_is_enabled() .and. hamiltonian_apply_packed(hm, gr%mesh)) then
       call accel_release_buffer(phase_buff)
     end if
-
-    call density_calc_end(dens_calc)
 
     if(tr%method == PROP_CAETRS) then
       SAFE_DEALLOCATE_A(vold)

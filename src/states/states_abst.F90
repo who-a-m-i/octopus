@@ -36,17 +36,19 @@ module states_abst_oct_m
 
   type, abstract :: states_abst_t
     private
-      type(type_t), public  :: wfs_type         !< real (TYPE_FLOAT) or complex (TYPE_CMPLX) wavefunctions
-      integer, public  :: nst                   !< Number of states in each irreducible subspace
-      logical, public  :: packed
+    type(type_t), public  :: wfs_type         !< real (TYPE_FLOAT) or complex (TYPE_CMPLX) wavefunctions
+    integer, public  :: nst                   !< Number of states in each irreducible subspace
+    logical, public  :: packed
+
     contains
-      procedure(nullify), deferred    :: nullify
-      procedure(pack), deferred       :: pack
-      procedure(unpack), deferred     :: unpack  
-      procedure, non_overridable      :: are_packed
-      procedure(write_info), deferred :: write_info
-      procedure(set_zero), deferred   :: set_zero
-      procedure, non_overridable      :: get_type
+
+    procedure(nullify),    deferred :: nullify
+    procedure(pack),       deferred :: pack
+    procedure(unpack),     deferred :: unpack  
+    procedure(write_info), deferred :: write_info
+    procedure(set_zero),   deferred :: set_zero
+    procedure, non_overridable      :: are_packed
+    procedure, non_overridable      :: get_type
   end type states_abst_t
 
   abstract interface

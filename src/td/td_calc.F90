@@ -32,9 +32,9 @@ module td_calc_oct_m
   use messages_oct_m
   use mpi_oct_m
   use profiling_oct_m
-  use states_calc_oct_m
-  use states_oct_m
-  use states_dim_oct_m
+  use states_elec_calc_oct_m
+  use states_elec_oct_m
+  use states_elec_dim_oct_m
 
   implicit none
 
@@ -60,7 +60,7 @@ contains
 subroutine td_calc_tacc(gr, geo, st, hm, acc, time)
   type(grid_t),        intent(in)  :: gr
   type(geometry_t),    intent(in)  :: geo
-  type(states_t),      intent(in)  :: st
+  type(states_elec_t), intent(in)  :: st
   type(hamiltonian_t), intent(in)  :: hm
   FLOAT,               intent(in)  :: time
   FLOAT,               intent(out) :: acc(MAX_DIM)
@@ -102,7 +102,7 @@ subroutine td_calc_tacc(gr, geo, st, hm, acc, time)
   do ik = st%d%kpt%start, st%d%kpt%end
     do ist = st%st_start, st%st_end
 
-      call states_get_state(st, gr%mesh, ist, ik, zpsi)
+      call states_elec_get_state(st, gr%mesh, ist, ik, zpsi)
       
       call zhamiltonian_apply(hm, gr%der, zpsi, hzpsi, ist, ik)
 
@@ -165,7 +165,7 @@ end subroutine td_calc_tacc
 ! ---------------------------------------------------------
 subroutine td_calc_tvel(gr, st, vel)
   type(grid_t),        intent(in)  :: gr
-  type(states_t),      intent(in)  :: st
+  type(states_elec_t), intent(in)  :: st
   FLOAT,               intent(out) :: vel(MAX_DIM)
 
   FLOAT, allocatable :: momentum(:,:,:)
@@ -173,7 +173,7 @@ subroutine td_calc_tvel(gr, st, vel)
   PUSH_SUB(td_calc_tvel)
 
   SAFE_ALLOCATE(momentum(1:gr%mesh%sb%dim, st%st_start:st%st_end, st%d%kpt%start:st%d%kpt%end))
-  call states_calc_momentum(st, gr%der, momentum)
+  call states_elec_calc_momentum(st, gr%der, momentum)
 
   momentum(1:gr%mesh%sb%dim, st%st_start:st%st_end, 1) = & 
     sum(momentum(1:gr%mesh%sb%dim, st%st_start:st%st_end, st%d%kpt%start:st%d%kpt%end), 3)
@@ -191,7 +191,7 @@ end subroutine td_calc_tvel
 ! ---------------------------------------------------------
 subroutine td_calc_ionch(gr, st, ch, Nch)
   type(grid_t),        intent(in)    :: gr
-  type(states_t),      intent(in)    :: st
+  type(states_elec_t), intent(in)    :: st
   integer,             intent(in)    :: Nch
   FLOAT,               intent(out)   :: ch(0:Nch)
 
@@ -226,7 +226,7 @@ subroutine td_calc_ionch(gr, st, ch, Nch)
 
         if (st%st_start <= ist .and. ist <= st%st_end .and. &
               st%d%kpt%start <= ik .and. ik <= st%d%kpt%end) then
-          call states_get_state(st, gr%mesh, idim, ist, ik, zpsi)
+          call states_elec_get_state(st, gr%mesh, idim, ist, ik, zpsi)
           N(ii) = zmf_integrate(gr%mesh, zpsi(:) * conjg(zpsi(:)) ) 
           Nnot(ii) = M_ONE - N(ii)
         end if

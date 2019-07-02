@@ -19,15 +19,15 @@
 ! ---------------------------------------------------------
 !> See http://prola.aps.org/abstract/PRB/v54/i16/p11169_1
 subroutine X(eigensolver_rmmdiis) (gr, st, hm, pre, tol, niter, converged, ik, diff)
-  type(grid_t),           intent(in)    :: gr
-  type(states_t), target, intent(inout) :: st
-  type(hamiltonian_t),    intent(in)    :: hm
-  type(preconditioner_t), intent(in)    :: pre
-  FLOAT,                  intent(in)    :: tol
-  integer,                intent(inout) :: niter
-  integer,                intent(inout) :: converged
-  integer,                intent(in)    :: ik
-  FLOAT,                  intent(out)   :: diff(:) !< (1:st%nst)
+  type(grid_t),                intent(in)    :: gr
+  type(states_elec_t), target, intent(inout) :: st
+  type(hamiltonian_t),         intent(in)    :: hm
+  type(preconditioner_t),      intent(in)    :: pre
+  FLOAT,                       intent(in)    :: tol
+  integer,                     intent(inout) :: niter
+  integer,                     intent(inout) :: converged
+  integer,                     intent(in)    :: ik
+  FLOAT,                       intent(out)   :: diff(:) !< (1:st%nst)
 
   R_TYPE, allocatable :: mm(:, :, :, :), evec(:, :, :), finalpsi(:)
   R_TYPE, allocatable :: eigen(:), nrmsq(:), eigen_full(:)
@@ -72,8 +72,8 @@ subroutine X(eigensolver_rmmdiis) (gr, st, hm, pre, tol, niter, converged, ik, d
   prog = 0
 
   do ib = st%group%block_start, st%group%block_end
-    minst = states_block_min(st, ib)
-    maxst = states_block_max(st, ib)
+    minst = states_elec_block_min(st, ib)
+    maxst = states_elec_block_max(st, ib)
     bsize = maxst - minst + 1
 
     psib(1)%batch => st%group%psib(ib, ik)
@@ -111,7 +111,7 @@ subroutine X(eigensolver_rmmdiis) (gr, st, hm, pre, tol, niter, converged, ik, d
     call batch_copy(psib(1)%batch, psib(2)%batch)
 
     ! get lambda 
-    call X(preconditioner_apply_batch)(pre, gr, hm, ik, resb(1)%batch, psib(2)%batch)
+    call X(preconditioner_apply_batch)(pre, gr, hm, resb(1)%batch, psib(2)%batch)
 
     call batch_copy(psib(1)%batch, resb(2)%batch)
 
@@ -147,7 +147,7 @@ subroutine X(eigensolver_rmmdiis) (gr, st, hm, pre, tol, niter, converged, ik, d
       ! for iter == 2 the preconditioning was done already
       if(iter > 2) then
         call batch_copy(psib(iter - 1)%batch, psib(iter)%batch)
-        call X(preconditioner_apply_batch)(pre, gr, hm, ik, resb(iter - 1)%batch, psib(iter)%batch)
+        call X(preconditioner_apply_batch)(pre, gr, hm, resb(iter - 1)%batch, psib(iter)%batch)
       end if
 
       ! predict by jacobi
@@ -252,7 +252,7 @@ subroutine X(eigensolver_rmmdiis) (gr, st, hm, pre, tol, niter, converged, ik, d
     SAFE_DEALLOCATE_A(mm)
 
     ! end with a trial move
-    call X(preconditioner_apply_batch)(pre, gr, hm, ik, resb(niter)%batch, resb(niter - 1)%batch)
+    call X(preconditioner_apply_batch)(pre, gr, hm, resb(niter)%batch, resb(niter - 1)%batch)
 
     call batch_xpay(gr%mesh%np, psib(niter)%batch, lambda, resb(niter - 1)%batch)
 
@@ -294,15 +294,15 @@ subroutine X(eigensolver_rmmdiis) (gr, st, hm, pre, tol, niter, converged, ik, d
 
   call profiling_out(prof)
 
-  call X(states_orthogonalization_full)(st, gr%mesh, ik)
+  call X(states_elec_orthogonalization_full)(st, gr%mesh, ik)
 
   ! recalculate the eigenvalues and residuals
   SAFE_ALLOCATE(eigen_full(1:st%nst))
   eigen_full(1:st%nst) = R_TOTYPE(M_ZERO)
 
   do ib = st%group%block_start, st%group%block_end
-    minst = states_block_min(st, ib)
-    maxst = states_block_max(st, ib)
+    minst = states_elec_block_min(st, ib)
+    maxst = states_elec_block_max(st, ib)
 
     if(pack) call batch_pack(st%group%psib(ib, ik))  
   
@@ -362,7 +362,7 @@ end subroutine X(eigensolver_rmmdiis)
 
 subroutine X(eigensolver_rmmdiis_min) (gr, st, hm, pre, niter, converged, ik)
   type(grid_t),           intent(in)    :: gr
-  type(states_t),         intent(inout) :: st
+  type(states_elec_t),    intent(inout) :: st
   type(hamiltonian_t),    intent(in)    :: hm
   type(preconditioner_t), intent(in)    :: pre
   integer,                intent(inout) :: niter
@@ -396,8 +396,8 @@ subroutine X(eigensolver_rmmdiis_min) (gr, st, hm, pre, niter, converged, ik)
   end if
 
   do ib = st%group%block_start, st%group%block_end
-    minst = states_block_min(st, ib)
-    maxst = states_block_max(st, ib)
+    minst = states_elec_block_min(st, ib)
+    maxst = states_elec_block_max(st, ib)
 
     if(pack) call batch_pack(st%group%psib(ib, ik))
 
@@ -430,7 +430,7 @@ subroutine X(eigensolver_rmmdiis_min) (gr, st, hm, pre, niter, converged, ik)
         end do
       end if
 
-      call X(preconditioner_apply_batch)(pre, gr, hm, ik, resb, kresb)
+      call X(preconditioner_apply_batch)(pre, gr, hm, resb, kresb)
 
       call X(hamiltonian_apply_batch)(hm, gr%der, kresb, resb, ik)
 
@@ -473,7 +473,7 @@ subroutine X(eigensolver_rmmdiis_min) (gr, st, hm, pre, niter, converged, ik)
     SAFE_DEALLOCATE_A(diff)
   end if
 
-  call X(states_orthogonalization_full)(st, gr%mesh, ik)
+  call X(states_elec_orthogonalization_full)(st, gr%mesh, ik)
 
   converged = 0
 

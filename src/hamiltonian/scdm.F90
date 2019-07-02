@@ -41,9 +41,10 @@ module scdm_oct_m
   use profiling_oct_m
   use scalapack_oct_m
   use simul_box_oct_m
-  use states_oct_m
-  use states_dim_oct_m
-  use states_parallel_oct_m
+  use states_abst_oct_m
+  use states_elec_oct_m
+  use states_elec_dim_oct_m
+  use states_elec_parallel_oct_m
   use unit_oct_m
   use unit_system_oct_m
 
@@ -59,7 +60,7 @@ module scdm_oct_m
   
   type scdm_t
     private
-    type(states_t)           :: st          !< localized orthogonal states
+    type(states_elec_t)      :: st          !< localized orthogonal states
     FLOAT, pointer,   public :: center(:,:) !< coordinates of centers of states (in same units as mesh%x)
     integer,          public :: box_size    !< number of mesh points in the dimension of local box around scdm states 
                                             !! NOTE: this could be dynamic and state dependent
@@ -107,7 +108,7 @@ contains
 !!                            selected columns of the density matrix
 !! http://arxiv.org/abs/1408.4926 (accepted in JCTC as of 17th March 2015)
 subroutine scdm_init(st, parser, der, fullcube, scdm, operate_on_scdm)
-  type(states_t),      intent(in)  :: st !< this contains the KS set (for now from hm%hf_st which is confusing)
+  type(states_elec_t), intent(in)  :: st !< this contains the KS set (for now from hm%hf_st which is confusing)
   type(parser_t),      intent(in)  :: parser
   type(derivatives_t) :: der
   type(cube_t) :: fullcube !< cube of the full cell
@@ -156,7 +157,7 @@ subroutine scdm_init(st, parser, der, fullcube, scdm, operate_on_scdm)
   scdm%nst   = st%nst
   
   ! initialize state object for the SCDM states by copying
-  call states_copy(scdm%st,st)
+  call states_elec_copy(scdm%st,st)
   
   !%Variable SCDM_verbose
   !%Type logical
@@ -312,9 +313,9 @@ end subroutine scdm_init
 
 !> wrapper routine to rotate  KS states into their SCDM representation
 subroutine scdm_rotate_states(st,mesh,scdm)
-  type(states_t), intent(inout)  :: st
-  type(mesh_t), intent(in)       :: mesh
-  type(scdm_t), intent(inout)    :: scdm
+  type(states_elec_t), intent(inout)  :: st
+  type(mesh_t),        intent(in)     :: mesh
+  type(scdm_t),        intent(inout)  :: scdm
   
   PUSH_SUB(scdm_rotate_states)
   

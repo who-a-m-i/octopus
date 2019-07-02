@@ -49,8 +49,8 @@ module propagation_oct_m
   use profiling_oct_m
   use restart_oct_m
   use species_oct_m
-  use states_oct_m
-  use states_restart_oct_m
+  use states_elec_oct_m
+  use states_elec_restart_oct_m
   use system_oct_m
   use target_oct_m
   use td_oct_m
@@ -145,7 +145,7 @@ contains
     FLOAT, allocatable :: x_initial(:,:)
     logical :: vel_target_ = .false.
     integer :: iatom
-    type(states_t), pointer :: psi
+    type(states_elec_t), pointer :: psi
 
     FLOAT :: init_time, final_time
 
@@ -167,7 +167,7 @@ contains
     if(write_iter_) then
       call td_write_init(write_handler, sys%parser, sys%outp, gr, sys%st, hm, sys%geo, sys%ks, ion_dynamics_ions_move(td%ions), &
            gauge_field_is_applied(hm%ep%gfield), hm%ep%kick, td%iter, td%max_iter, td%dt, sys%mc)
-      call td_write_data(write_handler, gr, psi, hm, sys%ks, sys%outp, sys%geo, 0)
+      call td_write_data(write_handler)
     end if
 
     call hamiltonian_not_adjoint(hm)
@@ -240,7 +240,7 @@ contains
         if(ii == sys%outp%output_interval+1 .or. istep == td%max_iter) then ! output
           if(istep == td%max_iter) sys%outp%output_interval = ii - 1
           ii = istep
-          call td_write_data(write_handler, gr, psi, hm, sys%ks, sys%outp, sys%geo, istep) 
+          call td_write_data(write_handler) 
         end if
       end if
 
@@ -281,7 +281,7 @@ contains
 
     integer :: istep, ierr
     type(grid_t),  pointer :: gr
-    type(states_t), pointer :: psi
+    type(states_elec_t), pointer :: psi
 
     PUSH_SUB(propagate_backward)
     
@@ -352,13 +352,13 @@ contains
 
     integer :: i, ierr
     logical :: aux_fwd_propagation
-    type(states_t) :: psi2
+    type(states_elec_t) :: psi2
     type(opt_control_state_t) :: qcchi
     type(controlfunction_t) :: par_prev
     type(grid_t), pointer :: gr
     type(propagator_t) :: tr_chi
     type(propagator_t) :: tr_psi2
-    type(states_t), pointer :: psi, chi
+    type(states_elec_t), pointer :: psi, chi
 
     PUSH_SUB(fwd_step)
 
@@ -383,7 +383,7 @@ contains
                            (hm%theory_level /= INDEPENDENT_PARTICLES .and. &
                             .not.sys%ks%frozen_hxc ) )
     if(aux_fwd_propagation) then
-      call states_copy(psi2, psi)
+      call states_elec_copy(psi2, psi)
       call controlfunction_copy(par_prev, par)
     end if
 
@@ -411,14 +411,14 @@ contains
     do i = 1, td%max_iter
       call update_field(i, par, gr, hm, sys%geo, qcpsi, qcchi, par_chi, dir = 'f')
       call update_hamiltonian_chi(i, sys%parser, gr, sys%ks, hm, td, tg, par_chi, sys%geo, psi2)
-      call hamiltonian_update(hm, gr%mesh, gr%der%boundaries, time = (i - 1)*td%dt)
+      call hamiltonian_update(hm, gr%mesh, time = (i - 1)*td%dt)
       call propagator_dt(sys%ks, sys%parser, hm, gr, chi, tr_chi, i*td%dt, td%dt, td%mu, i, td%ions, sys%geo, sys%outp)
       if(aux_fwd_propagation) then
         call update_hamiltonian_psi(i, sys%parser, gr, sys%ks, hm, td, tg, par_prev, psi2, sys%geo)
         call propagator_dt(sys%ks, sys%parser, hm, gr, psi2, tr_psi2, i*td%dt, td%dt, td%mu, i, td%ions, sys%geo, sys%outp)
       end if
       call update_hamiltonian_psi(i, sys%parser, gr, sys%ks, hm, td, tg, par, psi, sys%geo)
-      call hamiltonian_update(hm, gr%mesh, gr%der%boundaries, time = (i - 1)*td%dt)
+      call hamiltonian_update(hm, gr%mesh, time = (i - 1)*td%dt)
       call propagator_dt(sys%ks, sys%parser, hm, gr, psi, td%tr, i*td%dt, td%dt, td%mu, i, td%ions, sys%geo, sys%outp)
       call target_tdcalc(tg, hm, gr, sys%geo, psi, i, td%max_iter) 
 
@@ -436,13 +436,13 @@ contains
 
     if( target_mode(tg) == oct_targetmode_td .or. &
         (hm%theory_level /= INDEPENDENT_PARTICLES .and. (.not.sys%ks%frozen_hxc) ) ) then
-      call states_end(psi2)
+      call states_elec_end(psi2)
       call controlfunction_end(par_prev)
     end if
 
     call controlfunction_to_basis(par)
     if(aux_fwd_propagation) call propagator_end(tr_psi2)
-    call states_end(chi)
+    call states_elec_end(chi)
     call propagator_end(tr_chi)
     nullify(psi)
     nullify(chi)
@@ -475,7 +475,7 @@ contains
     type(grid_t), pointer :: gr
     type(propagator_t) :: tr_chi
     type(opt_control_state_t) :: qcpsi
-    type(states_t), pointer :: chi, psi
+    type(states_elec_t), pointer :: chi, psi
 
     PUSH_SUB(bwd_step)
 
@@ -494,7 +494,7 @@ contains
     ! the first two iterations are done self-consistently nonetheless.
     call propagator_remove_scf_prop(tr_chi)
 
-    call states_copy(psi, chi)
+    call states_elec_copy(psi, chi)
     call oct_prop_load_states(prop_psi, sys%parser, psi, gr, td%max_iter, ierr)
     if (ierr /= 0) then
       message(1) = "Unable to read OCT states restart."
@@ -503,7 +503,7 @@ contains
 
     call density_calc(psi, gr, psi%rho)
     call v_ks_calc(sys%ks, sys%parser, hm, psi, sys%geo)
-    call hamiltonian_update(hm, gr%mesh, gr%der%boundaries)
+    call hamiltonian_update(hm, gr%mesh)
     call propagator_run_zero_iter(hm, gr, td%tr)
     call propagator_run_zero_iter(hm, gr, tr_chi)
 
@@ -518,7 +518,7 @@ contains
       call oct_prop_check(prop_psi, sys%parser, psi, gr, i)
       call update_field(i, par_chi, gr, hm, sys%geo, qcpsi, qcchi, par, dir = 'b')
       call update_hamiltonian_chi(i-1, sys%parser, gr, sys%ks, hm, td, tg, par_chi, sys%geo, psi)
-      call hamiltonian_update(hm, gr%mesh, gr%der%boundaries, time = abs(i*td%dt))
+      call hamiltonian_update(hm, gr%mesh, time = abs(i*td%dt))
       call propagator_dt(sys%ks, sys%parser, hm, gr, chi, tr_chi, abs((i-1)*td%dt), td%dt, td%mu, i-1, td%ions, sys%geo, sys%outp)
       call oct_prop_dump_states(prop_chi, i-1, chi, gr, ierr)
       if (ierr /= 0) then
@@ -526,7 +526,7 @@ contains
         call messages_warning(1)
       end if
       call update_hamiltonian_psi(i-1, sys%parser, gr, sys%ks, hm, td, tg, par, psi, sys%geo)
-      call hamiltonian_update(hm, gr%mesh, gr%der%boundaries, time = abs(i*td%dt))
+      call hamiltonian_update(hm, gr%mesh, time = abs(i*td%dt))
       call propagator_dt(sys%ks, sys%parser, hm, gr, psi, td%tr, abs((i-1)*td%dt), td%dt, td%mu, i-1, td%ions, sys%geo, sys%outp)
     end do
     td%dt = -td%dt
@@ -534,10 +534,10 @@ contains
 
     call density_calc(psi, gr, psi%rho)
     call v_ks_calc(sys%ks, sys%parser, hm, psi, sys%geo)
-    call hamiltonian_update(hm, gr%mesh, gr%der%boundaries)
+    call hamiltonian_update(hm, gr%mesh)
 
     call controlfunction_to_basis(par_chi)
-    call states_end(psi)
+    call states_elec_end(psi)
     call propagator_end(tr_chi)
     nullify(chi)
     nullify(psi)
@@ -574,8 +574,8 @@ contains
     type(grid_t), pointer :: gr
     type(propagator_t) :: tr_chi
     type(opt_control_state_t) :: qcpsi
-    type(states_t) :: st_ref
-    type(states_t), pointer :: chi, psi
+    type(states_elec_t) :: st_ref
+    type(states_elec_t), pointer :: chi, psi
     FLOAT, pointer :: q(:, :), p(:, :)
     FLOAT, allocatable :: qtildehalf(:, :), qinitial(:, :)
     FLOAT, allocatable :: vhxc(:, :)
@@ -612,7 +612,7 @@ contains
 
     call density_calc(psi, gr, psi%rho)
     call v_ks_calc(sys%ks, sys%parser, hm, psi, sys%geo)
-    call hamiltonian_update(hm, gr%mesh, gr%der%boundaries)
+    call hamiltonian_update(hm, gr%mesh)
     call propagator_run_zero_iter(hm, gr, td%tr)
     call propagator_run_zero_iter(hm, gr, tr_chi)
     td%dt = -td%dt
@@ -622,7 +622,7 @@ contains
       call messages_warning(1)
     end if
 
-    call states_copy(st_ref, psi)
+    call states_elec_copy(st_ref, psi)
 
     if(ion_dynamics_ions_move(td%ions)) &
       call forces_calculate(gr, sys%parser, sys%geo, hm, psi, sys%ks, t = td%max_iter*abs(td%dt), dt = td%dt)
@@ -730,7 +730,7 @@ contains
     write(message(1),'(a,f12.2,a)') 'Propagation time: ', final_time - init_time, ' seconds.'
     call messages_info(1)
 
-    call states_end(st_ref)
+    call states_elec_end(st_ref)
 
     td%dt = -td%dt
     call update_hamiltonian_psi(0, sys%parser, gr, sys%ks, hm, td, tg, par, psi, sys%geo)
@@ -738,12 +738,12 @@ contains
 
     call density_calc(psi, gr, psi%rho)
     call v_ks_calc(sys%ks, sys%parser, hm, psi, sys%geo)
-    call hamiltonian_update(hm, gr%mesh, gr%der%boundaries)
+    call hamiltonian_update(hm, gr%mesh)
 
     call propagator_end(tr_chi)
 
     SAFE_DEALLOCATE_A(vhxc)
-    call states_end(psi)
+    call states_elec_end(psi)
 
     nullify(chi)
     nullify(psi)
@@ -769,10 +769,10 @@ contains
     type(target_t),          intent(inout) :: tg
     type(controlfunction_t), intent(in)    :: par_chi
     type(geometry_t),        intent(in)    :: geo
-    type(states_t),          intent(inout) :: st
+    type(states_elec_t),     intent(inout) :: st
     FLOAT,         optional, intent(in)    :: qtildehalf(:, :)
 
-    type(states_t) :: inh
+    type(states_elec_t) :: inh
     type(pert_t) :: pert
     integer :: j, iatom, idim
     CMPLX, allocatable :: dvpsi(:, :, :), zpsi(:, :), inhzpsi(:, :)
@@ -781,14 +781,14 @@ contains
     PUSH_SUB(update_hamiltonian_chi)
 
     if(target_mode(tg) == oct_targetmode_td) then
-      call states_copy(inh, st)
+      call states_elec_copy(inh, st)
       call target_inh(st, gr, tg, abs(td%dt)*iter, inh, iter)
       call hamiltonian_set_inh(hm, inh)
-      call states_end(inh)
+      call states_elec_end(inh)
     end if
 
     if(ion_dynamics_ions_move(td%ions)) then
-      call states_copy(inh, st)
+      call states_elec_copy(inh, st)
       SAFE_ALLOCATE(dvpsi(1:gr%mesh%np_part, 1:st%d%dim, 1:gr%sb%dim))
       do ik = inh%d%kpt%start, inh%d%kpt%end
         do ib = inh%group%block_start, inh%group%block_end
@@ -800,8 +800,8 @@ contains
       do ist = 1, st%nst
         do ik = 1, st%d%nik
 
-          call states_get_state(st, gr%mesh, ist, ik, zpsi)
-          call states_get_state(inh, gr%mesh, ist, ik, inhzpsi)
+          call states_elec_get_state(st, gr%mesh, ist, ik, zpsi)
+          call states_elec_get_state(inh, gr%mesh, ist, ik, inhzpsi)
 
           do iatom = 1, geo%natoms
             do idim = 1, gr%sb%dim
@@ -815,7 +815,7 @@ contains
               call pert_end(pert)
             end do
           end do
-          call states_set_state(inh, gr%mesh, ist, ik, inhzpsi)
+          call states_elec_set_state(inh, gr%mesh, ist, ik, inhzpsi)
         end do
       end do
 
@@ -823,7 +823,7 @@ contains
       SAFE_DEALLOCATE_A(inhzpsi)
       SAFE_DEALLOCATE_A(dvpsi)
       call hamiltonian_set_inh(hm, inh)
-      call states_end(inh)
+      call states_elec_end(inh)
     end if
 
     if( hm%theory_level /= INDEPENDENT_PARTICLES .and. (.not.ks%frozen_hxc) ) then
@@ -856,7 +856,7 @@ contains
     type(td_t),              intent(inout) :: td
     type(target_t),          intent(inout) :: tg
     type(controlfunction_t), intent(in)    :: par
-    type(states_t),          intent(inout) :: st
+    type(states_elec_t),     intent(inout) :: st
     type(geometry_t),        intent(in)    :: geo
 
     integer :: j
@@ -885,7 +885,7 @@ contains
     if(hm%theory_level /= INDEPENDENT_PARTICLES .and. (.not.ks%frozen_hxc) ) then
       call density_calc(st, gr, st%rho)
       call v_ks_calc(ks, parser, hm, st, geo)
-      call hamiltonian_update(hm, gr%mesh, gr%der%boundaries)
+      call hamiltonian_update(hm, gr%mesh)
     end if
 
     POP_SUB(update_hamiltonian_psi)
@@ -897,8 +897,8 @@ contains
   subroutine calculate_g(gr, hm, psi, chi, dl, dq)
     type(grid_t),                   intent(inout) :: gr
     type(hamiltonian_t),            intent(in)    :: hm
-    type(states_t),                 intent(inout) :: psi
-    type(states_t),                 intent(inout) :: chi
+    type(states_elec_t),            intent(inout) :: psi
+    type(states_elec_t),            intent(inout) :: chi
     CMPLX,                          intent(inout) :: dl(:), dq(:)
 
     CMPLX, allocatable :: zpsi(:, :), zoppsi(:, :)
@@ -917,7 +917,7 @@ contains
       do ik = 1, psi%d%nik
         do p = 1, psi%nst
 
-          call states_get_state(psi, gr%mesh, p, ik, zpsi)
+          call states_elec_get_state(psi, gr%mesh, p, ik, zpsi)
           
           zoppsi = M_z0
           if(associated(hm%ep%a_static)) then
@@ -928,7 +928,7 @@ contains
               zoppsi, ik, hm%ep%gyromagnetic_ratio)
           end if
 
-          call states_get_state(chi, gr%mesh, p, ik, zpsi)
+          call states_elec_get_state(chi, gr%mesh, p, ik, zpsi)
           dl(j) = dl(j) + zmf_dotp(gr%mesh, psi%d%dim, zpsi, zoppsi)
         end do
       end do
@@ -941,10 +941,10 @@ contains
           do p = 1, psi%nst
             zoppsi = M_z0
 
-            call states_get_state(psi, gr%mesh, p, ik, zpsi)
+            call states_elec_get_state(psi, gr%mesh, p, ik, zpsi)
             call zvlaser_operator_quadratic(hm%ep%lasers(j), gr%der, zpsi, zoppsi)
 
-            call states_get_state(chi, gr%mesh, p, ik, zpsi)
+            call states_elec_get_state(chi, gr%mesh, p, ik, zpsi)
             dq(j) = dq(j) + zmf_dotp(gr%mesh, psi%d%dim, zpsi, zoppsi)
             
           end do
@@ -992,7 +992,7 @@ contains
     CMPLX, allocatable  :: dl(:), dq(:), zpsi(:, :), zchi(:, :)
     FLOAT, allocatable :: d(:)
     integer :: j, no_parameters, iatom
-    type(states_t), pointer :: psi, chi
+    type(states_elec_t), pointer :: psi, chi
     FLOAT, pointer :: q(:, :)
 
     PUSH_SUB(update_field)
@@ -1013,8 +1013,8 @@ contains
       SAFE_ALLOCATE(zpsi(1:gr%mesh%np, 1:psi%d%dim))
       SAFE_ALLOCATE(zchi(1:gr%mesh%np, 1:chi%d%dim))
 
-      call states_get_state(psi, gr%mesh, 1, 1, zpsi)
-      call states_get_state(chi, gr%mesh, 1, 1, zchi)
+      call states_elec_get_state(psi, gr%mesh, 1, 1, zpsi)
+      call states_elec_get_state(chi, gr%mesh, 1, 1, zchi)
       
       d1 = zmf_dotp(gr%mesh, psi%d%dim, zpsi, zchi)
       forall(j = 1:no_parameters) d(j) = aimag(d1*dl(j)) / controlfunction_alpha(cp, j)
@@ -1107,13 +1107,13 @@ contains
 
   ! ---------------------------------------------------------
   subroutine oct_prop_check(prop, parser, psi, gr, iter)
-    type(oct_prop_t),  intent(inout) :: prop
-    type(parser_t),    intent(in)    :: parser
-    type(states_t),    intent(inout) :: psi
-    type(grid_t),      intent(in)    :: gr
-    integer,           intent(in)    :: iter
+    type(oct_prop_t),    intent(inout) :: prop
+    type(parser_t),      intent(in)    :: parser
+    type(states_elec_t), intent(inout) :: psi
+    type(grid_t),        intent(in)    :: gr
+    integer,             intent(in)    :: iter
 
-    type(states_t) :: stored_st
+    type(states_elec_t) :: stored_st
     character(len=80) :: dirname
     integer :: j, ierr
     CMPLX :: overlap, prev_overlap
@@ -1123,17 +1123,17 @@ contains
 
     do j = 1, prop%number_checkpoints + 2
      if(prop%iter(j)  ==  iter) then
-       call states_copy(stored_st, psi)
+       call states_elec_copy(stored_st, psi)
        write(dirname,'(a, i4.4)') trim(prop%dirname), j
        call restart_open_dir(prop%restart_load, dirname, ierr)
-       if (ierr == 0) call states_load(prop%restart_load, parser, stored_st, gr, ierr, verbose=.false.)
+       if (ierr == 0) call states_elec_load(prop%restart_load, parser, stored_st, gr, ierr, verbose=.false.)
        if (ierr /= 0) then
          message(1) = "Unable to read wavefunctions from '"//trim(dirname)//"'."
          call messages_fatal(1)
        end if
        call restart_close_dir(prop%restart_load)
-       prev_overlap = zstates_mpdotp(gr%mesh, stored_st, stored_st)
-       overlap = zstates_mpdotp(gr%mesh, stored_st, psi)
+       prev_overlap = zstates_elec_mpdotp(gr%mesh, stored_st, stored_st)
+       overlap = zstates_elec_mpdotp(gr%mesh, stored_st, psi)
        if( abs(overlap - prev_overlap) > WARNING_THRESHOLD ) then
           write(message(1), '(a,es13.4)') &
             "Forward-backward propagation produced an error of", abs(overlap-prev_overlap)
@@ -1142,10 +1142,10 @@ contains
        end if
        ! Restore state only if the number of checkpoints is larger than zero.
        if(prop%number_checkpoints > 0) then
-         call states_end(psi)
-         call states_copy(psi, stored_st)
+         call states_elec_end(psi)
+         call states_elec_copy(psi, stored_st)
        end if
-       call states_end(stored_st)
+       call states_elec_end(stored_st)
      end if
     end do
     POP_SUB(oct_prop_check)
@@ -1155,11 +1155,11 @@ contains
 
   ! ---------------------------------------------------------
   subroutine oct_prop_dump_states(prop, iter, psi, gr, ierr)
-    type(oct_prop_t), intent(inout) :: prop
-    integer,          intent(in)    :: iter
-    type(states_t),   intent(inout) :: psi
-    type(grid_t),     intent(inout) :: gr
-    integer,           intent(out)  :: ierr
+    type(oct_prop_t),    intent(inout) :: prop
+    integer,             intent(in)    :: iter
+    type(states_elec_t), intent(inout) :: psi
+    type(grid_t),        intent(inout) :: gr
+    integer,              intent(out)  :: ierr
 
     integer :: j, err
     character(len=80) :: dirname
@@ -1182,7 +1182,7 @@ contains
       if(prop%iter(j)  ==  iter) then
         write(dirname,'(a,i4.4)') trim(prop%dirname), j
         call restart_open_dir(prop%restart_dump, dirname, err)
-        if (err == 0) call states_dump(prop%restart_dump, psi, gr, err, iter, verbose = .false.)
+        if (err == 0) call states_elec_dump(prop%restart_dump, psi, gr, err, iter, verbose = .false.)
         if (err /= 0) then
           message(1) = "Unable to write wavefunctions to '"//trim(dirname)//"'."
           call messages_warning(1)
@@ -1204,12 +1204,12 @@ contains
 
   ! ---------------------------------------------------------
   subroutine oct_prop_load_states(prop, parser, psi, gr, iter, ierr)
-    type(oct_prop_t),  intent(inout) :: prop
-    type(parser_t),    intent(in)    :: parser
-    type(states_t),    intent(inout) :: psi
-    type(grid_t),      intent(in)    :: gr
-    integer,           intent(in)    :: iter
-    integer,           intent(out)   :: ierr
+    type(oct_prop_t),    intent(inout) :: prop
+    type(parser_t),      intent(in)    :: parser
+    type(states_elec_t), intent(inout) :: psi
+    type(grid_t),        intent(in)    :: gr
+    integer,             intent(in)    :: iter
+    integer,             intent(out)   :: ierr
 
     integer :: j, err
     character(len=80) :: dirname
@@ -1233,7 +1233,7 @@ contains
       if (prop%iter(j)  ==  iter) then
         write(dirname,'(a, i4.4)') trim(prop%dirname), j
         call restart_open_dir(prop%restart_load, dirname, err)
-        if (err == 0) call states_load(prop%restart_load, parser, psi, gr, err, verbose=.false.)
+        if (err == 0) call states_elec_load(prop%restart_load, parser, psi, gr, err, verbose=.false.)
         if (err /= 0) then
           message(1) = "Unable to read wavefunctions from '"//trim(dirname)//"'."
           call messages_warning(1)

@@ -31,8 +31,8 @@ module kick_oct_m
   use pcm_oct_m
   use profiling_oct_m
   use species_oct_m
-  use states_oct_m
-  use states_dim_oct_m
+  use states_elec_oct_m
+  use states_elec_dim_oct_m
   use unit_oct_m
   use unit_system_oct_m
   use write_iter_oct_m
@@ -785,7 +785,7 @@ contains
   !! where \f$ E_0 = \frac{- k \hbar}{e} \f$ k = kick\%delta_strength.
   subroutine kick_apply(mesh, st, ions, geo, kick, theta, pcm)
     type(mesh_t),         intent(in)    :: mesh
-    type(states_t),       intent(inout) :: st
+    type(states_elec_t),  intent(inout) :: st
     type(ion_dynamics_t), intent(in)    :: ions
     type(geometry_t),     intent(inout) :: geo
     type(kick_t),         intent(in)    :: kick
@@ -838,7 +838,7 @@ contains
       do iqn = st%d%kpt%start, st%d%kpt%end
         do ist = st%st_start, st%st_end
 
-          call states_get_state(st, mesh, ist, iqn, psi)
+          call states_elec_get_state(st, mesh, ist, iqn, psi)
 
           select case (kick%delta_strength_mode)
           case (KICK_DENSITY_MODE)
@@ -847,7 +847,7 @@ contains
             end forall
 
           case (KICK_SPIN_MODE)
-            ispin = states_dim_get_spin_index(st%d, iqn)
+            ispin = states_elec_dim_get_spin_index(st%d, iqn)
             do ip = 1, mesh%np
               kick_value = M_zI*kick%delta_strength*kick_function(ip)
               
@@ -879,7 +879,7 @@ contains
             end do
           end select
 
-          call states_set_state(st, mesh, ist, iqn, psi)
+          call states_elec_set_state(st, mesh, ist, iqn, psi)
 
         end do
       end do

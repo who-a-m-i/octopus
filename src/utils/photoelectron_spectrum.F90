@@ -38,8 +38,8 @@ program photoelectron_spectrum
   use sort_oct_m
   use space_oct_m
   use string_oct_m
-  use states_oct_m
-  use states_dim_oct_m
+  use states_elec_oct_m
+  use states_elec_dim_oct_m
   use unit_oct_m
   use unit_system_oct_m
   use utils_oct_m
@@ -69,7 +69,7 @@ program photoelectron_spectrum
   type(space_t)        :: space
   type(geometry_t)     :: geo
   type(simul_box_t)    :: sb
-  type(states_t)       :: st
+  type(states_elec_t)  :: st
   type(grid_t)         :: gr
   type(restart_t)      :: restart
   
@@ -113,7 +113,7 @@ program photoelectron_spectrum
   call geometry_init(geo, parser, space)
   call simul_box_init(sb, parser, geo, space)
   gr%sb = sb
-  call states_init(st, parser, gr, geo)
+  call states_elec_init(st, parser, gr, geo)
   !*
 
   !Initialize variables
@@ -441,7 +441,7 @@ program photoelectron_spectrum
 
   call restart_end(restart)    
 
-  call states_end(st)
+  call states_elec_end(st)
 
   call geometry_end(geo)
   call simul_box_end(sb)

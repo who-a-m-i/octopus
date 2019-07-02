@@ -32,7 +32,7 @@ module pes_spm_oct_m
   use profiling_oct_m
   use restart_oct_m
   use simul_box_oct_m
-  use states_oct_m
+  use states_elec_oct_m
   use unit_oct_m
   use unit_system_oct_m
   use varinfo_oct_m
@@ -80,11 +80,11 @@ contains
 
   ! ---------------------------------------------------------
   subroutine pes_spm_init(this, parser, mesh, st, save_iter)
-    type(pes_spm_t), intent(out) :: this
-    type(parser_t),  intent(in)  :: parser
-    type(mesh_t),    intent(in)  :: mesh
-    type(states_t),  intent(in)  :: st
-    integer,         intent(in)  :: save_iter
+    type(pes_spm_t),      intent(out) :: this
+    type(parser_t),       intent(in)  :: parser
+    type(mesh_t),         intent(in)  :: mesh
+    type(states_elec_t),  intent(in)  :: st
+    integer,              intent(in)  :: save_iter
 
     type(block_t) :: blk
     integer       :: stst, stend, kptst, kptend, sdim, mdim
@@ -349,7 +349,7 @@ contains
   ! ---------------------------------------------------------
   subroutine pes_spm_calc(this, st, mesh, dt, iter, hm)
     type(pes_spm_t),     intent(inout) :: this
-    type(states_t),      intent(in)    :: st
+    type(states_elec_t), intent(in)    :: st
     type(mesh_t),        intent(in)    :: mesh
     FLOAT,               intent(in)    :: dt
     integer,             intent(in)    :: iter
@@ -395,7 +395,7 @@ contains
     do ik = kptst, kptend 
       do ist = stst, stend
         do isdim = 1, sdim
-          call states_get_state(st, mesh, isdim, ist, ik, psistate(1:mesh%np_part))
+          call states_elec_get_state(st, mesh, isdim, ist, ik, psistate(1:mesh%np_part))
           call mesh_interpolation_evaluate(this%interp, this%nspoints, psistate(1:mesh%np_part), &
             this%rcoords(1:mdim, 1:this%nspoints), interp_values(1:this%nspoints))
           this%wf(ist, isdim, ik, :, itstep) = st%occ(ist, ik) * interp_values(:)
@@ -443,11 +443,11 @@ contains
 
   ! ---------------------------------------------------------
   subroutine pes_spm_output(this, mesh, st, iter, dt)
-    type(pes_spm_t), intent(in) :: this
-    type(mesh_t),    intent(in) :: mesh
-    type(states_t),  intent(in) :: st
-    integer,         intent(in) :: iter
-    FLOAT,           intent(in) :: dt
+    type(pes_spm_t),     intent(in) :: this
+    type(mesh_t),        intent(in) :: mesh
+    type(states_elec_t), intent(in) :: st
+    integer,             intent(in) :: iter
+    FLOAT,               intent(in) :: dt
 
     integer            :: ist, ik, isdim
     integer            :: ii, jj
@@ -751,9 +751,9 @@ contains
 
   ! ---------------------------------------------------------
   subroutine pes_spm_init_write(this, mesh, st)
-    type(PES_spm_t), intent(in) :: this
-    type(mesh_t),    intent(in) :: mesh
-    type(states_t),  intent(in) :: st
+    type(PES_spm_t),     intent(in) :: this
+    type(mesh_t),        intent(in) :: mesh
+    type(states_elec_t), intent(in) :: st
 
     integer           :: ist, ik, isdim
     integer           :: isp
@@ -804,10 +804,10 @@ contains
 
   ! ---------------------------------------------------------
   subroutine pes_spm_dump(restart, this, st, ierr)
-    type(restart_t), intent(in)  :: restart    
-    type(pes_spm_t), intent(in)  :: this
-    type(states_t),  intent(in)  :: st
-    integer,         intent(out) :: ierr
+    type(restart_t),     intent(in)  :: restart    
+    type(pes_spm_t),     intent(in)  :: this
+    type(states_elec_t), intent(in)  :: st
+    integer,             intent(out) :: ierr
     
     integer :: err, iunit
     
@@ -849,10 +849,10 @@ contains
 
   ! ---------------------------------------------------------
   subroutine pes_spm_load(restart, this, st, ierr)
-    type(restart_t), intent(in)    :: restart    
-    type(pes_spm_t), intent(inout) :: this
-    type(states_t),  intent(inout) :: st
-    integer,         intent(out)   :: ierr
+    type(restart_t),     intent(in)    :: restart    
+    type(pes_spm_t),     intent(inout) :: this
+    type(states_elec_t), intent(inout) :: st
+    integer,             intent(out)   :: ierr
     
     integer :: err, iunit
     

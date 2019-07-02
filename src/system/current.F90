@@ -703,7 +703,8 @@ contains
         end do
         do idir = 1, ndim
           if(associated(hm%hm_base%phase)) then 
-            call states_elec_set_phase(st%d, gpsi(:, idir, :), hm%hm_base%phase(1:der%mesh%np_part, ik), der%mesh%np, conjugate = .true.)
+            call states_elec_set_phase(st%d, gpsi(:, idir, :), hm%hm_base%phase(1:der%mesh%np_part, ik), &
+                der%mesh%np, conjugate = .true.)
           end if
             
           !do idim = 1, st%d%dim

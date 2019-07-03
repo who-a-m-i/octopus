@@ -547,6 +547,8 @@ while ($_ = <TESTSUITE>) {
 
 }
 
+check_error_resolved();
+
 if ($opt_l && !$opt_m && !$opt_n)  { system ("cat $workdir/out >> out.log"); }
 if (!$opt_p && !$opt_m && $test_succeeded) { system ("rm -rf $workdir"); }
 
@@ -765,7 +767,7 @@ sub skip_exit {
 
 sub check_error_resolved {
     if (!$opt_n && !$error_match_done) { 
-        print "No error check performed!\n"
+        print "No error check performed!\n";
         $failures++; 
     }
 }

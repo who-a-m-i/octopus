@@ -160,7 +160,7 @@ contains
       return
     end if
 
-    call system_init(sys, parser)
+    sys = system_init(parser)
 
     if (sys%hm%pcm%run_pcm) then
       select case (calc_mode_id)

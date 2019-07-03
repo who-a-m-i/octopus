@@ -70,11 +70,12 @@ module system_oct_m
 contains
   
   !----------------------------------------------------------
-  subroutine system_init(sys, parser)
-    type(system_t), intent(out)   :: sys
+  function system_init(parser) result(sys)
     type(parser_t), intent(in)    :: parser
-
+    type(system_t) :: sys
+    
     type(profile_t), save :: prof
+
     PUSH_SUB(system_init)
     call profiling_in(prof,"SYSTEM_INIT")
     
@@ -144,7 +145,7 @@ contains
       POP_SUB(system_init.parallel_init)
     end subroutine parallel_init
 
-  end subroutine system_init
+  end function system_init
 
   !----------------------------------------------------------
   subroutine system_end(sys)

@@ -212,7 +212,7 @@ contains
 
     call calc_mode_par_set_parallelization(P_STRATEGY_STATES, default = .false.)
 
-    call system_init(sys, parser)
+    sys = system_init(parser)
     call poisson_test(sys%gr%mesh, param%repetitions)
     call system_end(sys)
 
@@ -238,7 +238,7 @@ contains
     call messages_new_line()
     call messages_info()
 
-    call system_init(sys, parser)
+    sys = system_init(parser)
 
     call states_allocate_wfns(sys%st, sys%gr%mesh, wfs_type = TYPE_CMPLX)
     call states_generate_random(sys%st, sys%gr%mesh, sys%gr%sb)
@@ -291,7 +291,7 @@ contains
     call messages_new_line()
     call messages_info()
 
-    call system_init(sys, parser)
+    sys = system_init(parser)
 
     call states_allocate_wfns(sys%st, sys%gr%mesh)
     call states_generate_random(sys%st, sys%gr%mesh, sys%gr%sb)
@@ -397,7 +397,7 @@ contains
     call messages_new_line()
     call messages_info()
 
-    call system_init(sys, parser)
+    sys = system_init(parser)
 
     call states_allocate_wfns(sys%st, sys%gr%mesh)
     call states_generate_random(sys%st, sys%gr%mesh, sys%gr%sb)
@@ -467,7 +467,7 @@ contains
     call messages_new_line()
     call messages_info()
 
-    call system_init(sys, parser)
+    sys = system_init(parser)
 
     call states_allocate_wfns(sys%st, sys%gr%mesh)
     call states_generate_random(sys%st, sys%gr%mesh, sys%gr%sb)
@@ -497,7 +497,7 @@ contains
 
     PUSH_SUB(test_derivatives)
 
-    call system_init(sys, parser)
+    sys = system_init(parser)
 
     message(1) = 'Info: Testing the finite-differences derivatives.'
     message(2) = ''
@@ -537,7 +537,7 @@ contains
     call calc_mode_par_set_parallelization(P_STRATEGY_STATES, default = .false.)
     call calc_mode_par_set_scalapack_compat()
 
-    call system_init(sys, parser)
+    sys = system_init(parser)
 
     message(1) = 'Info: Testing orthogonalization.'
     message(2) = ''
@@ -570,7 +570,7 @@ contains
 
     PUSH_SUB(test_interpolation)
 
-    call system_init(sys, parser)
+    sys = system_init(parser)
 
     if(param%type == OPTION__TESTTYPE__ALL .or. param%type == OPTION__TESTTYPE__REAL) then
       call messages_write('Info: Testing real interpolation routines')
@@ -606,7 +606,7 @@ contains
 
     PUSH_SUB(test_ion_interaction)
 
-    call system_init(sys, parser)
+    sys = system_init(parser)
 
     call ion_interaction_test(sys%geo, sys%parser, sys%gr%sb)
 

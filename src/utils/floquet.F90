@@ -90,7 +90,7 @@ program oct_floquet
   call restart_module_init(parser)
 
   call calc_mode_par_set_parallelization(P_STRATEGY_STATES, default = .false.)
-  call system_init(sys, parser)
+  sys = system_init(parser)
   call simul_box_init(sb, sys%parser, sys%geo, sys%space)
   ! make shortcut copies
   st = sys%st

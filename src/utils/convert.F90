@@ -111,7 +111,7 @@ contains
     PUSH_SUB(convert)
 
     call calc_mode_par_set_parallelization(P_STRATEGY_STATES, default = .false.)
-    call system_init(sys, parser)
+    sys = system_init(parser)
 
     message(1) = 'Info: Converting files'
     message(2) = ''

@@ -21,12 +21,12 @@
 module propagator_cn_oct_m
   use density_oct_m
   use exponential_oct_m
+  use gauge_field_oct_m
   use grid_oct_m
   use geometry_oct_m
   use global_oct_m
   use hamiltonian_elec_oct_m
   use ion_dynamics_oct_m
-  use lda_u_oct_m
   use mesh_function_oct_m
   use messages_oct_m
   use parser_oct_m
@@ -36,6 +36,7 @@ module propagator_cn_oct_m
   use solvers_oct_m
   use sparskit_oct_m
   use states_elec_oct_m
+  use worker_elec_oct_m
 
   implicit none
 
@@ -71,9 +72,11 @@ contains
     FLOAT :: dres
     FLOAT :: cgtol = CNST(1.0e-12)
     logical :: converged
-    type(ion_state_t) :: ions_state
 
     PUSH_SUB(propagator_dt.td_crank_nicolson)
+
+    !TODO: Add gauge field support
+    ASSERT(.not.gauge_field_is_applied(hm%ep%gfield))
 
 #ifndef HAVE_SPARSKIT
     if(use_sparskit) then
@@ -103,11 +106,8 @@ contains
     SAFE_ALLOCATE(rhs(1:np*st%d%dim))
 
     !move the ions to time 'time - dt/2', and save the current status to return to it later.
-    if(ion_dynamics_ions_move(ions)) then
-      call ion_dynamics_save_state(ions, geo, ions_state)
-      call ion_dynamics_propagate(ions, gr%sb, geo, time - dt/M_TWO, M_HALF*dt)
-      call hamiltonian_elec_epot_generate(hm, parser, gr, geo, st, time = time - dt/M_TWO)
-    end if
+    call worker_elec_move_ions(tr%worker_elec, gr, hm, st, parser, ions, geo, &
+                time - M_HALF*dt, M_HALF*dt, save_pos = .true.)
 
     if(hm%family_is_mgga_with_exc) then
       call potential_interpolation_interpolate(tr%vksold, 3, &
@@ -117,9 +117,7 @@ contains
         time, dt, time -dt/M_TWO, hm%vhxc)
     end if
 
-    call hamiltonian_elec_update(hm, gr%mesh, time = time - dt/M_TWO)
-    !We update the occupation matrices
-    call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy )
+    call worker_elec_update_hamiltonian(st, gr, hm, time - dt*M_HALF)
 
     ! solve (1+i\delta t/2 H_n)\psi^{predictor}_{n+1} = (1-i\delta t/2 H_n)\psi^n
     do ik = st%d%kpt%start, st%d%kpt%end
@@ -171,9 +169,7 @@ contains
     call density_calc(st, gr, st%rho)
 
     !restore to time 'time - dt'
-    if(ion_dynamics_ions_move(ions)) then
-      call ion_dynamics_restore_state(ions, geo, ions_state)
-    end if
+    call worker_elec_restore_ions(tr%worker_elec, ions, geo)
 
     SAFE_DEALLOCATE_A(zpsi_rhs)
     SAFE_DEALLOCATE_A(zpsi)

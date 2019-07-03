@@ -25,7 +25,7 @@ module phonons_lr_oct_m
   use geometry_oct_m
   use global_oct_m
   use grid_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use io_oct_m
   use io_function_oct_m
   use kdotp_oct_m
@@ -70,7 +70,7 @@ contains
   ! ---------------------------------------------------------
   subroutine phonons_lr_run(sys, hm, fromscratch)
     type(system_t), target, intent(inout) :: sys
-    type(hamiltonian_t),    intent(inout) :: hm
+    type(hamiltonian_elec_t),    intent(inout) :: hm
     logical,                intent(in)    :: fromscratch
 
     type(sternheimer_t) :: sh

@@ -28,7 +28,7 @@ module casida_oct_m
   use forces_oct_m
   use gauss_legendre_oct_m
   use global_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use io_oct_m
   use io_function_oct_m
   use kpoints_oct_m
@@ -171,7 +171,7 @@ contains
   ! ---------------------------------------------------------
   subroutine casida_run(sys, hm, fromScratch)
     type(system_t),      intent(inout) :: sys
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     logical,             intent(inout) :: fromScratch
 
     type(casida_t) :: cas
@@ -646,7 +646,7 @@ contains
   !! the matrix formulation of M. Petersilka, or of M. Casida
   subroutine casida_work(sys, hm, cas)
     type(system_t), target, intent(inout) :: sys
-    type(hamiltonian_t),    intent(inout) :: hm
+    type(hamiltonian_elec_t),    intent(inout) :: hm
     type(casida_t),         intent(inout) :: cas
 
     type(states_elec_t), pointer :: st

@@ -28,7 +28,7 @@ module lcao_oct_m
   use geometry_oct_m
   use global_oct_m
   use grid_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use io_oct_m
   use lalg_adv_oct_m
   use lalg_basic_oct_m
@@ -691,7 +691,7 @@ contains
   ! ---------------------------------------------------------
   subroutine lcao_run(sys, hm, st_start, lmm_r)
     type(system_t),      intent(inout) :: sys
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     integer, optional,   intent(in)    :: st_start !< use for unoccupied-states run
     FLOAT,   optional,   intent(in)    :: lmm_r !< used only if not present(st_start)
 
@@ -861,7 +861,7 @@ contains
     type(states_elec_t), intent(inout) :: st
     type(grid_t),        intent(in)    :: gr
     type(geometry_t),    intent(in)    :: geo
-    type(hamiltonian_t), intent(in)    :: hm
+    type(hamiltonian_elec_t), intent(in)    :: hm
     integer, optional,   intent(in)    :: start
 
     integer :: start_

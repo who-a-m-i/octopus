@@ -38,7 +38,7 @@ module output_oct_m
   use geometry_oct_m
   use global_oct_m
   use grid_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use io_oct_m
   use io_function_oct_m
   use kick_oct_m
@@ -640,7 +640,7 @@ contains
     type(parser_t),       intent(in)    :: parser
     type(geometry_t),     intent(in)    :: geo
     type(states_elec_t),  intent(inout) :: st
-    type(hamiltonian_t),  intent(inout) :: hm
+    type(hamiltonian_elec_t),  intent(inout) :: hm
     type(v_ks_t),         intent(in)    :: ks
     type(output_t),       intent(in)    :: outp
     character(len=*),     intent(in)    :: dir
@@ -731,7 +731,7 @@ contains
   ! ---------------------------------------------------------
   subroutine output_localization_funct(st, hm, gr, dir, outp, geo)
     type(states_elec_t),    intent(inout) :: st
-    type(hamiltonian_t),    intent(in)    :: hm
+    type(hamiltonian_elec_t),    intent(in)    :: hm
     type(grid_t),           intent(in)    :: gr
     character(len=*),       intent(in)    :: dir
     type(output_t),         intent(in)    :: outp
@@ -840,7 +840,7 @@ contains
   ! ---------------------------------------------------------
   subroutine calc_electronic_pressure(st, hm, gr, pressure)
     type(states_elec_t),    intent(inout) :: st
-    type(hamiltonian_t),    intent(in)    :: hm
+    type(hamiltonian_elec_t),    intent(in)    :: hm
     type(grid_t),           intent(in)    :: gr
     FLOAT,                  intent(out)   :: pressure(:)
 
@@ -886,7 +886,7 @@ contains
 
   ! ---------------------------------------------------------
   subroutine output_energy_density(hm, ks, st, der, dir, outp, geo, gr, grp)
-    type(hamiltonian_t),       intent(in) :: hm
+    type(hamiltonian_elec_t),       intent(in) :: hm
     type(v_ks_t),              intent(in) :: ks
     type(states_elec_t),       intent(in) :: st
     type(derivatives_t),       intent(in) :: der
@@ -1176,7 +1176,7 @@ contains
     type(states_elec_t), intent(in)    :: st
     type(grid_t),        intent(in)    :: gr
     type(v_ks_t),        intent(in)    :: ks
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     type(geometry_t),    intent(in)    :: geo
 
 #ifdef HAVE_BERKELEYGW

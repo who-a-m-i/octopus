@@ -25,7 +25,7 @@ module propagator_qoct_oct_m
   use grid_oct_m
   use geometry_oct_m
   use global_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use ion_dynamics_oct_m
   use messages_oct_m
   use oct_exchange_oct_m
@@ -48,7 +48,7 @@ contains
   ! ---------------------------------------------------------
   !> Propagator specifically designed for the QOCT+TDDFT problem
   subroutine td_qoct_tddft_propagator(hm, parser, xc, gr, st, tr, time, dt, ions, geo)
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     type(parser_t),      intent(in)    :: parser
     type(xc_t),          intent(in)    :: xc
     type(grid_t),        intent(inout) :: gr

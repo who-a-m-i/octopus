@@ -29,7 +29,7 @@ module td_oct_m
   use global_oct_m
   use grid_oct_m
   use ground_state_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use io_oct_m
   use ion_dynamics_oct_m
   use kick_oct_m
@@ -121,7 +121,7 @@ contains
   subroutine td_init(td, sys, hm)
     type(td_t),            intent(inout) :: td
     type(system_t),        intent(inout) :: sys
-    type(hamiltonian_t),   intent(inout) :: hm
+    type(hamiltonian_elec_t),   intent(inout) :: hm
 
     integer :: default
     FLOAT   :: spacing, default_dt, propagation_time
@@ -353,7 +353,7 @@ contains
   
   subroutine td_run(sys, hm, fromScratch)
     type(system_t), target, intent(inout) :: sys
-    type(hamiltonian_t),    intent(inout) :: hm
+    type(hamiltonian_elec_t),    intent(inout) :: hm
     logical,                intent(inout) :: fromScratch
 
     type(td_t)                   :: td
@@ -408,7 +408,7 @@ contains
 
       ! initialize the vector field and update the hamiltonian
       call gauge_field_init_vec_pot(hm%ep%gfield, gr%sb, st)
-      call hamiltonian_update(hm, gr%mesh, time = td%dt*td%iter)
+      call hamiltonian_elec_update(hm, gr%mesh, time = td%dt*td%iter)
     end if
 
     call init_wfs()
@@ -423,7 +423,7 @@ contains
     if(ion_dynamics_ions_move(td%ions)) then
       if(td%iter > 0) then
         call td_read_coordinates()
-        call hamiltonian_epot_generate(hm, sys%parser, gr, geo, st, time = td%iter*td%dt)
+        call hamiltonian_elec_epot_generate(hm, sys%parser, gr, geo, st, time = td%iter*td%dt)
       end if
 
       call forces_calculate(gr, sys%parser, geo, hm, st, sys%ks, t = td%iter*td%dt, dt = td%dt)
@@ -463,7 +463,7 @@ contains
       call pes_init_write(td%pesv,gr%mesh,st)
     end if
 
-    if(st%d%pack_states .and. hamiltonian_apply_packed(hm, gr%mesh)) call st%pack()
+    if(st%d%pack_states .and. hamiltonian_elec_apply_packed(hm, gr%mesh)) call st%pack()
     
     etime = loct_clock()
     ! This is the time-propagation loop. It starts at t=0 and finishes
@@ -524,7 +524,7 @@ contains
 
     end do propagation
 
-    if(st%d%pack_states .and. hamiltonian_apply_packed(hm, gr%mesh)) call st%unpack()
+    if(st%d%pack_states .and. hamiltonian_elec_apply_packed(hm, gr%mesh)) call st%unpack()
 
     call restart_end(restart_dump)
     if (ion_dynamics_ions_move(td%ions) .and. td%recalculate_gs) call restart_end(restart_load)
@@ -774,7 +774,7 @@ contains
         call MPI_Bcast(x, 1, MPI_FLOAT, 0, st%mpi_grp%comm, mpi_err)
       end if
 #endif
-      call hamiltonian_span(hm, minval(gr%mesh%spacing(1:gr%mesh%sb%dim)), x)
+      call hamiltonian_elec_span(hm, minval(gr%mesh%spacing(1:gr%mesh%sb%dim)), x)
       ! initialize Fermi energy
       call states_elec_fermi(st, gr%mesh)
       call energy_calc_total(hm, gr, st)
@@ -1006,7 +1006,7 @@ contains
     type(restart_t),     intent(in)  :: restart
     type(grid_t),        intent(in)  :: gr
     type(states_elec_t), intent(in)  :: st
-    type(hamiltonian_t), intent(in)  :: hm
+    type(hamiltonian_elec_t), intent(in)  :: hm
     type(td_t),          intent(in)  :: td
     integer,             intent(in)  :: iter
     integer,             intent(out) :: ierr
@@ -1068,7 +1068,7 @@ contains
     type(parser_t),      intent(in)    :: parser
     type(grid_t),        intent(in)    :: gr
     type(states_elec_t), intent(inout) :: st
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     type(td_t),          intent(inout) :: td
     integer,             intent(out)   :: ierr
 
@@ -1111,7 +1111,7 @@ contains
       if (err /= 0) then
         ierr = ierr + 8
       else
-        call hamiltonian_update(hm, gr%mesh, time = td%dt*td%iter)
+        call hamiltonian_elec_update(hm, gr%mesh, time = td%dt*td%iter)
       end if
     end if
 
@@ -1128,7 +1128,7 @@ contains
     type(restart_t),     intent(in)    :: restart
     type(grid_t),        intent(in)    :: gr
     type(states_elec_t), intent(inout) :: st
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     integer,             intent(out)   :: ierr
 
     PUSH_SUB(td_load_frozen)

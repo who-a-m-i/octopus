@@ -209,7 +209,7 @@
     type(grid_t),        intent(in) :: gr
     character(len=*),    intent(in) :: dir
     type(geometry_t),    intent(in) :: geo
-    type(hamiltonian_t), intent(in) :: hm
+    type(hamiltonian_elec_t), intent(in) :: hm
     type(output_t),      intent(in) :: outp
 
     PUSH_SUB(target_output_hhg)
@@ -388,7 +388,7 @@
   !!
   subroutine target_tdcalc_hhg(tg, hm, gr, geo, psi, time)
     type(target_t),      intent(in)    :: tg
-    type(hamiltonian_t), intent(in)    :: hm
+    type(hamiltonian_elec_t), intent(in)    :: hm
     type(grid_t),        intent(in)    :: gr
     type(geometry_t),    intent(inout) :: geo
     type(states_elec_t), intent(in)    :: psi

@@ -21,7 +21,7 @@ subroutine X(bgw_vxc_dat)(bgw, dir, st, gr, hm, vxc)
   character(len=*),            intent(in)    :: dir
   type(states_elec_t), target, intent(in)    :: st
   type(grid_t),                intent(in)    :: gr
-  type(hamiltonian_t),         intent(inout) :: hm
+  type(hamiltonian_elec_t),         intent(inout) :: hm
   FLOAT,                       intent(in)    :: vxc(:,:)
 
   integer :: iunit, iunit_x, ispin, ik, ikk, ist, ist2, idiag, ioff, ndiag, noffdiag, spin_index(st%d%nspin)

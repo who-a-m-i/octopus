@@ -23,7 +23,7 @@ module initst_oct_m
   use geometry_oct_m
   use global_oct_m
   use grid_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use messages_oct_m
   use mesh_function_oct_m
   use opt_control_state_oct_m
@@ -58,7 +58,7 @@ contains
   ! ---------------------------------------------------------
   subroutine initial_state_init(sys, hm, qcstate)
     type(system_t),      intent(inout) :: sys
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     type(opt_control_state_t), target, intent(inout) :: qcstate
 
     integer           :: ik, ib, idim, inst, inik, id, is, ip, ierr, &

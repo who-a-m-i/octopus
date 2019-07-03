@@ -24,7 +24,7 @@ module phonons_fd_oct_m
   use geometry_oct_m
   use global_oct_m
   use grid_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use mesh_oct_m
   use messages_oct_m
   use multicomm_oct_m
@@ -51,7 +51,7 @@ contains
   ! ---------------------------------------------------------
   subroutine phonons_run(sys, hm)
     type(system_t),      intent(inout) :: sys
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
 
     type(vibrations_t) :: vib
     integer :: ierr
@@ -139,7 +139,7 @@ contains
     type(geometry_t),     intent(inout) :: geo
     type(states_elec_t),  intent(inout) :: st
     type(v_ks_t),         intent(inout) :: ks
-    type(hamiltonian_t),  intent(inout) :: hm
+    type(hamiltonian_elec_t),  intent(inout) :: hm
     type(output_t),       intent(in)    :: outp
     type(vibrations_t),   intent(inout) :: vib
 
@@ -171,7 +171,7 @@ contains
         geo%atom(iatom)%x(alpha) = geo%atom(iatom)%x(alpha) + vib%disp
 
         ! first force
-        call hamiltonian_epot_generate(hm, parser, gr, geo, st)
+        call hamiltonian_elec_epot_generate(hm, parser, gr, geo, st)
         call density_calc(st, gr, st%rho)
         call v_ks_calc(ks, parser, hm, st, geo, calc_eigenval=.true.)
         call energy_calc_total (hm, gr, st)
@@ -187,7 +187,7 @@ contains
         geo%atom(iatom)%x(alpha) = geo%atom(iatom)%x(alpha) - M_TWO*vib%disp
 
         ! second force
-        call hamiltonian_epot_generate(hm, parser, gr, geo, st)
+        call hamiltonian_elec_epot_generate(hm, parser, gr, geo, st)
         call density_calc(st, gr, st%rho)
         call v_ks_calc(ks, parser, hm, st, geo, calc_eigenval=.true.)
         call energy_calc_total(hm, gr, st)

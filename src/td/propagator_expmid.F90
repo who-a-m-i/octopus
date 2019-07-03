@@ -22,7 +22,7 @@ module propagator_expmid_oct_m
   use grid_oct_m
   use geometry_oct_m
   use global_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use ion_dynamics_oct_m
   use messages_oct_m
   use parser_oct_m
@@ -43,7 +43,7 @@ contains
   ! ---------------------------------------------------------
   !> Exponential midpoint
   subroutine exponential_midpoint(hm, parser, gr, st, tr, time, dt, ionic_scale, ions, geo, move_ions)
-    type(hamiltonian_t), target,     intent(inout) :: hm
+    type(hamiltonian_elec_t), target,     intent(inout) :: hm
     type(parser_t),                  intent(in)    :: parser
     type(grid_t),        target,     intent(inout) :: gr
     type(states_elec_t), target,     intent(inout) :: st

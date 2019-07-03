@@ -27,7 +27,7 @@ module test_oct_m
   use derivatives_oct_m
   use epot_oct_m
   use global_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use ion_interaction_oct_m
   use mesh_function_oct_m
   use mesh_interpolation_oct_m
@@ -369,7 +369,7 @@ contains
     type(system_t) :: sys
     type(batch_t), pointer :: hpsib
     integer :: itime, terms
-    type(hamiltonian_t) :: hm
+    type(hamiltonian_elec_t) :: hm
     type(simul_box_t) :: sb
 
     PUSH_SUB(test_hamiltonian)
@@ -407,10 +407,10 @@ contains
 
     !Initialize external potential
     call simul_box_init(sb, sys%parser, sys%geo, sys%space)
-    call hamiltonian_init(hm, sys%parser, sys%gr, sys%geo, sys%st, sys%ks%theory_level, sys%ks%xc_family, &
+    call hamiltonian_elec_init(hm, sys%parser, sys%gr, sys%geo, sys%st, sys%ks%theory_level, sys%ks%xc_family, &
              family_is_mgga_with_exc(sys%ks%xc, sys%st%d%nspin))
-    if(sys%st%d%pack_states .and. hamiltonian_apply_packed(hm, sys%gr%mesh)) call sys%st%pack()
-    call hamiltonian_epot_generate(hm, sys%parser, sys%gr, sys%geo, sys%st)
+    if(sys%st%d%pack_states .and. hamiltonian_elec_apply_packed(hm, sys%gr%mesh)) call sys%st%pack()
+    call hamiltonian_elec_epot_generate(hm, sys%parser, sys%gr, sys%geo, sys%st)
     call density_calc(sys%st, sys%gr, sys%st%rho)
     call v_ks_calc(sys%ks, sys%parser, hm, sys%st, sys%geo)
 
@@ -419,16 +419,16 @@ contains
     SAFE_ALLOCATE(hpsib)
     call batch_copy(sys%st%group%psib(1, 1), hpsib)
 
-    if(hamiltonian_apply_packed(hm, sys%gr%der%mesh)) then
+    if(hamiltonian_elec_apply_packed(hm, sys%gr%der%mesh)) then
       call batch_pack(sys%st%group%psib(1, 1))
       call batch_pack(hpsib, copy = .false.)
     end if
 
     do itime = 1, param%repetitions
       if(states_are_real(sys%st)) then
-        call dhamiltonian_apply_batch(hm, sys%gr%der, sys%st%group%psib(1, 1), hpsib, 1, terms = terms, set_bc = .false.)
+        call dhamiltonian_elec_apply_batch(hm, sys%gr%der, sys%st%group%psib(1, 1), hpsib, 1, terms = terms, set_bc = .false.)
       else
-        call zhamiltonian_apply_batch(hm, sys%gr%der, sys%st%group%psib(1, 1), hpsib, 1, terms = terms, set_bc = .false.)
+        call zhamiltonian_elec_apply_batch(hm, sys%gr%der, sys%st%group%psib(1, 1), hpsib, 1, terms = terms, set_bc = .false.)
       end if
     end do
 
@@ -447,7 +447,7 @@ contains
 
     call batch_end(hpsib, copy = .false.)
     SAFE_DEALLOCATE_P(hpsib)
-    call hamiltonian_end(hm)
+    call hamiltonian_elec_end(hm)
     call simul_box_end(sb)
     call states_elec_deallocate_wfns(sys%st)
     call system_end(sys)

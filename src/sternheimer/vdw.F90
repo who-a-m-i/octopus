@@ -23,7 +23,7 @@ module vdw_oct_m
   use gauss_legendre_oct_m
   use global_oct_m
   use grid_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use io_oct_m
   use linear_response_oct_m
   use mesh_oct_m
@@ -53,7 +53,7 @@ contains
   ! ---------------------------------------------------------
   subroutine vdw_run(sys, hm, fromScratch)
     type(system_t),         intent(inout) :: sys
-    type(hamiltonian_t),    intent(inout) :: hm
+    type(hamiltonian_elec_t),    intent(inout) :: hm
     logical,                intent(inout) :: fromScratch
 
     type(lr_t) :: lr(MAX_DIM, 1)

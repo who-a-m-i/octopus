@@ -26,7 +26,7 @@ module worker_elec_oct_m
   use gauge_field_oct_m
   use global_oct_m
   use grid_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use ion_dynamics_oct_m
   use lda_u_oct_m
   use messages_oct_m
@@ -84,10 +84,10 @@ contains
 
   ! ---------------------------------------------------------
   subroutine worker_elec_update_hamiltonian(st, gr, hm, time)
-    type(states_elec_t), intent(inout) :: st
-    type(grid_t),        intent(inout) :: gr
-    type(hamiltonian_t), intent(inout) :: hm
-    FLOAT,               intent(in)    :: time
+    type(states_elec_t),      intent(inout) :: st
+    type(grid_t),             intent(inout) :: gr
+    type(hamiltonian_elec_t), intent(inout) :: hm
+    FLOAT,                    intent(in)    :: time
 
     type(profile_t), save :: prof
 
@@ -95,7 +95,7 @@ contains
 
     call profiling_in(prof, 'ELEC_UPDATE_H')
 
-    call hamiltonian_update(hm, gr%mesh, time = time)
+    call hamiltonian_elec_update(hm, gr%mesh, time = time)
     call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy)
 
     call profiling_out(prof)
@@ -106,17 +106,17 @@ contains
 
   ! ---------------------------------------------------------
   subroutine worker_elec_move_ions(wo, gr, hm, st, parser, ions, geo, time, ion_time, save_pos, move_ions)
-    class(worker_elec_t),    intent(inout) :: wo
-    type(grid_t),            intent(in)    :: gr
-    type(hamiltonian_t),     intent(inout) :: hm
-    type(states_elec_t),     intent(inout) :: st
-    type(parser_t),          intent(in)    :: parser
-    type(ion_dynamics_t),    intent(inout) :: ions
-    type(geometry_t),        intent(inout) :: geo
-    FLOAT,                   intent(in)    :: time
-    FLOAT,                   intent(in)    :: ion_time
-    logical, optional,       intent(in)    :: save_pos
-    logical, optional,       intent(in)    :: move_ions
+    class(worker_elec_t),      intent(inout) :: wo
+    type(grid_t),              intent(in)    :: gr
+    type(hamiltonian_elec_t),  intent(inout) :: hm
+    type(states_elec_t),       intent(inout) :: st
+    type(parser_t),            intent(in)    :: parser
+    type(ion_dynamics_t),      intent(inout) :: ions
+    type(geometry_t),          intent(inout) :: geo
+    FLOAT,                     intent(in)    :: time
+    FLOAT,                     intent(in)    :: ion_time
+    logical, optional,         intent(in)    :: save_pos
+    logical, optional,         intent(in)    :: move_ions
 
     type(profile_t), save :: prof
 
@@ -129,7 +129,7 @@ contains
         call ion_dynamics_save_state(ions, geo, wo%ions_state)
       end if
       call ion_dynamics_propagate(ions, gr%sb, geo, time, ion_time)
-      call hamiltonian_epot_generate(hm, parser, gr, geo, st, time = time)
+      call hamiltonian_elec_epot_generate(hm, parser, gr, geo, st, time = time)
     end if
 
     POP_SUB(worker_elec_move_ions)
@@ -163,11 +163,11 @@ contains
 
   ! ---------------------------------------------------------
   subroutine worker_elec_propagate_gauge_field(wo, hm, dt, time, save_gf)
-    class(worker_elec_t),    intent(inout) :: wo
-    type(hamiltonian_t),     intent(inout) :: hm
-    FLOAT,                   intent(in)    :: dt
-    FLOAT,                   intent(in)    :: time
-    logical,  optional,      intent(in)    :: save_gf
+    class(worker_elec_t),      intent(inout) :: wo
+    type(hamiltonian_elec_t),  intent(inout) :: hm
+    FLOAT,                     intent(in)    :: dt
+    FLOAT,                     intent(in)    :: time
+    logical,  optional,        intent(in)    :: save_gf
 
     type(profile_t), save :: prof
 
@@ -191,9 +191,9 @@ contains
 
   ! ---------------------------------------------------------
   subroutine worker_elec_restore_gauge_field(wo, hm, gr)
-    class(worker_elec_t),    intent(in)    :: wo
-    type(hamiltonian_t),     intent(inout) :: hm
-    type(grid_t),            intent(in)    :: gr
+    class(worker_elec_t),         intent(in)    :: wo
+    type(hamiltonian_elec_t),     intent(inout) :: hm
+    type(grid_t),                 intent(in)    :: gr
 
     type(profile_t), save :: prof
 
@@ -204,7 +204,7 @@ contains
     if(gauge_field_is_applied(hm%ep%gfield)) then
       call gauge_field_set_vec_pot(hm%ep%gfield, wo%vecpot)
       call gauge_field_set_vec_pot_vel(hm%ep%gfield, wo%vecpot_vel)
-      call hamiltonian_update(hm, gr%mesh)
+      call hamiltonian_elec_update(hm, gr%mesh)
     end if
 
     call profiling_out(prof)
@@ -215,11 +215,11 @@ contains
 
   ! ---------------------------------------------------------
   subroutine worker_elec_exp_apply(te, st, gr, hm, dt)
-    type(exponential_t), intent(inout) :: te 
-    type(states_elec_t), intent(inout) :: st
-    type(grid_t),        intent(inout) :: gr
-    type(hamiltonian_t), intent(inout) :: hm
-    FLOAT,               intent(in)    :: dt
+    type(exponential_t),      intent(inout) :: te 
+    type(states_elec_t),      intent(inout) :: st
+    type(grid_t),             intent(inout) :: gr
+    type(hamiltonian_elec_t), intent(inout) :: hm
+    FLOAT,                    intent(in)    :: dt
 
     integer :: ik, ib
     type(profile_t), save :: prof
@@ -242,12 +242,12 @@ contains
 
   ! ---------------------------------------------------------
   subroutine worker_elec_fuse_density_exp_apply(te, st, gr, hm, dt, dt2)
-    type(exponential_t), intent(inout) :: te
-    type(states_elec_t), intent(inout) :: st
-    type(grid_t),        intent(inout) :: gr
-    type(hamiltonian_t), intent(inout) :: hm
-    FLOAT,               intent(in)    :: dt
-    FLOAT,  optional,    intent(in)    :: dt2
+    type(exponential_t),      intent(inout) :: te
+    type(states_elec_t),      intent(inout) :: st
+    type(grid_t),             intent(inout) :: gr
+    type(hamiltonian_elec_t), intent(inout) :: hm
+    FLOAT,                    intent(in)    :: dt
+    FLOAT,  optional,         intent(in)    :: dt2
 
     integer :: ik, ib
     type(batch_t) :: zpsib_dt
@@ -302,7 +302,7 @@ contains
   ! ---------------------------------------------------------
   subroutine worker_elec_interpolate_get(gr, hm, interp)
     type(grid_t),                       intent(in) :: gr
-    type(hamiltonian_t),             intent(inout) :: hm
+    type(hamiltonian_elec_t),        intent(inout) :: hm
     type(potential_interpolation_t), intent(inout) :: interp
 
     PUSH_SUB(worker_elec_interpolate_get)

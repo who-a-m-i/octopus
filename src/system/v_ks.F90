@@ -31,8 +31,8 @@ module v_ks_oct_m
   use geometry_oct_m
   use global_oct_m
   use grid_oct_m
-  use hamiltonian_oct_m
-  use hamiltonian_base_oct_m
+  use hamiltonian_elec_oct_m
+  use hamiltonian_elec_base_oct_m
   use kick_oct_m
   use lalg_basic_oct_m
   use lasers_oct_m
@@ -652,7 +652,7 @@ contains
   subroutine v_ks_calc(ks, parser, hm, st, geo, calc_eigenval, time, calc_berry, calc_energy, calc_current)
     type(v_ks_t),               intent(inout) :: ks
     type(parser_t),             intent(in)    :: parser
-    type(hamiltonian_t),        intent(inout) :: hm
+    type(hamiltonian_elec_t),        intent(inout) :: hm
     type(states_elec_t),        intent(inout) :: st
     type(geometry_t),           intent(in)    :: geo
     logical,          optional, intent(in)    :: calc_eigenval
@@ -686,7 +686,7 @@ contains
   subroutine v_ks_calc_start(ks, parser, hm, st, geo, time, calc_berry, calc_energy, calc_current) 
     type(v_ks_t),            target,   intent(inout) :: ks
     type(parser_t),                    intent(in)    :: parser
-    type(hamiltonian_t),     target,   intent(in)    :: hm !< This MUST be intent(in), changes to hm are done in v_ks_calc_finish.
+    type(hamiltonian_elec_t),     target,   intent(in)    :: hm !< This MUST be intent(in), changes to hm are done in v_ks_calc_finish.
     type(states_elec_t),              intent(inout) :: st
     type(geometry_t) ,       target,   intent(in)    :: geo
     FLOAT,                   optional, intent(in)    :: time 
@@ -847,7 +847,7 @@ contains
     !ADSIC potential is:
     !V_ADSIC[n] = V_ks[n] - (V_h[n/N] - V_xc[n/N])
     subroutine add_adsic(hm)
-      type(hamiltonian_t), intent(in)    :: hm
+      type(hamiltonian_elec_t), intent(in)    :: hm
 
       integer        :: ip, ispin, ist, ik
       FLOAT, pointer :: vxc_sic(:,:),  vh_sic(:), rho(:, :), qsp(:)
@@ -913,7 +913,7 @@ contains
 
     ! ---------------------------------------------------------
     subroutine v_a_xc(hm)
-      type(hamiltonian_t),  intent(in) :: hm
+      type(hamiltonian_elec_t),  intent(in) :: hm
 
       type(profile_t), save :: prof
       FLOAT :: factor
@@ -1070,7 +1070,7 @@ contains
 
   subroutine v_ks_calc_finish(ks, hm)
     type(v_ks_t), target, intent(inout) :: ks
-    type(hamiltonian_t),  intent(inout) :: hm
+    type(hamiltonian_elec_t),  intent(inout) :: hm
 
     integer                           :: ip, ispin
 
@@ -1191,9 +1191,9 @@ contains
     end if
 
     if(ks%calc%time_present) then
-      call hamiltonian_update(hm, ks%gr%mesh, time = ks%calc%time)
+      call hamiltonian_elec_update(hm, ks%gr%mesh, time = ks%calc%time)
     else
-      call hamiltonian_update(hm, ks%gr%mesh)
+      call hamiltonian_elec_update(hm, ks%gr%mesh)
     end if
 
 
@@ -1214,7 +1214,7 @@ contains
   !
   subroutine v_ks_hartree(ks, hm)
     type(v_ks_t),                intent(inout) :: ks
-    type(hamiltonian_t), target, intent(inout) :: hm
+    type(hamiltonian_elec_t), target, intent(inout) :: hm
 
     FLOAT, pointer :: pot(:)
 
@@ -1256,7 +1256,7 @@ contains
 
       !> Local field effects due to the applied electrostatic potential representing the laser and the kick (if they were).
       !! For the laser, the latter is only valid in the long-wavelength limit.
-      !! Static potentials are included in subroutine hamiltonian_epot_generate (module hamiltonian).
+      !! Static potentials are included in subroutine hamiltonian_elec_epot_generate (module hamiltonian).
       !! The sign convention for typical potentials and kick are different...
       if( hm%pcm%localf .and. ks%calc%time_present ) then
         laser_present = epot_have_lasers( hm%ep )

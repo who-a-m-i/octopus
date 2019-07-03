@@ -27,7 +27,8 @@ module propagator_rk_oct_m
   use grid_oct_m
   use geometry_oct_m
   use global_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
+  use ion_dynamics_oct_m
   use lda_u_oct_m
   use ion_dynamics_oct_m
   use mesh_function_oct_m
@@ -56,7 +57,7 @@ module propagator_rk_oct_m
     td_runge_kutta4
   
   type(grid_t),            pointer, private :: grid_p
-  type(hamiltonian_t),     pointer, private :: hm_p
+  type(hamiltonian_elec_t),     pointer, private :: hm_p
   type(states_elec_t),     pointer, private :: st_p
   type(xc_t),              pointer, private :: xc_p
   type(propagator_t),      pointer, private :: tr_p
@@ -70,7 +71,7 @@ contains
   subroutine td_explicit_runge_kutta4(ks, parser, hm, gr, st, time, dt, ions, geo, qcchi)
     type(v_ks_t), target,            intent(inout) :: ks
     type(parser_t),                  intent(in)    :: parser
-    type(hamiltonian_t), target,     intent(inout) :: hm
+    type(hamiltonian_elec_t), target,     intent(inout) :: hm
     type(grid_t),        target,     intent(inout) :: gr
     type(states_elec_t), target,     intent(inout) :: st
     FLOAT,                           intent(in)    :: time
@@ -296,7 +297,7 @@ contains
         geo%atom(iatom)%x(1:geo%space%dim) = posfinal(:, iatom)
         geo%atom(iatom)%v(1:geo%space%dim) = velfinal(:, iatom)
       end do
-      call hamiltonian_epot_generate(hm, parser,  gr, geo, st, time)
+      call hamiltonian_elec_epot_generate(hm, parser,  gr, geo, st, time)
       !call forces_calculate(gr, parser, geo, hm, stphi, time, dt)
       geo%kinetic_energy = ion_dynamics_kinetic_energy(geo)
 
@@ -354,16 +355,16 @@ contains
           geo%atom(iatom)%x(1:geo%space%dim) = pos(:, iatom)
           geo%atom(iatom)%v(1:geo%space%dim) = vel(:, iatom)
         end do
-        call hamiltonian_epot_generate(hm, parser,  gr, geo, stphi, time = tau)
+        call hamiltonian_elec_epot_generate(hm, parser,  gr, geo, stphi, time = tau)
       end if
       if(.not.oct_exchange_enabled(hm%oct_exchange)) then
         call density_calc(stphi, gr, stphi%rho)
         call v_ks_calc(ks, parser, hm, stphi, geo, calc_current = gauge_field_is_applied(hm%ep%gfield), time = tau)
       else
-        call hamiltonian_update(hm, gr%mesh, time = tau)
+        call hamiltonian_elec_update(hm, gr%mesh, time = tau)
       end if
       call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy)
-      call zhamiltonian_apply_all(hm, ks%xc, gr%der, stphi, hst)
+      call zhamiltonian_elec_apply_all(hm, ks%xc, gr%der, stphi, hst)
     end subroutine f_psi
 
     subroutine f_ions(tau)
@@ -388,23 +389,23 @@ contains
 
       if( hm%theory_level /= INDEPENDENT_PARTICLES) call oct_exchange_set(hm%oct_exchange, stphi, gr%mesh)
       call prepare_inh()
-      call hamiltonian_adjoint(hm)
+      call hamiltonian_elec_adjoint(hm)
 
       call worker_elec_update_hamiltonian(st, gr, hm, tau)
 
-      call zhamiltonian_apply_all(hm, ks%xc, gr%der, stchi, hchi)
-      call hamiltonian_not_adjoint(hm)
+      call zhamiltonian_elec_apply_all(hm, ks%xc, gr%der, stchi, hchi)
+      call hamiltonian_elec_not_adjoint(hm)
 
 
       call apply_inh()
       if( hm%theory_level /= INDEPENDENT_PARTICLES) call oct_exchange_remove(hm%oct_exchange)
-      if(ion_dynamics_ions_move(ions)) call hamiltonian_remove_inh(hm)
+      if(ion_dynamics_ions_move(ions)) call hamiltonian_elec_remove_inh(hm)
     end subroutine f_chi
 
     subroutine apply_inh()
       integer :: ib
 
-      if(hamiltonian_inh_term(hm)) then
+      if(hamiltonian_elec_inh_term(hm)) then
         do ik = kp1, kp2
           do ib = 1, st%group%block_start, st%group%block_end
             call batch_axpy(np, M_ZI, hm%inh_st%group%psib(ib, ik), hchi%group%psib(ib, ik))
@@ -449,7 +450,7 @@ contains
           end do
         end do
 
-        call hamiltonian_set_inh(hm, inh)
+        call hamiltonian_elec_set_inh(hm, inh)
         call states_elec_end(inh)
 
         SAFE_DEALLOCATE_A(psi)
@@ -487,7 +488,7 @@ contains
   subroutine td_runge_kutta2(ks, parser, hm, gr, st, tr, time, dt, ions, geo)
     type(v_ks_t), target,            intent(inout) :: ks
     type(parser_t),                  intent(in)    :: parser
-    type(hamiltonian_t), target,     intent(inout) :: hm
+    type(hamiltonian_elec_t), target,     intent(inout) :: hm
     type(grid_t),        target,     intent(inout) :: gr
     type(states_elec_t), target,     intent(inout) :: st
     type(propagator_t),  target,     intent(inout) :: tr
@@ -558,7 +559,7 @@ contains
     rhs1 = M_z0
     do ik = kp1, kp2
       do ist = st1, st2
-        call zhamiltonian_apply(hm_p, grid_p%der, zphi(:, :, ist, ik), rhs1(:, :, ist, ik), ist, ik)
+        call zhamiltonian_elec_apply(hm_p, grid_p%der, zphi(:, :, ist, ik), rhs1(:, :, ist, ik), ist, ik)
       end do
     end do
     do ik = kp1, kp2
@@ -571,7 +572,7 @@ contains
 
     rhs1 = zphi - M_zI * M_HALF * dt * rhs1
 
-    if(hamiltonian_inh_term(hm)) then
+    if(hamiltonian_elec_inh_term(hm)) then
       SAFE_ALLOCATE(inhpsi(1:gr%mesh%np))
       do ik = kp1, kp2
         do ist = st1, st2
@@ -603,7 +604,7 @@ contains
       if(ion_dynamics_ions_move(ions)) then
         call ion_dynamics_save_state(ions, geo, ions_state)
         call ion_dynamics_propagate(ions, gr%sb, geo, time, dt)
-        call hamiltonian_epot_generate(hm, parser,  gr, geo, st, time = time)
+        call hamiltonian_elec_epot_generate(hm, parser,  gr, geo, st, time = time)
         vpsl1_op = hm%ep%vpsl
       end if
 
@@ -700,7 +701,7 @@ contains
   subroutine td_runge_kutta4(ks, parser, hm, gr, st, tr, time, dt, ions, geo)
     type(v_ks_t), target,            intent(inout) :: ks
     type(parser_t),                  intent(in)    :: parser    
-    type(hamiltonian_t), target,     intent(inout) :: hm
+    type(hamiltonian_elec_t), target,     intent(inout) :: hm
     type(grid_t),        target,     intent(inout) :: gr
     type(states_elec_t), target,     intent(inout) :: st
     type(propagator_t),  target,     intent(inout) :: tr
@@ -803,7 +804,7 @@ contains
       if(ion_dynamics_ions_move(ions)) then
         call ion_dynamics_save_state(ions, geo, ions_state)
         call ion_dynamics_propagate(ions, gr%sb, geo, time - dt + c(1)*dt, c(1)*dt)
-        call hamiltonian_epot_generate(hm, parser,  gr, geo, st, time = time - dt + c(1)*dt)
+        call hamiltonian_elec_epot_generate(hm, parser,  gr, geo, st, time = time - dt + c(1)*dt)
         vpsl1_op = hm%ep%vpsl
       end if
 
@@ -814,8 +815,8 @@ contains
       rhs1 = M_z0
       do ik = kp1, kp2
         do ist = st1, st2
-          call zhamiltonian_apply(hm_p, grid_p%der, zphi(:, :, ist, ik), rhs1(:, :, ist, ik), ist, ik)
-          if(hamiltonian_inh_term(hm)) then
+          call zhamiltonian_elec_apply(hm_p, grid_p%der, zphi(:, :, ist, ik), rhs1(:, :, ist, ik), ist, ik)
+          if(hamiltonian_elec_inh_term(hm)) then
             SAFE_ALLOCATE(inhpsi(1:gr%mesh%np))
             do idim = 1, st%d%dim
               call states_elec_get_state(hm%inh_st, gr%mesh, idim, ist, ik, inhpsi)
@@ -841,7 +842,7 @@ contains
       if(ion_dynamics_ions_move(ions)) then
         call ion_dynamics_save_state(ions, geo, ions_state)
         call ion_dynamics_propagate(ions, gr%sb, geo, time - dt + c(2)*dt, c(2)*dt)
-        call hamiltonian_epot_generate(hm, parser, gr, geo, st, time = time - dt + c(2)*dt)
+        call hamiltonian_elec_epot_generate(hm, parser, gr, geo, st, time = time - dt + c(2)*dt)
         vpsl2_op = hm%ep%vpsl
       end if
 
@@ -852,8 +853,8 @@ contains
       rhs2 = M_z0
       do ik = kp1, kp2
         do ist = st1, st2
-          call zhamiltonian_apply(hm_p, grid_p%der, zphi(:, :, ist, ik), rhs2(:, :, ist, ik), ist, ik)
-          if(hamiltonian_inh_term(hm)) then
+          call zhamiltonian_elec_apply(hm_p, grid_p%der, zphi(:, :, ist, ik), rhs2(:, :, ist, ik), ist, ik)
+          if(hamiltonian_elec_inh_term(hm)) then
             SAFE_ALLOCATE(inhpsi(1:gr%mesh%np))
             do idim = 1, st%d%dim
               call states_elec_get_state(hm%inh_st, gr%mesh, idim, ist, ik, inhpsi)
@@ -1023,7 +1024,7 @@ contains
           k = k + np
         end do
 
-        call zhamiltonian_apply(hm_p, grid_p%der, zpsi, opzpsi, ist, ik)
+        call zhamiltonian_elec_apply(hm_p, grid_p%der, zpsi, opzpsi, ist, ik)
 
         do idim = 1, dim
           yre(jj:jj+np-1) = xre(jj:jj+np-1) + real(M_zI * dt_op * opzpsi(1:np, idim))
@@ -1048,7 +1049,7 @@ contains
           k = k + np
         end do
 
-        call zhamiltonian_apply(hm_p, grid_p%der, zpsi, opzpsi, ist, ik)
+        call zhamiltonian_elec_apply(hm_p, grid_p%der, zpsi, opzpsi, ist, ik)
 
         do idim = 1, dim
           yre(jj:jj+np-1) = xre(jj:jj+np-1) + real(M_zI * dt_op * opzpsi(1:np, idim))
@@ -1119,7 +1120,7 @@ contains
           k = k + np
         end do
 
-        call zhamiltonian_apply(hm_p, grid_p%der, zpsi, opzpsi, ist, ik)
+        call zhamiltonian_elec_apply(hm_p, grid_p%der, zpsi, opzpsi, ist, ik)
 
         do idim = 1, dim
           yre(jj:jj+np-1) = xre(jj:jj+np-1) + real(M_zI * dt_op * opzpsi(1:np, idim))
@@ -1146,7 +1147,7 @@ contains
           k = k + np
         end do
 
-        call zhamiltonian_apply(hm_p, grid_p%der, zpsi, opzpsi, ist, ik)
+        call zhamiltonian_elec_apply(hm_p, grid_p%der, zpsi, opzpsi, ist, ik)
 
         do idim = 1, dim
           yre(jj:jj+np-1) = xre(jj:jj+np-1) + real(M_zI * dt_op * opzpsi(1:np, idim))
@@ -1220,7 +1221,7 @@ contains
           zpsi(1:np, idim) = cmplx(xre(j:j+np-1), xim(j:j+np-1), REAL_PRECISION)
           j = j + np
         end do
-        call zhamiltonian_apply(hm_p, grid_p%der, zpsi, opzpsi, ist, ik)
+        call zhamiltonian_elec_apply(hm_p, grid_p%der, zpsi, opzpsi, ist, ik)
         do idim = 1, dim
           yre(jj:jj+np-1) = xre(jj:jj+np-1) + real(M_zI * dt_op * M_HALF * opzpsi(1:np, idim))
           yim(jj:jj+np-1) = xim(jj:jj+np-1) + aimag(M_zI * dt_op * M_HALF * opzpsi(1:np, idim))
@@ -1315,7 +1316,7 @@ contains
           zpsi(1:np, idim) = cmplx(xre(j:j+np-1), -xim(j:j+np-1), REAL_PRECISION)
           j = j + np
         end do
-        call zhamiltonian_apply(hm_p, grid_p%der, zpsi, opzpsi, ist, ik)
+        call zhamiltonian_elec_apply(hm_p, grid_p%der, zpsi, opzpsi, ist, ik)
 
         do idim = 1, dim
           yre(jj:jj+np-1) = xre(jj:jj+np-1) + real(M_zI * dt_op * M_HALF * opzpsi(1:np, idim))

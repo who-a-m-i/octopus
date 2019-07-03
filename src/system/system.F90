@@ -70,8 +70,9 @@ module system_oct_m
 contains
   
   !----------------------------------------------------------
-  function system_init(parser) result(sys)
-    type(parser_t), intent(in)    :: parser
+  function system_init(parser, name) result(sys)
+    type(parser_t),             intent(in) :: parser
+    character(len=*), optional, intent(in) :: name
     type(system_t) :: sys
     
     type(profile_t), save :: prof
@@ -82,7 +83,11 @@ contains
     SAFE_ALLOCATE(sys%gr)
     SAFE_ALLOCATE(sys%st)
 
-    sys%parser = parser
+    if (present(name)) then
+      sys%parser = parser_init_namespace(parser, name)
+    else
+      sys%parser = parser
+    end if
 
     call accel_init(mpi_world, sys%parser)
 

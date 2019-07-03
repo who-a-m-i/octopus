@@ -38,8 +38,8 @@ module propagator_etrs_oct_m
   use potential_interpolation_oct_m
   use profiling_oct_m
   use propagator_base_oct_m
-  use states_dim_oct_m
-  use states_oct_m
+  use states_elec_dim_oct_m
+  use states_elec_oct_m
   use types_oct_m
   use v_ks_oct_m
   use worker_elec_oct_m
@@ -58,18 +58,18 @@ contains
   ! ---------------------------------------------------------
   !> Propagator with enforced time-reversal symmetry
   subroutine td_etrs(ks, parser, hm, gr, st, tr, time, dt, ionic_scale, ions, geo, move_ions)
-    type(v_ks_t), target,            intent(inout) :: ks
-    type(parser_t),                  intent(in)    :: parser
-    type(hamiltonian_t), target,     intent(inout) :: hm
-    type(grid_t),        target,     intent(inout) :: gr
-    type(states_t),      target,     intent(inout) :: st
-    type(propagator_t),  target,     intent(inout) :: tr
-    FLOAT,                           intent(in)    :: time
-    FLOAT,                           intent(in)    :: dt
-    FLOAT,                           intent(in)    :: ionic_scale
-    type(ion_dynamics_t),            intent(inout) :: ions
-    type(geometry_t),                intent(inout) :: geo
-    logical,                         intent(in)    :: move_ions
+    type(v_ks_t), target,                   intent(inout) :: ks
+    type(parser_t),                         intent(in)    :: parser
+    type(hamiltonian_t),        target,     intent(inout) :: hm
+    type(grid_t),               target,     intent(inout) :: gr
+    type(states_elec_t),   target,     intent(inout) :: st
+    type(propagator_t),         target,     intent(inout) :: tr
+    FLOAT,                                  intent(in)    :: time
+    FLOAT,                                  intent(in)    :: dt
+    FLOAT,                                  intent(in)    :: ionic_scale
+    type(ion_dynamics_t),                   intent(inout) :: ions
+    type(geometry_t),                       intent(inout) :: geo
+    logical,                                intent(in)    :: move_ions
 
     FLOAT, allocatable :: vhxc_t1(:,:), vhxc_t2(:,:)
     integer :: ik, ib
@@ -90,7 +90,7 @@ contains
 
       call lalg_copy(gr%mesh%np, st%d%nspin, hm%vhxc, vhxc_t2)
       call lalg_copy(gr%mesh%np, st%d%nspin, vhxc_t1, hm%vhxc)
-      call hamiltonian_update(hm, gr%mesh, gr%der%boundaries, time = time - dt)
+      call hamiltonian_update(hm, gr%mesh, time = time - dt)
 
     else
 
@@ -113,7 +113,7 @@ contains
     call worker_elec_update_hamiltonian(st, gr, hm, time)
     
     ! propagate dt/2 with H(time - dt)
-    call worker_elec_fuse_density_exp_apply(tr%te, st, gr, hm, CNST(0.5)*dt)
+    call worker_elec_fuse_density_exp_apply(tr%te, st, gr, hm, M_HALF*dt)
 
     if(hm%theory_level /= INDEPENDENT_PARTICLES) then
       SAFE_DEALLOCATE_A(vhxc_t1)
@@ -130,7 +130,7 @@ contains
     type(parser_t),                  intent(in)    :: parser
     type(hamiltonian_t), target,     intent(inout) :: hm
     type(grid_t),        target,     intent(inout) :: gr
-    type(states_t),      target,     intent(inout) :: st
+    type(states_elec_t), target,intent(inout) :: st
     type(propagator_t),  target,     intent(inout) :: tr
     FLOAT,                           intent(in)    :: time
     FLOAT,                           intent(in)    :: dt
@@ -259,7 +259,7 @@ contains
     type(parser_t),                  intent(in)    :: parser
     type(hamiltonian_t), target,     intent(inout) :: hm
     type(grid_t),        target,     intent(inout) :: gr
-    type(states_t),      target,     intent(inout) :: st
+    type(states_elec_t), target,intent(inout) :: st
     type(propagator_t),  target,     intent(inout) :: tr
     FLOAT,                           intent(in)    :: time
     FLOAT,                           intent(in)    :: dt
@@ -357,7 +357,7 @@ contains
 
       ! propagate the other half with H(t)
       do ik = st%d%kpt%start, st%d%kpt%end
-        ispin = states_dim_get_spin_index(st%d, ik)
+        ispin = states_elec_dim_get_spin_index(st%d, ik)
 
         do ib = st%group%block_start, st%group%block_end
 

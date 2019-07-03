@@ -40,8 +40,8 @@ program oct_floquet
   use restart_oct_m
   use space_oct_m
   use simul_box_oct_m
-  use states_oct_m
-  use states_restart_oct_m
+  use states_elec_oct_m
+  use states_elec_restart_oct_m
   use system_oct_m
   use unit_oct_m
   use unit_system_oct_m
@@ -56,7 +56,7 @@ program oct_floquet
   type(system_t) :: sys
   type(simul_box_t) :: sb
   type(hamiltonian_t) :: hm
-  type(states_t) :: st
+  type(states_elec_t) :: st
   type(grid_t)   :: gr
   CMPLX, allocatable :: hmss(:,:), psi(:,:,:), hpsi(:,:,:), temp_state1(:,:)
   CMPLX, allocatable :: HFloquet(:,:,:), HFloq_eff(:,:), temp(:,:)
@@ -101,9 +101,9 @@ program oct_floquet
   call hamiltonian_init(hm, sys%parser, gr, sys%geo, st, sys%ks%theory_level, sys%ks%xc_family, &
               family_is_mgga_with_exc(sys%ks%xc, sys%st%d%nspin))
   call hamiltonian_epot_generate(hm, sys%parser, gr, sys%geo, st, time=M_ZERO)
-  call hamiltonian_update(hm, gr%mesh, gr%der%boundaries, time = M_ZERO)
+  call hamiltonian_update(hm, gr%mesh, time = M_ZERO)
 
-  call states_allocate_wfns(st, gr%mesh)
+  call states_elec_allocate_wfns(st, gr%mesh)
   ! not sure this is needed ...
   if (gauge_field_is_applied(hm%ep%gfield)) then
      !if the gauge field is applied, we need to tell v_ks to calculate the current
@@ -111,11 +111,11 @@ program oct_floquet
 
      ! initialize the vector field and update the hamiltonian     
      call gauge_field_init_vec_pot(hm%ep%gfield, gr%sb, st)
-     call hamiltonian_update(hm, gr%mesh, gr%der%boundaries, time = M_ZERO)
+     call hamiltonian_update(hm, gr%mesh, time = M_ZERO)
   end if
 
   call restart_init(restart, sys%parser, RESTART_GS, RESTART_TYPE_LOAD, sys%mc, ierr, mesh=gr%mesh, exact=.true.)
-  if(ierr == 0) call states_load(restart, sys%parser, st, gr, ierr, label = ": gs")
+  if(ierr == 0) call states_elec_load(restart, sys%parser, st, gr, ierr, label = ": gs")
   if (ierr /= 0) then
      message(1) = 'Unable to read ground-state wavefunctions.'
      call messages_fatal(1)
@@ -123,7 +123,7 @@ program oct_floquet
 
   call density_calc(st, gr, st%rho)
   call v_ks_calc(sys%ks, sys%parser, hm, st, sys%geo, calc_eigenval=.true., time = M_ZERO)
-  call hamiltonian_update(hm, gr%mesh, gr%der%boundaries, time = M_ZERO)
+  call hamiltonian_update(hm, gr%mesh, time = M_ZERO)
 
   call floquet_init()
 
@@ -194,7 +194,7 @@ contains
 
   !---------------------------------------------------
   subroutine floquet_solve_non_interacting()	
-    type(states_t) :: hm_st
+    type(states_elec_t) :: hm_st
 
     PUSH_SUB(floquet_solve_non_interacting)
 
@@ -207,7 +207,7 @@ contains
     SAFE_ALLOCATE(temp_state1(1:mesh%np,1:st%d%dim))
 
     ! this is used to initialize the local state object
-    call states_copy(hm_st, st)
+    call states_elec_copy(hm_st, st)
 
     ! we are only interested for k-point with zero weight
     nik=gr%sb%kpoints%nik_skip
@@ -224,7 +224,7 @@ contains
     ! perform time-integral over one cycle
     do it=1,nT
       ! get non-interacting Hamiltonian at time (offset by one cycle to allow for ramp)
-      call hamiltonian_update(hm,gr%mesh, gr%der%boundaries,time=Tcycle+it*dt)
+      call hamiltonian_update(hm,gr%mesh, time=Tcycle+it*dt)
       ! get hpsi
       call zhamiltonian_apply_all(hm, sys%ks%xc, gr%der, st, hm_st)
 
@@ -239,11 +239,11 @@ contains
 
         do ist=st%st_start,st%st_end
           if(state_kpt_is_local(st, ist, ik)) then
-            call states_get_state(st, mesh, ist, ik,temp_state1 )
+            call states_elec_get_state(st, mesh, ist, ik,temp_state1 )
             do idim=1,st%d%dim
               psi(ist,idim,1:mesh%np) =  temp_state1(1:mesh%np,idim)
             end do
-            call states_get_state(hm_st, mesh, ist, ik,temp_state1 )
+            call states_elec_get_state(hm_st, mesh, ist, ik,temp_state1 )
             do idim=1,st%d%dim
               hpsi(ist,idim,1:mesh%np) =temp_state1(1:mesh%np,idim)
             end do
@@ -373,7 +373,7 @@ contains
      end if
   
     ! reset time in Hamiltonian
-    call hamiltonian_update(hm,gr%mesh, gr%der%boundaries,time=M_ZERO)
+    call hamiltonian_update(hm,gr%mesh, time=M_ZERO)
 
     SAFE_DEALLOCATE_A(hmss)
     SAFE_DEALLOCATE_A(psi)

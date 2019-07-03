@@ -35,7 +35,7 @@ module propagator_cn_oct_m
   use propagator_base_oct_m
   use solvers_oct_m
   use sparskit_oct_m
-  use states_oct_m
+  use states_elec_oct_m
   use worker_elec_oct_m
 
   implicit none
@@ -56,16 +56,16 @@ contains
   ! ---------------------------------------------------------
   !> Crank-Nicolson propagator
   subroutine td_crank_nicolson(hm, parser, gr, st, tr, time, dt, ions, geo, use_sparskit)
-    type(hamiltonian_t), target,     intent(inout) :: hm
-    type(parser_t),                  intent(in)    :: parser
-    type(grid_t),        target,     intent(inout) :: gr
-    type(states_t),      target,     intent(inout) :: st
-    type(propagator_t),  target,     intent(inout) :: tr
-    FLOAT,                           intent(in)    :: time
-    FLOAT,                           intent(in)    :: dt
-    type(ion_dynamics_t),            intent(inout) :: ions
-    type(geometry_t),                intent(inout) :: geo
-    logical, intent(in) :: use_sparskit
+    type(hamiltonian_t),      target,     intent(inout) :: hm
+    type(parser_t),                       intent(in)    :: parser
+    type(grid_t),             target,     intent(inout) :: gr
+    type(states_elec_t), target,     intent(inout) :: st
+    type(propagator_t),       target,     intent(inout) :: tr
+    FLOAT,                                intent(in)    :: time
+    FLOAT,                                intent(in)    :: dt
+    type(ion_dynamics_t),                 intent(inout) :: ions
+    type(geometry_t),                     intent(inout) :: geo
+    logical,                                 intent(in) :: use_sparskit
 
     CMPLX, allocatable :: zpsi_rhs(:,:), zpsi(:), rhs(:), inhpsi(:)
     integer :: ik, ist, idim, ip, np_part, np, iter
@@ -123,13 +123,13 @@ contains
     do ik = st%d%kpt%start, st%d%kpt%end
       do ist = st%st_start, st%st_end
 
-        call states_get_state(st, gr%mesh, ist, ik, zpsi_rhs)
+        call states_elec_get_state(st, gr%mesh, ist, ik, zpsi_rhs)
         call exponential_apply(tr%te, gr%der, hm, zpsi_rhs, ist, ik, dt/M_TWO)
 
         if(hamiltonian_inh_term(hm)) then
           SAFE_ALLOCATE(inhpsi(1:gr%mesh%np))
           do idim = 1, st%d%dim
-            call states_get_state(hm%inh_st, gr%mesh, idim, ist, ik, inhpsi)
+            call states_elec_get_state(hm%inh_st, gr%mesh, idim, ist, ik, inhpsi)
             forall(ip = 1:gr%mesh%np) zpsi_rhs(ip, idim) = zpsi_rhs(ip, idim) + dt*inhpsi(ip)
           end do
           SAFE_DEALLOCATE_A(inhpsi)
@@ -137,7 +137,7 @@ contains
 
         ! put the values in a continuous array
         do idim = 1, st%d%dim
-          call states_get_state(st, gr%mesh, idim, ist, ik, zpsi((idim - 1)*np+1:idim*np))
+          call states_elec_get_state(st, gr%mesh, idim, ist, ik, zpsi((idim - 1)*np+1:idim*np))
           rhs((idim - 1)*np + 1:idim*np) = zpsi_rhs(1:np, idim)
         end do
 
@@ -160,7 +160,7 @@ contains
         end if
 
         do idim = 1, st%d%dim
-          call states_set_state(st, gr%mesh, idim, ist, ik, zpsi((idim-1)*np + 1:(idim - 1)*np + np))
+          call states_elec_set_state(st, gr%mesh, idim, ist, ik, zpsi((idim-1)*np + 1:(idim - 1)*np + np))
         end do
 
       end do

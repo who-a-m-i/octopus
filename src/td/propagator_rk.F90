@@ -28,8 +28,8 @@ module propagator_rk_oct_m
   use geometry_oct_m
   use global_oct_m
   use hamiltonian_oct_m
-  use ion_dynamics_oct_m
   use lda_u_oct_m
+  use ion_dynamics_oct_m
   use mesh_function_oct_m
   use messages_oct_m
   use oct_exchange_oct_m
@@ -41,7 +41,7 @@ module propagator_rk_oct_m
   use propagator_base_oct_m
   use species_oct_m
   use sparskit_oct_m
-  use states_oct_m
+  use states_elec_oct_m
   use v_ks_oct_m
   use worker_elec_oct_m
   use xc_oct_m
@@ -57,7 +57,7 @@ module propagator_rk_oct_m
   
   type(grid_t),            pointer, private :: grid_p
   type(hamiltonian_t),     pointer, private :: hm_p
-  type(states_t),          pointer, private :: st_p
+  type(states_elec_t),     pointer, private :: st_p
   type(xc_t),              pointer, private :: xc_p
   type(propagator_t),      pointer, private :: tr_p
   integer,                 private :: dim_op
@@ -72,19 +72,19 @@ contains
     type(parser_t),                  intent(in)    :: parser
     type(hamiltonian_t), target,     intent(inout) :: hm
     type(grid_t),        target,     intent(inout) :: gr
-    type(states_t),      target,     intent(inout) :: st
+    type(states_elec_t), target,     intent(inout) :: st
     FLOAT,                           intent(in)    :: time
     FLOAT,                           intent(in)    :: dt
     type(ion_dynamics_t),            intent(inout) :: ions
     type(geometry_t),                intent(inout) :: geo
     type(opt_control_state_t), optional, target, intent(inout) :: qcchi
 
-    type(states_t), pointer :: chi
+    type(states_elec_t), pointer :: chi
     FLOAT, pointer :: q(:, :), p(:, :)
 
     integer :: np_part, np, kp1, kp2, st1, st2, nspin, ik, ist, iatom, ib
     CMPLX, allocatable :: zphi(:, :, :, :), zchi(:, :, :, :), dvpsi(:, :, :)
-    type(states_t) :: hst, stphi, inh, hchi, stchi
+    type(states_elec_t) :: hst, stphi, inh, hchi, stchi
     logical :: propagate_chi
     FLOAT, allocatable :: pos0(:, :), vel0(:, :), &
       posk(:, :), velk(:, :), &
@@ -140,14 +140,14 @@ contains
       end if
     end if
 
-    call states_copy(hst, st)
-    call states_copy(stphi, st)
-    call states_get_state(st, gr%mesh, zphi)
+    call states_elec_copy(hst, st)
+    call states_elec_copy(stphi, st)
+    call states_elec_get_state(st, gr%mesh, zphi)
 
     if(propagate_chi) then
-      call states_copy(hchi, chi)
-      call states_copy(stchi, chi)
-      call states_get_state(chi, gr%mesh, zchi)
+      call states_elec_copy(hchi, chi)
+      call states_elec_copy(stchi, chi)
+      call states_elec_get_state(chi, gr%mesh, zchi)
     end if
 
     if(ion_dynamics_ions_move(ions)) then
@@ -173,9 +173,9 @@ contains
     !
 
     ! 
-    call states_set_state(stphi, gr%mesh, zphi)
+    call states_elec_set_state(stphi, gr%mesh, zphi)
     if(propagate_chi) then
-      call states_set_state(stchi, gr%mesh, zchi)    
+      call states_elec_set_state(stchi, gr%mesh, zchi)    
     end if
     if(ion_dynamics_ions_move(ions)) then
       pos = pos0
@@ -195,9 +195,9 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Stage 2.
     
-    call states_set_state(stphi, gr%mesh, zphi)
+    call states_elec_set_state(stphi, gr%mesh, zphi)
     if(propagate_chi) then
-      call states_set_state(stchi, gr%mesh, zchi)    
+      call states_elec_set_state(stchi, gr%mesh, zchi)    
     end if
     
     do ik = stphi%d%kpt%start, stphi%d%kpt%end
@@ -226,9 +226,9 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Stage 3.
 
-    call states_set_state(stphi, gr%mesh, zphi)
+    call states_elec_set_state(stphi, gr%mesh, zphi)
     if(propagate_chi) then
-      call states_set_state(stchi, gr%mesh, zchi)    
+      call states_elec_set_state(stchi, gr%mesh, zchi)    
     end if
     
     do ik = stphi%d%kpt%start, stphi%d%kpt%end
@@ -258,9 +258,9 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Stage 4.
 
-    call states_set_state(stphi, gr%mesh, zphi)
+    call states_elec_set_state(stphi, gr%mesh, zphi)
     if(propagate_chi) then
-      call states_set_state(stchi, gr%mesh, zchi)    
+      call states_elec_set_state(stchi, gr%mesh, zchi)    
     end if
     
     do ik = stphi%d%kpt%start, stphi%d%kpt%end
@@ -308,12 +308,12 @@ contains
       end if
     end if
 
-    call states_end(hst)
-    call states_end(stphi)
+    call states_elec_end(hst)
+    call states_elec_end(stphi)
     SAFE_DEALLOCATE_A(zphi)
     if(propagate_chi) then
-      call states_end(hchi)
-      call states_end(stchi)
+      call states_elec_end(hchi)
+      call states_elec_end(stchi)
       SAFE_DEALLOCATE_A(zchi)
       nullify(chi)
       nullify(p)
@@ -360,7 +360,7 @@ contains
         call density_calc(stphi, gr, stphi%rho)
         call v_ks_calc(ks, parser, hm, stphi, geo, calc_current = gauge_field_is_applied(hm%ep%gfield), time = tau)
       else
-        call hamiltonian_update(hm, gr%mesh, gr%der%boundaries, time = tau)
+        call hamiltonian_update(hm, gr%mesh, time = tau)
       end if
       call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy)
       call zhamiltonian_apply_all(hm, ks%xc, gr%der, stphi, hst)
@@ -419,7 +419,7 @@ contains
       type(pert_t) :: pert
 
       if(ion_dynamics_ions_move(ions)) then
-        call states_copy(inh, st)
+        call states_elec_copy(inh, st)
 
         SAFE_ALLOCATE(psi(1:gr%mesh%np_part, 1:st%d%dim))
         SAFE_ALLOCATE(inhpsi(1:gr%mesh%np_part, 1:st%d%dim))
@@ -429,7 +429,7 @@ contains
           do ist = 1, st%nst
 
             inhpsi = M_z0
-            call states_get_state(stphi, gr%mesh, ist, ik, psi)
+            call states_elec_get_state(stphi, gr%mesh, ist, ik, psi)
 
             do iatom = 1, geo%natoms
               do idir = 1, gr%sb%dim
@@ -444,13 +444,13 @@ contains
               end do
             end do
 
-            call states_set_state(inh, gr%mesh, ist, ik, inhpsi)
+            call states_elec_set_state(inh, gr%mesh, ist, ik, inhpsi)
 
           end do
         end do
 
         call hamiltonian_set_inh(hm, inh)
-        call states_end(inh)
+        call states_elec_end(inh)
 
         SAFE_DEALLOCATE_A(psi)
         SAFE_DEALLOCATE_A(inhpsi)
@@ -489,7 +489,7 @@ contains
     type(parser_t),                  intent(in)    :: parser
     type(hamiltonian_t), target,     intent(inout) :: hm
     type(grid_t),        target,     intent(inout) :: gr
-    type(states_t),      target,     intent(inout) :: st
+    type(states_elec_t), target,     intent(inout) :: st
     type(propagator_t),  target,     intent(inout) :: tr
     FLOAT,                           intent(in)    :: time
     FLOAT,                           intent(in)    :: dt
@@ -547,7 +547,7 @@ contains
     ! First, we get the state that we want to propagate. For the moment being, only one state.
     do ik = kp1, kp2
       do ist = st1, st2
-        call states_get_state(st, gr%mesh, ist, ik, zphi(:, :, ist, ik))
+        call states_elec_get_state(st, gr%mesh, ist, ik, zphi(:, :, ist, ik))
       end do
     end do
 
@@ -576,7 +576,7 @@ contains
       do ik = kp1, kp2
         do ist = st1, st2
           do idim = 1, st%d%dim
-            call states_get_state(hm%inh_st, gr%mesh, idim, ist, ik, inhpsi)
+            call states_elec_get_state(hm%inh_st, gr%mesh, idim, ist, ik, inhpsi)
             forall(ip = 1:gr%mesh%np) rhs1(ip, idim, ist, ik) = rhs1(ip, idim, ist, ik) + dt * inhpsi(ip)
           end do
         end do
@@ -594,7 +594,7 @@ contains
       if(.not.oct_exchange_enabled(hm_p%oct_exchange)) then
         do ik = kp1, kp2
           do ist = st1, st2
-            call states_set_state(st, gr%mesh, ist, ik, k2(:, :, ist, ik))
+            call states_elec_set_state(st, gr%mesh, ist, ik, k2(:, :, ist, ik))
           end do
         end do
         call density_calc(st, gr, st%rho)
@@ -677,7 +677,7 @@ contains
     zphi = k2
     do ik = kp1, kp2
       do ist = st1, st2
-        call states_set_state(st, gr%mesh, ist, ik, zphi(:, :, ist, ik))
+        call states_elec_set_state(st, gr%mesh, ist, ik, zphi(:, :, ist, ik))
       end do
     end do
 
@@ -702,7 +702,7 @@ contains
     type(parser_t),                  intent(in)    :: parser    
     type(hamiltonian_t), target,     intent(inout) :: hm
     type(grid_t),        target,     intent(inout) :: gr
-    type(states_t),      target,     intent(inout) :: st
+    type(states_elec_t), target,     intent(inout) :: st
     type(propagator_t),  target,     intent(inout) :: tr
     FLOAT,                           intent(in)    :: time
     FLOAT,                           intent(in)    :: dt
@@ -778,7 +778,7 @@ contains
     ! First, we get the state that we want to propagate. For the moment being, only one state.
     do ik = kp1, kp2
       do ist = st1, st2
-        call states_get_state(st, gr%mesh, ist, ik, zphi(:, :, ist, ik))
+        call states_elec_get_state(st, gr%mesh, ist, ik, zphi(:, :, ist, ik))
       end do
     end do
     k1 = M_z0
@@ -795,7 +795,7 @@ contains
       ! Set the Hamiltonian at time-dt + c(1) * dt
       do ik = kp1, kp2
         do ist = st1, st2
-          call states_set_state(st, gr%mesh, ist, ik, yn1(:, :, ist, ik))
+          call states_elec_set_state(st, gr%mesh, ist, ik, yn1(:, :, ist, ik))
         end do
       end do
       call density_calc(st, gr, st%rho)
@@ -818,7 +818,7 @@ contains
           if(hamiltonian_inh_term(hm)) then
             SAFE_ALLOCATE(inhpsi(1:gr%mesh%np))
             do idim = 1, st%d%dim
-              call states_get_state(hm%inh_st, gr%mesh, idim, ist, ik, inhpsi)
+              call states_elec_get_state(hm%inh_st, gr%mesh, idim, ist, ik, inhpsi)
               forall(ip = 1:gr%mesh%np) rhs1(ip, idim, ist, ik) = rhs1(ip, idim, ist, ik) + M_zI * inhpsi(ip)
             end do
             SAFE_DEALLOCATE_A(inhpsi)
@@ -833,7 +833,7 @@ contains
       ! Set the Hamiltonian at time-dt + c(2) * dt
       do ik = kp1, kp2
         do ist = st1, st2
-          call states_set_state(st, gr%mesh, ist, ik, yn2(:, :, ist, ik))
+          call states_elec_set_state(st, gr%mesh, ist, ik, yn2(:, :, ist, ik))
         end do
       end do
       call density_calc(st, gr, st%rho)
@@ -856,7 +856,7 @@ contains
           if(hamiltonian_inh_term(hm)) then
             SAFE_ALLOCATE(inhpsi(1:gr%mesh%np))
             do idim = 1, st%d%dim
-              call states_get_state(hm%inh_st, gr%mesh, idim, ist, ik, inhpsi)
+              call states_elec_get_state(hm%inh_st, gr%mesh, idim, ist, ik, inhpsi)
               forall(ip = 1:gr%mesh%np) rhs2(ip, idim, ist, ik) = rhs2(ip, idim, ist, ik) + M_zI * inhpsi(ip)
             end do
             SAFE_DEALLOCATE_A(inhpsi)
@@ -947,7 +947,7 @@ contains
     zphi = zphi + b(1) * k1 + b(2) * k2
     do ik = kp1, kp2
       do ist = st1, st2
-        call states_set_state(st, gr%mesh, ist, ik, zphi(:, :, ist, ik))
+        call states_elec_set_state(st, gr%mesh, ist, ik, zphi(:, :, ist, ik))
       end do
     end do
 

@@ -28,7 +28,7 @@ module propagator_expmid_oct_m
   use parser_oct_m
   use potential_interpolation_oct_m
   use propagator_base_oct_m
-  use states_oct_m
+  use states_elec_oct_m
   use worker_elec_oct_m
 
   implicit none
@@ -46,7 +46,7 @@ contains
     type(hamiltonian_t), target,     intent(inout) :: hm
     type(parser_t),                  intent(in)    :: parser
     type(grid_t),        target,     intent(inout) :: gr
-    type(states_t),      target,     intent(inout) :: st
+    type(states_elec_t), target,     intent(inout) :: st
     type(propagator_t),  target,     intent(inout) :: tr
     FLOAT,                           intent(in)    :: time
     FLOAT,                           intent(in)    :: dt
@@ -73,7 +73,6 @@ contains
     !move the ions to time 'time - dt/2'
     call worker_elec_move_ions(tr%worker_elec, gr, hm, st, parser, ions, geo, &
             time - M_HALF*dt, ionic_scale*M_HALF*dt, save_pos = .true., move_ions = move_ions)
-
     call worker_elec_propagate_gauge_field(tr%worker_elec, hm, M_HALF*dt, time, save_gf = .true.)
 
     call worker_elec_update_hamiltonian(st, gr, hm, time - dt*M_HALF)
@@ -82,7 +81,6 @@ contains
 
     !restore to time 'time - dt'
     call worker_elec_restore_ions(tr%worker_elec, ions, geo, move_ions = move_ions)
-
     call worker_elec_restore_gauge_field(tr%worker_elec, hm, gr)
 
     POP_SUB(propagator_dt.exponential_midpoint)

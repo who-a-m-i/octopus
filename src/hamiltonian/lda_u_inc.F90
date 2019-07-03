@@ -19,13 +19,13 @@
 
 
 subroutine X(lda_u_apply)(this, d, mesh, ik, psib, hpsib, has_phase)
-  type(lda_u_t),      intent(in) :: this
-  type(mesh_t),       intent(in) :: mesh
-  integer,            intent(in) :: ik
-  type(batch_t),      intent(in) :: psib
-  type(batch_t),   intent(inout) :: hpsib
-  type(states_dim_t), intent(in) :: d
-  logical,            intent(in) :: has_phase !True if the wavefunction has an associated phase
+  type(lda_u_t),           intent(in) :: this
+  type(mesh_t),            intent(in) :: mesh
+  integer,                 intent(in) :: ik
+  type(batch_t),           intent(in) :: psib
+  type(batch_t),        intent(inout) :: hpsib
+  type(states_elec_dim_t), intent(in) :: d
+  logical,                 intent(in) :: has_phase !True if the wavefunction has an associated phase
 
   integer :: ibatch, ios, imp, im, ispin, bind1, bind2
   R_TYPE, allocatable :: dot(:,:,:,:), reduced(:,:), psi(:,:)
@@ -40,7 +40,7 @@ subroutine X(lda_u_apply)(this, d, mesh, ik, psib, hpsib, has_phase)
   SAFE_ALLOCATE(dot(1:d%dim,1:this%maxnorbs, 1:this%norbsets, 1:psib%nst))
   SAFE_ALLOCATE(psi(1:mesh%np, 1:d%dim))
 
-  ispin = states_dim_get_spin_index(d, ik)
+  ispin = states_elec_dim_get_spin_index(d, ik)
 
   ! We have to compute 
   ! hpsi> += sum_m |phi m> sum_mp Vmmp <phi mp | psi >
@@ -100,7 +100,7 @@ end subroutine X(lda_u_apply)
 subroutine X(update_occ_matrices)(this, mesh, st, lda_u_energy, phase)
   type(lda_u_t), intent(inout)         :: this
   type(mesh_t),     intent(in)         :: mesh
-  type(states_t),  intent(in)          :: st
+  type(states_elec_t),  intent(in)     :: st
   FLOAT, intent(inout)                 :: lda_u_energy
   CMPLX, pointer, optional             :: phase(:,:) 
 
@@ -126,18 +126,18 @@ subroutine X(update_occ_matrices)(this, mesh, st, lda_u_energy, phase)
 
   !TODO: use symmetries of the occupation matrices
   do ik = st%d%kpt%start, st%d%kpt%end
-    ispin =  states_dim_get_spin_index(st%d,ik)
+    ispin =  states_elec_dim_get_spin_index(st%d,ik)
 
     do ist = st%st_start, st%st_end
 
       weight = st%d%kweights(ik)*st%occ(ist, ik)     
       if(weight < CNST(1.0e-10)) cycle
  
-      call states_get_state(st, mesh, ist, ik, psi )
+      call states_elec_get_state(st, mesh, ist, ik, psi )
 
       if(present(phase)) then
 #ifdef R_TCOMPLEX
-        call states_set_phase(st%d, psi, phase(:,ik), mesh%np, .false.)
+        call states_elec_set_phase(st%d, psi, phase(:,ik), mesh%np, .false.)
 #endif
       end if
 
@@ -273,7 +273,7 @@ end subroutine X(update_occ_matrices)
 subroutine X(compute_dftu_energy)(this, energy, st)
   type(lda_u_t), intent(inout)    :: this
   FLOAT, intent(inout)            :: energy
-  type(states_t), intent(in)      :: st 
+  type(states_elec_t), intent(in) :: st 
 
   integer :: ios, imp, im, ispin
   FLOAT :: nsigma
@@ -324,7 +324,7 @@ end subroutine X(compute_dftu_energy)
 ! ---------------------------------------------------------
 subroutine X(lda_u_update_potential)(this, st)
   type(lda_u_t), intent(inout)    :: this
-  type(states_t), intent(in)      :: st
+  type(states_elec_t), intent(in) :: st
 
   integer :: ios, im, ispin, norbs
   type(profile_t), save :: prof
@@ -770,9 +770,8 @@ end subroutine X(compute_ACBNO_U_kanamori_restricted)
 
 ! ---------------------------------------------------------
 ! TODO: Merge this with the two_body routine in system/output_me_inc.F90
-subroutine X(compute_coulomb_integrals) (this, parser, mesh, der)
+subroutine X(compute_coulomb_integrals) (this, mesh, der)
   type(lda_u_t),       intent(inout)  :: this
-  type(parser_t),      intent(in)     :: parser
   type(mesh_t),        intent(in)     :: mesh
   type(derivatives_t), intent(in)     :: der
 
@@ -985,13 +984,13 @@ end subroutine X(compute_periodic_coulomb_integrals)
  !> This routine computes [r,V_lda+u].
  ! ---------------------------------------------------------
  subroutine X(lda_u_commute_r)(this, mesh, d, ik, psi, gpsi, has_phase)
-   type(lda_u_t),      intent(in) :: this
-   type(mesh_t),       intent(in) :: mesh
-   type(states_dim_t), intent(in) :: d
-   R_TYPE,             intent(in) :: psi(:,:)
-   integer,            intent(in) :: ik
-   R_TYPE,          intent(inout) :: gpsi(:, :, :)
-   logical,            intent(in) :: has_phase !True if the wavefunction has an associated phase 
+   type(lda_u_t),           intent(in) :: this
+   type(mesh_t),            intent(in) :: mesh
+   type(states_elec_dim_t), intent(in) :: d
+   R_TYPE,                  intent(in) :: psi(:,:)
+   integer,                 intent(in) :: ik
+   R_TYPE,               intent(inout) :: gpsi(:, :, :)
+   logical,                 intent(in) :: has_phase !True if the wavefunction has an associated phase 
 
    integer :: ios, idim, idir, im, imp, is, ispin
    integer :: idim_orb
@@ -1018,7 +1017,7 @@ end subroutine X(compute_periodic_coulomb_integrals)
    SAFE_ALLOCATE(dot(1:d%dim,1:this%maxnorbs))
    SAFE_ALLOCATE(reduced(1:d%dim,1:this%maxnorbs))
 
-   ispin = states_dim_get_spin_index(d, ik)
+   ispin = states_elec_dim_get_spin_index(d, ik)
 
    do ios = 1, this%norbsets
       ! We have to compute 
@@ -1185,7 +1184,7 @@ end subroutine X(compute_periodic_coulomb_integrals)
  subroutine X(lda_u_force)(this, mesh, st, iq, ndim, psib, grad_psib, force, phase)
    type(lda_u_t),             intent(in)    :: this
    type(mesh_t),              intent(in)    :: mesh 
-   type(states_t),            intent(in)    :: st
+   type(states_elec_t),       intent(in)    :: st
    integer,                   intent(in)    :: iq, ndim
    type(batch_t),             intent(in)    :: psib
    type(batch_t),             intent(in)    :: grad_psib(:)
@@ -1215,7 +1214,7 @@ end subroutine X(compute_periodic_coulomb_integrals)
    SAFE_ALLOCATE(gdot(1:st%d%dim, 1:this%maxnorbs,1:ndim))
    SAFE_ALLOCATE(gradn(1:this%maxnorbs,1:this%maxnorbs,1:this%nspins,1:ndim))
 
-   ispin = states_dim_get_spin_index(st%d, iq)
+   ispin = states_elec_dim_get_spin_index(st%d, iq)
 
    do ios = 1, this%norbsets 
      os => this%orbsets(ios)
@@ -1393,8 +1392,8 @@ end subroutine X(compute_periodic_coulomb_integrals)
 
   ! ---------------------------------------------------------
   subroutine X(lda_u_allocate)(this, st)
-    type(lda_u_t),  intent(inout) :: this
-    type(states_t), intent(in)    :: st
+    type(lda_u_t),  intent(inout)  :: this
+    type(states_elec_t), intent(in):: st
 
     integer :: maxorbs, nspin
 

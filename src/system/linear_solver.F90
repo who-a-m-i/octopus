@@ -37,7 +37,7 @@ module linear_solver_oct_m
   use preconditioners_oct_m
   use smear_oct_m
   use solvers_oct_m
-  use states_oct_m
+  use states_elec_oct_m
 
   implicit none
 
@@ -68,7 +68,7 @@ module linear_solver_oct_m
     type(linear_solver_t), pointer :: ls
     type(hamiltonian_t),   pointer :: hm
     type(grid_t),          pointer :: gr
-    type(states_t),        pointer :: st
+    type(states_elec_t),   pointer :: st
     integer                        :: ist
     integer                        :: ik
     FLOAT                          :: dshift

@@ -32,7 +32,7 @@ module worker_elec_oct_m
   use messages_oct_m
   use parser_oct_m
   use profiling_oct_m
-  use states_oct_m
+  use states_elec_oct_m
   use varinfo_oct_m
   use worker_abst_oct_m
 
@@ -81,7 +81,7 @@ contains
   end subroutine
 
   subroutine worker_elec_update_hamiltonian(st, gr, hm, time)
-    type(states_t),      intent(inout) :: st
+    type(states_elec_t), intent(inout) :: st
     type(grid_t),        intent(inout) :: gr
     type(hamiltonian_t), intent(inout) :: hm
     FLOAT,               intent(in)    :: time
@@ -92,7 +92,7 @@ contains
 
     call profiling_in(prof, 'ELEC_UPDATE_H')
 
-    call hamiltonian_update(hm, gr%mesh, gr%der%boundaries, time = time)
+    call hamiltonian_update(hm, gr%mesh, time = time)
     call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy)
 
     call profiling_out(prof)
@@ -105,7 +105,7 @@ contains
     class(worker_elec_t),    intent(inout) :: wo
     type(grid_t),            intent(in)    :: gr
     type(hamiltonian_t),     intent(inout) :: hm
-    type(states_t),          intent(inout) :: st
+    type(states_elec_t),     intent(inout) :: st
     type(parser_t),          intent(in)    :: parser
     type(ion_dynamics_t),    intent(inout) :: ions
     type(geometry_t),        intent(inout) :: geo
@@ -197,7 +197,7 @@ contains
     if(gauge_field_is_applied(hm%ep%gfield)) then
       call gauge_field_set_vec_pot(hm%ep%gfield, wo%vecpot)
       call gauge_field_set_vec_pot_vel(hm%ep%gfield, wo%vecpot_vel)
-      call hamiltonian_update(hm, gr%mesh, gr%der%boundaries)
+      call hamiltonian_update(hm, gr%mesh)
     end if
 
     call profiling_out(prof)
@@ -208,7 +208,7 @@ contains
 
   subroutine worker_elec_exp_apply(te, st, gr, hm, dt)
     type(exponential_t), intent(inout) :: te 
-    type(states_t),      intent(inout) :: st
+    type(states_elec_t), intent(inout) :: st
     type(grid_t),        intent(inout) :: gr
     type(hamiltonian_t), intent(inout) :: hm
     FLOAT,               intent(in)    :: dt
@@ -234,7 +234,7 @@ contains
 
   subroutine worker_elec_fuse_density_exp_apply(te, st, gr, hm, dt, dt2)
     type(exponential_t), intent(inout) :: te
-    type(states_t),      intent(inout) :: st
+    type(states_elec_t), intent(inout) :: st
     type(grid_t),        intent(inout) :: gr
     type(hamiltonian_t), intent(inout) :: hm
     FLOAT,               intent(in)    :: dt

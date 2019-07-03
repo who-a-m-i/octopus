@@ -96,7 +96,7 @@ contains
     !% in case of spin-orbit coupling
     !%Option dft_u 7
     !% Tests the DFT+U part of the code for projections on the basis.
-    !%Option hamiltonian_elec_apply 8
+    !%Option hamiltonian_apply 8
     !% Tests the application of the Hamiltonian, or a part of it
     !%Option density_calc 9
     !%Calculation of the density.
@@ -193,7 +193,7 @@ contains
       call test_projector(param, parser)
     case(OPTION__TESTMODE__DFT_U)
       call test_dft_u(param, parser)
-    case(OPTION__TESTMODE__HAMILTONIAN_ELEC_APPLY)
+    case(OPTION__TESTMODE__HAMILTONIAN_APPLY)
       call test_hamiltonian(param, parser)
     case(OPTION__TESTMODE__DENSITY_CALC)
       call test_density_calc(param, parser)

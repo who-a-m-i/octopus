@@ -25,7 +25,7 @@ module run_oct_m
   use geom_opt_oct_m
   use global_oct_m
   use ground_state_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use invert_ks_oct_m
   use messages_oct_m
   use mpi_debug_oct_m
@@ -123,7 +123,7 @@ contains
     integer,        intent(in) :: cm
 
     type(system_t)      :: sys
-    type(hamiltonian_t) :: hm
+    type(hamiltonian_elec_t) :: hm
     type(profile_t), save :: calc_mode_prof
     logical :: fromScratch
 
@@ -162,7 +162,7 @@ contains
 
     call system_init(sys, parser)
 
-    call hamiltonian_init(hm, parser, sys%gr, sys%geo, sys%st, sys%ks%theory_level, &
+    call hamiltonian_elec_init(hm, parser, sys%gr, sys%geo, sys%st, sys%ks%theory_level, &
       sys%ks%xc_family, family_is_mgga_with_exc(sys%ks%xc, sys%st%d%nspin))
 
     if (hm%pcm%run_pcm) then
@@ -199,7 +199,7 @@ contains
     if(calc_mode_id /= CM_DUMMY) then
       message(1) = "Info: Generating external potential"
       call messages_info(1)
-      call hamiltonian_epot_generate(hm, sys%parser, sys%gr, sys%geo, sys%st)
+      call hamiltonian_elec_epot_generate(hm, sys%parser, sys%gr, sys%geo, sys%st)
       message(1) = "      done."
       call messages_info(1)
     end if
@@ -296,7 +296,7 @@ contains
 
     if(sys%ks%theory_level /= INDEPENDENT_PARTICLES) call poisson_async_end(sys%ks%hartree_solver, sys%mc)
     
-    call hamiltonian_end(hm)
+    call hamiltonian_elec_end(hm)
     call system_end(sys)
 
     call fft_all_end()

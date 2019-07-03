@@ -20,7 +20,7 @@
 subroutine X(preconditioner_apply)(pre, gr, hm, a, b, omega)
   type(preconditioner_t), intent(in)    :: pre
   type(grid_t), target,   intent(in)    :: gr
-  type(hamiltonian_t),    intent(in)    :: hm
+  type(hamiltonian_elec_t),    intent(in)    :: hm
   R_TYPE,                 intent(inout) :: a(:,:)
   R_TYPE,                 intent(inout) :: b(:,:)
   R_TYPE,       optional, intent(in)    :: omega
@@ -225,7 +225,7 @@ end subroutine X(preconditioner_apply)
 subroutine X(preconditioner_apply_batch)(pre, gr, hm, aa, bb, omega)
   type(preconditioner_t), intent(in)    :: pre
   type(grid_t),           intent(in)    :: gr
-  type(hamiltonian_t),    intent(in)    :: hm
+  type(hamiltonian_elec_t),    intent(in)    :: hm
   type(batch_t),          intent(inout) :: aa
   type(batch_t),          intent(inout) :: bb
   R_TYPE,       optional, intent(in)    :: omega(:)

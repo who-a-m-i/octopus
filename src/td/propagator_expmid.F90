@@ -25,7 +25,7 @@ module propagator_expmid_oct_m
   use grid_oct_m
   use geometry_oct_m
   use global_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use ion_dynamics_oct_m
   use lda_u_oct_m
   use messages_oct_m
@@ -46,7 +46,7 @@ contains
   ! ---------------------------------------------------------
   !> Exponential midpoint
   subroutine exponential_midpoint(hm, parser, gr, st, tr, time, dt, ionic_scale, ions, geo, move_ions)
-    type(hamiltonian_t), target,     intent(inout) :: hm
+    type(hamiltonian_elec_t), target,     intent(inout) :: hm
     type(parser_t),                  intent(in)    :: parser
     type(grid_t),        target,     intent(inout) :: gr
     type(states_elec_t), target,     intent(inout) :: st
@@ -79,7 +79,7 @@ contains
     if(move_ions .and.  ion_dynamics_ions_move(ions)) then
       call ion_dynamics_save_state(ions, geo, ions_state)
       call ion_dynamics_propagate(ions, gr%sb, geo, time - dt/M_TWO, ionic_scale*CNST(0.5)*dt)
-      call hamiltonian_epot_generate(hm, parser, gr, geo, st, time = time - dt/M_TWO)
+      call hamiltonian_elec_epot_generate(hm, parser, gr, geo, st, time = time - dt/M_TWO)
     end if
 
     if(gauge_field_is_applied(hm%ep%gfield)) then
@@ -87,7 +87,7 @@ contains
       call gauge_field_get_vec_pot_vel(hm%ep%gfield, vecpot_vel)
       call gauge_field_propagate(hm%ep%gfield, M_HALF*dt, time)
     end if
-    call hamiltonian_update(hm, gr%mesh, time = time - M_HALF*dt)
+    call hamiltonian_elec_update(hm, gr%mesh, time = time - M_HALF*dt)
     !We update the occupation matrices
     call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy )
     do ik = st%d%kpt%start, st%d%kpt%end
@@ -106,7 +106,7 @@ contains
     if(gauge_field_is_applied(hm%ep%gfield)) then
       call gauge_field_set_vec_pot(hm%ep%gfield, vecpot)
       call gauge_field_set_vec_pot_vel(hm%ep%gfield, vecpot_vel)
-      call hamiltonian_update(hm, gr%mesh)
+      call hamiltonian_elec_update(hm, gr%mesh)
     end if
 
     call density_calc(st, gr, st%rho)

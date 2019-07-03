@@ -22,7 +22,7 @@ subroutine output_states(st, parser, gr, geo, hm, dir, outp)
   type(parser_t),         intent(in) :: parser
   type(grid_t),           intent(in) :: gr
   type(geometry_t),       intent(in) :: geo
-  type(hamiltonian_t),    intent(in) :: hm
+  type(hamiltonian_elec_t),    intent(in) :: hm
   character(len=*),       intent(in) :: dir
   type(output_t),         intent(in) :: outp
 

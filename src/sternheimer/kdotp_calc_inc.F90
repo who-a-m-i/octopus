@@ -22,7 +22,7 @@
 !! The off-diagonal elements are not correct in a degenerate subspace
 subroutine X(calc_eff_mass_inv)(sys, hm, lr, perturbation, eff_mass_inv, degen_thres)
   type(system_t), target, intent(inout) :: sys
-  type(hamiltonian_t),    intent(inout) :: hm
+  type(hamiltonian_elec_t),    intent(inout) :: hm
   type(lr_t),             intent(in)    :: lr(:,:) !< (1, pdim)
   type(pert_t),           intent(inout) :: perturbation
   FLOAT,                  intent(out)   :: eff_mass_inv(:,:,:,:) !< (pdim, pdim, nik, nst)
@@ -136,7 +136,7 @@ end subroutine X(calc_eff_mass_inv)
 !> add projection onto occupied states, by sum over states
 subroutine X(kdotp_add_occ)(sys, hm, pert, kdotp_lr, degen_thres)
   type(system_t),      intent(in)    :: sys
-  type(hamiltonian_t), intent(inout) :: hm
+  type(hamiltonian_elec_t), intent(inout) :: hm
   type(pert_t),        intent(in)    :: pert
   type(lr_t),          intent(inout) :: kdotp_lr
   FLOAT,               intent(in)    :: degen_thres
@@ -200,7 +200,7 @@ end subroutine X(kdotp_add_occ)
 ! ---------------------------------------------------------
 subroutine X(kdotp_add_diagonal)(sys, hm, em_pert, kdotp_lr)
   type(system_t),      intent(inout) :: sys
-  type(hamiltonian_t), intent(inout) :: hm
+  type(hamiltonian_elec_t), intent(inout) :: hm
   type(pert_t),        intent(inout) :: em_pert
   type(lr_t),          intent(inout) :: kdotp_lr(:)
 

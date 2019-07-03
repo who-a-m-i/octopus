@@ -23,7 +23,7 @@ module kdotp_oct_m
   use global_oct_m
   use grid_oct_m
   use output_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use io_oct_m
   use kdotp_calc_oct_m
   use kpoints_oct_m
@@ -84,7 +84,7 @@ contains
   ! ---------------------------------------------------------
   subroutine kdotp_lr_run(sys, hm, fromScratch)
     type(system_t),      intent(inout) :: sys
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     logical,             intent(inout) :: fromScratch
 
     type(kdotp_t)           :: kdotp_vars

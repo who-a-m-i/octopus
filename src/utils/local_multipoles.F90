@@ -27,7 +27,7 @@ program oct_local_multipoles
   use comm_oct_m
   use geometry_oct_m
   use global_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use io_oct_m
   use io_function_oct_m
   use kick_oct_m
@@ -65,7 +65,7 @@ program oct_local_multipoles
   end type local_domain_t
 
   type(system_t)        :: sys
-  type(hamiltonian_t)   :: hm
+  type(hamiltonian_elec_t)   :: hm
   type(simul_box_t)     :: sb
   integer, parameter    :: BADER = 512
   FLOAT                 :: BaderThreshold
@@ -94,12 +94,12 @@ program oct_local_multipoles
   call calc_mode_par_set_parallelization(P_STRATEGY_STATES, default = .false.)
   call system_init(sys, parser)
   call simul_box_init(sb, sys%parser, sys%geo, sys%space)
-  call hamiltonian_init(hm, sys%parser, sys%gr, sys%geo, sys%st, sys%ks%theory_level, sys%ks%xc_family, &
+  call hamiltonian_elec_init(hm, sys%parser, sys%gr, sys%geo, sys%st, sys%ks%theory_level, sys%ks%xc_family, &
              family_is_mgga_with_exc(sys%ks%xc, sys%st%d%nspin))
 
   call local_domains()
 
-  call hamiltonian_end(hm)
+  call hamiltonian_elec_end(hm)
   call simul_box_end(sb)
   call system_end(sys)
   call profiling_output()

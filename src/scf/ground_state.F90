@@ -22,7 +22,7 @@ module ground_state_oct_m
   use calc_mode_par_oct_m
   use global_oct_m
   use grid_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use io_function_oct_m
   use lcao_oct_m
   use mesh_oct_m
@@ -62,7 +62,7 @@ contains
   ! ---------------------------------------------------------
   subroutine ground_state_run(sys, hm, fromScratch)
     type(system_t),      intent(inout) :: sys
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     logical,             intent(inout) :: fromScratch
 
     type(scf_t)     :: scfv
@@ -128,7 +128,7 @@ contains
     end if
     call messages_info()
 
-    if(sys%st%d%pack_states .and. hamiltonian_apply_packed(hm, sys%gr%mesh)) call sys%st%pack()
+    if(sys%st%d%pack_states .and. hamiltonian_elec_apply_packed(hm, sys%gr%mesh)) call sys%st%pack()
     
     ! self-consistency for occupation numbers and natural orbitals in RDMFT
     if(sys%ks%theory_level == RDMFT) then 
@@ -148,7 +148,7 @@ contains
     call scf_end(scfv)
     call restart_end(restart_dump)
 
-    if(sys%st%d%pack_states .and. hamiltonian_apply_packed(hm, sys%gr%mesh)) call sys%st%unpack()
+    if(sys%st%d%pack_states .and. hamiltonian_elec_apply_packed(hm, sys%gr%mesh)) call sys%st%unpack()
 
     ! clean up
     call states_elec_deallocate_wfns(sys%st)

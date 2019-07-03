@@ -25,7 +25,7 @@ module em_resp_oct_m
   use geometry_oct_m
   use global_oct_m
   use grid_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use output_oct_m
   use io_oct_m
   use kdotp_oct_m
@@ -117,7 +117,7 @@ contains
   ! ---------------------------------------------------------
   subroutine em_resp_run(sys, hm, fromScratch)
     type(system_t), target, intent(inout) :: sys
-    type(hamiltonian_t),    intent(inout) :: hm
+    type(hamiltonian_elec_t),    intent(inout) :: hm
     logical,                intent(inout) :: fromScratch
 
     type(grid_t),   pointer :: gr
@@ -986,7 +986,7 @@ contains
     type(states_elec_t),  intent(inout) :: st
     type(parser_t),       intent(in)    :: parser
     type(grid_t),         intent(inout) :: gr
-    type(hamiltonian_t),  intent(inout) :: hm
+    type(hamiltonian_elec_t),  intent(inout) :: hm
     type(geometry_t),     intent(inout) :: geo
     type(output_t),       intent(in)    :: outp
     type(em_resp_t),      intent(inout) :: em_vars

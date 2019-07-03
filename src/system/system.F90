@@ -27,7 +27,7 @@ module system_oct_m
   use geometry_oct_m
   use global_oct_m
   use grid_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use mesh_oct_m
   use messages_oct_m
   use modelmb_particles_oct_m
@@ -176,7 +176,7 @@ contains
   !----------------------------------------------------------
   subroutine system_h_setup(sys, hm, calc_eigenval)
     type(system_t),      intent(inout) :: sys
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     logical,   optional, intent(in)    :: calc_eigenval !< default is true
 
     integer, allocatable :: ind(:)

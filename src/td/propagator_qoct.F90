@@ -24,7 +24,7 @@ module propagator_qoct_oct_m
   use grid_oct_m
   use geometry_oct_m
   use global_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use ion_dynamics_oct_m
   use lda_u_oct_m
   use messages_oct_m
@@ -47,7 +47,7 @@ contains
   ! ---------------------------------------------------------
   !> Propagator specifically designed for the QOCT+TDDFT problem
   subroutine td_qoct_tddft_propagator(hm, parser, xc, gr, st, tr, t, dt, ions, geo)
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     type(parser_t),      intent(in)    :: parser
     type(xc_t),          intent(in)    :: xc
     type(grid_t),        intent(inout) :: gr
@@ -74,10 +74,10 @@ contains
     if(ion_dynamics_ions_move(ions)) then
       call ion_dynamics_save_state(ions, geo, ions_state)
       call ion_dynamics_propagate(ions, gr%sb, geo, t - dt/M_TWO, M_HALF*dt)
-      call hamiltonian_epot_generate(hm, parser, gr, geo, st, time = t - dt/M_TWO)
+      call hamiltonian_elec_epot_generate(hm, parser, gr, geo, st, time = t - dt/M_TWO)
     end if
 
-    call hamiltonian_update(hm, gr%mesh, time = t-dt/M_TWO)
+    call hamiltonian_elec_update(hm, gr%mesh, time = t-dt/M_TWO)
     call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy )
     call exponential_apply_all(tr%te, gr%der, hm, xc, st, dt)
 

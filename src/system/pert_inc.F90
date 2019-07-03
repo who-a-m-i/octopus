@@ -22,7 +22,7 @@ subroutine X(pert_apply_batch)(this, parser, gr, geo, hm, ik, f_in, f_out)
   type(parser_t),       intent(in)    :: parser
   type(grid_t),         intent(in)    :: gr
   type(geometry_t),     intent(in)    :: geo
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   integer,              intent(in)    :: ik
   type(batch_t),        intent(in)    :: f_in
   type(batch_t),        intent(inout) :: f_out
@@ -95,7 +95,7 @@ subroutine X(pert_apply)(this, parser, gr, geo, hm, ik, f_in, f_out, set_bc)
   type(parser_t),       intent(in)    :: parser
   type(grid_t),         intent(in)    :: gr
   type(geometry_t),     intent(in)    :: geo
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   integer,              intent(in)    :: ik
   R_TYPE,               intent(in)    :: f_in(:, :)
   R_TYPE,               intent(out)   :: f_out(:, :)
@@ -228,7 +228,7 @@ contains
       SAFE_DEALLOCATE_A(grad)
     else
       SAFE_ALLOCATE(Hxpsi(1:gr%mesh%np,1:hm%d%dim))     
-      call X(hamiltonian_apply)(hm,gr%der,f_in_copy(:,:),Hxpsi(:,:),1,ik,set_bc = .false.)
+      call X(hamiltonian_elec_apply)(hm,gr%der,f_in_copy(:,:),Hxpsi(:,:),1,ik,set_bc = .false.)
       do idim = 1, hm%d%dim
         do ip = 1, gr%mesh%np
           f_out(ip,idim) = gr%mesh%x(ip,this%dir)*Hxpsi(ip,idim)
@@ -240,7 +240,7 @@ contains
           f_in_copy(ip,idim) = gr%mesh%x(ip,this%dir)*f_in_copy(ip,idim)
         end do
       end do
-      call X(hamiltonian_apply)(hm,gr%der, f_in_copy(:,:),Hxpsi(:,:),1,ik,set_bc = .false.)
+      call X(hamiltonian_elec_apply)(hm,gr%der, f_in_copy(:,:),Hxpsi(:,:),1,ik,set_bc = .false.)
       do idim = 1, hm%d%dim
         do ip = 1, gr%mesh%np
           f_out(ip,idim) = f_out(ip,idim) - Hxpsi(ip,idim)
@@ -348,7 +348,7 @@ subroutine X(ionic_perturbation)(gr, parser, geo, hm, ik, f_in, f_out, iatom, id
   type(grid_t),         intent(in)    :: gr
   type(parser_t),       intent(in)    :: parser
   type(geometry_t),     intent(in)    :: geo
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   integer,              intent(in)    :: ik
   R_TYPE,               intent(in)    :: f_in(:)
   R_TYPE,               intent(out)   :: f_out(:)
@@ -399,7 +399,7 @@ subroutine X(pert_apply_order_2) (this, parser, gr, geo, hm, ik, f_in, f_out)
   type(parser_t),       intent(in)    :: parser
   type(grid_t),         intent(in)    :: gr
   type(geometry_t),     intent(in)    :: geo
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   integer,              intent(in)    :: ik
   R_TYPE,               intent(in)    :: f_in(:, :)
   R_TYPE,               intent(out)   :: f_out(:, :)
@@ -686,7 +686,7 @@ subroutine X(ionic_perturbation_order_2) (gr, parser, geo, hm, ik, f_in, f_out, 
   type(grid_t),        intent(in)    :: gr
   type(parser_t),      intent(in)    :: parser
   type(geometry_t),    intent(in)    :: geo
-  type(hamiltonian_t), intent(inout) :: hm
+  type(hamiltonian_elec_t), intent(inout) :: hm
   integer,             intent(in)    :: ik
   R_TYPE,              intent(in)    :: f_in(:)
   R_TYPE,              intent(out)   :: f_out(:)
@@ -747,7 +747,7 @@ subroutine X(ionic_pert_matrix_elements_2)(gr, parser, geo, hm, ik, st, vib, fac
   type(grid_t),        intent(in)    :: gr
   type(parser_t),      intent(in)    :: parser
   type(geometry_t),    intent(in)    :: geo
-  type(hamiltonian_t), intent(inout) :: hm
+  type(hamiltonian_elec_t), intent(inout) :: hm
   integer,             intent(in)    :: ik
   type(states_elec_t), intent(in)    :: st
   type(vibrations_t),  intent(in)    :: vib
@@ -823,7 +823,7 @@ subroutine X(pert_expectation_density) (this, parser, gr, geo, hm, st, psia, psi
   type(parser_t),       intent(in)    :: parser
   type(grid_t),         intent(in)    :: gr
   type(geometry_t),     intent(in)    :: geo
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   type(states_elec_t),  intent(in)    :: st
   R_TYPE,               pointer       :: psia(:, :, :, :)
   R_TYPE,               pointer       :: psib(:, :, :, :)
@@ -874,7 +874,7 @@ R_TYPE function X(pert_expectation_value) (this, parser, gr, geo, hm, st, psia, 
   type(parser_t),       intent(in)    :: parser
   type(grid_t),         intent(in)    :: gr
   type(geometry_t),     intent(in)    :: geo
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   type(states_elec_t),  intent(in)    :: st
   R_TYPE,               pointer       :: psia(:, :, :, :)
   R_TYPE,               pointer       :: psib(:, :, :, :)
@@ -919,7 +919,7 @@ R_TYPE function X(pert_states_elec_expectation_value)(this, parser, gr, geo, hm,
   type(parser_t),       intent(in)    :: parser
   type(grid_t),         intent(in)    :: gr
   type(geometry_t),     intent(in)    :: geo
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   type(states_elec_t),  intent(in)    :: st
   integer, optional,    intent(in)    :: pert_order
 

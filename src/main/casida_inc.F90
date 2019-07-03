@@ -340,7 +340,7 @@ end subroutine X(casida_get_rho)
 !> one-particle matrix elements of perturbation
 subroutine X(casida_calc_lr_hmat1)(sys, hm, pert, hvar, lr_hmat1, is_saved, st_start, st_end, ik)
   type(system_t),      intent(in)    :: sys
-  type(hamiltonian_t), intent(inout) :: hm
+  type(hamiltonian_elec_t), intent(inout) :: hm
   type(pert_t),        intent(in)    :: pert
   FLOAT,               intent(in)    :: hvar(:,:,:)
   R_TYPE,              intent(out)   :: lr_hmat1(:,:,:)
@@ -425,7 +425,7 @@ end subroutine X(casida_lr_hmat2)
 
 subroutine X(casida_get_matrix)(cas, hm, st, ks, mesh, matrix, xc, restart_file, is_forces)
   type(casida_t),      intent(inout) :: cas
-  type(hamiltonian_t), intent(in)    :: hm
+  type(hamiltonian_elec_t), intent(in)    :: hm
   type(states_elec_t), intent(in)    :: st
   type(v_ks_t),        intent(in)    :: ks
   type(mesh_t),        intent(in)    :: mesh
@@ -726,7 +726,7 @@ subroutine X(casida_forces)(cas, sys, mesh, st, hm)
   type(system_t),      intent(inout) :: sys
   type(mesh_t),           intent(in) :: mesh
   type(states_elec_t), intent(inout) :: st
-  type(hamiltonian_t), intent(inout) :: hm
+  type(hamiltonian_elec_t), intent(inout) :: hm
   
   integer :: ip, iatom, idir, is1, is2, ierr, ik, ia
   FLOAT, allocatable :: ddl_rho(:,:), kxc(:,:,:,:)
@@ -861,7 +861,7 @@ end subroutine X(casida_forces)
 subroutine X(casida_get_lr_hmat1)(cas, sys, hm, iatom, idir, dl_rho, lr_hmat1)
   type(casida_t),      intent(in)     :: cas
   type(system_t),      intent(inout)  :: sys
-  type(hamiltonian_t), intent(inout)  :: hm
+  type(hamiltonian_elec_t), intent(inout)  :: hm
   integer,             intent(in)     :: iatom
   integer,             intent(in)     :: idir
   FLOAT,               intent(in)     :: dl_rho(:,:)

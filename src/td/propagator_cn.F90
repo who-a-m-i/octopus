@@ -24,7 +24,7 @@ module propagator_cn_oct_m
   use grid_oct_m
   use geometry_oct_m
   use global_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use ion_dynamics_oct_m
   use lda_u_oct_m
   use mesh_function_oct_m
@@ -45,7 +45,7 @@ module propagator_cn_oct_m
     td_crank_nicolson
 
   type(grid_t),            pointer, private :: grid_p
-  type(hamiltonian_t),     pointer, private :: hm_p
+  type(hamiltonian_elec_t),     pointer, private :: hm_p
   type(propagator_t),      pointer, private :: tr_p
   integer,                 private :: ik_op, ist_op, dim_op
   FLOAT,                   private :: t_op, dt_op
@@ -55,7 +55,7 @@ contains
   ! ---------------------------------------------------------
   !> Crank-Nicolson propagator
   subroutine td_crank_nicolson(hm, parser, gr, st, tr, time, dt, ions, geo, use_sparskit)
-    type(hamiltonian_t),      target,     intent(inout) :: hm
+    type(hamiltonian_elec_t),      target,     intent(inout) :: hm
     type(parser_t),                       intent(in)    :: parser
     type(grid_t),             target,     intent(inout) :: gr
     type(states_elec_t), target,     intent(inout) :: st
@@ -106,7 +106,7 @@ contains
     if(ion_dynamics_ions_move(ions)) then
       call ion_dynamics_save_state(ions, geo, ions_state)
       call ion_dynamics_propagate(ions, gr%sb, geo, time - dt/M_TWO, M_HALF*dt)
-      call hamiltonian_epot_generate(hm, parser, gr, geo, st, time = time - dt/M_TWO)
+      call hamiltonian_elec_epot_generate(hm, parser, gr, geo, st, time = time - dt/M_TWO)
     end if
 
     if(hm%family_is_mgga_with_exc) then
@@ -117,7 +117,7 @@ contains
         time, dt, time -dt/M_TWO, hm%vhxc)
     end if
 
-    call hamiltonian_update(hm, gr%mesh, time = time - dt/M_TWO)
+    call hamiltonian_elec_update(hm, gr%mesh, time = time - dt/M_TWO)
     !We update the occupation matrices
     call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy )
 
@@ -128,7 +128,7 @@ contains
         call states_elec_get_state(st, gr%mesh, ist, ik, zpsi_rhs)
         call exponential_apply(tr%te, gr%der, hm, zpsi_rhs, ist, ik, dt/M_TWO)
 
-        if(hamiltonian_inh_term(hm)) then
+        if(hamiltonian_elec_inh_term(hm)) then
           SAFE_ALLOCATE(inhpsi(1:gr%mesh%np))
           do idim = 1, st%d%dim
             call states_elec_get_state(hm%inh_st, gr%mesh, idim, ist, ik, inhpsi)

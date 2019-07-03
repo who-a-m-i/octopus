@@ -368,7 +368,7 @@ end subroutine X(calc_polarizability_periodic)
 !! minus sign is from electronic charge -e
 subroutine X(calc_polarizability_finite)(sys, hm, lr, nsigma, perturbation, zpol, doalldirs, ndir)
   type(system_t), target, intent(inout) :: sys
-  type(hamiltonian_t),    intent(inout) :: hm
+  type(hamiltonian_elec_t),    intent(inout) :: hm
   type(lr_t),             intent(inout) :: lr(:,:)
   integer,                intent(in)    :: nsigma
   type(pert_t),           intent(inout) :: perturbation
@@ -421,7 +421,7 @@ end subroutine X(calc_polarizability_finite)
 ! ---------------------------------------------------------
 subroutine X(lr_calc_susceptibility)(sys, hm, lr, nsigma, perturbation, chi_para, chi_dia)
   type(system_t), target, intent(inout) :: sys
-  type(hamiltonian_t),    intent(inout) :: hm
+  type(hamiltonian_elec_t),    intent(inout) :: hm
   type(lr_t),             intent(inout) :: lr(:,:)
   integer,                intent(in)    :: nsigma
   type(pert_t),           intent(inout) :: perturbation
@@ -492,7 +492,7 @@ end subroutine X(lr_calc_susceptibility)
 subroutine X(lr_calc_beta) (sh, sys, hm, em_lr, dipole, beta, kdotp_lr, kdotp_em_lr, occ_response, dl_eig)
   type(sternheimer_t),     intent(inout) :: sh
   type(system_t), target,  intent(inout) :: sys
-  type(hamiltonian_t),     intent(inout) :: hm
+  type(hamiltonian_elec_t),     intent(inout) :: hm
   type(lr_t),              intent(inout) :: em_lr(:,:,:)
   type(pert_t),            intent(inout) :: dipole
   CMPLX,                   intent(out)   :: beta(1:MAX_DIM, 1:MAX_DIM, 1:MAX_DIM)
@@ -902,7 +902,7 @@ subroutine X(lr_calc_magneto_optics_finite)(sh, sh_mo, sys, hm, nsigma, nfactor,
   lr_b, chi)
   type(sternheimer_t),    intent(inout) :: sh, sh_mo
   type(system_t),         intent(inout) :: sys
-  type(hamiltonian_t),    intent(inout) :: hm
+  type(hamiltonian_elec_t),    intent(inout) :: hm
   integer,                intent(in)    :: nsigma
   integer,                intent(in)    :: nfactor
   type(lr_t),             intent(inout) :: lr_e(:,:,:)
@@ -1164,7 +1164,7 @@ subroutine X(lr_calc_magneto_optics_periodic)(sh, sh2, sys, hm, nsigma, nfactor,
   zpol_kout)
   type(sternheimer_t),  intent(inout) :: sh, sh2
   type(system_t),       intent(inout) :: sys 
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   integer,              intent(in)    :: nsigma
   integer,              intent(in)    :: nfactor
   integer,              intent(in)    :: nfactor_ke
@@ -1618,7 +1618,7 @@ end subroutine X(lr_calc_magneto_optics_periodic)
 ! K.-T. Chen and P. A. Lee, Phys. Rev. B 84, 205137 (2011)
 subroutine X(lr_calc_magnetization_periodic)(sys, hm, lr_k, magn)
   type(system_t),       intent(inout) :: sys 
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   type(lr_t),           intent(inout) :: lr_k(:) 
   CMPLX,                intent(out)   :: magn(:)
 
@@ -1652,7 +1652,7 @@ subroutine X(lr_calc_magnetization_periodic)(sys, hm, lr_k, magn)
     do ist = 1, sys%st%nst
       if (abs(sys%st%occ(ist, ik)) .gt. M_EPSILON) then
         do idir = 1, ndir
-          call X(hamiltonian_apply)(hm, sys%gr%der, lr_k(idir)%X(dl_psi)(:, :, ist, ik), &
+          call X(hamiltonian_elec_apply)(hm, sys%gr%der, lr_k(idir)%X(dl_psi)(:, :, ist, ik), &
             Hdl_psi(:, :, idir), ist, ik)
         end do
    
@@ -1698,7 +1698,7 @@ end subroutine X(lr_calc_magnetization_periodic)
 subroutine X(lr_calc_susceptibility_periodic)(sys, hm, nsigma, lr_k, lr_b, &
   lr_kk, lr_kb, magn)
   type(system_t),       intent(inout) :: sys 
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   integer,                 intent(in) :: nsigma
   type(lr_t),           intent(inout) :: lr_k(:) 
   type(lr_t),           intent(inout) :: lr_b(:) 
@@ -1758,17 +1758,17 @@ subroutine X(lr_calc_susceptibility_periodic)(sys, hm, nsigma, lr_k, lr_b, &
     do ist = 1, sys%st%nst
       if(abs(sys%st%occ(ist, ik)) .gt. M_EPSILON) then
         do idir = 1, ndir
-          call X(hamiltonian_apply)(hm, sys%gr%der, lr_b(idir)%X(dl_psi)(:,:,ist,ik),&
+          call X(hamiltonian_elec_apply)(hm, sys%gr%der, lr_b(idir)%X(dl_psi)(:,:,ist,ik),&
             Hdl_b(:,:,idir), ist, ik)
-          call X(hamiltonian_apply)(hm, sys%gr%der, lr_k(idir)%X(dl_psi)(:,:,ist,ik),&
+          call X(hamiltonian_elec_apply)(hm, sys%gr%der, lr_k(idir)%X(dl_psi)(:,:,ist,ik),&
             Hdl_k(:,:,ist,idir), ist, ik)
         end do
 
         do idir1 = 1, ndir
           do idir2 = 1, ndir
-            call X(hamiltonian_apply)(hm, sys%gr%der, lr_kb(idir1, idir2)%X(dl_psi)(:,:, ist, ik),&
+            call X(hamiltonian_elec_apply)(hm, sys%gr%der, lr_kb(idir1, idir2)%X(dl_psi)(:,:, ist, ik),&
               Hdl_kb(:,:, idir1, idir2), ist, ik)
-            call X(hamiltonian_apply)(hm, sys%gr%der, lr_kk(max(idir1, idir2), min(idir1, idir2))%X(dl_psi)(:,:, ist, ik),&
+            call X(hamiltonian_elec_apply)(hm, sys%gr%der, lr_kk(max(idir1, idir2), min(idir1, idir2))%X(dl_psi)(:,:, ist, ik),&
                 Hdl_kk(:,:, idir1, idir2), ist, ik)
           end do
         end do
@@ -2039,7 +2039,7 @@ end subroutine X(lr_calc_susceptibility_periodic)
 subroutine X(inhomog_per_component)(sys, hm, idir, ik, & 
   psi_k2, psi_out, factor_tot, factor_k, factor_second)
   type(system_t),       intent(inout) :: sys 
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   integer,              intent(in)    :: idir
   integer,              intent(in)    :: ik
   R_TYPE,               intent(inout) :: psi_k2(:,:,:)    
@@ -2130,7 +2130,7 @@ end subroutine X(inhomog_per_component)
 subroutine X(inhomog_per_component_2nd_order)(sys, hm, idir, ik, & 
   psi_k2, psi_e, psi_out, factor_tot, factor_k, factor_e)
   type(system_t),       intent(inout) :: sys 
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   integer,              intent(in)    :: idir
   integer,              intent(in)    :: ik
   R_TYPE,               intent(inout) :: psi_k2(:,:,:)   
@@ -2217,7 +2217,7 @@ subroutine X(inhomog_B)(sh, sys, hm, idir1, idir2, &
   lr_k1, lr_k2, psi_out)
   type(sternheimer_t),  intent(inout) :: sh
   type(system_t),       intent(inout) :: sys
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   integer,              intent(in)    :: idir1
   integer,              intent(in)    :: idir2
   type(lr_t),           intent(inout) :: lr_k1(:) 
@@ -2283,7 +2283,7 @@ end subroutine X(inhomog_B)
 subroutine X(inhomog_EB)(sys, hm, ik, add_hartree, add_fxc, & 
   hvar, psi_b, psi_kb, factor_b, psi_out, psi_k1, psi_k2)
   type(system_t),       intent(inout) :: sys
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   integer,              intent(in)    :: ik
   logical,              intent(in)    :: add_hartree, add_fxc
   R_TYPE,               intent(inout) :: hvar(:)
@@ -2400,7 +2400,7 @@ subroutine X(inhomog_BE)(sys, hm, idir1, idir2, ik, &
   add_hartree, add_fxc, hvar, psi_e1, psi_e2, psi_ek1, &
   psi_ek2, psi_k1, psi_k2, factor_e1, factor_e2, psi_out)
   type(system_t),       intent(inout) :: sys
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   integer,              intent(in)    :: idir1, idir2
   integer,              intent(in)    :: ik
   logical,              intent(in)    :: add_hartree, add_fxc
@@ -2459,7 +2459,7 @@ end subroutine X(inhomog_BE)
 subroutine X(inhomog_KE)(sys, hm, idir, ik, & 
   psi_e, psi_out)
   type(system_t),       intent(inout) :: sys
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   integer,              intent(in)    :: idir, ik
   R_TYPE,               intent(inout) :: psi_e(:,:,:) 
   R_TYPE,               intent(inout) :: psi_out(:,:,:) 
@@ -2483,7 +2483,7 @@ end subroutine X(inhomog_KE)
 subroutine X(inhomog_K2)(sys, hm, idir1, idir2, ik, & 
   psi_k1, psi_k2, psi_out)
   type(system_t),       intent(inout) :: sys
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   integer,              intent(in)    :: idir1, idir2
   integer,              intent(in)    :: ik
   R_TYPE,               intent(inout) :: psi_k1(:,:,:) 
@@ -2539,7 +2539,7 @@ end subroutine X(inhomog_K2)
 subroutine X(inhomog_KB)(sys, hm, idir, idir1, idir2, ik, & 
   psi_b, psi_k, psi_k1, psi_k2, psi_out)
   type(system_t),       intent(inout) :: sys
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   integer,              intent(in)    :: idir, idir1, idir2
   integer,              intent(in)    :: ik
   R_TYPE,               intent(inout) :: psi_k1(:,:,:)
@@ -2658,7 +2658,7 @@ subroutine X(inhomog_KB_tot)(sh, sys, hm, idir, idir1, idir2, &
   lr_k, lr_b, lr_k1, lr_k2, lr_kk1, lr_kk2, psi_out)
   type(sternheimer_t),  intent(inout) :: sh
   type(system_t),       intent(inout) :: sys
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   integer,              intent(in)    :: idir, idir1, idir2
   type(lr_t),           intent(inout) :: lr_k(:)
   type(lr_t),           intent(inout) :: lr_b(:)
@@ -2743,7 +2743,7 @@ subroutine X(inhomog_KE_tot)(sh, sys, hm, idir, nsigma, &
   lr_k, lr_e, lr_kk, psi_out)
   type(sternheimer_t),  intent(inout) :: sh
   type(system_t),       intent(inout) :: sys
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   integer,              intent(in)    :: idir, nsigma
   type(lr_t),           intent(inout) :: lr_e(:) 
   type(lr_t),           intent(inout) :: lr_k(:)  
@@ -2798,7 +2798,7 @@ subroutine X(inhomog_K2_tot)(sh, sys, hm, idir1, idir2, &
   lr_k1, lr_k2, psi_out)
   type(sternheimer_t),  intent(inout) :: sh
   type(system_t),       intent(inout) :: sys
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   integer,              intent(in)    :: idir1, idir2
   type(lr_t),           intent(inout) :: lr_k1(:) 
   type(lr_t),           intent(inout) :: lr_k2(:) 
@@ -2835,7 +2835,7 @@ end subroutine X(inhomog_K2_tot)
 subroutine X(calc_rho)(sys, hm, factor, factor_sum, factor_e, &
   factor_k, lr_e, lr_k, lr0)
   type(system_t),       intent(inout) :: sys
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   R_TYPE,               intent(in)    :: factor
   R_TYPE,               intent(in)    :: factor_sum
   R_TYPE,               intent(in)    :: factor_e
@@ -2899,7 +2899,7 @@ end subroutine X(calc_rho)
 ! the density matrix within occupied and unoccupied subspaces
 subroutine X(calc_hvar_psi)(sys, hm, ik, hvar, psi_out)
   type(system_t),       intent(inout) :: sys 
-  type(hamiltonian_t),  intent(inout) :: hm
+  type(hamiltonian_elec_t),  intent(inout) :: hm
   integer,              intent(in)    :: ik
   R_TYPE,               intent(inout) :: hvar(:) 
   R_TYPE,               intent(inout) :: psi_out(:,:,:)   
@@ -2933,7 +2933,7 @@ end subroutine X(calc_hvar_psi)
 subroutine X(calc_hvar_lr)(sys, hm, ik, hvar, psi_in, &
   factor1, factor2, psi_out)
   type(system_t),       intent(inout) :: sys
-  type(hamiltonian_t),  intent(inout) :: hm 
+  type(hamiltonian_elec_t),  intent(inout) :: hm 
   integer,              intent(in)    :: ik
   R_TYPE,               intent(inout) :: hvar(:)
   R_TYPE,               intent(inout) :: psi_in(:,:,:)

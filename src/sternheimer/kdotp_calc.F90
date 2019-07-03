@@ -20,7 +20,7 @@
 
 module kdotp_calc_oct_m
   use global_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use linear_response_oct_m
   use mesh_oct_m
   use mesh_function_oct_m
@@ -68,7 +68,7 @@ contains
 !! This is identically zero for real wavefunctions.
 subroutine zcalc_band_velocity(sys, hm, pert, velocity)
   type(system_t),      intent(inout) :: sys
-  type(hamiltonian_t), intent(inout) :: hm
+  type(hamiltonian_elec_t), intent(inout) :: hm
   type(pert_t),        intent(inout) :: pert
   FLOAT,               intent(out)   :: velocity(:,:,:)
 

@@ -32,7 +32,7 @@ module propagation_oct_m
   use geometry_oct_m
   use global_oct_m
   use grid_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use ion_dynamics_oct_m
   use lasers_oct_m
   use loct_oct_m
@@ -130,7 +130,7 @@ contains
   !! ---------------------------------------------------------
   subroutine propagate_forward(sys, hm, td, par, tg, qcpsi, prop, write_iter)
     type(system_t),             intent(inout)  :: sys
-    type(hamiltonian_t),        intent(inout)  :: hm
+    type(hamiltonian_elec_t),        intent(inout)  :: hm
     type(td_t),                 intent(inout)  :: td
     type(controlfunction_t),    intent(in)     :: par
     type(target_t),             intent(inout)  :: tg
@@ -170,14 +170,14 @@ contains
       call td_write_data(write_handler)
     end if
 
-    call hamiltonian_not_adjoint(hm)
+    call hamiltonian_elec_not_adjoint(hm)
 
     ! setup the Hamiltonian
     call density_calc(psi, gr, psi%rho)
     call v_ks_calc(sys%ks, sys%parser, hm, psi, sys%geo, time = M_ZERO)
     call propagator_run_zero_iter(hm, gr, td%tr)
     if(ion_dynamics_ions_move(td%ions)) then
-      call hamiltonian_epot_generate(hm, sys%parser,  gr, sys%geo, psi, time = M_ZERO)
+      call hamiltonian_elec_epot_generate(hm, sys%parser,  gr, sys%geo, psi, time = M_ZERO)
       call forces_calculate(gr, sys%parser, sys%geo, hm, psi, sys%ks, t = M_ZERO, dt = td%dt)
     end if
 
@@ -274,7 +274,7 @@ contains
   !! ---------------------------------------------------------
   subroutine propagate_backward(sys, hm, td, qcpsi, prop)
     type(system_t),            intent(inout) :: sys
-    type(hamiltonian_t),       intent(inout) :: hm
+    type(hamiltonian_elec_t),       intent(inout) :: hm
     type(td_t),                intent(inout) :: td
     type(opt_control_state_t), intent(inout) :: qcpsi
     type(oct_prop_t),          intent(inout) :: prop
@@ -291,7 +291,7 @@ contains
     gr => sys%gr
     psi => opt_control_point_qs(qcpsi)
 
-    call hamiltonian_adjoint(hm)
+    call hamiltonian_elec_adjoint(hm)
 
     ! setup the Hamiltonian
     call density_calc(psi, gr, psi%rho)
@@ -342,7 +342,7 @@ contains
   subroutine fwd_step(sys, td, hm, tg, par, par_chi, qcpsi, prop_chi, prop_psi)
     type(system_t),            intent(inout) :: sys
     type(td_t),                intent(inout) :: td
-    type(hamiltonian_t),       intent(inout) :: hm
+    type(hamiltonian_elec_t),       intent(inout) :: hm
     type(target_t),            intent(inout) :: tg
     type(controlfunction_t),   intent(inout) :: par
     type(controlfunction_t),   intent(in)    :: par_chi
@@ -410,15 +410,15 @@ contains
 
     do i = 1, td%max_iter
       call update_field(i, par, gr, hm, sys%geo, qcpsi, qcchi, par_chi, dir = 'f')
-      call update_hamiltonian_chi(i, sys%parser, gr, sys%ks, hm, td, tg, par_chi, sys%geo, psi2)
-      call hamiltonian_update(hm, gr%mesh, time = (i - 1)*td%dt)
+      call update_hamiltonian_elec_chi(i, sys%parser, gr, sys%ks, hm, td, tg, par_chi, sys%geo, psi2)
+      call hamiltonian_elec_update(hm, gr%mesh, time = (i - 1)*td%dt)
       call propagator_dt(sys%ks, sys%parser, hm, gr, chi, tr_chi, i*td%dt, td%dt, td%mu, i, td%ions, sys%geo, sys%outp)
       if(aux_fwd_propagation) then
-        call update_hamiltonian_psi(i, sys%parser, gr, sys%ks, hm, td, tg, par_prev, psi2, sys%geo)
+        call update_hamiltonian_elec_psi(i, sys%parser, gr, sys%ks, hm, td, tg, par_prev, psi2, sys%geo)
         call propagator_dt(sys%ks, sys%parser, hm, gr, psi2, tr_psi2, i*td%dt, td%dt, td%mu, i, td%ions, sys%geo, sys%outp)
       end if
-      call update_hamiltonian_psi(i, sys%parser, gr, sys%ks, hm, td, tg, par, psi, sys%geo)
-      call hamiltonian_update(hm, gr%mesh, time = (i - 1)*td%dt)
+      call update_hamiltonian_elec_psi(i, sys%parser, gr, sys%ks, hm, td, tg, par, psi, sys%geo)
+      call hamiltonian_elec_update(hm, gr%mesh, time = (i - 1)*td%dt)
       call propagator_dt(sys%ks, sys%parser, hm, gr, psi, td%tr, i*td%dt, td%dt, td%mu, i, td%ions, sys%geo, sys%outp)
       call target_tdcalc(tg, hm, gr, sys%geo, psi, i, td%max_iter) 
 
@@ -463,7 +463,7 @@ contains
   subroutine bwd_step(sys, td, hm, tg, par, par_chi, qcchi, prop_chi, prop_psi) 
     type(system_t),            intent(inout) :: sys
     type(td_t),                intent(inout) :: td
-    type(hamiltonian_t),       intent(inout) :: hm
+    type(hamiltonian_elec_t),       intent(inout) :: hm
     type(target_t),            intent(inout) :: tg
     type(controlfunction_t),   intent(in)    :: par
     type(controlfunction_t),   intent(inout) :: par_chi
@@ -503,7 +503,7 @@ contains
 
     call density_calc(psi, gr, psi%rho)
     call v_ks_calc(sys%ks, sys%parser, hm, psi, sys%geo)
-    call hamiltonian_update(hm, gr%mesh)
+    call hamiltonian_elec_update(hm, gr%mesh)
     call propagator_run_zero_iter(hm, gr, td%tr)
     call propagator_run_zero_iter(hm, gr, tr_chi)
 
@@ -517,16 +517,16 @@ contains
     do i = td%max_iter, 1, -1
       call oct_prop_check(prop_psi, sys%parser, psi, gr, i)
       call update_field(i, par_chi, gr, hm, sys%geo, qcpsi, qcchi, par, dir = 'b')
-      call update_hamiltonian_chi(i-1, sys%parser, gr, sys%ks, hm, td, tg, par_chi, sys%geo, psi)
-      call hamiltonian_update(hm, gr%mesh, time = abs(i*td%dt))
+      call update_hamiltonian_elec_chi(i-1, sys%parser, gr, sys%ks, hm, td, tg, par_chi, sys%geo, psi)
+      call hamiltonian_elec_update(hm, gr%mesh, time = abs(i*td%dt))
       call propagator_dt(sys%ks, sys%parser, hm, gr, chi, tr_chi, abs((i-1)*td%dt), td%dt, td%mu, i-1, td%ions, sys%geo, sys%outp)
       call oct_prop_dump_states(prop_chi, i-1, chi, gr, ierr)
       if (ierr /= 0) then
         message(1) = "Unable to write OCT states restart."
         call messages_warning(1)
       end if
-      call update_hamiltonian_psi(i-1, sys%parser, gr, sys%ks, hm, td, tg, par, psi, sys%geo)
-      call hamiltonian_update(hm, gr%mesh, time = abs(i*td%dt))
+      call update_hamiltonian_elec_psi(i-1, sys%parser, gr, sys%ks, hm, td, tg, par, psi, sys%geo)
+      call hamiltonian_elec_update(hm, gr%mesh, time = abs(i*td%dt))
       call propagator_dt(sys%ks, sys%parser, hm, gr, psi, td%tr, abs((i-1)*td%dt), td%dt, td%mu, i-1, td%ions, sys%geo, sys%outp)
     end do
     td%dt = -td%dt
@@ -534,7 +534,7 @@ contains
 
     call density_calc(psi, gr, psi%rho)
     call v_ks_calc(sys%ks, sys%parser, hm, psi, sys%geo)
-    call hamiltonian_update(hm, gr%mesh)
+    call hamiltonian_elec_update(hm, gr%mesh)
 
     call controlfunction_to_basis(par_chi)
     call states_elec_end(psi)
@@ -561,7 +561,7 @@ contains
   subroutine bwd_step_2(sys, td, hm, tg, par, par_chi, qcchi, prop_chi, prop_psi) 
     type(system_t),                    intent(inout) :: sys
     type(td_t),                        intent(inout) :: td
-    type(hamiltonian_t),               intent(inout) :: hm
+    type(hamiltonian_elec_t),               intent(inout) :: hm
     type(target_t),                    intent(inout) :: tg
     type(controlfunction_t),           intent(in)    :: par
     type(controlfunction_t),           intent(inout) :: par_chi
@@ -612,7 +612,7 @@ contains
 
     call density_calc(psi, gr, psi%rho)
     call v_ks_calc(sys%ks, sys%parser, hm, psi, sys%geo)
-    call hamiltonian_update(hm, gr%mesh)
+    call hamiltonian_elec_update(hm, gr%mesh)
     call propagator_run_zero_iter(hm, gr, td%tr)
     call propagator_run_zero_iter(hm, gr, tr_chi)
     td%dt = -td%dt
@@ -642,7 +642,7 @@ contains
 
       case(PROP_EXPLICIT_RUNGE_KUTTA4)
 
-        call update_hamiltonian_psi(i-1, sys%parser, gr, sys%ks, hm, td, tg, par, psi, sys%geo)
+        call update_hamiltonian_elec_psi(i-1, sys%parser, gr, sys%ks, hm, td, tg, par, psi, sys%geo)
         call propagator_dt(sys%ks, sys%parser, hm, gr, psi, td%tr, abs((i-1)*td%dt), td%dt, td%mu, i-1, td%ions, sys%geo, &
           sys%outp, qcchi = qcchi)
 
@@ -667,7 +667,7 @@ contains
         ! Here propagate psi one full step, and then simply interpolate to get the state
         ! at half the time interval. Perhaps one could gain some accuracy by performing two
         ! successive propagations of half time step.
-        call update_hamiltonian_psi(i-1, sys%parser, gr, sys%ks, hm, td, tg, par, psi, sys%geo)
+        call update_hamiltonian_elec_psi(i-1, sys%parser, gr, sys%ks, hm, td, tg, par, psi, sys%geo)
 
         do ik = psi%d%kpt%start, psi%d%kpt%end
           do ib = psi%group%block_start, psi%group%block_end
@@ -681,7 +681,7 @@ contains
         if(ion_dynamics_ions_move(td%ions)) then
           call ion_dynamics_save_state(td%ions, sys%geo, ions_state_final)
           call geometry_set_positions(sys%geo, qinitial)
-          call hamiltonian_epot_generate(hm, sys%parser, gr, sys%geo, psi, time = abs((i-1)*td%dt))
+          call hamiltonian_elec_epot_generate(hm, sys%parser, gr, sys%geo, psi, time = abs((i-1)*td%dt))
         end if
 
         do ik = psi%d%kpt%start, psi%d%kpt%end
@@ -694,14 +694,14 @@ contains
         end do
 
         hm%vhxc(:, :) = M_HALF * (hm%vhxc(:, :) + vhxc(:, :))
-        call update_hamiltonian_chi(i-1, sys%parser, gr, sys%ks, hm, td, tg, par, sys%geo, st_ref, qtildehalf)
+        call update_hamiltonian_elec_chi(i-1, sys%parser, gr, sys%ks, hm, td, tg, par, sys%geo, st_ref, qtildehalf)
         freeze = ion_dynamics_freeze(td%ions)
         call propagator_dt(sys%ks, sys%parser, hm, gr, chi, tr_chi, abs((i-1)*td%dt), td%dt, td%mu, i-1, td%ions, sys%geo, sys%outp)
         if(freeze) call ion_dynamics_unfreeze(td%ions)
 
         if(ion_dynamics_ions_move(td%ions)) then
           call ion_dynamics_restore_state(td%ions, sys%geo, ions_state_final)
-          call hamiltonian_epot_generate(hm, sys%parser, gr, sys%geo, psi, time = abs((i-1)*td%dt))
+          call hamiltonian_elec_epot_generate(hm, sys%parser, gr, sys%geo, psi, time = abs((i-1)*td%dt))
           call forces_calculate(gr, sys%parser, sys%geo, hm, psi, sys%ks, t = abs((i-1)*td%dt), dt = td%dt)
           call forces_costate_calculate(gr, sys%parser, sys%geo, hm, psi, chi, fnew, q)
           call ion_dynamics_verlet_step2(sys%geo, p, fold, fnew, td%dt)
@@ -733,12 +733,12 @@ contains
     call states_elec_end(st_ref)
 
     td%dt = -td%dt
-    call update_hamiltonian_psi(0, sys%parser, gr, sys%ks, hm, td, tg, par, psi, sys%geo)
+    call update_hamiltonian_elec_psi(0, sys%parser, gr, sys%ks, hm, td, tg, par, psi, sys%geo)
     call update_field(0, par_chi, gr, hm, sys%geo, qcpsi, qcchi, par, dir = 'b')
 
     call density_calc(psi, gr, psi%rho)
     call v_ks_calc(sys%ks, sys%parser, hm, psi, sys%geo)
-    call hamiltonian_update(hm, gr%mesh)
+    call hamiltonian_elec_update(hm, gr%mesh)
 
     call propagator_end(tr_chi)
 
@@ -759,12 +759,12 @@ contains
   ! ----------------------------------------------------------
   !
   ! ----------------------------------------------------------
-  subroutine update_hamiltonian_chi(iter, parser, gr, ks, hm, td, tg, par_chi, geo, st, qtildehalf)
+  subroutine update_hamiltonian_elec_chi(iter, parser, gr, ks, hm, td, tg, par_chi, geo, st, qtildehalf)
     integer,                 intent(in)    :: iter
     type(parser_t),          intent(in)    :: parser
     type(grid_t),            intent(inout) :: gr
     type(v_ks_t),            intent(inout) :: ks
-    type(hamiltonian_t),     intent(inout) :: hm
+    type(hamiltonian_elec_t),     intent(inout) :: hm
     type(td_t),              intent(inout) :: td
     type(target_t),          intent(inout) :: tg
     type(controlfunction_t), intent(in)    :: par_chi
@@ -778,12 +778,12 @@ contains
     CMPLX, allocatable :: dvpsi(:, :, :), zpsi(:, :), inhzpsi(:, :)
     integer :: ist, ik, ib
 
-    PUSH_SUB(update_hamiltonian_chi)
+    PUSH_SUB(update_hamiltonian_elec_chi)
 
     if(target_mode(tg) == oct_targetmode_td) then
       call states_elec_copy(inh, st)
       call target_inh(st, gr, tg, abs(td%dt)*iter, inh, iter)
-      call hamiltonian_set_inh(hm, inh)
+      call hamiltonian_elec_set_inh(hm, inh)
       call states_elec_end(inh)
     end if
 
@@ -822,7 +822,7 @@ contains
       SAFE_DEALLOCATE_A(zpsi)
       SAFE_DEALLOCATE_A(inhzpsi)
       SAFE_DEALLOCATE_A(dvpsi)
-      call hamiltonian_set_inh(hm, inh)
+      call hamiltonian_elec_set_inh(hm, inh)
       call states_elec_end(inh)
     end if
 
@@ -831,7 +831,7 @@ contains
       call oct_exchange_set(hm%oct_exchange, st, gr%mesh)
     end if
 
-    call hamiltonian_adjoint(hm)
+    call hamiltonian_elec_adjoint(hm)
 
     do j = iter - 2, iter + 2
       if(j >= 0 .and. j<=td%max_iter) then
@@ -839,20 +839,20 @@ contains
       end if
     end do
 
-    POP_SUB(update_hamiltonian_chi)
-  end subroutine update_hamiltonian_chi
+    POP_SUB(update_hamiltonian_elec_chi)
+  end subroutine update_hamiltonian_elec_chi
   ! ---------------------------------------------------------
 
 
   ! ----------------------------------------------------------
   !
   ! ----------------------------------------------------------
-  subroutine update_hamiltonian_psi(iter, parser, gr, ks, hm, td, tg, par, st, geo)
+  subroutine update_hamiltonian_elec_psi(iter, parser, gr, ks, hm, td, tg, par, st, geo)
     integer,                 intent(in)    :: iter
     type(parser_t),          intent(in)    :: parser
     type(grid_t),            intent(inout) :: gr
     type(v_ks_t),            intent(inout) :: ks
-    type(hamiltonian_t),     intent(inout) :: hm
+    type(hamiltonian_elec_t),     intent(inout) :: hm
     type(td_t),              intent(inout) :: td
     type(target_t),          intent(inout) :: tg
     type(controlfunction_t), intent(in)    :: par
@@ -861,21 +861,21 @@ contains
 
     integer :: j
 
-    PUSH_SUB(update_hamiltonian_psi)
+    PUSH_SUB(update_hamiltonian_elec_psi)
 
     if(target_mode(tg) == oct_targetmode_td) then
-      call hamiltonian_remove_inh(hm)
+      call hamiltonian_elec_remove_inh(hm)
     end if
 
     if(ion_dynamics_ions_move(td%ions)) then
-      call hamiltonian_remove_inh(hm)
+      call hamiltonian_elec_remove_inh(hm)
     end if
 
     if(hm%theory_level /= INDEPENDENT_PARTICLES .and. (.not.ks%frozen_hxc) ) then
       call oct_exchange_remove(hm%oct_exchange)
     end if
 
-    call hamiltonian_not_adjoint(hm)
+    call hamiltonian_elec_not_adjoint(hm)
 
     do j = iter - 2, iter + 2
       if(j >= 0 .and. j<=td%max_iter) then
@@ -885,18 +885,18 @@ contains
     if(hm%theory_level /= INDEPENDENT_PARTICLES .and. (.not.ks%frozen_hxc) ) then
       call density_calc(st, gr, st%rho)
       call v_ks_calc(ks, parser, hm, st, geo)
-      call hamiltonian_update(hm, gr%mesh)
+      call hamiltonian_elec_update(hm, gr%mesh)
     end if
 
-    POP_SUB(update_hamiltonian_psi)
-  end subroutine update_hamiltonian_psi
+    POP_SUB(update_hamiltonian_elec_psi)
+  end subroutine update_hamiltonian_elec_psi
   ! ---------------------------------------------------------
 
 
   ! ---------------------------------------------------------
   subroutine calculate_g(gr, hm, psi, chi, dl, dq)
     type(grid_t),                   intent(inout) :: gr
-    type(hamiltonian_t),            intent(in)    :: hm
+    type(hamiltonian_elec_t),            intent(in)    :: hm
     type(states_elec_t),            intent(inout) :: psi
     type(states_elec_t),            intent(inout) :: chi
     CMPLX,                          intent(inout) :: dl(:), dq(:)
@@ -981,7 +981,7 @@ contains
     integer,                   intent(in)    :: iter
     type(controlfunction_t),   intent(inout) :: cp
     type(grid_t),              intent(inout) :: gr
-    type(hamiltonian_t),       intent(in)    :: hm
+    type(hamiltonian_elec_t),       intent(in)    :: hm
     type(geometry_t),          intent(in)    :: geo
     type(opt_control_state_t), intent(inout) :: qcpsi
     type(opt_control_state_t), intent(inout) :: qcchi

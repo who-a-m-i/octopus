@@ -23,7 +23,7 @@ module sternheimer_oct_m
   use density_oct_m
   use global_oct_m
   use grid_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use lalg_basic_oct_m
   use linear_response_oct_m
   use linear_solver_oct_m
@@ -116,7 +116,7 @@ contains
     set_ham_var, set_occ_response, set_last_occ_response, occ_response_by_sternheimer, set_default_solver)
     type(sternheimer_t),  intent(out)   :: this
     type(system_t),       intent(inout) :: sys
-    type(hamiltonian_t),  intent(inout) :: hm
+    type(hamiltonian_elec_t),  intent(inout) :: hm
     logical,              intent(in)    :: wfs_are_cplx
     integer,    optional, intent(in)    :: set_ham_var
     logical,    optional, intent(in)    :: set_occ_response

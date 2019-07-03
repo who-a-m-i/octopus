@@ -20,7 +20,7 @@
 subroutine X(eigensolver_evolution)(gr, st, hm, te, tol, niter, converged, ik, diff, tau)
   type(grid_t),        target, intent(in)    :: gr
   type(states_elec_t),         intent(inout) :: st
-  type(hamiltonian_t), target, intent(in)    :: hm
+  type(hamiltonian_elec_t), target, intent(in)    :: hm
   type(exponential_t),         intent(inout) :: te
   FLOAT,                       intent(in)    :: tol
   integer,                     intent(inout) :: niter
@@ -73,7 +73,7 @@ subroutine X(eigensolver_evolution)(gr, st, hm, te, tol, niter, converged, ik, d
     do ist = conv + 1, st%nst
       call states_elec_get_state(st, gr%mesh, ist, ik, psi)
       !TODO: convert these opperations to batched versions 
-      call X(hamiltonian_apply)(hm, gr%der, psi, hpsi, ist, ik)
+      call X(hamiltonian_elec_apply)(hm, gr%der, psi, hpsi, ist, ik)
       st%eigenval(ist, ik) = real(X(mf_dotp)(gr%mesh, st%d%dim, psi, hpsi), REAL_PRECISION)
       diff(ist) = X(states_elec_residue)(gr%mesh, st%d%dim, hpsi, st%eigenval(ist, ik), psi)
 

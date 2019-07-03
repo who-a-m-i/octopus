@@ -23,7 +23,7 @@ module unocc_oct_m
   use eigensolver_oct_m
   use global_oct_m
   use output_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use io_oct_m
   use kpoints_oct_m
   use lcao_oct_m
@@ -57,7 +57,7 @@ contains
   ! ---------------------------------------------------------
   subroutine unocc_run(sys, hm, fromscratch)
     type(system_t),      intent(inout) :: sys
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     logical,             intent(inout) :: fromscratch
 
     type(eigensolver_t) :: eigens

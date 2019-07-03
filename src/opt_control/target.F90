@@ -29,7 +29,7 @@ module target_oct_m
   use geometry_oct_m
   use global_oct_m
   use grid_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use io_oct_m
   use io_function_oct_m
   use ion_dynamics_oct_m
@@ -368,7 +368,7 @@ contains
     type(grid_t), intent(in)   :: gr
     character(len=*), intent(in)  :: dir
     type(geometry_t),       intent(in)  :: geo
-    type(hamiltonian_t),    intent(in)  :: hm
+    type(hamiltonian_elec_t),    intent(in)  :: hm
     type(output_t),         intent(in)  :: outp
 
     PUSH_SUB(target_output)
@@ -411,7 +411,7 @@ contains
   !! <Psi(t)|\hat{O}(t)|Psi(t)>.
   subroutine target_tdcalc(tg, hm, gr, geo, psi, time, max_time)
     type(target_t),      intent(inout) :: tg
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     type(grid_t),        intent(in)    :: gr
     type(geometry_t),    intent(inout) :: geo
     type(states_elec_t), intent(inout) :: psi

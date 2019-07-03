@@ -25,7 +25,7 @@ module xc_ks_inversion_oct_m
   use geometry_oct_m
   use global_oct_m
   use grid_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use io_oct_m
   use io_function_oct_m
   use mesh_oct_m
@@ -80,7 +80,7 @@ module xc_ks_inversion_oct_m
      integer,             public :: asymp
      FLOAT, pointer              :: vhxc_previous_step(:,:)
      type(states_elec_t), public :: aux_st
-     type(hamiltonian_t)         :: aux_hm
+     type(hamiltonian_elec_t)         :: aux_hm
      type(eigensolver_t), public :: eigensolver
   end type xc_ks_inversion_t
 
@@ -164,7 +164,7 @@ contains
 
       ! initialize densities, hamiltonian and eigensolver
       call states_elec_densities_init(ks_inv%aux_st, gr, geo)
-      call hamiltonian_init(ks_inv%aux_hm, parser, gr, geo, ks_inv%aux_st, INDEPENDENT_PARTICLES, XC_FAMILY_NONE, .false.)
+      call hamiltonian_elec_init(ks_inv%aux_hm, parser, gr, geo, ks_inv%aux_st, INDEPENDENT_PARTICLES, XC_FAMILY_NONE, .false.)
       call eigensolver_init(ks_inv%eigensolver, parser, gr, ks_inv%aux_st, xc)
     end if
 
@@ -181,7 +181,7 @@ contains
     if(ks_inv%level /= XC_KS_INVERSION_NONE) then
       ! cleanup
       call eigensolver_end(ks_inv%eigensolver)
-      call hamiltonian_end(ks_inv%aux_hm)
+      call hamiltonian_elec_end(ks_inv%aux_hm)
       call states_elec_end(ks_inv%aux_st)
     end if
 
@@ -208,7 +208,7 @@ contains
   subroutine invertks_2part(target_rho, nspin, aux_hm, gr, st, eigensolver, asymptotics)
     FLOAT,               intent(in)    :: target_rho(:,:) !< (1:gr%mesh%np, 1:nspin)
     integer,             intent(in)    :: nspin
-    type(hamiltonian_t), intent(inout) :: aux_hm
+    type(hamiltonian_elec_t), intent(inout) :: aux_hm
     type(grid_t),        intent(in)    :: gr
     type(states_elec_t), intent(inout) :: st
     type(eigensolver_t), intent(inout) :: eigensolver
@@ -314,7 +314,7 @@ contains
       aux_hm%vhxc(:,ii) = aux_hm%vxc(:,ii) + aux_hm%vhartree(1:np)
     end do
     
-    call hamiltonian_update(aux_hm, gr%mesh)
+    call hamiltonian_elec_update(aux_hm, gr%mesh)
     call eigensolver_run(eigensolver, gr, st, aux_hm, 1)
     call density_calc(st, gr, st%rho)
 
@@ -334,7 +334,7 @@ contains
     type(grid_t),        intent(in)    :: gr
     type(parser_t),      intent(in)    :: parser
     type(states_elec_t), intent(inout) :: st
-    type(hamiltonian_t), intent(inout) :: aux_hm
+    type(hamiltonian_elec_t), intent(inout) :: aux_hm
     type(eigensolver_t), intent(inout) :: eigensolver
     integer,             intent(in)    :: nspin
     integer,             intent(in)    :: method
@@ -460,7 +460,7 @@ contains
              ".", "rho"//fname, gr%mesh, st%rho(:,1), units_out%length**(-gr%sb%dim), ierr)
       end if
 
-      call hamiltonian_update(aux_hm, gr%mesh)
+      call hamiltonian_elec_update(aux_hm, gr%mesh)
       call eigensolver_run(eigensolver, gr, st, aux_hm, 1)
       call density_calc(st, gr, st%rho)      
 
@@ -586,7 +586,7 @@ contains
 
     !calculate final density
 
-    call hamiltonian_update(aux_hm, gr%mesh)
+    call hamiltonian_elec_update(aux_hm, gr%mesh)
     call eigensolver_run(eigensolver, gr, st, aux_hm, 1)
     call density_calc(st, gr, st%rho)
     
@@ -606,7 +606,7 @@ contains
     type(xc_ks_inversion_t),  intent(inout) :: ks_inversion
     type(parser_t),           intent(in)    :: parser
     type(grid_t),             intent(in)    :: gr
-    type(hamiltonian_t),      intent(in)    :: hm
+    type(hamiltonian_elec_t),      intent(in)    :: hm
     type(states_elec_t),      intent(inout) :: st
     FLOAT,                    intent(inout) :: vxc(:,:) !< vxc(gr%mesh%np, st%d%nspin)
     FLOAT, optional,          intent(in)    :: time

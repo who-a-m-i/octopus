@@ -20,7 +20,7 @@
   ! ---------------------------------------------------------
   subroutine oct_finalcheck(sys, hm, td)
     type(system_t), intent(inout)      :: sys
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     type(td_t), intent(inout)          :: td
 
     type(states_elec_t) :: psi

@@ -26,7 +26,7 @@ module propagator_oct_m
   use grid_oct_m
   use geometry_oct_m
   use global_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use ion_dynamics_oct_m
   use lda_u_oct_m
   use loct_pointer_oct_m
@@ -460,7 +460,7 @@ contains
 
   ! ---------------------------------------------------------
   subroutine propagator_run_zero_iter(hm, gr, tr)
-    type(hamiltonian_t),  intent(in)    :: hm
+    type(hamiltonian_elec_t),  intent(in)    :: hm
     type(grid_t),         intent(in)    :: gr
     type(propagator_t),   intent(inout) :: tr
 
@@ -486,7 +486,7 @@ contains
     scsteps, update_energy, qcchi)
     type(v_ks_t), target,            intent(inout) :: ks
     type(parser_t),                  intent(in)    :: parser
-    type(hamiltonian_t), target,     intent(inout) :: hm
+    type(hamiltonian_elec_t), target,     intent(inout) :: hm
     type(grid_t),        target,     intent(inout) :: gr
     type(states_elec_t), target,     intent(inout) :: st
     type(propagator_t),  target,     intent(inout) :: tr
@@ -570,7 +570,7 @@ contains
     end if
 
     if(generate .or. geometry_species_time_dependent(geo)) then
-      call hamiltonian_epot_generate(hm, parser,  gr, geo, st, time = abs(nt*dt))
+      call hamiltonian_elec_epot_generate(hm, parser,  gr, geo, st, time = abs(nt*dt))
     end if
 
     call v_ks_calc(ks, parser, hm, st, geo, calc_eigenval = update_energy_, time = abs(nt*dt), calc_energy = update_energy_)
@@ -580,7 +580,7 @@ contains
     if(update_energy_ .and. ion_dynamics_ions_move(ions) .and. tr%method .ne. PROP_EXPLICIT_RUNGE_KUTTA4) then
       call forces_calculate(gr, parser, geo, hm, st, ks, t = abs(nt*dt), dt = dt)
       call ion_dynamics_propagate_vel(ions, geo, atoms_moved = generate)
-      if(generate) call hamiltonian_epot_generate(hm, parser,  gr, geo, st, time = abs(nt*dt))
+      if(generate) call hamiltonian_elec_epot_generate(hm, parser,  gr, geo, st, time = abs(nt*dt))
       geo%kinetic_energy = ion_dynamics_kinetic_energy(geo)
     else
       if(bitand(outp%what, OPTION__OUTPUT__FORCES) /= 0) then
@@ -636,7 +636,7 @@ contains
     type(grid_t), intent(inout)        :: gr
     type(v_ks_t), intent(inout)        :: ks
     type(states_elec_t), intent(inout) :: st
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     type(geometry_t), intent(inout)    :: geo
     type(multicomm_t), intent(inout)   :: mc    !< index and domain communicators
     type(output_t), intent(inout)      :: outp
@@ -649,7 +649,7 @@ contains
 
     ! move the hamiltonian to time t
     call ion_dynamics_propagate(ions, gr%sb, geo, iter*dt, dt)
-    call hamiltonian_epot_generate(hm, parser, gr, geo, st, time = iter*dt)
+    call hamiltonian_elec_epot_generate(hm, parser, gr, geo, st, time = iter*dt)
     ! now calculate the eigenfunctions
     call scf_run(scf, parser, mc, gr, geo, st, ks, hm, outp, &
       gs_run = .false., verbosity = VERB_COMPACT, iters_done = scsteps)
@@ -663,7 +663,7 @@ contains
       call messages_not_implemented("DFT+U with propagator_dt_bo")  
     end if
 
-    call hamiltonian_epot_generate(hm, parser,  gr, geo, st, time = iter*dt)
+    call hamiltonian_elec_epot_generate(hm, parser,  gr, geo, st, time = iter*dt)
 
     ! update Hamiltonian and eigenvalues (fermi is *not* called)
     call v_ks_calc(ks, parser, hm, st, geo, calc_eigenval = .true., time = iter*dt, calc_energy = .true.)
@@ -672,7 +672,7 @@ contains
     call energy_calc_total(hm, gr, st, iunit = -1)
 
     call ion_dynamics_propagate_vel(ions, geo)
-    call hamiltonian_epot_generate(hm, parser, gr, geo, st, time = iter*dt)
+    call hamiltonian_elec_epot_generate(hm, parser, gr, geo, st, time = iter*dt)
      geo%kinetic_energy = ion_dynamics_kinetic_energy(geo)
 
     if(gauge_field_is_applied(hm%ep%gfield)) then

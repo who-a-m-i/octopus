@@ -24,7 +24,7 @@ subroutine X(sternheimer_solve)(                           &
   restart, rho_tag, wfs_tag, have_restart_rho, have_exact_freq)
   type(sternheimer_t),    intent(inout) :: this
   type(system_t), target, intent(inout) :: sys
-  type(hamiltonian_t),    intent(inout) :: hm
+  type(hamiltonian_elec_t),    intent(inout) :: hm
   type(lr_t),             intent(inout) :: lr(:) 
   integer,                intent(in)    :: nsigma 
   R_TYPE,                 intent(in)    :: omega
@@ -615,7 +615,7 @@ subroutine X(sternheimer_solve_order2)( &
   type(sternheimer_t),    intent(inout) :: sh2
   type(sternheimer_t),    intent(inout) :: sh_2ndorder
   type(system_t), target, intent(inout) :: sys
-  type(hamiltonian_t),    intent(inout) :: hm
+  type(hamiltonian_elec_t),    intent(inout) :: hm
   type(lr_t),             intent(inout) :: lr1(:) 
   type(lr_t),             intent(inout) :: lr2(:) 
   integer,                intent(in)    :: nsigma 

@@ -28,7 +28,7 @@ module td_write_oct_m
   use global_oct_m
   use grid_oct_m
   use output_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use io_function_oct_m
   use io_oct_m
   use ion_dynamics_oct_m
@@ -159,7 +159,7 @@ contains
     type(output_t),           intent(out)   :: outp
     type(grid_t),             intent(in)    :: gr
     type(states_elec_t),      intent(inout) :: st
-    type(hamiltonian_t),      intent(inout) :: hm
+    type(hamiltonian_elec_t),      intent(inout) :: hm
     type(geometry_t),         intent(in)    :: geo
     type(v_ks_t),             intent(inout) :: ks
     logical,                  intent(in)    :: ions_move
@@ -741,7 +741,7 @@ contains
     type(output_t),      intent(in)    :: outp
     type(grid_t),        intent(in)    :: gr   !< The grid
     type(states_elec_t), intent(inout) :: st   !< State object
-    type(hamiltonian_t), intent(inout) :: hm   !< Hamiltonian object
+    type(hamiltonian_elec_t), intent(inout) :: hm   !< Hamiltonian object
     type(geometry_t),    intent(inout) :: geo  !< Geometry object
     type(kick_t),        intent(in)    :: kick !< The kick
     FLOAT,               intent(in)    :: dt   !< Delta T, time interval
@@ -874,7 +874,7 @@ contains
     type(parser_t),       intent(in)    :: parser
     type(grid_t),         intent(in)    :: gr
     type(states_elec_t),  intent(inout) :: st
-    type(hamiltonian_t),  intent(inout) :: hm
+    type(hamiltonian_elec_t),  intent(inout) :: hm
     type(v_ks_t),         intent(in)    :: ks
     type(output_t),       intent(in)    :: outp
     type(geometry_t),     intent(in)    :: geo
@@ -1017,7 +1017,7 @@ contains
     type(parser_t),         intent(in)    :: parser
     type(grid_t),           intent(in)    :: gr
     type(geometry_t),       intent(inout) :: geo
-    type(hamiltonian_t),    intent(inout) :: hm
+    type(hamiltonian_elec_t),    intent(inout) :: hm
     type(states_elec_t),    intent(inout) :: st
     type(kick_t),           intent(in)    :: kick
     integer,                intent(in)    :: iter
@@ -1573,7 +1573,7 @@ contains
     type(grid_t),        intent(in)    :: gr
     type(geometry_t),    intent(inout) :: geo
     type(states_elec_t), intent(inout) :: st
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     FLOAT,               intent(in)    :: dt
     integer,             intent(in)    :: iter
 
@@ -1667,7 +1667,7 @@ contains
   subroutine td_write_laser(out_laser, gr, hm, dt, iter)
     type(c_ptr),         intent(inout) :: out_laser
     type(grid_t),        intent(in) :: gr
-    type(hamiltonian_t), intent(in) :: hm
+    type(hamiltonian_elec_t), intent(in) :: hm
     FLOAT,               intent(in) :: dt
     integer,             intent(in) :: iter
 
@@ -1766,7 +1766,7 @@ contains
   ! ---------------------------------------------------------
   subroutine td_write_energy(out_energy, hm, iter, ke)
     type(c_ptr),         intent(inout) :: out_energy
-    type(hamiltonian_t), intent(in) :: hm
+    type(hamiltonian_elec_t), intent(in) :: hm
     integer,             intent(in) :: iter
     FLOAT,               intent(in) :: ke
 
@@ -2029,7 +2029,7 @@ contains
   ! ---------------------------------------------------------
   subroutine td_write_gauge_field(out_gauge, hm, gr, iter)
     type(c_ptr),         intent(inout) :: out_gauge
-    type(hamiltonian_t), intent(in) :: hm
+    type(hamiltonian_elec_t), intent(in) :: hm
     type(grid_t),        intent(in) :: gr
     integer,             intent(in) :: iter
     
@@ -2462,7 +2462,7 @@ contains
 
   subroutine td_write_proj_kp(out_proj_kp, hm,gr, st, gs_st, iter)
     type(c_ptr),         intent(inout) :: out_proj_kp
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     type(grid_t),        intent(in)    :: gr
     type(states_elec_t), intent(in)    :: st
     type(states_elec_t), intent(inout) :: gs_st
@@ -2566,7 +2566,7 @@ contains
   subroutine td_write_floquet(out_floquet, parser, hm, gr, st, ks, iter)
     type(c_ptr),         intent(inout) :: out_floquet
     type(parser_t),      intent(in)    :: parser
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     type(grid_t),        intent(in)    :: gr
     type(states_elec_t), intent(inout) :: st !< at iter=0 this is the groundstate
     type(v_ks_t),        intent(in)    :: ks
@@ -2674,9 +2674,9 @@ contains
     ! perform time-integral over one cycle
     do it=1,nT
       ! get non-interacting Hamiltonian at time (offset by one cycle to allow for ramp)
-      call hamiltonian_update(hm, gr%mesh, time=Tcycle+it*dt)
+      call hamiltonian_elec_update(hm, gr%mesh, time=Tcycle+it*dt)
       ! get hpsi
-      call zhamiltonian_apply_all(hm, ks%xc, gr%der, st, hm_st)
+      call zhamiltonian_elec_apply_all(hm, ks%xc, gr%der, st, hm_st)
 
       ! project Hamiltonian into grounstates for zero weight k-points
       ik_count = 0
@@ -2822,7 +2822,7 @@ contains
      end if
   
     ! reset time in Hamiltonian
-    call hamiltonian_update(hm, gr%mesh, time=M_ZERO)
+    call hamiltonian_elec_update(hm, gr%mesh, time=M_ZERO)
 
     SAFE_DEALLOCATE_A(hmss)
     SAFE_DEALLOCATE_A(psi)
@@ -2933,7 +2933,7 @@ contains
   
   subroutine td_write_total_heat_current(write_obj, hm, gr, geo, st, iter)
     type(c_ptr),         intent(inout) :: write_obj
-    type(hamiltonian_t), intent(inout) :: hm
+    type(hamiltonian_elec_t), intent(inout) :: hm
     type(grid_t),        intent(in)    :: gr
     type(geometry_t),    intent(in)    :: geo
     type(states_elec_t),      intent(in)    :: st

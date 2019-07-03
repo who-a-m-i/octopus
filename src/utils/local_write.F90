@@ -23,7 +23,7 @@ module local_write_oct_m
   use geometry_oct_m
   use global_oct_m
   use grid_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use io_oct_m
   use io_function_oct_m
   use kick_oct_m
@@ -239,7 +239,7 @@ contains
     FLOAT  ,                intent(in)    :: center(:,:)
     type(grid_t),           intent(in)    :: gr
     type(states_elec_t),    intent(inout) :: st
-    type(hamiltonian_t),    intent(inout) :: hm
+    type(hamiltonian_elec_t),    intent(inout) :: hm
     type(v_ks_t),           intent(inout) :: ks
     type(geometry_t),       intent(inout) :: geo
     type(kick_t),           intent(inout) :: kick
@@ -296,7 +296,7 @@ contains
     type(grid_t),         intent(in)    :: gr
     type(geometry_t),     intent(inout) :: geo
     type(states_elec_t),  intent(inout) :: st
-    type(hamiltonian_t),  intent(inout) :: hm
+    type(hamiltonian_elec_t),  intent(inout) :: hm
     type(v_ks_t),         intent(inout) :: ks
     integer,              intent(in) :: iter
     integer(8),           intent(in) :: how
@@ -383,7 +383,7 @@ contains
     type(grid_t),         intent(in)    :: gr
     type(geometry_t),     intent(inout) :: geo
     type(states_elec_t),  intent(inout) :: st
-    type(hamiltonian_t),  intent(inout) :: hm
+    type(hamiltonian_elec_t),  intent(inout) :: hm
     type(v_ks_t),         intent(inout) :: ks
     integer,              intent(in) :: iter
     integer,              intent(in) :: l_start

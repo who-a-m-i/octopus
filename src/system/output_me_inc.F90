@@ -271,7 +271,7 @@ subroutine X(output_me_dipole)(this, fname, st, gr, hm, geo, ik)
   character(len=*),    intent(in) :: fname
   type(states_elec_t), intent(in) :: st
   type(grid_t),        intent(in) :: gr
-  type(hamiltonian_t), intent(in) :: hm
+  type(hamiltonian_elec_t), intent(in) :: hm
   type(geometry_t),    intent(in) :: geo
   integer,             intent(in) :: ik
   

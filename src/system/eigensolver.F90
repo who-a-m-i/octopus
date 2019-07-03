@@ -27,7 +27,7 @@ module eigensolver_oct_m
   use exponential_oct_m
   use global_oct_m
   use grid_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use lalg_adv_oct_m
   use lalg_basic_oct_m
   use loct_oct_m
@@ -428,7 +428,7 @@ contains
     type(eigensolver_t),  intent(inout) :: eigens
     type(grid_t),         intent(in)    :: gr
     type(states_elec_t),  intent(inout) :: st
-    type(hamiltonian_t),  intent(inout) :: hm
+    type(hamiltonian_elec_t),  intent(inout) :: hm
     integer,              intent(in)    :: iter
     logical,    optional, intent(out)   :: conv
     integer,    optional, intent(in)    :: nstconv !< Number of states considered for 

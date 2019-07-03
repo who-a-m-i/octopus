@@ -31,7 +31,7 @@ module opt_control_oct_m
   use initst_oct_m
   use iso_c_binding
   use output_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use io_oct_m
   use lasers_oct_m
   use loct_oct_m
@@ -76,7 +76,7 @@ module opt_control_oct_m
   !> For the direct, nlopt, and cg schemes:
   type(controlfunction_t), save :: par_
   type(system_t), pointer :: sys_
-  type(hamiltonian_t), pointer :: hm_
+  type(hamiltonian_elec_t), pointer :: hm_
   type(td_t), pointer :: td_
   FLOAT, allocatable :: x_(:)
   integer :: index_
@@ -88,7 +88,7 @@ contains
   !! It is called from the "run" procedure in the "run_m" module.
   subroutine opt_control_run(sys, hm)
     type(system_t), target,      intent(inout) :: sys
-    type(hamiltonian_t), target, intent(inout) :: hm
+    type(hamiltonian_elec_t), target, intent(inout) :: hm
 
     type(td_t), target             :: td
     type(controlfunction_t)        :: par, par_new, par_prev
@@ -562,7 +562,7 @@ contains
   ! ---------------------------------------------------------
   subroutine f_zbr98(sys, hm, td, qcpsi, prop_psi, prop_chi, par)
     type(system_t), intent(inout)                 :: sys
-    type(hamiltonian_t), intent(inout)            :: hm
+    type(hamiltonian_elec_t), intent(inout)            :: hm
     type(td_t), intent(inout)                     :: td
     type(opt_control_state_t), intent(inout)      :: qcpsi
     type(oct_prop_t), intent(inout)               :: prop_psi, prop_chi
@@ -592,7 +592,7 @@ contains
   ! ---------------------------------------------------------
   subroutine f_wg05(sys, hm, td, qcpsi, par, prop_psi, prop_chi, j1)
     type(system_t), intent(inout)                 :: sys
-    type(hamiltonian_t), intent(inout)            :: hm
+    type(hamiltonian_elec_t), intent(inout)            :: hm
     type(td_t), intent(inout)                     :: td
     type(opt_control_state_t), intent(inout)      :: qcpsi
     type(controlfunction_t), intent(inout)        :: par
@@ -647,7 +647,7 @@ contains
    ! ---------------------------------------------------------
   subroutine f_striter(sys, hm, td, par, j1)
     type(system_t), intent(inout)                 :: sys
-    type(hamiltonian_t), intent(inout)            :: hm
+    type(hamiltonian_elec_t), intent(inout)            :: hm
     type(td_t), intent(inout)                     :: td
     type(controlfunction_t), intent(inout)        :: par
     FLOAT, intent(out)                            :: j1
@@ -701,7 +701,7 @@ contains
   ! ---------------------------------------------------------
   subroutine f_iter(sys, hm, td, qcpsi, par, prop_psi, prop_chi, j1)
     type(system_t), intent(inout)                 :: sys
-    type(hamiltonian_t), intent(inout)            :: hm
+    type(hamiltonian_elec_t), intent(inout)            :: hm
     type(td_t), intent(inout)                     :: td
     type(opt_control_state_t), intent(inout)      :: qcpsi
     type(controlfunction_t), intent(inout)        :: par

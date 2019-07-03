@@ -27,7 +27,7 @@ module propagator_etrs_oct_m
   use grid_oct_m
   use geometry_oct_m
   use global_oct_m
-  use hamiltonian_oct_m
+  use hamiltonian_elec_oct_m
   use ion_dynamics_oct_m
   use lalg_basic_oct_m
   use lda_u_oct_m
@@ -60,7 +60,7 @@ contains
   subroutine td_etrs(ks, parser, hm, gr, st, tr, time, dt, ionic_scale, ions, geo, move_ions)
     type(v_ks_t), target,                   intent(inout) :: ks
     type(parser_t),                         intent(in)    :: parser
-    type(hamiltonian_t),        target,     intent(inout) :: hm
+    type(hamiltonian_elec_t),        target,     intent(inout) :: hm
     type(grid_t),               target,     intent(inout) :: gr
     type(states_elec_t),   target,     intent(inout) :: st
     type(propagator_t),         target,     intent(inout) :: tr
@@ -110,7 +110,7 @@ contains
 
       call lalg_copy(gr%mesh%np, st%d%nspin, hm%vhxc, vhxc_t2)
       call lalg_copy(gr%mesh%np, st%d%nspin, vhxc_t1, hm%vhxc)
-      call hamiltonian_update(hm, gr%mesh, time = time - dt)
+      call hamiltonian_elec_update(hm, gr%mesh, time = time - dt)
 
     else
 
@@ -128,7 +128,7 @@ contains
     ! first move the ions to time t
     if(move_ions .and. ion_dynamics_ions_move(ions)) then
       call ion_dynamics_propagate(ions, gr%sb, geo, time, ionic_scale*dt)
-      call hamiltonian_epot_generate(hm, parser,  gr, geo, st, time = time)
+      call hamiltonian_elec_epot_generate(hm, parser,  gr, geo, st, time = time)
     end if
 
     if(gauge_field_is_applied(hm%ep%gfield)) then
@@ -138,7 +138,7 @@ contains
     if(hm%theory_level /= INDEPENDENT_PARTICLES) then
       call lalg_copy(gr%mesh%np, st%d%nspin, vhxc_t2, hm%vhxc)
     end if
-    call hamiltonian_update(hm, gr%mesh, time = time)
+    call hamiltonian_elec_update(hm, gr%mesh, time = time)
     !We update the occupation matrices
     call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy )
 
@@ -163,7 +163,7 @@ contains
   subroutine td_etrs_sc(ks, parser, hm, gr, st, tr, time, dt, ionic_scale, ions, geo, move_ions, sctol, scsteps)
     type(v_ks_t), target,            intent(inout) :: ks
     type(parser_t),                  intent(in)    :: parser
-    type(hamiltonian_t), target,     intent(inout) :: hm
+    type(hamiltonian_elec_t), target,     intent(inout) :: hm
     type(grid_t),        target,     intent(inout) :: gr
     type(states_elec_t), target,intent(inout) :: st
     type(propagator_t),  target,     intent(inout) :: tr
@@ -223,7 +223,7 @@ contains
 
     call lalg_copy(gr%mesh%np, st%d%nspin, hm%vhxc, vhxc_t2)
     call lalg_copy(gr%mesh%np, st%d%nspin, vhxc_t1, hm%vhxc)
-    call hamiltonian_update(hm, gr%mesh, time = time - dt)
+    call hamiltonian_elec_update(hm, gr%mesh, time = time - dt)
     call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy )
 
     ! propagate dt/2 with H(t)
@@ -231,7 +231,7 @@ contains
     ! first move the ions to time t
     if(move_ions .and. ion_dynamics_ions_move(ions)) then
       call ion_dynamics_propagate(ions, gr%sb, geo, time, ionic_scale*dt)
-      call hamiltonian_epot_generate(hm, parser,  gr, geo, st, time = time)
+      call hamiltonian_elec_epot_generate(hm, parser,  gr, geo, st, time = time)
     end if
 
     if(gauge_field_is_applied(hm%ep%gfield)) then
@@ -242,7 +242,7 @@ contains
       call lalg_copy(gr%mesh%np, st%d%nspin, vhxc_t2, hm%vhxc)
     end if
 
-    call hamiltonian_update(hm, gr%mesh, time = time)
+    call hamiltonian_elec_update(hm, gr%mesh, time = time)
     call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy )
 
     SAFE_ALLOCATE(psi2(st%group%block_start:st%group%block_end, st%d%kpt%start:st%d%kpt%end))
@@ -325,7 +325,7 @@ contains
   subroutine td_aetrs(ks, parser, hm, gr, st, tr, time, dt, ionic_scale, ions, geo, move_ions)
     type(v_ks_t), target,            intent(inout) :: ks
     type(parser_t),                  intent(in)    :: parser
-    type(hamiltonian_t), target,     intent(inout) :: hm
+    type(hamiltonian_elec_t), target,     intent(inout) :: hm
     type(grid_t),        target,     intent(inout) :: gr
     type(states_elec_t), target,intent(inout) :: st
     type(propagator_t),  target,     intent(inout) :: tr
@@ -358,7 +358,7 @@ contains
         call lalg_copy(gr%mesh%np, st%d%nspin, vold, hm%vhxc)
       endif
 
-      call hamiltonian_update(hm, gr%mesh, time = time - dt)
+      call hamiltonian_elec_update(hm, gr%mesh, time = time - dt)
       !We update the occupation matrices
       call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy )
       call v_ks_calc_start(ks, parser, hm, st, geo, time = time - dt, calc_energy = .false., &
@@ -396,7 +396,7 @@ contains
       end if
 
       ! copy vold to a cl buffer
-      if(accel_is_enabled() .and. hamiltonian_apply_packed(hm, gr%mesh)) then
+      if(accel_is_enabled() .and. hamiltonian_elec_apply_packed(hm, gr%mesh)) then
         if(hm%family_is_mgga_with_exc) then
           call messages_not_implemented('CAETRS propagator with accel and MGGA with energy functionals')
         end if
@@ -419,14 +419,14 @@ contains
     ! move the ions to time t
     if(move_ions .and. ion_dynamics_ions_move(ions)) then
       call ion_dynamics_propagate(ions, gr%sb, geo, time, ionic_scale*dt)
-      call hamiltonian_epot_generate(hm, parser, gr, geo, st, time = time)
+      call hamiltonian_elec_epot_generate(hm, parser, gr, geo, st, time = time)
     end if
 
     if(gauge_field_is_applied(hm%ep%gfield)) then
       call gauge_field_propagate(hm%ep%gfield, dt, time)
     end if
 
-    call hamiltonian_update(hm, gr%mesh, time = time)
+    call hamiltonian_elec_update(hm, gr%mesh, time = time)
     !We update the occupation matrices
     call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy )
 
@@ -477,7 +477,7 @@ contains
       end do
     end do
 
-    if(tr%method == PROP_CAETRS .and. accel_is_enabled() .and. hamiltonian_apply_packed(hm, gr%mesh)) then
+    if(tr%method == PROP_CAETRS .and. accel_is_enabled() .and. hamiltonian_elec_apply_packed(hm, gr%mesh)) then
       call accel_release_buffer(phase_buff)
     end if
 

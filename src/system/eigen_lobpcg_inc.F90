@@ -25,7 +25,7 @@
 subroutine X(eigensolver_lobpcg)(gr, st, hm, pre, tol, niter, converged, ik, diff, block_size)
   type(grid_t),           intent(in)    :: gr
   type(states_elec_t),    intent(inout) :: st
-  type(hamiltonian_t),    intent(in)    :: hm
+  type(hamiltonian_elec_t),    intent(in)    :: hm
   type(preconditioner_t), intent(in)    :: pre
   FLOAT,                  intent(in)    :: tol
   integer,                intent(inout) :: niter
@@ -141,7 +141,7 @@ subroutine X(lobpcg)(gr, st, hm, st_start, st_end, psi, constr_start, constr_end
   ik, pre, tol, niter, converged, diff, constr)
   type(grid_t),           intent(in)    :: gr
   type(states_elec_t),    intent(inout) :: st
-  type(hamiltonian_t),    intent(in)    :: hm
+  type(hamiltonian_elec_t),    intent(in)    :: hm
   integer,                intent(in)    :: st_start
   integer,                intent(in)    :: st_end
   R_TYPE, target,         intent(inout) :: psi(:, :, st_start:) !< (gr%mesh%np_part, st%d%dim, st_start:st_end)
@@ -310,7 +310,7 @@ subroutine X(lobpcg)(gr, st, hm, st_start, st_end, psi, constr_start, constr_end
   call batch_init(psib, st%d%dim, st_start, st_end, psi(:, :, st_start:))
   call batch_init(hpsib, st%d%dim, st_start, st_end, h_psi(:, :, st_start:))
 
-  call X(hamiltonian_apply_batch)(hm, gr%der, psib, hpsib, ik)
+  call X(hamiltonian_elec_apply_batch)(hm, gr%der, psib, hpsib, ik)
   
   call batch_end(psib)
   call batch_end(hpsib)
@@ -403,7 +403,7 @@ subroutine X(lobpcg)(gr, st, hm, st_start, st_end, psi, constr_start, constr_end
     end do
 
     if(lnuc > 0) then
-      call X(hamiltonian_apply_batch)(hm, gr%der, psib, hpsib, ik)
+      call X(hamiltonian_elec_apply_batch)(hm, gr%der, psib, hpsib, ik)
     end if
 
     niter = niter + lnuc

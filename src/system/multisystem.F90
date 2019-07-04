@@ -93,6 +93,7 @@ contains
       type is (system_t)
         call system_end(sys)
       end select
+      call systems%next()
     end do
 
     POP_SUB(multisystem_end)

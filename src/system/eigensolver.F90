@@ -24,7 +24,7 @@ module eigensolver_oct_m
   use eigen_cg_oct_m
   use eigen_lobpcg_oct_m
   use eigen_rmmdiis_oct_m
-  use exponential_oct_m
+  use exponential_elec_oct_m
   use global_oct_m
   use grid_oct_m
   use hamiltonian_elec_oct_m
@@ -93,7 +93,7 @@ module eigensolver_oct_m
     logical, public :: additional_terms
     FLOAT,   public :: energy_change_threshold
 
-    type(exponential_t) :: exponential_operator
+    type(exponential_elec_t) :: exponential_operator
   end type eigensolver_t
 
 
@@ -271,7 +271,7 @@ contains
       call parse_variable(namespace, 'EigensolverImaginaryTime', CNST(10.0), eigens%imag_time)
       if(eigens%imag_time <= M_ZERO) call messages_input_error('EigensolverImaginaryTime')
       
-      call exponential_init(eigens%exponential_operator, namespace)
+      call exponential_elec_init(eigens%exponential_operator, namespace)
       
     case(RS_LOBPCG)
     case(RS_RMMDIIS)
@@ -415,7 +415,7 @@ contains
     case(RS_PLAN, RS_CG, RS_LOBPCG, RS_RMMDIIS, RS_PSD)
       call preconditioner_end(eigens%pre)
     case(RS_EVO)
-      call exponential_end(eigens%exponential_operator)
+      call exponential_elec_end(eigens%exponential_operator)
     end select
 
     SAFE_DEALLOCATE_P(eigens%converged)

@@ -18,7 +18,7 @@
 
 #include "global.h"
 
-module exponential_oct_m
+module exponential_elec_oct_m
   use accel_oct_m
   use batch_oct_m
   use batch_ops_oct_m
@@ -46,36 +46,36 @@ module exponential_oct_m
 
   private
   public ::                      &
-    exponential_t,               &
-    exponential_init,            &
-    exponential_copy,            &
-    exponential_end,             &
-    exponential_apply_batch,     &
-    exponential_apply,           &
-    exponential_apply_all
+    exponential_elec_t,               &
+    exponential_elec_init,            &
+    exponential_elec_copy,            &
+    exponential_elec_end,             &
+    exponential_elec_apply_batch,     &
+    exponential_elec_apply,           &
+    exponential_elec_apply_all
 
   integer, public, parameter ::  &
     EXP_LANCZOS            = 2,  &
     EXP_TAYLOR             = 3,  &
     EXP_CHEBYSHEV          = 4
 
-  type exponential_t
+  type exponential_elec_t
     private
-    integer, public :: exp_method  !< which method is used to apply the exponential
+    integer, public :: exp_method  !< which method is used to apply the exponential_elec
     FLOAT           :: lanczos_tol !< tolerance for the Lanczos method
     integer, public :: exp_order   !< order to which the propagator is expanded
     integer         :: arnoldi_gs  !< Orthogonalization scheme used for Arnoldi
     integer         :: tmp_nst, tmp_nst_linear
-  end type exponential_t
+  end type exponential_elec_t
 
 contains
 
   ! ---------------------------------------------------------
-  subroutine exponential_init(te, namespace)
-    type(exponential_t), intent(out) :: te
-    type(namespace_t),   intent(in)  :: namespace
+  subroutine exponential_elec_init(te, namespace)
+    type(exponential_elec_t), intent(out) :: te
+    type(namespace_t),        intent(in)  :: namespace
     
-    PUSH_SUB(exponential_init)
+    PUSH_SUB(exponential_elec_init)
 
     !%Variable TDExponentialMethod
     !%Type integer
@@ -192,32 +192,32 @@ contains
     te%tmp_nst = -1
     te%tmp_nst_linear = -1
 
-    POP_SUB(exponential_init)
-  end subroutine exponential_init
+    POP_SUB(exponential_elec_init)
+  end subroutine exponential_elec_init
 
   ! ---------------------------------------------------------
-  subroutine exponential_end(te)
-    type(exponential_t), intent(inout) :: te
+  subroutine exponential_elec_end(te)
+    type(exponential_elec_t), intent(inout) :: te
 
-    PUSH_SUB(exponential_end)
+    PUSH_SUB(exponential_elec_end)
 
-    POP_SUB(exponential_end)
-  end subroutine exponential_end
+    POP_SUB(exponential_elec_end)
+  end subroutine exponential_elec_end
 
   ! ---------------------------------------------------------
-  subroutine exponential_copy(teo, tei)
-    type(exponential_t), intent(inout) :: teo
-    type(exponential_t), intent(in)    :: tei
+  subroutine exponential_elec_copy(teo, tei)
+    type(exponential_elec_t), intent(inout) :: teo
+    type(exponential_elec_t), intent(in)    :: tei
 
-    PUSH_SUB(exponential_copy)
+    PUSH_SUB(exponential_elec_copy)
 
     teo%exp_method  = tei%exp_method
     teo%lanczos_tol = tei%lanczos_tol
     teo%exp_order   = tei%exp_order
     teo%arnoldi_gs  = tei%arnoldi_gs 
 
-    POP_SUB(exponential_copy)
-  end subroutine exponential_copy
+    POP_SUB(exponential_elec_copy)
+  end subroutine exponential_elec_copy
 
   ! ---------------------------------------------------------
   !> This routine performs the operation:
@@ -237,8 +237,8 @@ contains
   !! \phi(x) = (e^x - 1)/x
   !! \f]
   ! ---------------------------------------------------------
-  subroutine exponential_apply(te, der, hm, psolver, zpsi, ist, ik, deltat, order, vmagnus, imag_time, Imdeltat)
-    type(exponential_t),      intent(inout) :: te
+  subroutine exponential_elec_apply(te, der, hm, psolver, zpsi, ist, ik, deltat, order, vmagnus, imag_time, Imdeltat)
+    type(exponential_elec_t), intent(inout) :: te
     type(derivatives_t),      intent(in)    :: der
     type(hamiltonian_elec_t), intent(in)    :: hm
     type(poisson_t),          intent(in)    :: psolver
@@ -255,7 +255,7 @@ contains
     logical :: apply_magnus, phase_correction
     type(profile_t), save :: exp_prof
 
-    PUSH_SUB(exponential_apply)
+    PUSH_SUB(exponential_elec_apply)
     call profiling_in(exp_prof, "EXPONENTIAL")
 
     if (present(imag_time)) then
@@ -333,7 +333,7 @@ contains
 
 
     call profiling_out(exp_prof)
-    POP_SUB(exponential_apply)
+    POP_SUB(exponential_elec_apply)
 
   contains
 
@@ -342,7 +342,7 @@ contains
       CMPLX,   intent(inout) :: psi(:, :)
       CMPLX,   intent(inout) :: oppsi(:, :)
 
-      PUSH_SUB(exponential_apply.operate)
+      PUSH_SUB(exponential_elec_apply.operate)
 
       if(apply_magnus) then
         call zmagnus(hm, der, psolver, psi, oppsi, ik, vmagnus, set_phase = .not.phase_correction)
@@ -350,7 +350,7 @@ contains
         call zhamiltonian_elec_apply(hm, der, psolver, psi, oppsi, ist, ik, set_phase = .not.phase_correction)
       end if
 
-      POP_SUB(exponential_apply.operate)
+      POP_SUB(exponential_elec_apply.operate)
     end subroutine operate
     ! ---------------------------------------------------------
 
@@ -361,7 +361,7 @@ contains
       integer :: i, idim
       logical :: zfact_is_real
 
-      PUSH_SUB(exponential_apply.taylor_series)
+      PUSH_SUB(exponential_elec_apply.taylor_series)
 
       SAFE_ALLOCATE(zpsi1 (1:der%mesh%np_part, 1:hm%d%dim))
       SAFE_ALLOCATE(hzpsi1(1:der%mesh%np,      1:hm%d%dim))
@@ -402,7 +402,7 @@ contains
 
       if(present(order)) order = te%exp_order
 
-      POP_SUB(exponential_apply.taylor_series)
+      POP_SUB(exponential_elec_apply.taylor_series)
     end subroutine taylor_series
     ! ---------------------------------------------------------
 
@@ -432,7 +432,7 @@ contains
 
       integer :: np
 
-      PUSH_SUB(exponential_apply.cheby)
+      PUSH_SUB(exponential_elec_apply.cheby)
 
       np = der%mesh%np
 
@@ -465,7 +465,7 @@ contains
 
       if(present(order)) order = te%exp_order
 
-      POP_SUB(exponential_apply.cheby)
+      POP_SUB(exponential_elec_apply.cheby)
     end subroutine cheby
     ! ---------------------------------------------------------
 
@@ -477,7 +477,7 @@ contains
       FLOAT :: beta, res, tol !, nrm
       CMPLX :: pp
 
-      PUSH_SUB(exponential_apply.lanczos)
+      PUSH_SUB(exponential_elec_apply.lanczos)
 
       SAFE_ALLOCATE(     v(1:der%mesh%np, 1:hm%d%dim, 1:te%exp_order+1))
       SAFE_ALLOCATE(hamilt(1:te%exp_order+1, 1:te%exp_order+1))
@@ -489,7 +489,7 @@ contains
       if(.not. present(imag_time)) pp = -M_zI*pp
 
       beta = zmf_nrm2(der%mesh, hm%d%dim, zpsi)
-      ! If we have a null vector, no need to compute the action of the exponential.
+      ! If we have a null vector, no need to compute the action of the exponential_elec.
       if(beta > CNST(1.0e-12)) then
 
         hamilt = M_z0
@@ -535,7 +535,7 @@ contains
         end do
 
         if(res > tol) then ! Here one should consider the possibility of the happy breakdown.
-          write(message(1),'(a,es9.2)') 'Lanczos exponential expansion did not converge: ', res
+          write(message(1),'(a,es9.2)') 'Lanczos exponential_elec expansion did not converge: ', res
           call messages_warning(1)
         end if
 
@@ -590,7 +590,7 @@ contains
           end do
 
           if(res > tol) then ! Here one should consider the possibility of the happy breakdown.
-            write(message(1),'(a,es9.2)') 'Lanczos exponential expansion did not converge: ', res
+            write(message(1),'(a,es9.2)') 'Lanczos exponential_elec expansion did not converge: ', res
             call messages_warning(1)
           end if
 
@@ -609,14 +609,14 @@ contains
       SAFE_DEALLOCATE_A(expo)
       SAFE_DEALLOCATE_A(psi)
 
-      POP_SUB(exponential_apply.lanczos)
+      POP_SUB(exponential_elec_apply.lanczos)
     end subroutine lanczos
     ! ---------------------------------------------------------
 
-  end subroutine exponential_apply
+  end subroutine exponential_elec_apply
 
-  subroutine exponential_apply_batch(te, der, hm, psolver, psib, ik, deltat, Imdeltat, psib2, deltat2, Imdeltat2)
-    type(exponential_t),             intent(inout) :: te
+  subroutine exponential_elec_apply_batch(te, der, hm, psolver, psib, ik, deltat, Imdeltat, psib2, deltat2, Imdeltat2)
+    type(exponential_elec_t),        intent(inout) :: te
     type(derivatives_t),             intent(inout) :: der
     type(hamiltonian_elec_t),        intent(inout) :: hm
     type(poisson_t),                 intent(in)    :: psolver
@@ -632,7 +632,7 @@ contains
     CMPLX, pointer :: psi(:, :), psi2(:, :)
     logical :: phase_correction
 
-    PUSH_SUB(exponential_apply_batch)
+    PUSH_SUB(exponential_elec_apply_batch)
 
     ASSERT(batch_type(psib) == TYPE_CMPLX)
     ASSERT(present(psib2) .eqv. present(deltat2))
@@ -688,13 +688,13 @@ contains
 
         ! avoid copy for the unpacked case, simply set pointer
         ! -> this should be removed by having batched versions of
-        ! exponential_apply
+        ! exponential_elec_apply
         if (batch_status(psib) /= BATCH_NOT_PACKED) then
           call batch_get_state(psib, ii, der%mesh%np, psi)
         else
           psi => psib%states(ii)%zpsi
         end if
-        call exponential_apply(te, der, hm, psolver, psi, ist, ik, deltat, Imdeltat = Imdeltat)
+        call exponential_elec_apply(te, der, hm, psolver, psi, ist, ik, deltat, Imdeltat = Imdeltat)
         if (batch_status(psib) /= BATCH_NOT_PACKED) then
           call batch_set_state(psib, ii, der%mesh%np, psi)
         end if
@@ -706,7 +706,7 @@ contains
           else
             psi2 => psib2%states(ii)%zpsi
           end if
-          call exponential_apply(te, der, hm, psolver, psi2, ist, ik, deltat2, Imdeltat = Imdeltat2)
+          call exponential_elec_apply(te, der, hm, psolver, psi2, ist, ik, deltat2, Imdeltat = Imdeltat2)
           if (batch_status(psib2) /= BATCH_NOT_PACKED) then
             call batch_set_state(psib2, ii, der%mesh%np, psi2)
           end if
@@ -724,7 +724,7 @@ contains
 
    end if
     
-   POP_SUB(exponential_apply_batch)
+   POP_SUB(exponential_elec_apply_batch)
 
   contains
     
@@ -735,7 +735,7 @@ contains
       type(profile_t), save :: prof
       type(batch_t) :: psi1b, hpsi1b
 
-      PUSH_SUB(exponential_apply_batch.taylor_series_batch)
+      PUSH_SUB(exponential_elec_apply_batch.taylor_series_batch)
       call profiling_in(prof, "EXP_TAYLOR_BATCH")
 
       if(hamiltonian_elec_apply_packed(hm, der%mesh)) then
@@ -796,7 +796,7 @@ contains
       call profiling_count_operations(psib%nst*hm%d%dim*dble(der%mesh%np)*te%exp_order*CNST(6.0))
       
       call profiling_out(prof)
-      POP_SUB(exponential_apply_batch.taylor_series_batch)
+      POP_SUB(exponential_elec_apply_batch.taylor_series_batch)
 
     end subroutine taylor_series_batch
 
@@ -811,7 +811,7 @@ contains
       type(batch_t), allocatable :: vb(:)
       type(profile_t), save :: prof
 
-      PUSH_SUB(exponential_apply_batch.lanczos_batch)
+      PUSH_SUB(exponential_elec_apply_batch.lanczos_batch)
       call profiling_in(prof, "EXP_LANCZOS_BATCH")
 
       SAFE_ALLOCATE(beta(1:psib%nst))
@@ -822,7 +822,7 @@ contains
       ! If we have a null vector, no need to compute the action of the exponential.
       if(all(abs(beta) <= CNST(1.0e-12))) then
         call profiling_out(prof)
-        POP_SUB(exponential_apply_batch.lanczos_batch)
+        POP_SUB(exponential_elec_apply_batch.lanczos_batch)
         return
       end if
 
@@ -881,7 +881,7 @@ contains
       end do !iter 
 
       if(any(res > te%lanczos_tol)) then ! Here one should consider the possibility of the happy breakdown.
-        write(message(1),'(a,es9.2)') 'Lanczos exponential expansion did not converge: ', maxval(res)
+        write(message(1),'(a,es9.2)') 'Lanczos exponential_elec expansion did not converge: ', maxval(res)
         call messages_warning(1)
       end if
 
@@ -910,17 +910,17 @@ contains
 
       call profiling_out(prof)
 
-      POP_SUB(exponential_apply_batch.lanczos_batch)
+      POP_SUB(exponential_elec_apply_batch.lanczos_batch)
     end subroutine lanczos_batch
 
-  end subroutine exponential_apply_batch
+  end subroutine exponential_elec_apply_batch
 
   ! ---------------------------------------------------------
   !> Note that this routine not only computes the exponential, but
   !! also an extra term if there is a inhomogeneous term in the
   !! Hamiltonian hm.
-  subroutine exponential_apply_all(te, der, hm, psolver, xc, st, deltat, order)
-    type(exponential_t),      intent(inout) :: te
+  subroutine exponential_elec_apply_all(te, der, hm, psolver, xc, st, deltat, order)
+    type(exponential_elec_t), intent(inout) :: te
     type(derivatives_t),      intent(inout) :: der
     type(hamiltonian_elec_t), intent(inout) :: hm
     type(poisson_t),          intent(in)    :: psolver
@@ -934,7 +934,7 @@ contains
 
     type(states_elec_t) :: st1, hst1
 
-    PUSH_SUB(exponential_apply_all)
+    PUSH_SUB(exponential_elec_apply_all)
 
     ASSERT(te%exp_method  ==  EXP_TAYLOR)
 
@@ -1006,10 +1006,10 @@ contains
 
     if(present(order)) order = te%exp_order*st%d%nik*st%nst ! This should be the correct number
 
-    POP_SUB(exponential_apply_all)
-  end subroutine exponential_apply_all
+    POP_SUB(exponential_elec_apply_all)
+  end subroutine exponential_elec_apply_all
 
-end module exponential_oct_m
+end module exponential_elec_oct_m
 
 !! Local Variables:
 !! mode: f90

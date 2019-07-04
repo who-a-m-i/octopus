@@ -22,7 +22,7 @@ module propagator_etrs_oct_m
   use accel_oct_m
   use batch_oct_m
   use density_oct_m
-  use exponential_oct_m
+  use exponential_elec_oct_m
   use grid_oct_m
   use geometry_oct_m
   use global_oct_m
@@ -429,7 +429,7 @@ contains
         end select
         call profiling_out(phase_prof)
 
-        call exponential_apply_batch(tr%te, gr%der, hm, psolver, st%group%psib(ib, ik), ik, CNST(0.5)*dt)
+        call exponential_elec_apply_batch(tr%te, gr%der, hm, psolver, st%group%psib(ib, ik), ik, CNST(0.5)*dt)
         call density_calc_accumulate(dens_calc, ik, st%group%psib(ib, ik))
  
       end do

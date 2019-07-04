@@ -20,7 +20,7 @@
 
 module propagator_magnus_oct_m
   use density_oct_m
-  use exponential_oct_m
+  use exponential_elec_oct_m
   use gauge_field_oct_m
   use geometry_oct_m
   use global_oct_m
@@ -117,7 +117,7 @@ contains
     do ik = st%d%kpt%start, st%d%kpt%end
       do ist = st%st_start, st%st_end
         call states_elec_get_state(st, gr%mesh, ist, ik, psi)
-        call exponential_apply(tr%te, gr%der, hm, psolver, psi, ist, ik, dt, vmagnus = tr%vmagnus)
+        call exponential_elec_apply(tr%te, gr%der, hm, psolver, psi, ist, ik, dt, vmagnus = tr%vmagnus)
         call states_elec_set_state(st, gr%mesh, ist, ik, psi)
       end do
     end do

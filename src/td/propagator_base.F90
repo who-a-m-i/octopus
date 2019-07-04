@@ -19,7 +19,7 @@
 #include "global.h"
 
 module propagator_base_oct_m
-  use exponential_oct_m
+  use exponential_elec_oct_m
   use potential_interpolation_oct_m
   use sparskit_oct_m
   use propagation_ops_elec_oct_m
@@ -47,7 +47,7 @@ module propagator_base_oct_m
   type propagator_t
     ! Components are public by default
     integer             :: method           !< Which evolution method to use.
-    type(exponential_t) :: te               !< How to apply the propagator \f$ e^{-i H \Delta t} \f$.
+    type(exponential_elec_t) :: te          !< How to apply the propagator \f$ e^{-i H \Delta t} \f$.
     !> Storage of the KS potential of previous iterations.
     type(potential_interpolation_t) :: vksold
     !> Auxiliary function to store the Magnus potentials.

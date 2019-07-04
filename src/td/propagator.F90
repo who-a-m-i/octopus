@@ -20,7 +20,7 @@
 
 module propagator_oct_m
   use energy_calc_oct_m
-  use exponential_oct_m
+  use exponential_elec_oct_m
   use forces_oct_m
   use gauge_field_oct_m
   use grid_oct_m
@@ -123,7 +123,7 @@ contains
 
     call potential_interpolation_copy(tro%vksold, tri%vksold)
 
-    call exponential_copy(tro%te, tri%te)
+    call exponential_elec_copy(tro%te, tri%te)
     tro%scf_propagation_steps = tri%scf_propagation_steps
 
     tro%scf_threshold = tri%scf_threshold
@@ -347,7 +347,7 @@ contains
       call potential_interpolation_init(tr%vksold, gr%mesh%np, st%d%nspin, family_is_mgga)
     end select
 
-    call exponential_init(tr%te, namespace) ! initialize propagator
+    call exponential_elec_init(tr%te, namespace) ! initialize propagator
 
     call messages_obsolete_variable(namespace, 'TDSelfConsistentSteps', 'TDStepsWithSelfConsistency')
 
@@ -456,7 +456,7 @@ contains
       
     end select
     
-    call exponential_end(tr%te)       ! clean propagator method
+    call exponential_elec_end(tr%te)       ! clean propagator method
 
     call tr%propagation_ops_elec%end()
 

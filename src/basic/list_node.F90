@@ -64,24 +64,33 @@ contains
     class(list_node_t) :: this
     class(list_node_t), pointer :: next
 
+    PUSH_SUB(next)
+
     next => this%next_node
 
+    POP_SUB(next)
   end function next
 
   subroutine set_next(this, next_node)
     class(list_node_t) :: this
     class(list_node_t), pointer :: next_node
 
+    PUSH_SUB(set_next)
+
     this%next_node => next_node
 
+    POP_SUB(set_next)
   end subroutine set_next
 
   function get(this)
     class(list_node_t) :: this
     class(*), pointer :: get
 
+    PUSH_SUB(get)
+
     get => this%value
 
+    POP_SUB(get)
   end function get
 
 end module list_node_oct_m

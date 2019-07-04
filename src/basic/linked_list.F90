@@ -69,37 +69,52 @@ contains
     class(linked_list_t) :: this
     class(*), pointer    :: first
 
+    PUSH_SUB(first)
+
     first => this%first_node%get()
 
+    POP_SUB(first)
   end function first
 
   function current(this)
     class(linked_list_t) :: this
     class(*), pointer    :: current
 
+    PUSH_SUB(current)
+
     current => this%current_node%get()
 
+    POP_SUB(current)
   end function current
 
   subroutine next(this)
     class(linked_list_t) :: this
 
+    PUSH_SUB(next)
+
     this%current_node => this%current_node%next()
 
+    POP_SUB(next)
   end subroutine next
 
   logical function has_more_values(this)
     class(linked_list_t) :: this
 
+    PUSH_SUB(has_more_values)
+
     has_more_values = associated(this%current_node)
 
+    POP_SUB(has_more_values)
   end function has_more_values
 
   subroutine rewind(this)
     class(linked_list_t) :: this
 
+    PUSH_SUB(rewind)
+
     this%current_node => this%first_node
 
+    POP_SUB(rewind)
   end subroutine rewind
 
   subroutine finalizer(this)

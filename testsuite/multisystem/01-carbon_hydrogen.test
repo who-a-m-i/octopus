@@ -1,6 +1,6 @@
 # -*- coding: utf-8 mode: shell-script -*-
 
-Test       : Carbon
+Test       : Carbon and Hydrogen multisystem
 Program    : octopus
 TestGroups : long-run, multisystem
 Enabled    : Yes

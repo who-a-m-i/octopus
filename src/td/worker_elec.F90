@@ -21,7 +21,7 @@
 module worker_elec_oct_m
   use batch_oct_m
   use density_oct_m  
-  use exponential_oct_m
+  use exponential_elec_oct_m
   use geometry_oct_m
   use gauge_field_oct_m
   use global_oct_m
@@ -214,11 +214,10 @@ contains
   end subroutine worker_elec_restore_gauge_field
 
   ! ---------------------------------------------------------
-  subroutine worker_elec_exp_apply(te, st, gr, hm, dt)
-    type(exponential_t),      intent(inout) :: te 
+  subroutine worker_elec_exp_apply(te, st, gr, dt)
+    type(exponential_elec_t), intent(inout) :: te 
     type(states_elec_t),      intent(inout) :: st
     type(grid_t),             intent(inout) :: gr
-    type(hamiltonian_elec_t), intent(inout) :: hm
     FLOAT,                    intent(in)    :: dt
 
     integer :: ik, ib
@@ -230,7 +229,7 @@ contains
 
     do ik = st%d%kpt%start, st%d%kpt%end
       do ib = st%group%block_start, st%group%block_end
-        call exponential_apply_batch(te, gr%der, hm, st%group%psib(ib, ik), ik, dt)
+        call exponential_elec_apply_batch(te, gr%der, st%group%psib(ib, ik), ik, dt)
       end do
     end do
 
@@ -241,11 +240,10 @@ contains
   end subroutine worker_elec_exp_apply
 
   ! ---------------------------------------------------------
-  subroutine worker_elec_fuse_density_exp_apply(te, st, gr, hm, dt, dt2)
-    type(exponential_t),      intent(inout) :: te
+  subroutine worker_elec_fuse_density_exp_apply(te, st, gr,dt, dt2)
+    type(exponential_elec_t), intent(inout) :: te
     type(states_elec_t),      intent(inout) :: st
     type(grid_t),             intent(inout) :: gr
-    type(hamiltonian_elec_t), intent(inout) :: hm
     FLOAT,                    intent(in)    :: dt
     FLOAT,  optional,         intent(in)    :: dt2
 
@@ -268,7 +266,7 @@ contains
           if(batch_is_packed(st%group%psib(ib, ik))) call batch_pack(zpsib_dt, copy = .false.)
 
           !propagate the state dt/2 and dt, simultaneously, with H(time - dt)
-          call exponential_apply_batch(te, gr%der, hm, st%group%psib(ib, ik), ik, dt, &
+          call exponential_elec_apply_batch(te, gr%der, st%group%psib(ib, ik), ik, dt, &
             psib2 = zpsib_dt, deltat2 = M_TWO*dt)
 
           !use the dt propagation to calculate the density
@@ -284,7 +282,7 @@ contains
 
       do ik = st%d%kpt%start, st%d%kpt%end
         do ib = st%group%block_start, st%group%block_end
-          call exponential_apply_batch(te, gr%der, hm, st%group%psib(ib, ik), ik, dt)
+          call exponential_elec_apply_batch(te, gr%der, st%group%psib(ib, ik), ik, dt)
           call density_calc_accumulate(dens_calc, ik, st%group%psib(ib, ik))
         end do
       end do

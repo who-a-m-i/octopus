@@ -18,12 +18,13 @@
 
 #include "global.h"
 
-module exponential_oct_m
+module exponential_elec_oct_m
   use accel_oct_m
   use batch_oct_m
   use batch_ops_oct_m
   use blas_oct_m
   use derivatives_oct_m
+  use exponential_abst_oct_m
   use global_oct_m
   use hamiltonian_elec_oct_m
   use hamiltonian_elec_base_oct_m
@@ -44,36 +45,32 @@ module exponential_oct_m
 
   private
   public ::                      &
-    exponential_t,               &
-    exponential_init,            &
-    exponential_copy,            &
-    exponential_end,             &
-    exponential_apply_batch,     &
-    exponential_apply,           &
-    exponential_apply_all
+    exponential_elec_t,               &
+    exponential_elec_init,            &
+    exponential_elec_apply_batch,     &
+    exponential_elec_apply,           &
+    exponential_elec_apply_all
 
-  integer, public, parameter ::  &
-    EXP_LANCZOS            = 2,  &
-    EXP_TAYLOR             = 3,  &
-    EXP_CHEBYSHEV          = 4
-
-  type exponential_t
+  type, extends(exponential_abst_t) :: exponential_elec_t
     private
-    integer, public :: exp_method  !< which method is used to apply the exponential
-    FLOAT           :: lanczos_tol !< tolerance for the Lanczos method
-    integer, public :: exp_order   !< order to which the propagator is expanded
-    integer         :: arnoldi_gs  !< Orthogonalization scheme used for Arnoldi
     integer         :: tmp_nst, tmp_nst_linear
-  end type exponential_t
+
+    type(hamiltonian_elec_t), pointer :: hm
+  contains
+    procedure exponential_elec_end
+  end type exponential_elec_t
 
 contains
 
   ! ---------------------------------------------------------
-  subroutine exponential_init(te, parser)
-    type(exponential_t), intent(out) :: te
-    type(parser_t),      intent(in)  :: parser
+  subroutine exponential_elec_init(te, parser, hm)
+    class(exponential_elec_t),         intent(out) :: te
+    type(parser_t),                    intent(in)  :: parser
+    class(hamiltonian_elec_t), target, intent(in)  :: hm
     
-    PUSH_SUB(exponential_init)
+    PUSH_SUB(exponential_elec_init)
+
+    te%hm => hm
 
     !%Variable TDExponentialMethod
     !%Type integer
@@ -190,32 +187,19 @@ contains
     te%tmp_nst = -1
     te%tmp_nst_linear = -1
 
-    POP_SUB(exponential_init)
-  end subroutine exponential_init
+    POP_SUB(exponential_elec_init)
+  end subroutine exponential_elec_init
 
   ! ---------------------------------------------------------
-  subroutine exponential_end(te)
-    type(exponential_t), intent(inout) :: te
+  subroutine exponential_elec_end(te)
+    class(exponential_elec_t), intent(inout) :: te
 
-    PUSH_SUB(exponential_end)
+    PUSH_SUB(exponential_elec_end)
 
-    POP_SUB(exponential_end)
-  end subroutine exponential_end
+    call te%end()
 
-  ! ---------------------------------------------------------
-  subroutine exponential_copy(teo, tei)
-    type(exponential_t), intent(inout) :: teo
-    type(exponential_t), intent(in)    :: tei
-
-    PUSH_SUB(exponential_copy)
-
-    teo%exp_method  = tei%exp_method
-    teo%lanczos_tol = tei%lanczos_tol
-    teo%exp_order   = tei%exp_order
-    teo%arnoldi_gs  = tei%arnoldi_gs 
-
-    POP_SUB(exponential_copy)
-  end subroutine exponential_copy
+    POP_SUB(exponential_elec_end)
+  end subroutine exponential_elec_end
 
   ! ---------------------------------------------------------
   !> This routine performs the operation:
@@ -235,16 +219,15 @@ contains
   !! \phi(x) = (e^x - 1)/x
   !! \f]
   ! ---------------------------------------------------------
-  subroutine exponential_apply(te, der, hm, zpsi, ist, ik, deltat, order, vmagnus, imag_time, Imdeltat)
-    type(exponential_t), intent(inout) :: te
+  subroutine exponential_elec_apply(te, der, zpsi, ist, ik, deltat, order, vmagnus, imag_time, Imdeltat)
+    type(exponential_elec_t), intent(inout) :: te
     type(derivatives_t), intent(in)    :: der
-    type(hamiltonian_elec_t), intent(in)    :: hm
     integer,             intent(in)    :: ist
     integer,             intent(in)    :: ik
     CMPLX,               intent(inout) :: zpsi(:, :)
     FLOAT,               intent(in)    :: deltat
     integer, optional,   intent(inout) :: order
-    FLOAT,   optional,   intent(in)    :: vmagnus(der%mesh%np, hm%d%nspin, 2)
+    FLOAT,   optional,   intent(in)    :: vmagnus(:,:,:) !<(der%mesh%np, hm%d%nspin, 2)
     logical, optional,   intent(in)    :: imag_time
     FLOAT,   optional,   intent(in)    :: Imdeltat !< also needed for cmplxscl\%time
 
@@ -252,7 +235,7 @@ contains
     logical :: apply_magnus, phase_correction
     type(profile_t), save :: exp_prof
 
-    PUSH_SUB(exponential_apply)
+    PUSH_SUB(exponential_elec_apply)
     call profiling_in(exp_prof, "EXPONENTIAL")
 
     if (present(imag_time)) then
@@ -270,7 +253,7 @@ contains
     if(present(vmagnus)) apply_magnus = .true.
 
     phase_correction = .false.
-    if(associated(hm%hm_base%phase)) phase_correction = .true.
+    if(associated(te%hm%hm_base%phase)) phase_correction = .true.
     if(accel_is_enabled()) phase_correction = .false.
 
     ! If we want to use imaginary time, timestep = i*deltat
@@ -312,7 +295,7 @@ contains
    !We apply the phase only to np points, and the phase for the np+1 to np_part points
    !will be treated as a phase correction in the Hamiltonian
     if(phase_correction) then
-      call states_elec_set_phase(hm%d, zpsi, hm%hm_base%phase(1:der%mesh%np, ik), der%mesh%np, .false.)
+      call states_elec_set_phase(te%hm%d, zpsi, te%hm%hm_base%phase(1:der%mesh%np, ik), der%mesh%np, .false.)
     end if
 
     select case(te%exp_method)
@@ -325,12 +308,12 @@ contains
     end select
 
     if(phase_correction) then
-      call states_elec_set_phase(hm%d, zpsi, hm%hm_base%phase(1:der%mesh%np, ik), der%mesh%np, .true.)
+      call states_elec_set_phase(te%hm%d, zpsi, te%hm%hm_base%phase(1:der%mesh%np, ik), der%mesh%np, .true.)
     end if
 
 
     call profiling_out(exp_prof)
-    POP_SUB(exponential_apply)
+    POP_SUB(exponential_elec_apply)
 
   contains
 
@@ -339,15 +322,15 @@ contains
       CMPLX,   intent(inout) :: psi(:, :)
       CMPLX,   intent(inout) :: oppsi(:, :)
 
-      PUSH_SUB(exponential_apply.operate)
+      PUSH_SUB(exponential_elec_apply.operate)
 
       if(apply_magnus) then
-        call zmagnus(hm, der, psi, oppsi, ik, vmagnus, set_phase = .not.phase_correction)
+        call zmagnus(te%hm, der, psi, oppsi, ik, vmagnus, set_phase = .not.phase_correction)
         else
-        call zhamiltonian_elec_apply(hm, der, psi, oppsi, ist, ik, set_phase = .not.phase_correction)
+        call zhamiltonian_elec_apply(te%hm, der, psi, oppsi, ist, ik, set_phase = .not.phase_correction)
       end if
 
-      POP_SUB(exponential_apply.operate)
+      POP_SUB(exponential_elec_apply.operate)
     end subroutine operate
     ! ---------------------------------------------------------
 
@@ -358,15 +341,15 @@ contains
       integer :: i, idim
       logical :: zfact_is_real
 
-      PUSH_SUB(exponential_apply.taylor_series)
+      PUSH_SUB(exponential_elec_apply.taylor_series)
 
-      SAFE_ALLOCATE(zpsi1 (1:der%mesh%np_part, 1:hm%d%dim))
-      SAFE_ALLOCATE(hzpsi1(1:der%mesh%np,      1:hm%d%dim))
+      SAFE_ALLOCATE(zpsi1 (1:der%mesh%np_part, 1:te%hm%d%dim))
+      SAFE_ALLOCATE(hzpsi1(1:der%mesh%np,      1:te%hm%d%dim))
 
       zfact = M_z1
       zfact_is_real = .true.
 
-      do idim = 1, hm%d%dim
+      do idim = 1, te%hm%d%dim
         call lalg_copy(der%mesh%np, zpsi(:, idim), zpsi1(:, idim))
       end do
 
@@ -377,17 +360,17 @@ contains
         call operate(zpsi1, hzpsi1)
 
         if(zfact_is_real) then
-          do idim = 1, hm%d%dim
+          do idim = 1, te%hm%d%dim
             call lalg_axpy(der%mesh%np, real(zfact, REAL_PRECISION), hzpsi1(:, idim), zpsi(:, idim))
           end do
         else
-          do idim = 1, hm%d%dim
+          do idim = 1, te%hm%d%dim
             call lalg_axpy(der%mesh%np, zfact, hzpsi1(:, idim), zpsi(:, idim))
           end do
         end if
 
         if(i /= te%exp_order) then
-          do idim = 1, hm%d%dim
+          do idim = 1, te%hm%d%dim
             call lalg_copy(der%mesh%np, hzpsi1(:, idim), zpsi1(:, idim))
           end do
         end if
@@ -399,7 +382,7 @@ contains
 
       if(present(order)) order = te%exp_order
 
-      POP_SUB(exponential_apply.taylor_series)
+      POP_SUB(exponential_elec_apply.taylor_series)
     end subroutine taylor_series
     ! ---------------------------------------------------------
 
@@ -429,40 +412,40 @@ contains
 
       integer :: np
 
-      PUSH_SUB(exponential_apply.cheby)
+      PUSH_SUB(exponential_elec_apply.cheby)
 
       np = der%mesh%np
 
       !TODO: We can save memory here as we only need one array of size np_part and not 4
-      SAFE_ALLOCATE(zpsi1(1:der%mesh%np_part, 1:hm%d%dim, 0:2))
+      SAFE_ALLOCATE(zpsi1(1:der%mesh%np_part, 1:te%hm%d%dim, 0:2))
       zpsi1 = M_z0
       do j = te%exp_order - 1, 0, -1
-        do idim = 1, hm%d%dim
+        do idim = 1, te%hm%d%dim
           call lalg_copy(der%mesh%np, zpsi1(1:np, idim, 1), zpsi1(1:np, idim, 2))
           call lalg_copy(der%mesh%np, zpsi1(1:np, idim, 0), zpsi1(1:np, idim, 1))
         end do
 
         call operate(zpsi1(:, :, 1), zpsi1(:, :, 0))
-        zfact = 2*(-M_zI)**j*loct_bessel(j, hm%spectral_half_span*deltat)
+        zfact = 2*(-M_zI)**j*loct_bessel(j, te%hm%spectral_half_span*deltat)
 
-        do idim = 1, hm%d%dim
-          call lalg_axpy(np, -hm%spectral_middle_point, zpsi1(1:np, idim, 1), &
+        do idim = 1, te%hm%d%dim
+          call lalg_axpy(np, -te%hm%spectral_middle_point, zpsi1(1:np, idim, 1), &
             zpsi1(1:np, idim, 0))
-          call lalg_scal(np, M_TWO/hm%spectral_half_span, zpsi1(1:np, idim, 0))
+          call lalg_scal(np, M_TWO/te%hm%spectral_half_span, zpsi1(1:np, idim, 0))
           call lalg_axpy(np, zfact, zpsi(:, idim), zpsi1(1:np, idim, 0))
           call lalg_axpy(der%mesh%np, -M_ONE, zpsi1(1:np, idim, 2),  zpsi1(1:np, idim, 0))
         end do
       end do
 
-      zpsi(1:np, 1:hm%d%dim) = M_HALF*(zpsi1(1:np, 1:hm%d%dim, 0) - zpsi1(1:np, 1:hm%d%dim, 2))
-      do idim = 1, hm%d%dim
-        call lalg_scal(np, exp(-M_zI*hm%spectral_middle_point*deltat), zpsi(1:np, idim))
+      zpsi(1:np, 1:te%hm%d%dim) = M_HALF*(zpsi1(1:np, 1:te%hm%d%dim, 0) - zpsi1(1:np, 1:te%hm%d%dim, 2))
+      do idim = 1, te%hm%d%dim
+        call lalg_scal(np, exp(-M_zI*te%hm%spectral_middle_point*deltat), zpsi(1:np, idim))
       end do
       SAFE_DEALLOCATE_A(zpsi1)
 
       if(present(order)) order = te%exp_order
 
-      POP_SUB(exponential_apply.cheby)
+      POP_SUB(exponential_elec_apply.cheby)
     end subroutine cheby
     ! ---------------------------------------------------------
 
@@ -474,18 +457,18 @@ contains
       FLOAT :: beta, res, tol !, nrm
       CMPLX :: pp
 
-      PUSH_SUB(exponential_apply.lanczos)
+      PUSH_SUB(exponential_elec_apply.lanczos)
 
-      SAFE_ALLOCATE(     v(1:der%mesh%np, 1:hm%d%dim, 1:te%exp_order+1))
+      SAFE_ALLOCATE(     v(1:der%mesh%np, 1:te%hm%d%dim, 1:te%exp_order+1))
       SAFE_ALLOCATE(hamilt(1:te%exp_order+1, 1:te%exp_order+1))
       SAFE_ALLOCATE(  expo(1:te%exp_order+1, 1:te%exp_order+1))
-      SAFE_ALLOCATE(   psi(1:der%mesh%np_part, 1:hm%d%dim))
+      SAFE_ALLOCATE(   psi(1:der%mesh%np_part, 1:te%hm%d%dim))
 
       tol    = te%lanczos_tol
       pp = deltat
       if(.not. present(imag_time)) pp = -M_zI*pp
 
-      beta = zmf_nrm2(der%mesh, hm%d%dim, zpsi)
+      beta = zmf_nrm2(der%mesh, te%hm%d%dim, zpsi)
       ! If we have a null vector, no need to compute the action of the exponential.
       if(beta > CNST(1.0e-12)) then
 
@@ -493,38 +476,38 @@ contains
         expo = M_z0
 
         ! Normalize input vector, and put it into v(:, :, 1)
-        v(1:der%mesh%np, 1:hm%d%dim, 1) = zpsi(1:der%mesh%np, 1:hm%d%dim)/beta
+        v(1:der%mesh%np, 1:te%hm%d%dim, 1) = zpsi(1:der%mesh%np, 1:te%hm%d%dim)/beta
 
         ! This is the Lanczos loop...
         do iter = 1, te%exp_order
 
           !copy v(:, :, n) to an array of size 1:der%mesh%np_part
-          do idim = 1, hm%d%dim
+          do idim = 1, te%hm%d%dim
             call lalg_copy(der%mesh%np, v(:, idim, iter), zpsi(:, idim))
           end do
 
           !to apply the Hamiltonian
           call operate(zpsi, v(:, :,  iter + 1))
         
-          if(hm%is_hermitian()) then
+          if(te%hm%is_hermitian()) then
             l = max(1, iter - 1)
           else
             l = 1
           end if
 
           !orthogonalize against previous vectors
-          call zstates_elec_orthogonalization(der%mesh, iter - l + 1, hm%d%dim, v(:, :, l:iter), v(:, :, iter + 1), &
+          call zstates_elec_orthogonalization(der%mesh, iter - l + 1, te%hm%d%dim, v(:, :, l:iter), v(:, :, iter + 1), &
             normalize = .false., overlap = hamilt(l:iter, iter), norm = hamilt(iter + 1, iter), &
             gs_scheme = te%arnoldi_gs)
 
-          call zlalg_exp(iter, pp, hamilt, expo, hm%is_hermitian())
+          call zlalg_exp(iter, pp, hamilt, expo, te%hm%is_hermitian())
 
           res = abs(hamilt(iter + 1, iter)*abs(expo(iter, 1)))
 
           if(abs(hamilt(iter + 1, iter)) < CNST(1.0e4)*M_EPSILON) exit ! "Happy breakdown"
           !We normalize only if the norm is non-zero
           ! see http://www.netlib.org/utk/people/JackDongarra/etemplates/node216.html#alg:arn0
-          do idim = 1, hm%d%dim
+          do idim = 1, te%hm%d%dim
             call lalg_scal(der%mesh%np, M_ONE / hamilt(iter + 1, iter), v(:, idim, iter+1))
           end do
            
@@ -537,29 +520,30 @@ contains
         end if
 
         ! zpsi = nrm * V * expo(1:iter, 1) = nrm * V * expo * V^(T) * zpsi
-        do idim = 1, hm%d%dim
-          call blas_gemv('N', der%mesh%np, iter, M_z1*beta, v(1,idim,1), der%mesh%np*hm%d%dim, expo(1,1), 1, M_z0, zpsi(1,idim), 1)
+        do idim = 1, te%hm%d%dim
+          call blas_gemv('N', der%mesh%np, iter, M_z1*beta, v(1,idim,1), &
+                  der%mesh%np*te%hm%d%dim, expo(1,1), 1, M_z0, zpsi(1,idim), 1)
         end do
 
       end if
 
       ! We have an inhomogeneous term.
-      if( hamiltonian_elec_inh_term(hm) ) then
+      if( hamiltonian_elec_inh_term(te%hm) ) then
 
-        call states_elec_get_state(hm%inh_st, der%mesh, ist, ik, v(:, :, 1))
-        beta = zmf_nrm2(der%mesh, hm%d%dim, v(:, :, 1))
+        call states_elec_get_state(te%hm%inh_st, der%mesh, ist, ik, v(:, :, 1))
+        beta = zmf_nrm2(der%mesh, te%hm%d%dim, v(:, :, 1))
 
         if(beta > CNST(1.0e-12)) then
 
           hamilt = M_z0
           expo = M_z0
 
-          v(1:der%mesh%np, 1:hm%d%dim, 1) = v(1:der%mesh%np, 1:hm%d%dim, 1)/beta
+          v(1:der%mesh%np, 1:te%hm%d%dim, 1) = v(1:der%mesh%np, 1:te%hm%d%dim, 1)/beta
 
           ! This is the Lanczos loop...
           do iter = 1, te%exp_order
             !copy v(:, :, n) to an array of size 1:der%mesh%np_part
-            do idim = 1, hm%d%dim
+            do idim = 1, te%hm%d%dim
               call lalg_copy(der%mesh%np, v(:, idim, iter), psi(:, idim))
             end do
 
@@ -567,18 +551,18 @@ contains
             call operate(psi, v(:, :, iter + 1))
   
 
-            if(hm%is_hermitian()) then
+            if(te%hm%is_hermitian()) then
               l = max(1, iter - 1)
             else
               l = 1
             end if
 
             !orthogonalize against previous vectors
-            call zstates_elec_orthogonalization(der%mesh, iter - l + 1, hm%d%dim, v(:, :, l:iter), &
+            call zstates_elec_orthogonalization(der%mesh, iter - l + 1, te%hm%d%dim, v(:, :, l:iter), &
               v(:, :, iter + 1), normalize = .true., overlap = hamilt(l:iter, iter), &
               norm = hamilt(iter + 1, iter), gs_scheme = te%arnoldi_gs)
 
-            call zlalg_phi(iter, pp, hamilt, expo, hm%is_hermitian())
+            call zlalg_phi(iter, pp, hamilt, expo, te%hm%is_hermitian())
  
             res = abs(hamilt(iter + 1, iter)*abs(expo(iter, 1)))
 
@@ -591,9 +575,9 @@ contains
             call messages_warning(1)
           end if
 
-          do idim = 1, hm%d%dim
+          do idim = 1, te%hm%d%dim
             call blas_gemv('N', der%mesh%np, iter, deltat*M_z1*beta, v(1,idim,1), &
-                           der%mesh%np*hm%d%dim, expo(1,1), 1, M_z1, zpsi(1,idim), 1)
+                           der%mesh%np*te%hm%d%dim, expo(1,1), 1, M_z1, zpsi(1,idim), 1)
           end do
 
         end if
@@ -606,16 +590,15 @@ contains
       SAFE_DEALLOCATE_A(expo)
       SAFE_DEALLOCATE_A(psi)
 
-      POP_SUB(exponential_apply.lanczos)
+      POP_SUB(exponential_elec_apply.lanczos)
     end subroutine lanczos
     ! ---------------------------------------------------------
 
-  end subroutine exponential_apply
+  end subroutine exponential_elec_apply
 
-  subroutine exponential_apply_batch(te, der, hm, psib, ik, deltat, Imdeltat, psib2, deltat2, Imdeltat2)
-    type(exponential_t),             intent(inout) :: te
+  subroutine exponential_elec_apply_batch(te, der, psib, ik, deltat, Imdeltat, psib2, deltat2, Imdeltat2)
+    type(exponential_elec_t),             intent(inout) :: te
     type(derivatives_t),             intent(inout) :: der
-    type(hamiltonian_elec_t),             intent(inout) :: hm
     integer,                         intent(in)    :: ik
     type(batch_t), target,           intent(inout) :: psib
     FLOAT,                           intent(in)    :: deltat
@@ -628,7 +611,7 @@ contains
     CMPLX, pointer :: psi(:, :), psi2(:, :)
     logical :: phase_correction
 
-    PUSH_SUB(exponential_apply_batch)
+    PUSH_SUB(exponential_elec_apply_batch)
 
     ASSERT(batch_type(psib) == TYPE_CMPLX)
     ASSERT(present(psib2) .eqv. present(deltat2))
@@ -640,16 +623,16 @@ contains
 
     ! check if we only want a phase correction for the boundary points
     phase_correction = .false.
-    if(associated(hm%hm_base%phase)) phase_correction = .true.
+    if(associated(te%hm%hm_base%phase)) phase_correction = .true.
     if(accel_is_enabled()) phase_correction = .false.
 
     if (te%exp_method == EXP_TAYLOR .or. &
-          (te%exp_method == EXP_LANCZOS.and..not. hamiltonian_elec_inh_term(hm)&
+          (te%exp_method == EXP_LANCZOS.and..not. hamiltonian_elec_inh_term(te%hm)&
            .and..not. present(psib2))) then 
      !We apply the phase only to np points, and the phase for the np+1 to np_part points
      !will be treated as a phase correction in the Hamiltonian
       if(phase_correction) then
-        call zhamiltonian_elec_base_phase(hm%hm_base, der, der%mesh%np, ik, .false., psib)
+        call zhamiltonian_elec_base_phase(te%hm%hm_base, der, der%mesh%np, ik, .false., psib)
       end if
 
       select case(te%exp_method)
@@ -660,9 +643,9 @@ contains
       end select
 
       if(phase_correction) then
-        call zhamiltonian_elec_base_phase(hm%hm_base, der, der%mesh%np, ik, .true., psib)
+        call zhamiltonian_elec_base_phase(te%hm%hm_base, der, der%mesh%np, ik, .true., psib)
         if(present(psib2)) then
-          call zhamiltonian_elec_base_phase(hm%hm_base, der, der%mesh%np, ik, .true., psib2)
+          call zhamiltonian_elec_base_phase(te%hm%hm_base, der, der%mesh%np, ik, .true., psib2)
         end if
       end if
     else
@@ -671,11 +654,11 @@ contains
 
       ! only allocate for packed cases
       if (batch_status(psib) /= BATCH_NOT_PACKED) then
-        SAFE_ALLOCATE(psi(1:der%mesh%np_part, 1:hm%d%dim))
+        SAFE_ALLOCATE(psi(1:der%mesh%np_part, 1:te%hm%d%dim))
       end if
       if(present(psib2)) then
         if (batch_status(psib2) /= BATCH_NOT_PACKED) then
-          SAFE_ALLOCATE(psi2(1:der%mesh%np_part, 1:hm%d%dim))
+          SAFE_ALLOCATE(psi2(1:der%mesh%np_part, 1:te%hm%d%dim))
         end if
       end if
 
@@ -684,13 +667,13 @@ contains
 
         ! avoid copy for the unpacked case, simply set pointer
         ! -> this should be removed by having batched versions of
-        ! exponential_apply
+        ! exponential_elec_apply
         if (batch_status(psib) /= BATCH_NOT_PACKED) then
           call batch_get_state(psib, ii, der%mesh%np, psi)
         else
           psi => psib%states(ii)%zpsi
         end if
-        call exponential_apply(te, der, hm, psi, ist, ik, deltat, Imdeltat = Imdeltat)
+        call exponential_elec_apply(te, der, psi, ist, ik, deltat, Imdeltat = Imdeltat)
         if (batch_status(psib) /= BATCH_NOT_PACKED) then
           call batch_set_state(psib, ii, der%mesh%np, psi)
         end if
@@ -702,7 +685,7 @@ contains
           else
             psi2 => psib2%states(ii)%zpsi
           end if
-          call exponential_apply(te, der, hm, psi2, ist, ik, deltat2, Imdeltat = Imdeltat2)
+          call exponential_elec_apply(te, der, psi2, ist, ik, deltat2, Imdeltat = Imdeltat2)
           if (batch_status(psib2) /= BATCH_NOT_PACKED) then
             call batch_set_state(psib2, ii, der%mesh%np, psi2)
           end if
@@ -720,7 +703,7 @@ contains
 
    end if
     
-   POP_SUB(exponential_apply_batch)
+   POP_SUB(exponential_elec_apply_batch)
 
   contains
     
@@ -731,10 +714,10 @@ contains
       type(profile_t), save :: prof
       type(batch_t) :: psi1b, hpsi1b
 
-      PUSH_SUB(exponential_apply_batch.taylor_series_batch)
+      PUSH_SUB(exponential_elec_apply_batch.taylor_series_batch)
       call profiling_in(prof, "EXP_TAYLOR_BATCH")
 
-      if(hamiltonian_elec_apply_packed(hm, der%mesh)) then
+      if(hamiltonian_elec_apply_packed(te%hm, der%mesh)) then
         call batch_pack(psib)
         if(present(psib2)) call batch_pack(psib2, copy = .false.)
       end if
@@ -764,9 +747,9 @@ contains
         !  the code stops in ZAXPY below without saying why.
 
         if(iter /= 1) then
-          call zhamiltonian_elec_apply_batch(hm, der, psi1b, hpsi1b, ik, set_phase = .not.phase_correction)
+          call zhamiltonian_elec_apply_batch(te%hm, der, psi1b, hpsi1b, ik, set_phase = .not.phase_correction)
         else
-          call zhamiltonian_elec_apply_batch(hm, der, psib, hpsi1b, ik, set_phase = .not.phase_correction)
+          call zhamiltonian_elec_apply_batch(te%hm, der, psib, hpsi1b, ik, set_phase = .not.phase_correction)
         end if
         
         if(zfact_is_real) then
@@ -784,15 +767,15 @@ contains
       call batch_end(psi1b)
       call batch_end(hpsi1b)
       
-      if(hamiltonian_elec_apply_packed(hm, der%mesh)) then
+      if(hamiltonian_elec_apply_packed(te%hm, der%mesh)) then
         if(present(psib2)) call batch_unpack(psib2)
         call batch_unpack(psib)
       end if
 
-      call profiling_count_operations(psib%nst*hm%d%dim*dble(der%mesh%np)*te%exp_order*CNST(6.0))
+      call profiling_count_operations(psib%nst*te%hm%d%dim*dble(der%mesh%np)*te%exp_order*CNST(6.0))
       
       call profiling_out(prof)
-      POP_SUB(exponential_apply_batch.taylor_series_batch)
+      POP_SUB(exponential_elec_apply_batch.taylor_series_batch)
 
     end subroutine taylor_series_batch
 
@@ -807,7 +790,7 @@ contains
       type(batch_t), allocatable :: vb(:)
       type(profile_t), save :: prof
 
-      PUSH_SUB(exponential_apply_batch.lanczos_batch)
+      PUSH_SUB(exponential_elec_apply_batch.lanczos_batch)
       call profiling_in(prof, "EXP_LANCZOS_BATCH")
 
       SAFE_ALLOCATE(beta(1:psib%nst))
@@ -818,11 +801,11 @@ contains
       ! If we have a null vector, no need to compute the action of the exponential.
       if(all(abs(beta) <= CNST(1.0e-12))) then
         call profiling_out(prof)
-        POP_SUB(exponential_apply_batch.lanczos_batch)
+        POP_SUB(exponential_elec_apply_batch.lanczos_batch)
         return
       end if
 
-      if(hamiltonian_elec_apply_packed(hm, der%mesh)) then
+      if(hamiltonian_elec_apply_packed(te%hm, der%mesh)) then
         call batch_pack(psib)
       end if
 
@@ -842,9 +825,9 @@ contains
       do iter = 1, te%exp_order
 
         !to apply the Hamiltonian
-        call zhamiltonian_elec_apply_batch(hm, der, vb(iter), vb(iter+1), ik, set_phase = .not.phase_correction)
+        call zhamiltonian_elec_apply_batch(te%hm, der, vb(iter), vb(iter+1), ik, set_phase = .not.phase_correction)
 
-        if(hm%is_hermitian()) then
+        if(te%hm%is_hermitian()) then
           l = max(1, iter - 1)
         else
           l = 1
@@ -856,7 +839,7 @@ contains
             gs_scheme = te%arnoldi_gs)
 
         do ii = 1, psib%nst
-          call zlalg_exp(iter, -M_zI*deltat, hamilt(:,:,ii), expo(:,:,ii), hm%is_hermitian())
+          call zlalg_exp(iter, -M_zI*deltat, hamilt(:,:,ii), expo(:,:,ii), te%hm%is_hermitian())
 
           res(ii) = abs(hamilt(iter + 1, iter, ii)*abs(expo(iter, 1, ii)))
         end do !ii
@@ -900,36 +883,35 @@ contains
       SAFE_DEALLOCATE_A(res)
       SAFE_DEALLOCATE_A(norm)
 
-      if(hamiltonian_elec_apply_packed(hm, der%mesh)) then
+      if(hamiltonian_elec_apply_packed(te%hm, der%mesh)) then
         call batch_unpack(psib)
       end if
 
       call profiling_out(prof)
 
-      POP_SUB(exponential_apply_batch.lanczos_batch)
+      POP_SUB(exponential_elec_apply_batch.lanczos_batch)
     end subroutine lanczos_batch
 
-  end subroutine exponential_apply_batch
+  end subroutine exponential_elec_apply_batch
 
   ! ---------------------------------------------------------
   !> Note that this routine not only computes the exponential, but
   !! also an extra term if there is a inhomogeneous term in the
   !! Hamiltonian hm.
-  subroutine exponential_apply_all(te, der, hm, xc, st, deltat, order)
-    type(exponential_t), intent(inout) :: te
-    type(derivatives_t), intent(inout) :: der
-    type(hamiltonian_elec_t), intent(inout) :: hm
-    type(xc_t),          intent(in)    :: xc
-    type(states_elec_t), intent(inout) :: st
-    FLOAT,               intent(in)    :: deltat
-    integer, optional,   intent(inout) :: order
+  subroutine exponential_elec_apply_all(te, der, xc, st, deltat, order)
+    type(exponential_elec_t), intent(inout) :: te
+    type(derivatives_t),      intent(inout) :: der
+    type(xc_t),               intent(in)    :: xc
+    type(states_elec_t),      intent(inout) :: st
+    FLOAT,                    intent(in)    :: deltat
+    integer, optional,        intent(inout) :: order
 
     integer :: ik, ib, i
     FLOAT :: zfact
 
     type(states_elec_t) :: st1, hst1
 
-    PUSH_SUB(exponential_apply_all)
+    PUSH_SUB(exponential_elec_apply_all)
 
     ASSERT(te%exp_method  ==  EXP_TAYLOR)
 
@@ -941,9 +923,9 @@ contains
       zfact = zfact * deltat / i
       
       if (i == 1) then
-        call zhamiltonian_elec_apply_all(hm, xc, der, st, hst1)
+        call zhamiltonian_elec_apply_all(te%hm, xc, der, st, hst1)
       else
-        call zhamiltonian_elec_apply_all(hm, xc, der, st1, hst1)
+        call zhamiltonian_elec_apply_all(te%hm, xc, der, st1, hst1)
       end if
 
       do ik = st%d%kpt%start, st%d%kpt%end
@@ -961,11 +943,11 @@ contains
     call states_elec_end(hst1)
 
     ! We now add the inhomogeneous part, if present.
-    if(hamiltonian_elec_inh_term(hm)) then
+    if(hamiltonian_elec_inh_term(te%hm)) then
       !write(*, *) 'Now we apply the inhomogeneous term...'
 
-      call states_elec_copy(st1, hm%inh_st)
-      call states_elec_copy(hst1, hm%inh_st)
+      call states_elec_copy(st1, te%hm%inh_st)
+      call states_elec_copy(hst1, te%hm%inh_st)
 
 
       do ik = st%d%kpt%start, st%d%kpt%end
@@ -979,9 +961,9 @@ contains
         zfact = zfact * deltat / (i+1)
       
         if (i == 1) then
-          call zhamiltonian_elec_apply_all(hm, xc, der, hm%inh_st, hst1)
+          call zhamiltonian_elec_apply_all(te%hm, xc, der, te%hm%inh_st, hst1)
         else
-          call zhamiltonian_elec_apply_all(hm, xc, der, st1, hst1)
+          call zhamiltonian_elec_apply_all(te%hm, xc, der, st1, hst1)
         end if
 
         do ik = st%d%kpt%start, st%d%kpt%end
@@ -1001,10 +983,10 @@ contains
 
     if(present(order)) order = te%exp_order*st%d%nik*st%nst ! This should be the correct number
 
-    POP_SUB(exponential_apply_all)
-  end subroutine exponential_apply_all
+    POP_SUB(exponential_elec_apply_all)
+  end subroutine exponential_elec_apply_all
 
-end module exponential_oct_m
+end module exponential_elec_oct_m
 
 !! Local Variables:
 !! mode: f90

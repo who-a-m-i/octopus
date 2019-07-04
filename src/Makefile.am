@@ -468,7 +468,8 @@ system_f_srcs =                                 \
 	system/eigensolver.F90                  \
 	system/elf.F90                          \
 	system/energy_calc.F90                  \
-	system/exponential.F90                  \
+	system/exponential_abst.F90             \
+	system/exponential_elec.F90             \
 	system/forces.F90                       \
 	system/linear_solver.F90                \
 	system/magnetic.F90                     \

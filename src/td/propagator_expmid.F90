@@ -77,7 +77,7 @@ contains
 
     call worker_elec_update_hamiltonian(st, gr, hm, time - dt*M_HALF)
 
-    call worker_elec_fuse_density_exp_apply(tr%te, st, gr, hm, dt)
+    call worker_elec_fuse_density_exp_apply(tr%te, st, gr, dt)
 
     !restore to time 'time - dt'
     call worker_elec_restore_ions(tr%worker_elec, ions, geo, move_ions = move_ions)

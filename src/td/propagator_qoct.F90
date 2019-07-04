@@ -20,7 +20,7 @@
 
 module propagator_qoct_oct_m
   use density_oct_m
-  use exponential_oct_m
+  use exponential_elec_oct_m
   use gauge_field_oct_m
   use grid_oct_m
   use geometry_oct_m
@@ -81,7 +81,7 @@ contains
 
     call worker_elec_update_hamiltonian(st, gr, hm, time-M_HALF*dt)
 
-    call exponential_apply_all(tr%te, gr%der, hm, xc, st, dt)
+    call exponential_elec_apply_all(tr%te, gr%der, xc, st, dt)
 
     call density_calc(st, gr, st%rho)
 

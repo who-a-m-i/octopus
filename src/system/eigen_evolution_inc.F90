@@ -21,7 +21,7 @@ subroutine X(eigensolver_evolution)(gr, st, hm, te, tol, niter, converged, ik, d
   type(grid_t),        target, intent(in)    :: gr
   type(states_elec_t),         intent(inout) :: st
   type(hamiltonian_elec_t), target, intent(in)    :: hm
-  type(exponential_t),         intent(inout) :: te
+  type(exponential_elec_t),         intent(inout) :: te
   FLOAT,                       intent(in)    :: tol
   integer,                     intent(inout) :: niter
   integer,                     intent(inout) :: converged
@@ -118,7 +118,7 @@ contains
 #else
     zpsi => psi
 #endif
-    call exponential_apply(te, gr%der, hm, zpsi, ist, ik, -tau, order = order, imag_time = .true.)
+    call exponential_elec_apply(te, gr%der, zpsi, ist, ik, -tau, order = order, imag_time = .true.)
 #if defined(R_TREAL)
     psi(1:gr%mesh%np, 1:st%d%dim) = R_TOTYPE(zpsi(1:gr%mesh%np, 1:st%d%dim))
     SAFE_DEALLOCATE_P(zpsi)

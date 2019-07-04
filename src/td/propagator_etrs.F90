@@ -22,7 +22,7 @@ module propagator_etrs_oct_m
   use accel_oct_m
   use batch_oct_m
   use density_oct_m
-  use exponential_oct_m
+  use exponential_elec_oct_m
   use grid_oct_m
   use geometry_oct_m
   use global_oct_m
@@ -85,7 +85,7 @@ contains
       SAFE_ALLOCATE(vhxc_t2(1:gr%mesh%np, 1:st%d%nspin))
       call lalg_copy(gr%mesh%np, st%d%nspin, hm%vhxc, vhxc_t1)
 
-      call worker_elec_fuse_density_exp_apply(tr%te, st, gr, hm, CNST(0.5)*dt, dt)
+      call worker_elec_fuse_density_exp_apply(tr%te, st, gr, CNST(0.5)*dt, dt)
 
       call v_ks_calc(ks, parser, hm, st, geo, calc_current = .false.)
 
@@ -95,7 +95,7 @@ contains
 
     else
 
-      call worker_elec_exp_apply(tr%te, st, gr, hm, CNST(0.5)*dt)
+      call worker_elec_exp_apply(tr%te, st, gr, CNST(0.5)*dt)
 
     end if
 
@@ -114,7 +114,7 @@ contains
     call worker_elec_update_hamiltonian(st, gr, hm, time)
     
     ! propagate dt/2 with H(time - dt)
-    call worker_elec_fuse_density_exp_apply(tr%te, st, gr, hm, M_HALF*dt)
+    call worker_elec_fuse_density_exp_apply(tr%te, st, gr, M_HALF*dt)
 
     if(hm%theory_level /= INDEPENDENT_PARTICLES) then
       SAFE_DEALLOCATE_A(vhxc_t1)
@@ -162,7 +162,7 @@ contains
     call messages_info()
 
     !Propagate the states to t+dt/2 and compute the density at t+dt
-    call worker_elec_fuse_density_exp_apply(tr%te, st, gr, hm, M_HALF*dt, dt)
+    call worker_elec_fuse_density_exp_apply(tr%te, st, gr, M_HALF*dt, dt)
 
     call v_ks_calc(ks, parser, hm, st, geo, calc_current = .false.)
 
@@ -200,7 +200,7 @@ contains
 
       call lalg_copy(gr%mesh%np, st%d%nspin, hm%vhxc, vhxc_t2)
 
-      call worker_elec_fuse_density_exp_apply(tr%te, st, gr, hm, M_HALF*dt)
+      call worker_elec_fuse_density_exp_apply(tr%te, st, gr, M_HALF*dt)
 
       call v_ks_calc(ks, parser, hm, st, geo, time = time, calc_current = .false.)
       call lda_u_update_occ_matrices(hm%lda_u, gr%mesh, st, hm%hm_base, hm%energy )
@@ -271,7 +271,7 @@ contains
     PUSH_SUB(td_aetrs)
 
     ! propagate half of the time step with H(time - dt)
-    call worker_elec_exp_apply(tr%te, st, gr, hm, M_HALF*dt)
+    call worker_elec_exp_apply(tr%te, st, gr, M_HALF*dt)
 
     !Get the potentials from the interpolator
     call worker_elec_interpolate_get(gr, hm, tr%vksold)
@@ -287,7 +287,7 @@ contains
     call worker_elec_update_hamiltonian(st, gr, hm, time)
 
     !Do the time propagation for the second half of the time step
-    call worker_elec_fuse_density_exp_apply(tr%te, st, gr, hm, M_HALF*dt)
+    call worker_elec_fuse_density_exp_apply(tr%te, st, gr, M_HALF*dt)
 
     POP_SUB(td_aetrs)
   end subroutine td_aetrs
@@ -335,7 +335,7 @@ contains
            calc_current = .false.)
 
     ! propagate half of the time step with H(time - dt)
-    call worker_elec_exp_apply(tr%te, st, gr, hm, M_HALF*dt)
+    call worker_elec_exp_apply(tr%te, st, gr, M_HALF*dt)
 
     call v_ks_calc_finish(ks, hm)
 
@@ -422,7 +422,7 @@ contains
         end select
         call profiling_out(phase_prof)
 
-        call exponential_apply_batch(tr%te, gr%der, hm, st%group%psib(ib, ik), ik, CNST(0.5)*dt)
+        call exponential_elec_apply_batch(tr%te, gr%der, st%group%psib(ib, ik), ik, CNST(0.5)*dt)
         call density_calc_accumulate(dens_calc, ik, st%group%psib(ib, ik))
  
       end do

@@ -20,7 +20,7 @@
 
 module propagator_oct_m
   use energy_calc_oct_m
-  use exponential_oct_m
+  use exponential_elec_oct_m
   use forces_oct_m
   use gauge_field_oct_m
   use grid_oct_m
@@ -121,7 +121,7 @@ contains
 
     call potential_interpolation_copy(tro%vksold, tri%vksold)
 
-    call exponential_copy(tro%te, tri%te)
+    call tri%te%copy_to(tro%te)
     tro%scf_propagation_steps = tri%scf_propagation_steps
 
     tro%scf_threshold = tri%scf_threshold
@@ -131,11 +131,12 @@ contains
 
 
   ! ---------------------------------------------------------
-  subroutine propagator_init(gr, parser, st, tr, have_fields, family_is_mgga)
+  subroutine propagator_init(gr, parser, st, tr, hm, have_fields, family_is_mgga)
     type(grid_t),        intent(in)    :: gr
     type(parser_t),      intent(in)    :: parser
     type(states_elec_t), intent(in)    :: st
     type(propagator_t),  intent(inout) :: tr
+    class(hamiltonian_elec_t), intent(in) :: hm
     !> whether there is an associated "field"
     !! that must be propagated (currently ions
     !! or a gauge field).
@@ -345,7 +346,7 @@ contains
       call potential_interpolation_init(tr%vksold, gr%mesh%np, st%d%nspin, family_is_mgga)
     end select
 
-    call exponential_init(tr%te, parser) ! initialize propagator
+    call exponential_elec_init(tr%te, parser, hm) ! initialize propagator
 
     call messages_obsolete_variable(parser, 'TDSelfConsistentSteps', 'TDStepsWithSelfConsistency')
 
@@ -454,7 +455,7 @@ contains
       
     end select
     
-    call exponential_end(tr%te)       ! clean propagator method
+    call exponential_elec_end(tr%te)       ! clean propagator method
 
     call tr%worker_elec%end()
 

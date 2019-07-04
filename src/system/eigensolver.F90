@@ -24,7 +24,7 @@ module eigensolver_oct_m
   use eigen_cg_oct_m
   use eigen_lobpcg_oct_m
   use eigen_rmmdiis_oct_m
-  use exponential_oct_m
+  use exponential_elec_oct_m
   use global_oct_m
   use grid_oct_m
   use hamiltonian_elec_oct_m
@@ -91,7 +91,7 @@ module eigensolver_oct_m
     logical, public :: additional_terms
     FLOAT,   public :: energy_change_threshold
 
-    type(exponential_t) :: exponential_operator
+    type(exponential_elec_t) :: exponential_operator
   end type eigensolver_t
 
 
@@ -109,13 +109,14 @@ module eigensolver_oct_m
 contains
 
   ! ---------------------------------------------------------
-  subroutine eigensolver_init(eigens, parser, gr, st, xc, disable_preconditioner)
-    type(eigensolver_t), intent(out)   :: eigens
-    type(parser_t),      intent(in)    :: parser
-    type(grid_t),        intent(in)    :: gr
-    type(states_elec_t), intent(in)    :: st
-    type(xc_t), target,  intent(in)    :: xc
-    logical, optional,   intent(in)    :: disable_preconditioner
+  subroutine eigensolver_init(eigens, parser, gr, st, xc, hm, disable_preconditioner)
+    type(eigensolver_t),    intent(out)   :: eigens
+    type(parser_t),         intent(in)    :: parser
+    type(grid_t),           intent(in)    :: gr
+    type(states_elec_t),    intent(in)    :: st
+    type(xc_t), target,     intent(in)    :: xc
+    class(hamiltonian_elec_t), intent(in) :: hm
+    logical, optional,      intent(in)    :: disable_preconditioner
 
     integer :: default_iter, default_es
     FLOAT   :: default_tol
@@ -269,7 +270,7 @@ contains
       call parse_variable(parser, 'EigensolverImaginaryTime', CNST(10.0), eigens%imag_time)
       if(eigens%imag_time <= M_ZERO) call messages_input_error('EigensolverImaginaryTime')
       
-      call exponential_init(eigens%exponential_operator, parser)
+      call exponential_init(eigens%exponential_operator, parser, hm)
       
     case(RS_LOBPCG)
     case(RS_RMMDIIS)

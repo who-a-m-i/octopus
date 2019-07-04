@@ -270,7 +270,7 @@ contains
       call parse_variable(parser, 'EigensolverImaginaryTime', CNST(10.0), eigens%imag_time)
       if(eigens%imag_time <= M_ZERO) call messages_input_error('EigensolverImaginaryTime')
       
-      call exponential_init(eigens%exponential_operator, parser, hm)
+      call exponential_elec_init(eigens%exponential_operator, parser, hm)
       
     case(RS_LOBPCG)
     case(RS_RMMDIIS)
@@ -414,7 +414,7 @@ contains
     case(RS_PLAN, RS_CG, RS_LOBPCG, RS_RMMDIIS, RS_PSD)
       call preconditioner_end(eigens%pre)
     case(RS_EVO)
-      call exponential_end(eigens%exponential_operator)
+      call exponential_elec_end(eigens%exponential_operator)
     end select
 
     SAFE_DEALLOCATE_P(eigens%converged)

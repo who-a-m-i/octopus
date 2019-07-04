@@ -47,6 +47,7 @@ module exponential_elec_oct_m
   public ::                      &
     exponential_elec_t,               &
     exponential_elec_init,            &
+    exponential_elec_end,             &
     exponential_elec_apply_batch,     &
     exponential_elec_apply,           &
     exponential_elec_apply_all

@@ -23,7 +23,8 @@
 module opt_control_oct_m
   use boundary_op_oct_m
   use controlfunction_oct_m
-  use exponential_oct_m
+  use exponential_abst_oct_m
+  use exponential_elec_oct_m
   use filter_oct_m
   use geometry_oct_m
   use global_oct_m

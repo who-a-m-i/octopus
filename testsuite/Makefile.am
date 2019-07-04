@@ -20,6 +20,7 @@
 
 SUBDIRS = \
 	components       \
+	error_tests       \
 	finite_systems_1d \
 	finite_systems_2d \
 	finite_systems_3d \

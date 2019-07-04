@@ -79,7 +79,10 @@ contains
       end do
 
     else
-      call systems%add(system_init(parser))
+      allocate(sys)
+      sys = system_init(parser)
+      call systems%add(sys)
+      nullify(sys)
     end if
     
     POP_SUB(multisystem_init)

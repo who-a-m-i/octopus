@@ -41,6 +41,7 @@ module linked_list_oct_m
     procedure :: rewind
     procedure :: has_more_values
     generic   :: add => add_node
+    procedure :: finalizer
   end type linked_list_t
 
 contains
@@ -100,5 +101,24 @@ contains
     this%current_node => this%first_node
 
   end subroutine rewind
+
+  subroutine finalizer(this)
+    class(linked_list_t), intent(inout) :: this
+
+    class(list_node_t), pointer :: next
+
+    PUSH_SUB(finalizer)
+
+    call this%rewind()
+    do while (associated(this%current_node))
+      next => this%current_node%next()
+      ! No safe_deallocate macro here, as the call to sizeof() causes an
+      ! internal compiler error with GCC 6.4.0
+      deallocate(this%current_node)
+      this%current_node => next
+    end do
+
+    POP_SUB(finalizer)
+  end subroutine finalizer
 
 end module linked_list_oct_m

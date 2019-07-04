@@ -95,6 +95,7 @@ contains
       end select
       call systems%next()
     end do
+    call systems%finalizer()
 
     POP_SUB(multisystem_end)
   end subroutine multisystem_end

@@ -51,7 +51,9 @@ contains
 
     PUSH_SUB(constructor)
 
-    SAFE_ALLOCATE(constructor)
+    ! No safe_allocate macro here, as its counterpart in linked_list.F90
+    ! causes an internal compiler error with GCC 6.4.0
+    allocate(constructor)
     constructor%next_node => next
     constructor%value => value
 

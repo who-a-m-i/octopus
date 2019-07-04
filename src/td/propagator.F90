@@ -123,7 +123,7 @@ contains
 
     call potential_interpolation_copy(tro%vksold, tri%vksold)
 
-    call exponential_elec_copy(tro%te, tri%te)
+    call tri%te%copy_to(tro%te)
     tro%scf_propagation_steps = tri%scf_propagation_steps
 
     tro%scf_threshold = tri%scf_threshold
@@ -133,16 +133,17 @@ contains
 
 
   ! ---------------------------------------------------------
-  subroutine propagator_init(gr, namespace, st, tr, have_fields, family_is_mgga)
-    type(grid_t),        intent(in)    :: gr
-    type(namespace_t),   intent(in)    :: namespace
-    type(states_elec_t), intent(in)    :: st
-    type(propagator_t),  intent(inout) :: tr
+  subroutine propagator_init(gr, namespace, st, tr, hm, have_fields, family_is_mgga)
+    type(grid_t),              intent(in)    :: gr
+    type(namespace_t),         intent(in)    :: namespace
+    type(states_elec_t),       intent(in)    :: st
+    type(propagator_t),        intent(inout) :: tr
+    class(hamiltonian_elec_t), intent(in) :: hm
     !> whether there is an associated "field"
     !! that must be propagated (currently ions
     !! or a gauge field).
-    logical,             intent(in)    :: have_fields 
-    logical,             intent(in)    :: family_is_mgga
+    logical,                   intent(in)    :: have_fields 
+    logical,                   intent(in)    :: family_is_mgga
 
     PUSH_SUB(propagator_init)
     
@@ -347,7 +348,7 @@ contains
       call potential_interpolation_init(tr%vksold, gr%mesh%np, st%d%nspin, family_is_mgga)
     end select
 
-    call exponential_elec_init(tr%te, namespace) ! initialize propagator
+    call exponential_elec_init(tr%te, namespace, hm) ! initialize propagator
 
     call messages_obsolete_variable(namespace, 'TDSelfConsistentSteps', 'TDStepsWithSelfConsistency')
 

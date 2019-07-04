@@ -20,6 +20,7 @@
 
 module propagator_cn_oct_m
   use density_oct_m
+  use exponential_abst_oct_m
   use exponential_elec_oct_m
   use gauge_field_oct_m
   use grid_oct_m
@@ -48,7 +49,6 @@ module propagator_cn_oct_m
     td_crank_nicolson
 
   type(grid_t),             pointer, private :: grid_p
-  type(hamiltonian_elec_t), pointer, private :: hm_p
   type(poisson_t),          pointer, private :: psolver_p
   type(propagator_t),       pointer, private :: tr_p
   integer,                           private :: ik_op, ist_op, dim_op
@@ -94,7 +94,6 @@ contains
 
     ! define pointer and variables for usage in td_zop, td_zopt routines
     grid_p    => gr
-    hm_p      => hm
     psolver_p => psolver
     tr_p      => tr
     dt_op = dt
@@ -129,7 +128,7 @@ contains
       do ist = st%st_start, st%st_end
 
         call states_elec_get_state(st, gr%mesh, ist, ik, zpsi_rhs)
-        call exponential_elec_apply(tr%te, gr%der, hm, psolver, zpsi_rhs, ist, ik, dt/M_TWO)
+        call exponential_elec_apply(tr%te, gr%der, psolver, zpsi_rhs, ist, ik, dt/M_TWO)
 
         if(hamiltonian_elec_inh_term(hm)) then
           SAFE_ALLOCATE(inhpsi(1:gr%mesh%np))
@@ -204,7 +203,7 @@ contains
         M_zI * xim((idim-1)*grid_p%mesh%np+1:idim*grid_p%mesh%np)
     end forall
 
-    call exponential_elec_apply(tr_p%te, grid_p%der, hm_p, psolver_p, zpsi, ist_op, ik_op, -dt_op/M_TWO)
+    call exponential_elec_apply(tr_p%te, grid_p%der, psolver_p, zpsi, ist_op, ik_op, -dt_op/M_TWO)
 
     forall(idim = 1:dim_op)
       yre((idim-1)*grid_p%mesh%np+1:idim*grid_p%mesh%np) = real(zpsi(1:grid_p%mesh%np, idim))
@@ -241,7 +240,7 @@ contains
         M_zI * xim((idim-1)*grid_p%mesh%np+1:idim*grid_p%mesh%np)
     end forall
 
-    call exponential_elec_apply(tr_p%te, grid_p%der, hm_p, psolver_p, zpsi, ist_op, ik_op, -dt_op/M_TWO)
+    call exponential_elec_apply(tr_p%te, grid_p%der, psolver_p, zpsi, ist_op, ik_op, -dt_op/M_TWO)
 
     forall(idim = 1:dim_op)
       yre((idim-1)*grid_p%mesh%np+1:idim*grid_p%mesh%np) =    real(zpsi(1:grid_p%mesh%np, idim))
@@ -271,7 +270,7 @@ contains
       zpsi(1:grid_p%mesh%np, idim) = x((idim-1)*grid_p%mesh%np+1:idim*grid_p%mesh%np)
     end forall
 
-    call exponential_elec_apply(tr_p%te, grid_p%der, hm_p, psolver_p, zpsi, ist_op, ik_op, -dt_op/M_TWO)
+    call exponential_elec_apply(tr_p%te, grid_p%der, psolver_p, zpsi, ist_op, ik_op, -dt_op/M_TWO)
 
     forall(idim = 1:dim_op)
       y((idim-1)*grid_p%mesh%np+1:idim*grid_p%mesh%np) = zpsi(1:grid_p%mesh%np, idim)

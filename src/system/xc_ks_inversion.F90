@@ -169,7 +169,7 @@ contains
       call states_elec_densities_init(ks_inv%aux_st, gr, geo)
       call hamiltonian_elec_init(ks_inv%aux_hm, namespace, gr, geo, ks_inv%aux_st, psolver, INDEPENDENT_PARTICLES, XC_FAMILY_NONE, &
         .false.)
-      call eigensolver_init(ks_inv%eigensolver, namespace, gr, ks_inv%aux_st, xc)
+      call eigensolver_init(ks_inv%eigensolver, namespace, gr, ks_inv%aux_st, xc, ks_inv%aux_hm)
     end if
 
     POP_SUB(xc_ks_inversion_init)

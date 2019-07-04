@@ -382,7 +382,7 @@ contains
     end if
 
     ! now the eigensolver stuff
-    call eigensolver_init(scf%eigens, namespace, gr, st, ks%xc)
+    call eigensolver_init(scf%eigens, namespace, gr, st, ks%xc, hm)
 
     if(preconditioner_is_multigrid(scf%eigens%pre)) then
       SAFE_ALLOCATE(gr%mgrid_prec)

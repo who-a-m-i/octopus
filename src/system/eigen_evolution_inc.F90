@@ -119,7 +119,7 @@ contains
 #else
     zpsi => psi
 #endif
-    call exponential_elec_apply(te, gr%der, hm, psolver, zpsi, ist, ik, -tau, order = order, imag_time = .true.)
+    call exponential_elec_apply(te, gr%der, psolver, zpsi, ist, ik, -tau, order = order, imag_time = .true.)
 #if defined(R_TREAL)
     psi(1:gr%mesh%np, 1:st%d%dim) = R_TOTYPE(zpsi(1:gr%mesh%np, 1:st%d%dim))
     SAFE_DEALLOCATE_P(zpsi)

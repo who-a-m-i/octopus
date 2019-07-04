@@ -132,7 +132,7 @@ contains
     
     ! self-consistency for occupation numbers and natural orbitals in RDMFT
     if(sys%ks%theory_level == RDMFT) then 
-      call rdmft_init(rdm, sys%namespace, sys%gr, sys%st, sys%ks, fromScratch)
+      call rdmft_init(rdm, sys%namespace, sys%gr, sys%st, sys%ks, sys%hm, fromScratch)
       call scf_rdmft(rdm, sys%namespace, sys%gr, sys%geo, sys%st, sys%ks, sys%hm, sys%psolver, sys%outp, scfv%max_iter, &
         restart_dump)
       call rdmft_end(rdm)

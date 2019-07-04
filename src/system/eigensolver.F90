@@ -111,13 +111,14 @@ module eigensolver_oct_m
 contains
 
   ! ---------------------------------------------------------
-  subroutine eigensolver_init(eigens, namespace, gr, st, xc, disable_preconditioner)
-    type(eigensolver_t), intent(out)   :: eigens
-    type(namespace_t),   intent(in)    :: namespace
-    type(grid_t),        intent(in)    :: gr
-    type(states_elec_t), intent(in)    :: st
-    type(xc_t), target,  intent(in)    :: xc
-    logical, optional,   intent(in)    :: disable_preconditioner
+  subroutine eigensolver_init(eigens, namespace, gr, st, xc, hm, disable_preconditioner)
+    type(eigensolver_t),       intent(out)   :: eigens
+    type(namespace_t),         intent(in)    :: namespace
+    type(grid_t),              intent(in)    :: gr
+    type(states_elec_t),       intent(in)    :: st
+    type(xc_t),        target, intent(in)    :: xc
+    class(hamiltonian_elec_t), intent(in)    :: hm
+    logical, optional,         intent(in)    :: disable_preconditioner
 
     integer :: default_iter, default_es
     FLOAT   :: default_tol
@@ -271,7 +272,7 @@ contains
       call parse_variable(namespace, 'EigensolverImaginaryTime', CNST(10.0), eigens%imag_time)
       if(eigens%imag_time <= M_ZERO) call messages_input_error('EigensolverImaginaryTime')
       
-      call exponential_elec_init(eigens%exponential_operator, namespace)
+      call exponential_elec_init(eigens%exponential_operator, namespace, hm)
       
     case(RS_LOBPCG)
     case(RS_RMMDIIS)

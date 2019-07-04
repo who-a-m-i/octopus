@@ -81,7 +81,7 @@ contains
 
     call propagation_ops_elec_update_hamiltonian(namespace, st, gr, hm, time - dt*M_HALF)
 
-    call propagation_ops_elec_fuse_density_exp_apply(tr%te, st, gr, hm, psolver, dt)
+    call propagation_ops_elec_fuse_density_exp_apply(tr%te, st, gr, psolver, dt)
 
     !restore to time 'time - dt'
     call propagation_ops_elec_restore_ions(tr%propagation_ops_elec, ions, geo, move_ions = move_ions)

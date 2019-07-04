@@ -103,13 +103,14 @@ module rdmft_oct_m
 contains
 
   ! ---------------------------------------------------------
-  subroutine rdmft_init(rdm, namespace, gr, st, ks, fromScratch)
-    type(rdm_t),         intent(out) :: rdm
-    type(namespace_t),   intent(in)  :: namespace
-    type(grid_t),        intent(in)  :: gr  !< grid
-    type(states_elec_t), intent(in)  :: st  !< States
-    type(v_ks_t),        intent(in)  :: ks  !< Kohn-Sham
-    logical,             intent(in)  :: fromScratch
+  subroutine rdmft_init(rdm, namespace, gr, st, ks, hm, fromScratch)
+    type(rdm_t),              intent(out) :: rdm
+    type(namespace_t),        intent(in)  :: namespace
+    type(grid_t),             intent(in)  :: gr  !< grid
+    type(states_elec_t),      intent(in)  :: st  !< States
+    type(v_ks_t),             intent(in)  :: ks  !< Kohn-Sham
+    type(hamiltonian_elec_t), intent(in) :: hm
+    logical,                  intent(in)  :: fromScratch
 
     integer :: ist
 
@@ -213,7 +214,7 @@ contains
       end do
     else
       ! initialize eigensolver. No preconditioner for rdmft is implemented, so we disable it.
-      call eigensolver_init(rdm%eigens, namespace, gr, st, ks%xc, disable_preconditioner=.true.)
+      call eigensolver_init(rdm%eigens, namespace, gr, st, ks%xc, hm, disable_preconditioner=.true.)
       if (rdm%eigens%additional_terms) call messages_not_implemented("CG Additional Terms with RDMFT.")
     end if
 

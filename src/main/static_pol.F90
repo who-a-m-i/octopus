@@ -56,9 +56,8 @@ module static_pol_oct_m
 contains
 
   ! ---------------------------------------------------------
-  subroutine static_pol_run(sys, hm, fromScratch)
+  subroutine static_pol_run(sys, fromScratch)
     type(system_t),         intent(inout) :: sys
-    type(hamiltonian_elec_t),    intent(inout) :: hm
     logical,                intent(inout) :: fromScratch
 
     type(scf_t) :: scfv
@@ -97,7 +96,7 @@ contains
     ! set up Hamiltonian
     message(1) = 'Info: Setting up Hamiltonian.'
     call messages_info(1)
-    call system_h_setup (sys, hm, calc_eigenval = .false.) ! we read them from restart
+    call system_h_setup (sys, calc_eigenval = .false.) ! we read them from restart
 
     ! Allocate the dipole
     SAFE_ALLOCATE(dipole(1:sys%gr%mesh%sb%dim, 1:sys%gr%mesh%sb%dim, 1:2))
@@ -180,7 +179,7 @@ contains
 
     ! Save local potential
     SAFE_ALLOCATE(Vpsl_save(1:sys%gr%mesh%np))
-    Vpsl_save = hm%ep%Vpsl
+    Vpsl_save = sys%hm%ep%Vpsl
 
     ! Allocate the trrho to contain the trace of the density.
     SAFE_ALLOCATE(trrho(1:sys%gr%mesh%np))
@@ -190,18 +189,18 @@ contains
     gs_rho = M_ZERO
 
     call output_init_()
-    call scf_init(scfv, sys%parser, sys%gr, sys%geo, sys%st, sys%mc, hm, sys%ks)
+    call scf_init(scfv, sys%parser, sys%gr, sys%geo, sys%st, sys%mc, sys%hm, sys%ks)
     call born_charges_init(Born_charges, sys%parser, sys%geo, sys%st, sys%gr%mesh%sb%dim)
 
     ! now calculate the dipole without field
 
-    hm%ep%vpsl(1:sys%gr%mesh%np) = vpsl_save(1:sys%gr%mesh%np)
-    call hamiltonian_elec_update(hm, sys%gr%mesh)
+    sys%hm%ep%vpsl(1:sys%gr%mesh%np) = vpsl_save(1:sys%gr%mesh%np)
+    call hamiltonian_elec_update(sys%hm, sys%gr%mesh)
 
     write(message(1), '(a)')
     write(message(2), '(a)') 'Info: Calculating dipole moment for zero field.'
     call messages_info(2)
-    call scf_run(scfv, sys%parser, sys%mc, sys%gr, sys%geo, sys%st, sys%ks, hm, sys%outp, gs_run=.false., verbosity = verbosity)
+    call scf_run(scfv, sys%parser, sys%mc, sys%gr, sys%geo, sys%st, sys%ks, sys%hm, sys%outp, gs_run=.false., verbosity = verbosity)
 
     gs_rho(1:sys%gr%mesh%np, 1:sys%st%d%nspin) = sys%st%rho(1:sys%gr%mesh%np, 1:sys%st%d%nspin)
     trrho = M_ZERO
@@ -242,8 +241,8 @@ contains
         ! there would be an extra factor of -1 in here that is for the electronic charge
         ! except that we treat electrons as positive
 
-        hm%ep%vpsl(1:sys%gr%mesh%np) = vpsl_save(1:sys%gr%mesh%np) + (-1)**isign * sys%gr%mesh%x(1:sys%gr%mesh%np, ii) * e_field
-        call hamiltonian_elec_update(hm, sys%gr%mesh)
+        sys%hm%ep%vpsl(1:sys%gr%mesh%np) = vpsl_save(1:sys%gr%mesh%np) + (-1)**isign * sys%gr%mesh%x(1:sys%gr%mesh%np, ii) * e_field
+        call hamiltonian_elec_update(sys%hm, sys%gr%mesh)
 
         if(isign == 1) then
           sign_char = '+'
@@ -257,7 +256,7 @@ contains
         if(.not. fromScratch) then
           call restart_open_dir(restart_load, trim(dir_name), ierr)
           if (ierr == 0) call states_elec_load(restart_load, sys%parser, sys%st, sys%gr, ierr)
-          call system_h_setup(sys, hm)
+          call system_h_setup(sys)
           if(ierr /= 0) fromScratch_local = .true.
           call restart_close_dir(restart_load)
         end if
@@ -265,14 +264,15 @@ contains
         if(fromScratch_local) then
           if(start_density_is_zero_field) then
             sys%st%rho(1:sys%gr%mesh%np, 1:sys%st%d%nspin) = gs_rho(1:sys%gr%mesh%np, 1:sys%st%d%nspin)
-            call system_h_setup(sys, hm)
+            call system_h_setup(sys)
           else
-            call lcao_run(sys, hm, lmm_r = scfv%lmm_r)
+            call lcao_run(sys, lmm_r = scfv%lmm_r)
           end if
         end if
 
         call scf_mix_clear(scfv)
-        call scf_run(scfv, sys%parser, sys%mc, sys%gr, sys%geo, sys%st, sys%ks, hm, sys%outp, gs_run=.false., verbosity = verbosity)
+        call scf_run(scfv, sys%parser, sys%mc, sys%gr, sys%geo, sys%st, sys%ks, sys%hm, sys%outp, gs_run=.false.,&
+             & verbosity = verbosity)
 
         trrho = M_ZERO
         do is = 1, sys%st%d%spin_channels
@@ -322,9 +322,9 @@ contains
          trim(units_abbrev(units_out%force)), ' in the '//index2axis(3)//'-direction.'
       call messages_info(2)
   
-      hm%ep%vpsl(1:sys%gr%mesh%np) = vpsl_save(1:sys%gr%mesh%np) &
+      sys%hm%ep%vpsl(1:sys%gr%mesh%np) = vpsl_save(1:sys%gr%mesh%np) &
         - (sys%gr%mesh%x(1:sys%gr%mesh%np, 2) + sys%gr%mesh%x(1:sys%gr%mesh%np, 3)) * e_field
-      call hamiltonian_elec_update(hm, sys%gr%mesh)
+      call hamiltonian_elec_update(sys%hm, sys%gr%mesh)
   
       if(isign == 1) then
         sign_char = '+'
@@ -337,7 +337,7 @@ contains
       if(.not. fromScratch) then
         call restart_open_dir(restart_load, "field_yz+", ierr)
         if (ierr == 0) call states_elec_load(restart_load, sys%parser, sys%st, sys%gr, ierr)
-        call system_h_setup(sys, hm)
+        call system_h_setup(sys)
         if(ierr /= 0) fromScratch_local = .true.
         call restart_close_dir(restart_load)
       end if
@@ -345,14 +345,15 @@ contains
       if(fromScratch_local) then
         if(start_density_is_zero_field) then
           sys%st%rho(1:sys%gr%mesh%np, 1:sys%st%d%nspin) = gs_rho(1:sys%gr%mesh%np, 1:sys%st%d%nspin)
-          call system_h_setup(sys, hm)
+          call system_h_setup(sys)
         else
-          call lcao_run(sys, hm, lmm_r = scfv%lmm_r)
+          call lcao_run(sys, lmm_r = scfv%lmm_r)
         end if
       end if
 
       call scf_mix_clear(scfv)
-      call scf_run(scfv, sys%parser, sys%mc, sys%gr, sys%geo, sys%st, sys%ks, hm, sys%outp, gs_run=.false., verbosity = verbosity)
+      call scf_run(scfv, sys%parser, sys%mc, sys%gr, sys%geo, sys%st, sys%ks, sys%hm, sys%outp, gs_run=.false.,&
+           & verbosity = verbosity)
   
       trrho = M_ZERO
       do is = 1, sys%st%d%spin_channels

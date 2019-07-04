@@ -73,13 +73,14 @@ contains
   function system_init(parser, name) result(sys)
     type(parser_t),             intent(in) :: parser
     character(len=*), optional, intent(in) :: name
-    type(system_t) :: sys
-    
+    type(system_t), pointer :: sys
+
     type(profile_t), save :: prof
 
     PUSH_SUB(system_init)
     call profiling_in(prof,"SYSTEM_INIT")
-    
+
+    SAFE_ALLOCATE(sys)
     SAFE_ALLOCATE(sys%gr)
     SAFE_ALLOCATE(sys%st)
 
@@ -154,7 +155,7 @@ contains
 
   !----------------------------------------------------------
   subroutine system_end(sys)
-    type(system_t), intent(inout) :: sys
+    type(system_t), pointer :: sys
 
     PUSH_SUB(system_end)
 
@@ -181,6 +182,7 @@ contains
     call accel_end()
 
     SAFE_DEALLOCATE_P(sys%gr)
+    SAFE_DEALLOCATE_P(sys)
 
     POP_SUB(system_end)
   end subroutine system_end

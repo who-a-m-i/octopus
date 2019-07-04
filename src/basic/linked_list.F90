@@ -47,7 +47,8 @@ contains
 
   subroutine add_node(this, value)
     class(linked_list_t) :: this
-    class(*) :: value
+    class(*)             :: value
+
     class(list_node_t), pointer :: new_node
 
     PUSH_SUB(add_node)

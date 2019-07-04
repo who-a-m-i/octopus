@@ -44,9 +44,9 @@ module list_node_oct_m
 contains
 
   function constructor(value, next)
-    class(list_node_t), pointer :: constructor
     class(*),           target  :: value
     class(list_node_t), pointer :: next
+    class(list_node_t), pointer :: constructor
 
     PUSH_SUB(constructor)
 

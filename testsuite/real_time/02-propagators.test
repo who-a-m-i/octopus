@@ -20,18 +20,18 @@ Input      : 02-propagators.02-cnsparskit.inp
 Precision  : 1.0e-8
 match ;  Forces [step  1]  ; LINEFIELD(td.general/coordinates, -21, 15) ; 0.1700863421019
 match ;  Forces [step 20]  ; LINEFIELD(td.general/coordinates, -1, 15) ; 0.1458990183992
-errormatch ; Error ; GREPCOUNT(err, 'recompile with SPARSKIT support') ; 1
+errormatch ; Error missing SPARSKIT ; GREPCOUNT(err, 'recompile with SPARSKIT support') ; 1
 
 Processors : 4
 Input      : 02-propagators.03-rungekutta2.inp
 Precision  : 1.0e-8
 match ;  Forces [step  1]  ; LINEFIELD(td.general/coordinates, -21, 15) ; 0.1700863421019
 match ;  Forces [step 20]  ; LINEFIELD(td.general/coordinates, -1, 15) ; 0.1459090492095
-errormatch ; Error ; GREPCOUNT(err, 'recompile with SPARSKIT support') ; 1
+errormatch ; Error missing SPARSKIT ; GREPCOUNT(err, 'recompile with SPARSKIT support') ; 1
 
 Processors : 4
 Input      : 02-propagators.04-rungekutta4.inp
 Precision  : 1.0e-8
 match ;  Forces [step  1]  ; LINEFIELD(td.general/coordinates, -21, 15) ; 0.1700863421019
 match ;  Forces [step 20]  ; LINEFIELD(td.general/coordinates, -1, 15) ; 0.1459103725742
-errormatch ; Error ; GREPCOUNT(err, 'recompile with SPARSKIT support') ; 1
+errormatch ; Error missing SPARSKIT; GREPCOUNT(err, 'recompile with SPARSKIT support') ; 1

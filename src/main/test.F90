@@ -206,13 +206,13 @@ contains
     type(test_parameters_t), intent(in) :: param
     type(parser_t),          intent(in) :: parser
 
-    type(system_t), pointer :: sys
+    type(system_t) :: sys
 
     PUSH_SUB(test_hartree)
 
     call calc_mode_par_set_parallelization(P_STRATEGY_STATES, default = .false.)
 
-    sys => system_init(parser)
+    sys = system_init(parser)
     call poisson_test(sys%gr%mesh, param%repetitions)
     call system_end(sys)
 
@@ -224,7 +224,7 @@ contains
     type(test_parameters_t), intent(in) :: param
     type(parser_t),          intent(in) :: parser
     
-    type(system_t), pointer :: sys
+    type(system_t) :: sys
     type(epot_t) :: ep
     type(batch_t), pointer :: epsib
     integer :: itime
@@ -238,7 +238,7 @@ contains
     call messages_new_line()
     call messages_info()
 
-    sys => system_init(parser)
+    sys = system_init(parser)
 
     call states_allocate_wfns(sys%st, sys%gr%mesh, wfs_type = TYPE_CMPLX)
     call states_generate_random(sys%st, sys%gr%mesh, sys%gr%sb)
@@ -275,7 +275,7 @@ contains
     type(test_parameters_t), intent(in) :: param
     type(parser_t),          intent(in) :: parser
     
-    type(system_t), pointer :: sys
+    type(system_t) :: sys
     type(batch_t), pointer :: epsib
     integer :: itime
     type(orbitalbasis_t) :: basis
@@ -291,7 +291,7 @@ contains
     call messages_new_line()
     call messages_info()
 
-    sys => system_init(parser)
+    sys = system_init(parser)
 
     call states_allocate_wfns(sys%st, sys%gr%mesh)
     call states_generate_random(sys%st, sys%gr%mesh, sys%gr%sb)
@@ -364,7 +364,7 @@ contains
     type(test_parameters_t), intent(in) :: param
     type(parser_t),          intent(in) :: parser
     
-    type(system_t), pointer :: sys
+    type(system_t) :: sys
     type(batch_t), pointer :: hpsib
     integer :: itime, terms
     type(simul_box_t) :: sb
@@ -397,7 +397,7 @@ contains
     call messages_new_line()
     call messages_info()
 
-    sys => system_init(parser)
+    sys = system_init(parser)
 
     call states_allocate_wfns(sys%st, sys%gr%mesh)
     call states_generate_random(sys%st, sys%gr%mesh, sys%gr%sb)
@@ -455,7 +455,7 @@ contains
     type(test_parameters_t), intent(in) :: param
     type(parser_t),          intent(in) :: parser
     
-    type(system_t), pointer :: sys
+    type(system_t) :: sys
     integer :: itime
 
     PUSH_SUB(test_density_calc)
@@ -467,7 +467,7 @@ contains
     call messages_new_line()
     call messages_info()
 
-    sys => system_init(parser)
+    sys = system_init(parser)
 
     call states_allocate_wfns(sys%st, sys%gr%mesh)
     call states_generate_random(sys%st, sys%gr%mesh, sys%gr%sb)
@@ -493,11 +493,11 @@ contains
     type(test_parameters_t), intent(in) :: param
     type(parser_t),          intent(in) :: parser
     
-    type(system_t), pointer :: sys
+    type(system_t) :: sys
 
     PUSH_SUB(test_derivatives)
 
-    sys => system_init(parser)
+    sys = system_init(parser)
 
     message(1) = 'Info: Testing the finite-differences derivatives.'
     message(2) = ''
@@ -530,14 +530,14 @@ contains
     type(test_parameters_t), intent(in) :: param
     type(parser_t),          intent(in) :: parser
     
-    type(system_t), pointer :: sys
+    type(system_t) :: sys
 
     PUSH_SUB(test_orthogonalization)
 
     call calc_mode_par_set_parallelization(P_STRATEGY_STATES, default = .false.)
     call calc_mode_par_set_scalapack_compat()
 
-    sys => system_init(parser)
+    sys = system_init(parser)
 
     message(1) = 'Info: Testing orthogonalization.'
     message(2) = ''
@@ -566,11 +566,11 @@ contains
     type(test_parameters_t), intent(in) :: param
     type(parser_t),          intent(in) :: parser
     
-    type(system_t), pointer :: sys
+    type(system_t) :: sys
 
     PUSH_SUB(test_interpolation)
 
-    sys => system_init(parser)
+    sys = system_init(parser)
 
     if(param%type == OPTION__TESTTYPE__ALL .or. param%type == OPTION__TESTTYPE__REAL) then
       call messages_write('Info: Testing real interpolation routines')
@@ -606,7 +606,7 @@ contains
 
     PUSH_SUB(test_ion_interaction)
 
-    sys => system_init(parser)
+    sys = system_init(parser)
 
     call ion_interaction_test(sys%geo, sys%parser, sys%gr%sb)
 

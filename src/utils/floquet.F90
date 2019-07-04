@@ -53,7 +53,7 @@ program oct_floquet
 
   integer :: ierr
 
-  type(system_t), pointer :: sys
+  type(system_t) :: sys
   type(simul_box_t) :: sb
   type(states_t) :: st
   type(grid_t)   :: gr
@@ -90,7 +90,7 @@ program oct_floquet
   call restart_module_init(parser)
 
   call calc_mode_par_set_parallelization(P_STRATEGY_STATES, default = .false.)
-  sys => system_init(parser)
+  sys = system_init(parser)
   call simul_box_init(sb, sys%parser, sys%geo, sys%space)
   ! make shortcut copies
   st = sys%st

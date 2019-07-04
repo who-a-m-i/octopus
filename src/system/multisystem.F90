@@ -45,6 +45,7 @@ contains
     integer :: isys, system_type
     character(len=128) :: system_name
     type(block_t) :: blk
+    type(system_t), pointer :: sys
 
     PUSH_SUB(multisystem_init)
     
@@ -68,7 +69,10 @@ contains
         call parse_block_integer(blk, isys-1, 1, system_type)
         select case (system_type)
         case (SYSTEM_ELECTRONIC)
-          call systems%add(system_init(parser, system_name))
+          allocate(sys)
+          sys = system_init(parser, system_name)
+          call systems%add(sys)
+          nullify(sys)
         case default
           call messages_input_error('Systems')
         end select

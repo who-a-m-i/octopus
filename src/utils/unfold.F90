@@ -68,7 +68,7 @@ program oct_unfold
 
   implicit none
 
-  type(system_t), pointer :: sys
+  type(system_t)        :: sys
   type(simul_box_t)     :: sb
   integer               :: ik, idim, nkpoints
   type(restart_t)       :: restart
@@ -108,7 +108,7 @@ program oct_unfold
   call restart_module_init(parser)
 
   call calc_mode_par_set_parallelization(P_STRATEGY_STATES, default = .false.)
-  sys => system_init(parser)
+  sys = system_init(parser)
   call simul_box_init(sb, parser, sys%geo, sys%space)
 
   if(sb%periodic_dim == 0) then

@@ -64,7 +64,7 @@ program oct_local_multipoles
     type(local_write_t)             :: writ            !< write option for local domains analysis.
   end type local_domain_t
 
-  type(system_t), pointer :: sys
+  type(system_t)        :: sys
   type(simul_box_t)     :: sb
   integer, parameter    :: BADER = 512
   FLOAT                 :: BaderThreshold
@@ -91,7 +91,7 @@ program oct_local_multipoles
   call restart_module_init(parser)
 
   call calc_mode_par_set_parallelization(P_STRATEGY_STATES, default = .false.)
-  sys => system_init(parser)
+  sys = system_init(parser)
   call simul_box_init(sb, sys%parser, sys%geo, sys%space)
 
   call local_domains()

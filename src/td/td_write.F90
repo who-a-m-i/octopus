@@ -519,12 +519,12 @@ contains
       first = iter + 1
     end if
 
-    call io_mkdir('td.general')
+    call io_mkdir('td.general', namespace=parser%get_namespace())
 
     if(mpi_grp_is_root(mpi_world)) then
       if(writ%out(OUT_MULTIPOLES)%write) &
         call write_iter_init(writ%out(OUT_MULTIPOLES)%handle, &
-        first, units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/multipoles")))
+        first, units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/multipoles", namespace=parser%get_namespace())))
 
       if(writ%out(OUT_FTCHD)%write) then
         select case(kick%qkick_mode)
@@ -538,57 +538,57 @@ contains
             write(filename, '(a)') 'td.general/ftchd'
         end select
         call write_iter_init(writ%out(OUT_FTCHD)%handle, &
-          first, units_from_atomic(units_out%time, dt), trim(io_workpath(filename)))
+          first, units_from_atomic(units_out%time, dt), trim(io_workpath(filename, namespace=parser%get_namespace())))
       end if  
 
       if(writ%out(OUT_ANGULAR)%write) &
         call write_iter_init(writ%out(OUT_ANGULAR)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/angular")))
+          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/angular", namespace=parser%get_namespace())))
 
       if(writ%out(OUT_SPIN)%write) &
         call write_iter_init(writ%out(OUT_SPIN)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/spin")))
+          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/spin", namespace=parser%get_namespace())))
 
       if(writ%out(OUT_MAGNETS)%write) &
         call write_iter_init(writ%out(OUT_MAGNETS)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/magnetic_moments")))
+          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/magnetic_moments", namespace=parser%get_namespace())))
 
       if(writ%out(OUT_COORDS)%write) &
         call write_iter_init(writ%out(OUT_COORDS)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/coordinates")))
+          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/coordinates", namespace=parser%get_namespace())))
 
       if(writ%out(OUT_SEPARATE_COORDS)%write) &
         call write_iter_init(writ%out(OUT_SEPARATE_COORDS)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/onlyCoordinates")))
+          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/onlyCoordinates", namespace=parser%get_namespace())))
 
       if(writ%out(OUT_SEPARATE_VELOCITY)%write) &
         call write_iter_init(writ%out(OUT_SEPARATE_VELOCITY)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/onlyVelocities")))
+          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/onlyVelocities", namespace=parser%get_namespace())))
 
       if(writ%out(OUT_SEPARATE_FORCES)%write) &
         call write_iter_init(writ%out(OUT_SEPARATE_FORCES)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/onlyForces")))
+          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/onlyForces", namespace=parser%get_namespace())))
 
       if(writ%out(OUT_TEMPERATURE)%write) &
         call write_iter_init(writ%out(OUT_TEMPERATURE)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/temperature")))
+          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/temperature", namespace=parser%get_namespace())))
 
       if(writ%out(OUT_POPULATIONS)%write) &
         call write_iter_init(writ%out(OUT_POPULATIONS)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/populations")))
+          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/populations", namespace=parser%get_namespace())))
 
       if(writ%out(OUT_ACC)%write) &
         call write_iter_init(writ%out(OUT_ACC)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/acceleration")))
+          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/acceleration", namespace=parser%get_namespace())))
           
       if(writ%out(OUT_VEL)%write) &
         call write_iter_init(writ%out(OUT_VEL)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/velocity")))
+          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/velocity", namespace=parser%get_namespace())))
 
       if(writ%out(OUT_LASER)%write) then
         if(iter .eq. 0) then
           call write_iter_init(writ%out(OUT_LASER)%handle, first, &
-            units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/laser")))
+            units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/laser", namespace=parser%get_namespace())))
           do ii = 0, max_iter
             call td_write_laser(writ%out(OUT_LASER)%handle, gr, hm, dt, ii)
           end do
@@ -599,50 +599,53 @@ contains
 
       if(writ%out(OUT_ENERGY)%write) &
         call write_iter_init(writ%out(OUT_ENERGY)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/energy")))
+          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/energy", namespace=parser%get_namespace())))
 
       if(writ%out(OUT_PROJ)%write) &
         call write_iter_init(writ%out(OUT_PROJ)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/projections")))
+          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/projections", namespace=parser%get_namespace())))
 
       if(writ%out(OUT_KP_PROJ)%write) &
         call write_iter_init(writ%out(OUT_KP_PROJ)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/projections")))
+          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/projections", namespace=parser%get_namespace())))
 
       if(writ%out(OUT_FLOQUET)%write) &
         call write_iter_init(writ%out(OUT_FLOQUET)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/floquet_bands")))
+          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/floquet_bands", namespace=parser%get_namespace())))
 
       if(writ%out(OUT_GAUGE_FIELD)%write) &
         call write_iter_init(writ%out(OUT_GAUGE_FIELD)%handle, &
-        first, units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/gauge_field")))
+        first, units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/gauge_field", namespace=parser%get_namespace())))
         
       if(writ%out(OUT_EIGS)%write) &
         call write_iter_init(writ%out(OUT_EIGS)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/eigenvalues")))
+          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/eigenvalues", namespace=parser%get_namespace())))
 
       if(writ%out(OUT_ION_CH)%write) &
         call write_iter_init(writ%out(OUT_ION_CH)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/ion_ch")))
+          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/ion_ch", namespace=parser%get_namespace())))
 
       if(writ%out(OUT_TOTAL_CURRENT)%write) then
         call write_iter_init(writ%out(OUT_TOTAL_CURRENT)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/total_current")))
+          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/total_current", namespace=parser%get_namespace())))
       end if
 
       if(writ%out(OUT_TOTAL_HEAT_CURRENT)%write) then
         call write_iter_init(writ%out(OUT_TOTAL_HEAT_CURRENT)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/total_heat_current")))
+          units_from_atomic(units_out%time, dt), &
+            trim(io_workpath("td.general/total_heat_current", namespace=parser%get_namespace())))
       end if
 
       if(writ%out(OUT_PARTIAL_CHARGES)%write) then
         call write_iter_init(writ%out(OUT_PARTIAL_CHARGES)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/partial_charges")))
+          units_from_atomic(units_out%time, dt), &
+            trim(io_workpath("td.general/partial_charges", namespace=parser%get_namespace())))
       end if
 
      if(writ%out(OUT_N_EX)%write) &
         call write_iter_init(writ%out(OUT_N_EX)%handle, first, &
-          units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/n_ex")))
+          units_from_atomic(units_out%time, dt), &
+            trim(io_workpath("td.general/n_ex", namespace=parser%get_namespace())))
       
     end if
     
@@ -688,7 +691,8 @@ contains
     if(mpi_grp_is_root(mpi_world)) then
       if(writ%out_dftu(OUT_DFTU_EFFECTIVE_U)%write) &
         call write_iter_init(writ%out_dftu(OUT_DFTU_EFFECTIVE_U)%handle, &
-          first, units_from_atomic(units_out%time, dt), trim(io_workpath("td.general/effectiveU"))) 
+          first, units_from_atomic(units_out%time, dt), &
+          trim(io_workpath("td.general/effectiveU", namespace=parser%get_namespace()))) 
     end if
      
     POP_SUB(td_write_init)

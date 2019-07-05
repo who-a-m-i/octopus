@@ -419,7 +419,7 @@ contains
     ! Calculate initial forces and kinetic energy
     if(ion_dynamics_ions_move(td%ions)) then
       if(td%iter > 0) then
-        call td_read_coordinates()
+        call td_read_coordinates(sys%parser)
         call hamiltonian_epot_generate(sys%hm, sys%parser, gr, geo, st, time = td%iter*td%dt)
       end if
 
@@ -847,15 +847,17 @@ contains
 
     ! ---------------------------------------------------------
     !> reads the pos and vel from coordinates file
-    subroutine td_read_coordinates() 
+    subroutine td_read_coordinates(parser) 
+      type(parser_t), intent(in) :: parser
       integer :: iatom, iter, iunit
       PUSH_SUB(td_run.td_read_coordinates)
 
       call io_assign(iunit)
-      open(unit = iunit, file = io_workpath('td.general/coordinates'), action='read', status='old')
+      open(unit = iunit, file = io_workpath('td.general/coordinates', namespace=parser%get_namespace()), &
+        action='read', status='old')
 
       if(iunit < 0) then
-        message(1) = "Could not open file '"//trim(io_workpath('td.general/coordinates'))//"'."
+        message(1) = "Could not open file '"//trim(io_workpath('td.general/coordinates', namespace=parser%get_namespace()))//"'."
         message(2) = "Starting simulation from initial geometry."
         call messages_warning(2)
         POP_SUB(td_run.td_read_coordinates)

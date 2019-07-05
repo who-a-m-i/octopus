@@ -788,6 +788,7 @@ contains
       if(trim(parser%namespace) /= "") then
         dir = trim(parser%namespace) // "/" // dir
       end if
+      dir = trim(dir)
   end function get_static_dir
 
 end module parser_oct_m

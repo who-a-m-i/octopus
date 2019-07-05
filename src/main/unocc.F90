@@ -257,7 +257,7 @@ contains
       ! write output file
       if(mpi_grp_is_root(mpi_world)) then
         call io_mkdir(get_static_dir(sys%parser))
-        iunit = io_open(get_static_dir(sys%parser)//'/eigenvalues', action='write')
+        iunit = io_open(trim(get_static_dir(sys%parser))//'/eigenvalues', action='write')
         
         if(converged) then
           write(iunit,'(a)') 'All states converged.'

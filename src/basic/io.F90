@@ -176,7 +176,7 @@ contains
     end if
 
     ! create static directory
-    call io_mkdir(STATIC_DIR)
+    call io_mkdir(STATIC_DIR, namespace=parser%get_namespace())
 
     if(debug%info) then
       !%Variable MPIDebugHook
@@ -283,8 +283,9 @@ contains
 
 
   ! ---------------------------------------------------------
-  character(len=MAX_PATH_LEN) function io_workpath(path) result(wpath)
+  character(len=MAX_PATH_LEN) function io_workpath(path, namespace) result(wpath)
     character(len=*),  intent(in) :: path
+    character(len=*),  intent(in), optional :: namespace
 
     PUSH_SUB(io_workpath)
 
@@ -292,7 +293,12 @@ contains
       ! we do not change absolute path names
       wpath = trim(path)
     else
-      write(wpath, '(3a)') trim(work_dir), "/", trim(path)
+      ! add namespace to path if non-empty
+      if(trim(optional_default(namespace, ".")) /= "") then
+        write(wpath, '(5a)') trim(optional_default(namespace, ".")), "/", trim(work_dir), "/", trim(path)
+      else
+        write(wpath, '(3a)') trim(work_dir), "/", trim(path)
+      end if
     end if
 
     POP_SUB(io_workpath)
@@ -301,9 +307,10 @@ contains
 
 
   ! ---------------------------------------------------------
-  subroutine io_mkdir(fname, parents)
+  subroutine io_mkdir(fname, parents, namespace)
     character(len=*),  intent(in) :: fname
     logical, optional, intent(in) :: parents
+    character(len=*),  intent(in), optional :: namespace
 
     logical :: parents_
     integer :: last_slash, pos, length
@@ -313,14 +320,16 @@ contains
     parents_ = .false.
     if (present(parents)) parents_ = parents
 
+    if (present(namespace)) call loct_mkdir(namespace)
+
     if (.not. parents_) then
-      call loct_mkdir(trim(io_workpath(fname)))
+      call loct_mkdir(trim(io_workpath(fname, namespace)))
     else
       last_slash = max(index(fname, "/", .true.), len_trim(fname))
       pos = 1
       length = index(fname, '/') - 1
       do while (pos < last_slash)
-        call loct_mkdir(trim(io_workpath(fname(1:pos+length-1))))
+        call loct_mkdir(trim(io_workpath(fname(1:pos+length-1), namespace)))
         pos = pos + length + 1
         length = index(fname(pos:), "/") - 1
         if (length < 1) length = len_trim(fname(pos:))
@@ -333,21 +342,22 @@ contains
 
 
   ! ---------------------------------------------------------
-  subroutine io_rm(fname)
+  subroutine io_rm(fname, namespace)
     character(len=*),  intent(in) :: fname
+    character(len=*),  intent(in), optional :: namespace
 
     PUSH_SUB(io_rm)
 
-    call loct_rm(trim(io_workpath(fname)))
+    call loct_rm(trim(io_workpath(fname, namespace)))
 
     POP_SUB(io_rm)
   end subroutine io_rm
 
   
   ! ---------------------------------------------------------
-  integer function io_open(file, action, status, form, position, die, recl, grp) result(iunit)
+  integer function io_open(file, action, status, form, position, die, recl, grp, namespace) result(iunit)
     character(len=*), intent(in) :: file, action
-    character(len=*), intent(in), optional :: status, form, position
+    character(len=*), intent(in), optional :: status, form, position, namespace
     logical,          intent(in), optional :: die
     integer,          intent(in), optional :: recl
     type(mpi_grp_t),  intent(in), optional :: grp
@@ -390,7 +400,7 @@ contains
         return
       end if
 
-      file_ = io_workpath(file)
+      file_ = io_workpath(file, namespace)
 
       if(present(recl)) then
         open(unit=iunit, file=trim(file_), status=trim(status_), form=trim(form_), &
@@ -618,12 +628,13 @@ contains
 
   !> Returns true if a dir with name 'dir' exists
   ! ---------------------------------------------------------
-  logical function io_dir_exists(dir)
+  logical function io_dir_exists(dir, namespace)
     character(len=*), intent(in)  :: dir
+    character(len=*),  intent(in), optional :: namespace
 
     PUSH_SUB(io_dir_exists)
 
-    io_dir_exists = loct_dir_exists(trim(io_workpath(dir)))
+    io_dir_exists = loct_dir_exists(trim(io_workpath(dir, namespace)))
 
     POP_SUB(io_dir_exists)
   end function io_dir_exists

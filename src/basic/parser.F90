@@ -332,10 +332,7 @@ contains
     call parse_environment("OCT_")
 
     ! set namespace to empty for the global parser
-    ! TODO: for testing purposes, this is currently set to default
-    ! -> should be removed once multisystem support is implemented
-    ! (there is a test for this)
-    self%namespace = 'default'
+    self%namespace = ''
 
   end subroutine parser_init
 

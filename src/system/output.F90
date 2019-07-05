@@ -606,6 +606,10 @@ contains
     !% according to <tt>OutputInterval</tt>, and has nothing to do with the restart information.
     !%End
     call parse_variable(parser, 'OutputIterDir', "output_iter", outp%iter_dir)
+    ! add namespace to path
+    if(parser%get_namespace() /= "") then
+      outp%iter_dir = parser%get_namespace() // "/" // outp%iter_dir
+    end if
     if(outp%what + outp%whatBZ + outp%what_lda_u /= 0 .and. outp%output_interval > 0) then
       call io_mkdir(outp%iter_dir)
     end if

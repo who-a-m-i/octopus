@@ -148,7 +148,6 @@ contains
 
     spacing = minval(sys%gr%mesh%spacing(1:sys%gr%sb%dim))
     default_dt = CNST(0.0426) - CNST(0.207)*spacing + CNST(0.808)*spacing**2
-    default_dt = default_dt*td%mu
 
     call parse_variable(sys%parser, 'TDTimeStep', default_dt, td%dt, unit = units_inp%time)
 
@@ -253,8 +252,6 @@ contains
       write(message(1),'(a)') 'Input: TDIonicTimeScale must be positive.'
       call messages_fatal(1)
     end if
-
-    td%dt = td%dt/td%mu
 
     call messages_print_var_value(stdout, 'TDIonicTimeScale', td%mu)
 

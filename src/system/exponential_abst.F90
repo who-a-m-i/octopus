@@ -18,6 +18,8 @@
 #include "global.h"
 
 module exponential_abst_oct_m
+  use batch_oct_m
+  use derivatives_oct_m
   use global_oct_m
   use loct_oct_m
   use messages_oct_m
@@ -42,12 +44,29 @@ module exponential_abst_oct_m
 
     procedure, non_overridable      :: copy_to => exponential_copy
     procedure  :: end => exponential_end
+    procedure(exponential_apply), deferred :: apply_batch
   end type exponential_abst_t
 
   integer, public, parameter ::  &
     EXP_LANCZOS            = 2,  &
     EXP_TAYLOR             = 3,  &
     EXP_CHEBYSHEV          = 4
+
+  abstract interface
+    subroutine exponential_apply(te, der, psib, ik, deltat, psib2, deltat2)
+      import exponential_abst_t
+      import derivatives_t
+      import batch_t
+      class(exponential_abst_t),       intent(inout) :: te
+      type(derivatives_t),             intent(inout) :: der
+      integer,                         intent(in)    :: ik
+      type(batch_t), target,           intent(inout) :: psib
+      FLOAT,                           intent(in)    :: deltat
+      type(batch_t), target, optional, intent(inout) :: psib2
+      FLOAT, optional,                 intent(in)    :: deltat2
+    end subroutine exponential_apply
+  end interface 
+
 
 contains
 

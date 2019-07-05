@@ -48,7 +48,6 @@ module exponential_elec_oct_m
     exponential_elec_t,               &
     exponential_elec_init,            &
     exponential_elec_end,             &
-    exponential_elec_apply_batch,     &
     exponential_elec_apply,           &
     exponential_elec_apply_all
 
@@ -59,6 +58,7 @@ module exponential_elec_oct_m
     type(hamiltonian_elec_t), pointer :: hm
   contains
     procedure exponential_elec_end
+    procedure apply_batch => exponential_elec_apply_batch
   end type exponential_elec_t
 
 contains
@@ -578,7 +578,7 @@ contains
   end subroutine exponential_elec_apply
 
   subroutine exponential_elec_apply_batch(te, der, psib, ik, deltat, psib2, deltat2)
-    type(exponential_elec_t),             intent(inout) :: te
+    class(exponential_elec_t),       intent(inout) :: te
     type(derivatives_t),             intent(inout) :: der
     integer,                         intent(in)    :: ik
     type(batch_t), target,           intent(inout) :: psib

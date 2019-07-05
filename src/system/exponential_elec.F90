@@ -57,8 +57,8 @@ module exponential_elec_oct_m
 
     type(hamiltonian_elec_t), pointer :: hm
   contains
-    procedure exponential_elec_end
-    procedure apply_batch => exponential_elec_apply_batch
+    procedure :: exponential_elec_end
+    procedure :: apply_batch => exponential_elec_apply_batch
   end type exponential_elec_t
 
 contains

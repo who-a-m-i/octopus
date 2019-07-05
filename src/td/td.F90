@@ -74,7 +74,8 @@ module td_oct_m
     td_t,                 &
     td_run,               &
     td_run_init,          &
-    td_init,              &
+    td_init_generic,      &
+    td_elec_init,         &
     td_end,               &
     transform_states
 
@@ -117,57 +118,17 @@ contains
   end subroutine td_run_init
 
   ! ---------------------------------------------------------
-
-  subroutine td_init(td, sys)
+  ! For a generic system
+  subroutine td_init_generic(td, sys)
     type(td_t),            intent(inout) :: td
     type(system_t),        intent(inout) :: sys
 
     integer :: default
     FLOAT   :: spacing, default_dt, propagation_time
 
-    PUSH_SUB(td_init)
-
-    call ion_dynamics_init(td%ions, sys%parser, sys%geo)
+    PUSH_SUB(td_init_generic)
 
     td%iter = 0
-
-    !%Variable TDIonicTimeScale
-    !%Type float
-    !%Default 1.0
-    !%Section Time-Dependent::Propagation
-    !%Description
-    !% This variable defines the factor between the timescale of ionic
-    !% and electronic movement. It allows reasonably fast
-    !% Born-Oppenheimer molecular-dynamics simulations based on
-    !% Ehrenfest dynamics. The value of this variable is equivalent to
-    !% the role of <math>\mu</math> in Car-Parrinello. Increasing it
-    !% linearly accelerates the time step of the ion
-    !% dynamics, but also increases the deviation of the system from the
-    !% Born-Oppenheimer surface. The default is 1, which means that both
-    !% timescales are the same. Note that a value different than 1
-    !% implies that the electrons will not follow physical behaviour.
-    !%
-    !% According to our tests, values around 10 are reasonable, but it
-    !% will depend on your system, mainly on the width of the gap.
-    !%
-    !% Important: The electronic time step will be the value of
-    !% <tt>TDTimeStep</tt> divided by this variable, so if you have determined an
-    !% optimal electronic time step (that we can call <i>dte</i>), it is
-    !% recommended that you define your time step as:
-    !%
-    !% <tt>TDTimeStep</tt> = <i>dte</i> * <tt>TDIonicTimeScale</tt>
-    !%
-    !% so you will always use the optimal electronic time step
-    !% (<a href=http://arxiv.org/abs/0710.3321>more details</a>).
-    !%End
-    call parse_variable(sys%parser, 'TDIonicTimeScale', CNST(1.0), td%mu)
-
-    if (td%mu <= M_ZERO) then
-      write(message(1),'(a)') 'Input: TDIonicTimeScale must be positive.'
-      call messages_fatal(1)
-    end if
-
-    call messages_print_var_value(stdout, 'TDIonicTimeScale', td%mu)
 
     !%Variable TDTimeStep
     !%Type float
@@ -243,6 +204,61 @@ contains
       message(2) = '(TDMaxSteps <= 1)'
       call messages_fatal(2)
     end if
+
+    POP_SUB(td_init_generic)
+  end subroutine td_init_generic
+
+  ! ---------------------------------------------------------
+  ! For the electronic system only
+  subroutine td_elec_init(td, sys)
+    type(td_t),            intent(inout) :: td
+    type(system_t),        intent(inout) :: sys
+
+    integer :: default
+
+    PUSH_SUB(td_elec_init)
+
+    call ion_dynamics_init(td%ions, sys%parser, sys%geo)
+
+    td%iter = 0
+
+    !%Variable TDIonicTimeScale
+    !%Type float
+    !%Default 1.0
+    !%Section Time-Dependent::Propagation
+    !%Description
+    !% This variable defines the factor between the timescale of ionic
+    !% and electronic movement. It allows reasonably fast
+    !% Born-Oppenheimer molecular-dynamics simulations based on
+    !% Ehrenfest dynamics. The value of this variable is equivalent to
+    !% the role of <math>\mu</math> in Car-Parrinello. Increasing it
+    !% linearly accelerates the time step of the ion
+    !% dynamics, but also increases the deviation of the system from the
+    !% Born-Oppenheimer surface. The default is 1, which means that both
+    !% timescales are the same. Note that a value different than 1
+    !% implies that the electrons will not follow physical behaviour.
+    !%
+    !% According to our tests, values around 10 are reasonable, but it
+    !% will depend on your system, mainly on the width of the gap.
+    !%
+    !% Important: The electronic time step will be the value of
+    !% <tt>TDTimeStep</tt> divided by this variable, so if you have determined an
+    !% optimal electronic time step (that we can call <i>dte</i>), it is
+    !% recommended that you define your time step as:
+    !%
+    !% <tt>TDTimeStep</tt> = <i>dte</i> * <tt>TDIonicTimeScale</tt>
+    !%
+    !% so you will always use the optimal electronic time step
+    !% (<a href=http://arxiv.org/abs/0710.3321>more details</a>).
+    !%End
+    call parse_variable(sys%parser, 'TDIonicTimeScale', CNST(1.0), td%mu)
+
+    if (td%mu <= M_ZERO) then
+      write(message(1),'(a)') 'Input: TDIonicTimeScale must be positive.'
+      call messages_fatal(1)
+    end if
+
+    call messages_print_var_value(stdout, 'TDIonicTimeScale', td%mu)
 
     ! now the photoelectron stuff
     call pes_init(td%pesv, sys%parser, sys%gr%mesh, sys%gr%sb, sys%st, sys%outp%restart_write_interval, sys%hm, td%max_iter, td%dt)
@@ -330,8 +346,9 @@ contains
       call messages_experimental('TDEnergyUpdateIter /= 1 when moving ions')
     end if
 
-    POP_SUB(td_init)
-  end subroutine td_init
+    POP_SUB(td_elec_init)
+  end subroutine td_elec_init
+
 
   ! ---------------------------------------------------------
   
@@ -368,10 +385,7 @@ contains
 
     PUSH_SUB(td_run)
 
-
-    call td_init(td, sys)
-
-    call start_elec(sys)
+    call td_init_generic(td, sys)
 
     if(td%iter >= td%max_iter) then
       call end_()
@@ -379,39 +393,19 @@ contains
       return
     end if
 
-    ! Calculate initial forces and kinetic energy
-    if(ion_dynamics_ions_move(td%ions)) then
-      if(td%iter > 0) then
-        call td_read_coordinates()
-        call hamiltonian_elec_epot_generate(sys%hm, sys%parser, sys%gr, sys%geo, sys%st, time = td%iter*td%dt)
-      end if
-
-      call forces_calculate(sys%gr, sys%parser, sys%geo, sys%hm, sys%st, sys%ks, t = td%iter*td%dt, dt = td%dt)
-
-      sys%geo%kinetic_energy = ion_dynamics_kinetic_energy(sys%geo)
-    else
-      if(bitand(sys%outp%what, OPTION__OUTPUT__FORCES) /= 0) then
-        call forces_calculate(sys%gr, sys%parser, sys%geo, sys%hm, sys%st, sys%ks, t = td%iter*td%dt, dt = td%dt)
-      end if  
-    end if
+    !For the electronic system only
+    call td_elec_init(td, sys)
+    call td_start_elec_stage1(sys)
 
     call td_write_init(write_handler, sys%parser, sys%outp, sys%gr, sys%st, sys%hm, sys%geo, sys%ks, &
       ion_dynamics_ions_move(td%ions), gauge_field_is_applied(sys%hm%ep%gfield), &
       sys%hm%ep%kick, td%iter, td%max_iter, td%dt, sys%mc)
-    if(td%scissor > M_EPSILON) then
-      call scissor_init(sys%hm%scissor, sys%parser, sys%st, sys%gr, sys%hm%d, td%scissor, sys%mc)
-    end if
 
     if(td%iter == 0) call td_run_zero_iter()
-
-    if (gauge_field_is_applied(sys%hm%ep%gfield)) call gauge_field_get_force(sys%hm%ep%gfield, sys%gr, sys%st)
-
-    !call td_check_trotter(td, sys, h)
     td%iter = td%iter + 1
 
     call restart_init(restart_dump, sys%parser, RESTART_TD, RESTART_TYPE_DUMP, sys%mc, ierr, mesh=sys%gr%mesh)
-
-    if (ion_dynamics_ions_move(td%ions) .and. td%recalculate_gs) then
+    if (td_needs_restart_load(td, sys)) then
       ! We will also use the TD restart directory as temporary storage during the time propagation
       call restart_init(restart_load, sys%parser, RESTART_TD, RESTART_TYPE_LOAD, sys%mc, ierr, mesh=sys%gr%mesh)
     end if
@@ -419,9 +413,9 @@ contains
     call messages_print_stress(stdout, "Time-Dependent Simulation")
     call print_header()
 
-    if(td%pesv%calc_spm .or. td%pesv%calc_mask .and. fromScratch) then
-      call pes_init_write(td%pesv, sys%gr%mesh, sys%st)
-    end if
+    !For the electronic system only
+    call td_start_elec_stage2(sys)
+
 
     if(sys%st%d%pack_states .and. hamiltonian_elec_apply_packed(sys%hm, sys%gr%mesh)) call sys%st%pack()
     
@@ -440,19 +434,8 @@ contains
 
       call profiling_in(prof, "TIME_STEP")
 
-      if(iter > 1) then
-        if( ((iter-1)*td%dt <= sys%hm%ep%kick%time) .and. (iter*td%dt > sys%hm%ep%kick%time) ) then
-          if( .not.sys%hm%pcm%localf ) then
-            call kick_apply(sys%gr%mesh, sys%st, td%ions, sys%geo, sys%hm%ep%kick)
-          else
-            call kick_apply(sys%gr%mesh, sys%st, td%ions, sys%geo, sys%hm%ep%kick, pcm = sys%hm%pcm)
-          end if
-          call td_write_kick(sys%gr%mesh, sys%hm%ep%kick, sys%outp, sys%geo, iter)
-        end if
-      end if
-
-      ! in case use scdm localized states for exact exchange and request a new localization             
-      if(sys%hm%scdm_EXX) scdm_is_local = .false.
+      !For the electronic system only
+      call td_iter_elec_start(sys)
 
       ! time iterate the system, one time step.
       select case(td%dynamics)
@@ -465,12 +448,8 @@ contains
                                   sys%mc, sys%outp, iter, td%dt, td%ions, scsteps)
       end select
 
-      !Apply mask absorbing boundaries
-      if(sys%hm%bc%abtype == MASK_ABSORBING) call zvmask(sys%gr, sys%hm, sys%st) 
-
-      !Photoelectron stuff 
-      if(td%pesv%calc_spm .or. td%pesv%calc_mask .or. td%pesv%calc_flux) &
-        call pes_calc(td%pesv, sys%gr%mesh, sys%st, td%dt, iter, sys%gr, sys%hm)
+      !For the electronic system only
+      call td_iter_elec_end(sys)
 
       call td_write_iter(write_handler, sys%parser, sys%outp, sys%gr, sys%st, sys%hm, sys%geo, &
                                 sys%hm%ep%kick, td%dt, sys%ks, iter)
@@ -489,7 +468,7 @@ contains
     if(sys%st%d%pack_states .and. hamiltonian_elec_apply_packed(sys%hm, sys%gr%mesh)) call sys%st%unpack()
 
     call restart_end(restart_dump)
-    if (ion_dynamics_ions_move(td%ions) .and. td%recalculate_gs) call restart_end(restart_load)
+    if (td_needs_restart_load(td, sys)) call restart_end(restart_load)
     call td_write_end(write_handler)
     call end_()
 
@@ -582,10 +561,10 @@ contains
 
     ! ---------------------------------------------------------
     !For the electronic system only
-    subroutine start_elec(sys)
+    subroutine td_start_elec_stage1(sys)
       type(system_t), intent(inout) :: sys 
 
-      PUSH_SUB(td_run.start_elec)
+      PUSH_SUB(td_run.td_start_elec_stage1)
 
       ! Allocate wavefunctions during time-propagation
       if(td%dynamics == EHRENFEST) then
@@ -621,8 +600,46 @@ contains
 
       call init_elec_wfs(sys)
 
-      POP_SUB(td_run.start_elec)
-    end subroutine start_elec
+      if(ion_dynamics_ions_move(td%ions)) then
+        if(td%iter > 0) then
+          call td_read_coordinates()
+          call hamiltonian_elec_epot_generate(sys%hm, sys%parser, sys%gr, sys%geo, sys%st, time = td%iter*td%dt)
+        end if
+
+        call forces_calculate(sys%gr, sys%parser, sys%geo, sys%hm, sys%st, sys%ks, t = td%iter*td%dt, dt = td%dt)
+
+        sys%geo%kinetic_energy = ion_dynamics_kinetic_energy(sys%geo)
+      else
+        if(bitand(sys%outp%what, OPTION__OUTPUT__FORCES) /= 0) then
+          call forces_calculate(sys%gr, sys%parser, sys%geo, sys%hm, sys%st, sys%ks, t = td%iter*td%dt, dt = td%dt)
+        end if
+      end if
+
+      if(td%scissor > M_EPSILON) then
+        call scissor_init(sys%hm%scissor, sys%parser, sys%st, sys%gr, sys%hm%d, td%scissor, sys%mc)
+      end if
+  
+
+
+      POP_SUB(td_run.td_start_elec_stage1)
+    end subroutine td_start_elec_stage1
+
+    ! ---------------------------------------------------------
+    !For the electronic system only
+    subroutine td_start_elec_stage2(sys)
+      type(system_t), intent(inout) :: sys
+
+      PUSH_SUB(td_run.td_start_elec_stage2)
+
+      if (gauge_field_is_applied(sys%hm%ep%gfield)) call gauge_field_get_force(sys%hm%ep%gfield, sys%gr, sys%st)
+
+      if(td%pesv%calc_spm .or. td%pesv%calc_mask .and. fromScratch) then
+        call pes_init_write(td%pesv, sys%gr%mesh, sys%st)
+      end if
+
+      POP_SUB(td_run.td_start_elec_stage2)
+
+    end subroutine td_start_elec_stage2
 
     ! ---------------------------------------------------------
     !For the electronic system only
@@ -864,6 +881,50 @@ contains
 
       POP_SUB(td_run.td_run_zero_iter)
     end subroutine td_run_zero_iter
+
+    ! ---------------------------------------------------------
+    !For the electronic system only
+    subroutine td_iter_elec_start(sys)
+      type(system_t), intent(inout) :: sys
+
+      PUSH_SUB(td_run.td_iter_elec_start)
+
+      if(iter > 1) then
+        if( ((iter-1)*td%dt <= sys%hm%ep%kick%time) .and. (iter*td%dt > sys%hm%ep%kick%time) ) then
+          if( .not.sys%hm%pcm%localf ) then
+            call kick_apply(sys%gr%mesh, sys%st, td%ions, sys%geo, sys%hm%ep%kick)
+          else
+            call kick_apply(sys%gr%mesh, sys%st, td%ions, sys%geo, sys%hm%ep%kick, pcm = sys%hm%pcm)
+          end if
+          call td_write_kick(sys%gr%mesh, sys%hm%ep%kick, sys%outp, sys%geo, iter)
+        end if
+      end if
+
+      ! in case use scdm localized states for exact exchange and request a new localization             
+      if(sys%hm%scdm_EXX) scdm_is_local = .false.
+
+
+      POP_SUB(td_run.td_iter_elec_start)
+
+    end subroutine td_iter_elec_start
+
+    ! ---------------------------------------------------------
+    !For the electronic system only
+    subroutine td_iter_elec_end(sys)
+      type(system_t), intent(inout) :: sys
+
+      PUSH_SUB(td_run.td_iter_elec_end)
+
+      !Apply mask absorbing boundaries
+      if(sys%hm%bc%abtype == MASK_ABSORBING) call zvmask(sys%gr, sys%hm, sys%st)
+
+      !Photoelectron stuff 
+      if(td%pesv%calc_spm .or. td%pesv%calc_mask .or. td%pesv%calc_flux) &
+        call pes_calc(td%pesv, sys%gr%mesh, sys%st, td%dt, iter, sys%gr, sys%hm)
+
+      POP_SUB(td_run.td_iter_elec_end)
+
+    end subroutine td_iter_elec_end
 
 
     ! ---------------------------------------------------------
@@ -1174,6 +1235,19 @@ contains
     POP_SUB(td_load_frozen)
   end subroutine td_load_frozen
 
+
+  ! ---------------------------------------------------------
+  logical pure function td_needs_restart_load(td, sys) result(need)
+    type(td_t),      intent(in) :: td
+    type(system_t),  intent(in) :: sys
+
+    need = .false.
+    !TODO: add a select type here
+    if (ion_dynamics_ions_move(td%ions) .and. td%recalculate_gs) then
+      need = .true.
+    end if
+
+  end function td_needs_restart_load
 
 end module td_oct_m
 

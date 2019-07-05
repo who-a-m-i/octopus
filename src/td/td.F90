@@ -159,8 +159,6 @@ contains
 
     call messages_print_var_value(stdout, 'TDTimeStep', td%dt, unit = units_out%time)
 
-    td%dt = td%dt/td%mu
-    
     if(parse_is_defined(sys%parser, 'TDMaxSteps') .and. parse_is_defined(sys%parser, 'TDPropagationTime')) then
       call messages_write('You cannot set TDMaxSteps and TDPropagationTime at the same time')
       call messages_fatal()
@@ -220,8 +218,6 @@ contains
 
     call ion_dynamics_init(td%ions, sys%parser, sys%geo)
 
-    td%iter = 0
-
     !%Variable TDIonicTimeScale
     !%Type float
     !%Default 1.0
@@ -257,6 +253,8 @@ contains
       write(message(1),'(a)') 'Input: TDIonicTimeScale must be positive.'
       call messages_fatal(1)
     end if
+
+    td%dt = td%dt/td%mu
 
     call messages_print_var_value(stdout, 'TDIonicTimeScale', td%mu)
 
@@ -723,7 +721,8 @@ contains
         ! check if we should deploy user-defined wavefunctions.
         ! according to the settings in the input file the routine
         ! overwrites orbitals that were read from restart/gs
-        if(parse_is_defined(sys%parser, 'UserDefinedStates')) call states_elec_read_user_def_orbitals(sys%gr%mesh, sys%parser, sys%st)
+        if(parse_is_defined(sys%parser, 'UserDefinedStates')) call states_elec_read_user_def_orbitals(sys%gr%mesh, &
+                    sys%parser, sys%st)
 
         call transform_states(sys%st, sys%parser, restart, sys%gr)
         call restart_end(restart)

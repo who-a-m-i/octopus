@@ -493,6 +493,10 @@ contains
 
     ! Set initial path to the working directory
     restart%pwd = restart%dir
+    ! prepend namespace if non-emprty
+    if (trim(parser%get_namespace()) /= "") then
+      restart%pwd = trim(parser%get_namespace()) // "/" // restart%pwd
+    end if
 
     ! Check if the directory already exists and create it if necessary
     dir_exists = io_dir_exists(trim(restart%pwd))

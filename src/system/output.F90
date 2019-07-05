@@ -651,79 +651,81 @@ contains
     integer :: idir, ierr
     character(len=80) :: fname
     type(profile_t), save :: prof
+    character(len=len(trim(dir))) :: trimdir
     
     PUSH_SUB(output_all)
     call profiling_in(prof, "OUTPUT_ALL")
 
+    trimdir = trim(dir)
     if(outp%what+outp%whatBZ+outp%what_lda_u /= 0) then
       message(1) = "Info: Writing output to " // trim(dir)
       call messages_info(1)
-      call io_mkdir(dir)
+      call io_mkdir(trimdir)
     end if
 
     if(bitand(outp%what, OPTION__OUTPUT__MESH_R) /= 0) then
       do idir = 1, gr%mesh%sb%dim
         write(fname, '(a,a)') 'mesh_r-', index2axis(idir)
-        call dio_function_output(outp%how, dir, fname, gr%mesh, gr%mesh%x(:,idir), &
+        call dio_function_output(outp%how, trimdir, fname, gr%mesh, gr%mesh%x(:,idir), &
           units_out%length, ierr, geo = geo)
       end do
     end if
     
-    call output_states(st, parser, gr, geo, hm, dir, outp)
-    call output_hamiltonian(hm, st, gr%der, dir, outp, geo, gr, st%st_kpt_mpi_grp)
-    call output_localization_funct(st, hm, gr, dir, outp, geo)
-    call output_current_flow(gr, st, dir, outp)
+    call output_states(st, parser, gr, geo, hm, trimdir, outp)
+    call output_hamiltonian(hm, st, gr%der, trimdir, outp, geo, gr, st%st_kpt_mpi_grp)
+    call output_localization_funct(st, hm, gr, trimdir, outp, geo)
+    call output_current_flow(gr, st, trimdir, outp)
 
     if(bitand(outp%what, OPTION__OUTPUT__GEOMETRY) /= 0) then
       if(bitand(outp%how, OPTION__OUTPUTFORMAT__XCRYSDEN) /= 0) then        
-        call write_xsf_geometry_file(dir, "geometry", geo, gr%mesh)
+        call write_xsf_geometry_file(trimdir, "geometry", geo, gr%mesh)
       end if
       if(bitand(outp%how, OPTION__OUTPUTFORMAT__XYZ) /= 0) then
-        call geometry_write_xyz(geo, trim(dir)//'/geometry')
-        if(simul_box_is_periodic(gr%sb))  call periodic_write_crystal(gr%sb, geo, dir)
+        call geometry_write_xyz(geo, trim(trimdir)//'/geometry')
+        if(simul_box_is_periodic(gr%sb))  call periodic_write_crystal(gr%sb, geo, trimdir)
       end if
       if(bitand(outp%how, OPTION__OUTPUTFORMAT__VTK) /= 0) then
-        call vtk_output_geometry(trim(dir)//'/geometry', geo)
+        call vtk_output_geometry(trim(trimdir)//'/geometry', geo)
       end if     
     end if
 
     if(bitand(outp%what, OPTION__OUTPUT__FORCES) /= 0) then
       if(bitand(outp%how, OPTION__OUTPUTFORMAT__BILD) /= 0) then
-        call write_bild_forces_file(dir, "forces", geo, gr%mesh)
+        call write_bild_forces_file(trimdir, "forces", geo, gr%mesh)
       else
-        call write_xsf_geometry_file(dir, "forces", geo, gr%mesh, write_forces = .true.)
+        call write_xsf_geometry_file(trimdir, "forces", geo, gr%mesh, write_forces = .true.)
       end if
     end if
 
     if(bitand(outp%what, OPTION__OUTPUT__MATRIX_ELEMENTS) /= 0) then
-      call output_me(outp%me, dir, st, gr, geo, hm)
+      call output_me(outp%me, trimdir, st, gr, geo, hm)
     end if
 
     if (bitand(outp%how, OPTION__OUTPUTFORMAT__ETSF) /= 0) then
-      call output_etsf(st, gr, geo, dir, outp)
+      call output_etsf(st, gr, geo, trimdir, outp)
     end if
 
     if (bitand(outp%what, OPTION__OUTPUT__BERKELEYGW) /= 0) then
-      call output_berkeleygw(outp%bgw, dir, st, gr, ks, hm, geo)
+      call output_berkeleygw(outp%bgw, trimdir, st, gr, ks, hm, geo)
     end if
     
-    call output_energy_density(hm, ks, st, gr%der, dir, outp, geo, gr, st%st_kpt_mpi_grp)
+    call output_energy_density(hm, ks, st, gr%der, trimdir, outp, geo, gr, st%st_kpt_mpi_grp)
 
     if(hm%lda_u_level /= DFT_U_NONE) then
       if(iand(outp%what_lda_u, OPTION__OUTPUTLDA_U__OCC_MATRICES) /= 0)&
-        call lda_u_write_occupation_matrices(dir, hm%lda_u, st)
+        call lda_u_write_occupation_matrices(trimdir, hm%lda_u, st)
 
       if(iand(outp%what_lda_u, OPTION__OUTPUTLDA_U__EFFECTIVEU) /= 0)&
-        call lda_u_write_effectiveU(dir, hm%lda_u)
+        call lda_u_write_effectiveU(trimdir, hm%lda_u)
 
       if(iand(outp%what_lda_u, OPTION__OUTPUTLDA_U__MAGNETIZATION) /= 0)&
-        call lda_u_write_magnetization(dir, hm%lda_u, geo, gr%mesh, st)
+        call lda_u_write_magnetization(trimdir, hm%lda_u, geo, gr%mesh, st)
 
       if(iand(outp%what_lda_u, OPTION__OUTPUTLDA_U__LOCAL_ORBITALS) /= 0)&
-        call output_dftu_orbitals(dir, hm%lda_u, outp, st, gr%mesh, geo, associated(hm%hm_base%phase))
+        call output_dftu_orbitals(trimdir, hm%lda_u, outp, st, gr%mesh, geo, associated(hm%hm_base%phase))
 
       if(iand(outp%what_lda_u, OPTION__OUTPUTLDA_U__KANAMORIU) /= 0)&
-        call lda_u_write_kanamoriU(dir, st, hm%lda_u)
+        call lda_u_write_kanamoriU(trimdir, st, hm%lda_u)
     end if
 
     call profiling_out(prof)

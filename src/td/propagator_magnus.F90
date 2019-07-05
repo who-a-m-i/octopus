@@ -147,7 +147,6 @@ contains
     type(geometry_t),                 intent(inout) :: geo
     integer,                          intent(in)    :: iter
 
-    integer :: ik, ib
     FLOAT :: alpha1, alpha2, c1, c2, t1, t2
     FLOAT, allocatable :: vhxc1(:, :), vhxc2(:, :)
 

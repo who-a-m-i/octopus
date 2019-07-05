@@ -76,9 +76,6 @@ contains
     logical,                          intent(in)    :: move_ions
 
     FLOAT, allocatable :: vhxc_t1(:,:), vhxc_t2(:,:)
-    integer :: ik, ib
-    type(batch_t) :: zpsib_dt
-    type(density_calc_t) :: dens_calc
 
     PUSH_SUB(td_etrs)
 
@@ -429,7 +426,7 @@ contains
         end select
         call profiling_out(phase_prof)
 
-        call exponential_elec_apply_batch(tr%te, gr%der, psolver, st%group%psib(ib, ik), ik, CNST(0.5)*dt)
+        call tr%te%apply_batch(gr%der, psolver, st%group%psib(ib, ik), ik, CNST(0.5)*dt)
         call density_calc_accumulate(dens_calc, ik, st%group%psib(ib, ik))
  
       end do

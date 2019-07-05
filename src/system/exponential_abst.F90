@@ -18,9 +18,12 @@
 #include "global.h"
 
 module exponential_abst_oct_m
+  use batch_oct_m
+  use derivatives_oct_m
   use global_oct_m
   use loct_oct_m
   use messages_oct_m
+  use poisson_oct_m
   use types_oct_m
   use varinfo_oct_m
 
@@ -39,12 +42,27 @@ module exponential_abst_oct_m
     integer, public :: arnoldi_gs  !< Orthogonalization scheme used for Arnoldi
   contains
     procedure, non_overridable :: copy_to => exponential_abst_copy
+    procedure(exponential_abst_apply_batch), deferred :: apply_batch
   end type exponential_abst_t
 
   integer, public, parameter ::  &
     EXP_LANCZOS            = 2,  &
     EXP_TAYLOR             = 3,  &
     EXP_CHEBYSHEV          = 4
+
+  abstract interface
+    subroutine exponential_abst_apply_batch(te, der, psolver, psib, ik, deltat, psib2, deltat2)
+      import
+      class(exponential_abst_t),       intent(inout) :: te
+      type(derivatives_t),             intent(inout) :: der
+      type(poisson_t),                 intent(in)    :: psolver
+      integer,                         intent(in)    :: ik
+      type(batch_t), target,           intent(inout) :: psib
+      FLOAT,                           intent(in)    :: deltat
+      type(batch_t), target, optional, intent(inout) :: psib2
+      FLOAT, optional,                 intent(in)    :: deltat2
+    end subroutine exponential_abst_apply_batch
+  end interface
 
 contains
 

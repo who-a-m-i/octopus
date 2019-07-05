@@ -235,7 +235,7 @@ contains
 
     do ik = st%d%kpt%start, st%d%kpt%end
       do ib = st%group%block_start, st%group%block_end
-        call exponential_elec_apply_batch(te, gr%der, psolver, st%group%psib(ib, ik), ik, dt)
+        call te%apply_batch(gr%der, psolver, st%group%psib(ib, ik), ik, dt)
       end do
     end do
 
@@ -273,8 +273,8 @@ contains
           if(batch_is_packed(st%group%psib(ib, ik))) call batch_pack(zpsib_dt, copy = .false.)
 
           !propagate the state dt/2 and dt, simultaneously, with H(time - dt)
-          call exponential_elec_apply_batch(te, gr%der, psolver, st%group%psib(ib, ik), ik, dt, &
-            psib2 = zpsib_dt, deltat2 = M_TWO*dt)
+          call te%apply_batch(gr%der, psolver, st%group%psib(ib, ik), ik, dt, &
+                          psib2 = zpsib_dt, deltat2 = M_TWO*dt)
 
           !use the dt propagation to calculate the density
           call density_calc_accumulate(dens_calc, ik, zpsib_dt)
@@ -289,7 +289,7 @@ contains
 
       do ik = st%d%kpt%start, st%d%kpt%end
         do ib = st%group%block_start, st%group%block_end
-          call exponential_elec_apply_batch(te, gr%der, psolver, st%group%psib(ib, ik), ik, dt)
+          call te%apply_batch(gr%der, psolver, st%group%psib(ib, ik), ik, dt)
           call density_calc_accumulate(dens_calc, ik, st%group%psib(ib, ik))
         end do
       end do

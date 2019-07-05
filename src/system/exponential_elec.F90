@@ -50,7 +50,6 @@ module exponential_elec_oct_m
     exponential_elec_t,               &
     exponential_elec_init,            &
     exponential_elec_end,             &
-    exponential_elec_apply_batch,     &
     exponential_elec_apply,           &
     exponential_elec_apply_all
 
@@ -59,6 +58,8 @@ module exponential_elec_oct_m
     integer         :: tmp_nst, tmp_nst_linear
 
     type(hamiltonian_elec_t), pointer :: hm
+  contains
+    procedure :: apply_batch => exponential_elec_apply_batch
   end type exponential_elec_t
 
 contains
@@ -579,7 +580,7 @@ contains
   end subroutine exponential_elec_apply
 
   subroutine exponential_elec_apply_batch(te, der, psolver, psib, ik, deltat, psib2, deltat2)
-    type(exponential_elec_t),        intent(inout) :: te
+    class(exponential_elec_t),       intent(inout) :: te
     type(derivatives_t),             intent(inout) :: der
     type(poisson_t),                 intent(in)    :: psolver
     integer,                         intent(in)    :: ik
@@ -871,12 +872,12 @@ contains
   !! Hamiltonian hm.
   subroutine exponential_elec_apply_all(te, der, psolver, xc, st, deltat, order)
     type(exponential_elec_t), intent(inout) :: te
-    type(derivatives_t),      intent(inout) :: der
-    type(poisson_t),          intent(in)    :: psolver
-    type(xc_t),               intent(in)    :: xc
-    type(states_elec_t),      intent(inout) :: st
-    FLOAT,                    intent(in)    :: deltat
-    integer, optional,        intent(inout) :: order
+    type(derivatives_t),       intent(inout) :: der
+    type(poisson_t),           intent(in)    :: psolver
+    type(xc_t),                intent(in)    :: xc
+    type(states_elec_t),       intent(inout) :: st
+    FLOAT,                     intent(in)    :: deltat
+    integer, optional,         intent(inout) :: order
 
     integer :: ik, ib, i
     FLOAT :: zfact

@@ -449,8 +449,8 @@ contains
       write(message(2),'(a,9x,es20.10)')  'The total energy is ', units_from_atomic(units_out%energy,energy + hm%ep%eii)
       call messages_info(3)
       if(gs_run_) then 
-        call scf_write_static(STATIC_DIR, "info")
-        call output_all(outp, parser, gr, geo, st, hm, ks, STATIC_DIR)
+        call scf_write_static(get_static_dir(parser), "info")
+        call output_all(outp, parser, gr, geo, st, hm, ks, get_static_dir(parser))
       end if
     else
       write(message(1),'(a,i3,a)')  'The calculation did not converge after ', iter-1, ' iterations '

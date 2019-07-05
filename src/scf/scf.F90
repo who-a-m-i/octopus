@@ -668,7 +668,7 @@ contains
       end do
     end if
 
-    call create_convergence_file(STATIC_DIR, "convergence")
+    call create_convergence_file(get_static_dir(parser), "convergence")
     
     if ( verbosity_ /= VERB_NO ) then
       if(scf%max_iter > 0) then
@@ -921,7 +921,7 @@ contains
         end if
       end if
 
-      call write_convergence_file(STATIC_DIR, "convergence")
+      call write_convergence_file(get_static_dir(parser), "convergence")
       
       if(finish) then
         if(present(iters_done)) iters_done = iter
@@ -1015,20 +1015,20 @@ contains
 
     if(gs_run_) then 
       ! output final information
-      call scf_write_static(STATIC_DIR, "info")
-      call output_all(outp, parser, gr, geo, st, hm, ks, STATIC_DIR)
+      call scf_write_static(get_static_dir(parser), "info")
+      call output_all(outp, parser, gr, geo, st, hm, ks, get_static_dir(parser))
     end if
 
     if(simul_box_is_periodic(gr%sb) .and. st%d%nik > st%d%nspin) then
       if(bitand(gr%sb%kpoints%method, KPOINTS_PATH) /= 0)  then
-        call states_write_bandstructure(STATIC_DIR, parser, st%nst, st, gr%sb, geo, gr%mesh, &
+        call states_write_bandstructure(get_static_dir(parser), parser, st%nst, st, gr%sb, geo, gr%mesh, &
           hm%hm_base%phase, vec_pot = hm%hm_base%uniform_vector_potential, &
           vec_pot_var = hm%hm_base%vector_potential)
       end if
     end if
 
     if( ks%vdw_correction == OPTION__VDWCORRECTION__VDW_TS) then
-      call vdw_ts_write_c6ab(ks%vdw_ts, geo, STATIC_DIR, 'c6ab_eff')
+      call vdw_ts_write_c6ab(ks%vdw_ts, geo, get_static_dir(parser), 'c6ab_eff')
     end if
 
     SAFE_DEALLOCATE_A(vhxc_old)

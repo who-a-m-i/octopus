@@ -133,7 +133,7 @@ contains
     call messages_info(1)
 
     ! output for all cases    
-    call output_all(sys%outp, sys%parser, sys%gr, sys%geo, sys%ks%ks_inversion%aux_st, sys%hm, sys%ks, STATIC_DIR)
+    call output_all(sys%outp, sys%parser, sys%gr, sys%geo, sys%ks%ks_inversion%aux_st, sys%hm, sys%ks, get_static_dir(sys%parser))
 
     sys%ks%ks_inversion%aux_st%dom_st_kpt_mpi_grp = sys%st%dom_st_kpt_mpi_grp
     ! save files in restart format

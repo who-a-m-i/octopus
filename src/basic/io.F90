@@ -320,7 +320,7 @@ contains
     parents_ = .false.
     if (present(parents)) parents_ = parents
 
-    if (present(namespace)) call loct_mkdir(namespace)
+    if (present(namespace)) call loct_mkdir(trim(namespace))
 
     if (.not. parents_) then
       call loct_mkdir(trim(io_workpath(fname, namespace)))

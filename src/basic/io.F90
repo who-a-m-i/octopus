@@ -294,7 +294,7 @@ contains
       wpath = trim(path)
     else
       ! add namespace to path if non-empty
-      if(trim(optional_default(namespace, ".")) /= "") then
+      if(trim(optional_default(namespace, "")) /= "") then
         write(wpath, '(5a)') trim(optional_default(namespace, ".")), "/", trim(work_dir), "/", trim(path)
       else
         write(wpath, '(3a)') trim(work_dir), "/", trim(path)

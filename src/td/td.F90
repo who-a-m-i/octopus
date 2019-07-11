@@ -850,11 +850,12 @@ contains
     subroutine td_read_coordinates(parser) 
       type(parser_t), intent(in) :: parser
       integer :: iatom, iter, iunit
+      character(len=MAX_PATH_LEN) :: file_
       PUSH_SUB(td_run.td_read_coordinates)
 
       call io_assign(iunit)
-      open(unit = iunit, file = io_workpath('td.general/coordinates', namespace=parser%get_namespace()), &
-        action='read', status='old')
+      file_ = io_workpath('td.general/coordinates', namespace=parser%get_namespace())
+      open(unit=iunit, file=trim(file_), action='read', status='old')
 
       if(iunit < 0) then
         message(1) = "Could not open file '"//trim(io_workpath('td.general/coordinates', namespace=parser%get_namespace()))//"'."

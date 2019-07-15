@@ -57,11 +57,31 @@ module exponential_elec_oct_m
 
     type(hamiltonian_elec_t), pointer :: hm
   contains
+    procedure :: copy_to => exponential_elec_copy
     procedure :: exponential_elec_end
     procedure :: apply_batch => exponential_elec_apply_batch
   end type exponential_elec_t
 
 contains
+
+subroutine exponential_elec_copy(tei, teo)
+  class(exponential_elec_t), intent(in)    :: tei
+  class(exponential_abst_t), intent(inout) :: teo
+
+  PUSH_SUB(exponential_elec_copy)
+
+  teo%exp_method  = tei%exp_method
+  teo%lanczos_tol = tei%lanczos_tol
+  teo%exp_order   = tei%exp_order
+  teo%arnoldi_gs  = tei%arnoldi_gs
+
+  select type(teo)
+    type is (exponential_elec_t)
+      teo%hm  => tei%hm
+  end select
+
+  POP_SUB(exponential_elec_copy)
+end subroutine exponential_elec_copy
 
   ! ---------------------------------------------------------
   subroutine exponential_elec_init(te, parser, hm)
@@ -598,6 +618,13 @@ contains
     
     ! check if we only want a phase correction for the boundary points
     phase_correction = .false.
+
+!    write(*,'("exponential_elec_apply_batch: sizeof(te           ) = ",I20)') sizeof(te)
+!    write(*,'("exponential_elec_apply_batch: sizeof(te%hm        ) = ",I20)') sizeof(te%hm)
+!    write(*,'("exponential_elec_apply_batch: sizeof(te%hm%hm_base) = ",I20)') sizeof(te%hm%hm_base)
+
+!    write(*,'("exponential_elec_apply_batch: associated(te%hm%hm_base%phase) = ",L6)') associated(te%hm%hm_base%phase)
+
     if(associated(te%hm%hm_base%phase)) phase_correction = .true.
     if(accel_is_enabled()) phase_correction = .false.
 

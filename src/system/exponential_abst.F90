@@ -42,7 +42,7 @@ module exponential_abst_oct_m
 
   contains
 
-    procedure, non_overridable      :: copy_to => exponential_copy
+    procedure  :: copy_to => exponential_abst_copy
     procedure  :: end => exponential_end
     procedure(exponential_apply), deferred :: apply_batch
   end type exponential_abst_t
@@ -80,7 +80,7 @@ contains
   end subroutine exponential_end
 
   ! ---------------------------------------------------------
-  subroutine exponential_copy(tei, teo)
+  subroutine exponential_abst_copy(tei, teo)
     class(exponential_abst_t), intent(in)    :: tei
     class(exponential_abst_t), intent(inout) :: teo
 
@@ -92,7 +92,7 @@ contains
     teo%arnoldi_gs  = tei%arnoldi_gs
 
     POP_SUB(exponential_copy)
-  end subroutine exponential_copy
+  end subroutine exponential_abst_copy
 
 
 end module exponential_abst_oct_m

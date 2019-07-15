@@ -157,7 +157,7 @@ contains
 
     call profiling_out(prof)
 
-    POP_SUB(propagation_ops_elec_retore_ions)
+    POP_SUB(propagation_ops_elec_restore_ions)
 
   end subroutine propagation_ops_elec_restore_ions
 
@@ -209,7 +209,7 @@ contains
 
     call profiling_out(prof)
 
-    POP_SUB(propagation_ops_elec_retore_gauge_field)
+    POP_SUB(propagation_ops_elec_restore_gauge_field)
 
   end subroutine propagation_ops_elec_restore_gauge_field
 

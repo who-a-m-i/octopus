@@ -169,7 +169,7 @@ contains
     this%nprojector_matrices = 0
 
     this%projector_self_overlap = .false.
-    
+
     POP_SUB(hamiltonian_elec_base_init)
   end subroutine hamiltonian_elec_base_init
 

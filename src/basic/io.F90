@@ -320,7 +320,10 @@ contains
     parents_ = .false.
     if (present(parents)) parents_ = parents
 
-    if (present(namespace)) call loct_mkdir(trim(namespace))
+    ! create namespace directory if present
+    if(trim(optional_default(namespace, "")) /= "") then
+      call loct_mkdir(trim(optional_default(namespace, "")))
+    end if
 
     if (.not. parents_) then
       call loct_mkdir(trim(io_workpath(fname, namespace)))

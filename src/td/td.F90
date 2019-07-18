@@ -157,7 +157,7 @@ contains
     end if
 
     call messages_print_var_value(stdout, 'TDTimeStep', td%dt, unit = units_out%time)
-
+    
     if(parse_is_defined(sys%parser, 'TDMaxSteps') .and. parse_is_defined(sys%parser, 'TDPropagationTime')) then
       call messages_write('You cannot set TDMaxSteps and TDPropagationTime at the same time')
       call messages_fatal()
@@ -254,6 +254,8 @@ contains
     end if
 
     call messages_print_var_value(stdout, 'TDIonicTimeScale', td%mu)
+
+    td%dt = td%dt/td%mu 
 
     ! now the photoelectron stuff
     call pes_init(td%pesv, sys%parser, sys%gr%mesh, sys%gr%sb, sys%st, sys%outp%restart_write_interval, sys%hm, td%max_iter, td%dt)

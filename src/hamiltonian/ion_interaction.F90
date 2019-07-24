@@ -478,7 +478,6 @@ contains
 
     ! And the long-range part, using an Ewald sum
 
-
     ! Searching maximum distance
     dz_max = M_ZERO
     do iatom = 1, geo%natoms
@@ -491,7 +490,7 @@ contains
     rcut = M_TWO*this%alpha*CNST(4.6) + M_TWO*this%alpha**2*dz_max
     do 
       erfc1 = M_ONE - loct_erf(this%alpha*dz_max + M_HALF*rcut/this%alpha)
-      if(erfc1*exp(rcut*dz_max) < CNST(1e-10))exit
+      if(erfc1*exp(rcut/dz_max) < CNST(1e-10))exit
       rcut = rcut * CNST(1.414)
     end do
 

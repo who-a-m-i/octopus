@@ -508,7 +508,7 @@ contains
         if(.not. does_exist) fromScratch = .true.
       end if
 
-      if(.not. fromScratch) call geometry_read_xyz(g_opt%geo, './last')
+      if(.not. fromScratch) call geometry_read_xyz(g_opt%geo, g_opt%syst%parser, './last')
       
       ! clean out old geom/go.XXXX.xyz files. must be consistent with write_iter_info
       iter = 1

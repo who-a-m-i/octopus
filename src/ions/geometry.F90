@@ -472,6 +472,7 @@ contains
   ! ---------------------------------------------------------
   subroutine geometry_read_xyz(geo, parser, fname, comment)
     type(geometry_t),    intent(inout) :: geo
+    type(parser_t),      intent(in)    :: parser
     character(len=*),    intent(in) :: fname
     character(len=*),    intent(in), optional :: comment
 

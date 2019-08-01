@@ -175,9 +175,6 @@ contains
       call delete_debug_trace()
     end if
 
-    ! create static directory
-    call io_mkdir(STATIC_DIR, namespace=parser%get_namespace())
-
     if(debug%info) then
       !%Variable MPIDebugHook
       !%Type logical

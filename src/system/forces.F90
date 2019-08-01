@@ -441,10 +441,11 @@ contains
 
  ! ----------------------------------------------------------------------
 
-  subroutine forces_write_info(iunit, geo, sb, dir)
+  subroutine forces_write_info(iunit, geo, sb, parser, dir)
     integer,             intent(in)    :: iunit
     type(geometry_t),    intent(in)    :: geo
     type(simul_box_t),   intent(in)    :: sb
+    type(parser_t),      intent(in)    :: parser
     character(len=*),    intent(in)    :: dir
 
     integer :: iatom, idir, ii, iunit2
@@ -480,7 +481,8 @@ contains
     end if
 
 
-    iunit2 = io_open(trim(dir)//'/forces', action='write', position='asis')
+    iunit2 = io_open(trim(dir)//'/forces', action='write', position='asis', &
+      namespace=parser%get_namespace())
     write(iunit2,'(a)') &
       ' # Total force (x,y,z) Ion-Ion (x,y,z) VdW (x,y,z) Local (x,y,z) NL (x,y,z)' // &
       ' Fields (x,y,z) Hubbard(x,y,z) SCF(x,y,z) NLCC(x,y,z)'

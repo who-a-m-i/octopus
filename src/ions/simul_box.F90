@@ -1554,7 +1554,7 @@ contains
 
       ! then write out the geometry, whether asked for or not in Output variable
       call io_mkdir(STATIC_DIR, namespace=parser%get_namespace())
-      call geometry_write_xyz(geo, io_workpath(STATIC_DIR//'/geometry', parser%get_namespace()))
+      call geometry_write_xyz(geo, parser, STATIC_DIR//'/geometry')
     end if
 
     if(simul_box_min_distance(geo, sb, real_atoms_only = .true.) < threshold) then

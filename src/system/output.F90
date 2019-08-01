@@ -681,7 +681,7 @@ contains
         call write_xsf_geometry_file(trimdir, "geometry", geo, gr%mesh)
       end if
       if(bitand(outp%how, OPTION__OUTPUTFORMAT__XYZ) /= 0) then
-        call geometry_write_xyz(geo, trim(trimdir)//'/geometry')
+        call geometry_write_xyz(geo, parser, trim(dir)//'/geometry')
         if(simul_box_is_periodic(gr%sb))  call periodic_write_crystal(gr%sb, geo, trimdir)
       end if
       if(bitand(outp%how, OPTION__OUTPUTFORMAT__VTK) /= 0) then

@@ -423,9 +423,10 @@ contains
 
 
   ! ---------------------------------------------------------
-  subroutine geometry_write_xyz(geo, fname, append, comment)
+  subroutine geometry_write_xyz(geo, parser, fname, append, comment)
     type(geometry_t),    intent(in) :: geo
     character(len=*),    intent(in) :: fname
+    type(parser_t),      intent(in) :: parser
     logical,             intent(in), optional :: append
     character(len=*),    intent(in), optional :: comment
 
@@ -440,7 +441,8 @@ contains
     if(present(append)) then
       if(append) position = 'append'
     end if
-    iunit = io_open(trim(fname)//'.xyz', action='write', position=position)
+    iunit = io_open(trim(fname)//'.xyz', action='write', position=position, &
+      namespace=parser%get_namespace())
 
     write(iunit, '(i4)') geo%natoms
     if (present(comment)) then
@@ -454,7 +456,8 @@ contains
     call io_close(iunit)
 
     if(geo%ncatoms > 0) then
-      iunit = io_open(trim(fname)//'_classical.xyz', action='write', position=position)
+      iunit = io_open(trim(fname)//'_classical.xyz', action='write', position=position, &
+        namespace=parser%get_namespace())
       write(iunit, '(i4)') geo%ncatoms
       write(iunit, '(1x)')
       do iatom = 1, geo%ncatoms
@@ -467,7 +470,7 @@ contains
   end subroutine geometry_write_xyz
 
   ! ---------------------------------------------------------
-  subroutine geometry_read_xyz(geo, fname, comment)
+  subroutine geometry_read_xyz(geo, parser, fname, comment)
     type(geometry_t),    intent(inout) :: geo
     character(len=*),    intent(in) :: fname
     character(len=*),    intent(in), optional :: comment
@@ -476,7 +479,8 @@ contains
 
     PUSH_SUB(geometry_read_xyz)
 
-    iunit = io_open(trim(fname)//'.xyz', action='read', position='rewind')
+    iunit = io_open(trim(fname)//'.xyz', action='read', position='rewind', &
+        namespace=parser%get_namespace())
 
     read(iunit, '(i4)') geo%natoms
     if (present(comment)) then
@@ -490,7 +494,8 @@ contains
     call io_close(iunit)
 
     if(geo%ncatoms > 0) then
-      iunit = io_open(trim(fname)//'_classical.xyz', action='read', position='rewind')
+      iunit = io_open(trim(fname)//'_classical.xyz', action='read', position='rewind', &
+        namespace=parser%get_namespace())
       read(iunit, '(i4)') geo%ncatoms
       read(iunit, *)
       do iatom = 1, geo%ncatoms

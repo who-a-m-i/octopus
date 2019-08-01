@@ -365,7 +365,8 @@ contains
   !> Includes information about simulation box and periodicity when applicable.
   !> This differs from a normal xyz file by including information about box
   !> shape and always using Angstroms.
-  subroutine write_canonicalized_xyz_file(dir, fname, geo, mesh)
+  subroutine write_canonicalized_xyz_file(parser, dir, fname, geo, mesh)
+    type(parser_t),   intent(in) :: parser
     character(len=*), intent(in) :: dir
     character(len=*), intent(in) :: fname
     type(geometry_t), intent(in) :: geo
@@ -378,8 +379,9 @@ contains
 
     PUSH_SUB(write_canonicalized_xyz_file)
 
-    call io_mkdir(dir)
-    iunit = io_open(trim(dir)//'/'//trim(fname)//'.xyz', action='write', position='asis')
+    call io_mkdir(dir, namespace=parser%get_namespace())
+    iunit = io_open(trim(dir)//'/'//trim(fname)//'.xyz', action='write', position='asis', &
+      namespace=parser%get_namespace())
 
     write(iunit, '(i6)') geo%natoms
     call simul_box_write_short_info(mesh%sb, iunit)

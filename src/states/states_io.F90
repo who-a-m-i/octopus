@@ -683,7 +683,8 @@ contains
         else
           write(filename, '(a)') 'bandstructure'
         end if
-        iunit(is) = io_open(trim(dir)//'/'//trim(filename), action='write')    
+        iunit(is) = io_open(trim(dir)//'/'//trim(filename), action='write', &
+          namespace=parser%get_namespace())
 
         ! write header
         write(iunit(is),'(a)',advance='no') '# coord. '

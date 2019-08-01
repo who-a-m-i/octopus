@@ -49,8 +49,7 @@ module parser_oct_m
     parse_block_string,    &
     parse_block_logical,   &
     parse_expression,      &
-    parse_array,           &
-    get_static_dir
+    parse_array
 
   type :: parser_t
     private
@@ -779,17 +778,6 @@ contains
     stop
 
   end subroutine parse_fatal
-
-  function get_static_dir(parser) result(dir)
-      type(parser_t), intent(in) :: parser
-      character(len=len(parser%namespace)) :: dir
-
-      dir = STATIC_DIR
-      if(trim(parser%namespace) /= "") then
-        dir = trim(parser%namespace) // "/" // dir
-      end if
-      dir = trim(dir)
-  end function get_static_dir
 
 end module parser_oct_m
 

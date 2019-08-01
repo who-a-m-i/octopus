@@ -256,8 +256,9 @@ contains
 
       ! write output file
       if(mpi_grp_is_root(mpi_world)) then
-        call io_mkdir(get_static_dir(sys%parser))
-        iunit = io_open(trim(get_static_dir(sys%parser))//'/eigenvalues', action='write')
+        call io_mkdir(STATIC_DIR, namespace=sys%parser%get_namespace())
+        iunit = io_open(STATIC_DIR//'/eigenvalues', action='write', &
+          namespace=sys%parser%get_namespace())
         
         if(converged) then
           write(iunit,'(a)') 'All states converged.'
@@ -307,7 +308,7 @@ contains
 
     if(simul_box_is_periodic(sys%gr%sb).and. sys%st%d%nik > sys%st%d%nspin) then
       if(bitand(sys%gr%sb%kpoints%method, KPOINTS_PATH) /= 0) then
-        call states_write_bandstructure(get_static_dir(sys%parser), sys%parser, &
+        call states_write_bandstructure(STATIC_DIR, sys%parser, &
               sys%st%nst, sys%st, sys%gr%sb, sys%geo, sys%gr%mesh, &
               sys%hm%hm_base%phase, vec_pot = sys%hm%hm_base%uniform_vector_potential, &
               vec_pot_var = sys%hm%hm_base%vector_potential)
@@ -315,7 +316,7 @@ contains
     end if
  
 
-    call output_all(sys%outp, sys%parser, sys%gr, sys%geo, sys%st, sys%hm, sys%ks, get_static_dir(sys%parser))
+    call output_all(sys%outp, sys%parser, sys%gr, sys%geo, sys%st, sys%hm, sys%ks, STATIC_DIR)
 
     call end_()
     POP_SUB(unocc_run)

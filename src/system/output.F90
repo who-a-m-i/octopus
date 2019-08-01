@@ -651,14 +651,14 @@ contains
     integer :: idir, ierr
     character(len=80) :: fname
     type(profile_t), save :: prof
-    character(len=len(trim(dir))) :: trimdir
+    character(len=MAX_PATH_LEN) :: trimdir
     
     PUSH_SUB(output_all)
     call profiling_in(prof, "OUTPUT_ALL")
 
-    trimdir = trim(dir)
+    trimdir = io_workpath(dir, namespace=parser%get_namespace())
     if(outp%what+outp%whatBZ+outp%what_lda_u /= 0) then
-      message(1) = "Info: Writing output to " // trim(dir)
+      message(1) = "Info: Writing output to " // trimdir
       call messages_info(1)
       call io_mkdir(trimdir)
     end if

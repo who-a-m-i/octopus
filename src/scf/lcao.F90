@@ -287,7 +287,7 @@ contains
 ! mysterious problems with optimization on PGI 12.4.0.
 
     if(this%debug .and. mpi_grp_is_root(mpi_world)) then
-      iunit_o = io_open(file=trim(get_static_dir(parser))//'lcao_orbitals', action='write')
+      iunit_o = io_open(file=STATIC_DIR//'lcao_orbitals', action='write', namespace=parser%get_namespace())
       write(iunit_o,'(7a6)') 'iorb', 'atom', 'level', 'i', 'l', 'm', 'spin'
     end if
 #endif

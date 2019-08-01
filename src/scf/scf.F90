@@ -668,7 +668,7 @@ contains
       end do
     end if
 
-    call create_convergence_file(get_static_dir(parser), "convergence")
+    call create_convergence_file(STATIC_DIR, "convergence")
     
     if ( verbosity_ /= VERB_NO ) then
       if(scf%max_iter > 0) then
@@ -921,7 +921,7 @@ contains
         end if
       end if
 
-      call write_convergence_file(get_static_dir(parser), "convergence")
+      call write_convergence_file(STATIC_DIR, "convergence")
       
       if(finish) then
         if(present(iters_done)) iters_done = iter
@@ -1015,20 +1015,21 @@ contains
 
     if(gs_run_) then 
       ! output final information
-      call scf_write_static(get_static_dir(parser), "info")
-      call output_all(outp, parser, gr, geo, st, hm, ks, get_static_dir(parser))
+      call scf_write_static(parser, STATIC_DIR, "info")
+      call output_all(outp, parser, gr, geo, st, hm, ks, STATIC_DIR)
     end if
 
     if(simul_box_is_periodic(gr%sb) .and. st%d%nik > st%d%nspin) then
       if(bitand(gr%sb%kpoints%method, KPOINTS_PATH) /= 0)  then
-        call states_write_bandstructure(get_static_dir(parser), parser, st%nst, st, gr%sb, geo, gr%mesh, &
+        call states_write_bandstructure(STATIC_DIR, parser, st%nst, st, gr%sb, geo, gr%mesh, &
           hm%hm_base%phase, vec_pot = hm%hm_base%uniform_vector_potential, &
           vec_pot_var = hm%hm_base%vector_potential)
       end if
     end if
 
     if( ks%vdw_correction == OPTION__VDWCORRECTION__VDW_TS) then
-      call vdw_ts_write_c6ab(ks%vdw_ts, geo, get_static_dir(parser), 'c6ab_eff')
+      call vdw_ts_write_c6ab(ks%vdw_ts, geo, io_workpath(STATIC_DIR, parser%get_namespace()), &
+        'c6ab_eff')
     end if
 
     SAFE_DEALLOCATE_A(vhxc_old)
@@ -1129,7 +1130,8 @@ contains
 
 
     ! ---------------------------------------------------------
-    subroutine scf_write_static(dir, fname)
+    subroutine scf_write_static(parser, dir, fname)
+      type(parser_t),   intent(in) :: parser
       character(len=*), intent(in) :: dir, fname
 
       type(partial_charges_t) :: partial_charges
@@ -1139,8 +1141,9 @@ contains
       PUSH_SUB(scf_run.scf_write_static)
 
       if(mpi_grp_is_root(mpi_world)) then ! this the absolute master writes
-        call io_mkdir(dir)
-        iunit = io_open(trim(dir) // "/" // trim(fname), action='write')
+        call io_mkdir(dir, namespace=parser%get_namespace())
+        iunit = io_open(trim(dir) // "/" // trim(fname), action='write', &
+          namespace=parser%get_namespace())
 
         call grid_write_info(gr, geo, iunit)
  
@@ -1333,8 +1336,9 @@ contains
       integer :: iunit
       character(len=12) :: label
       if(mpi_grp_is_root(mpi_world)) then ! this the absolute master writes
-        call io_mkdir(dir)
-        iunit = io_open(trim(dir) // "/" // trim(fname), action='write')
+        call io_mkdir(dir, namespace=parser%get_namespace())
+        iunit = io_open(trim(dir) // "/" // trim(fname), action='write', &
+          namespace=parser%get_namespace())
         write(iunit, '(a)', advance = 'no') '#iter energy           '
         label = 'energy_diff'
         write(iunit, '(1x,a)', advance = 'no') label
@@ -1365,8 +1369,9 @@ contains
       integer :: iunit
       
       if(mpi_grp_is_root(mpi_world)) then ! this the absolute master writes
-        call io_mkdir(dir)
-        iunit = io_open(trim(dir) // "/" // trim(fname), action='write', position='append')
+        call io_mkdir(dir, namespace=parser%get_namespace())
+        iunit = io_open(trim(dir) // "/" // trim(fname), action='write', position='append', &
+          namespace=parser%get_namespace())
         write(iunit, '(i5,es18.8)', advance = 'no') iter, units_from_atomic(units_out%energy, hm%energy%total)
         write(iunit, '(es13.5)', advance = 'no') units_from_atomic(units_out%energy, scf%energy_diff)
         write(iunit, '(es13.5)', advance = 'no') scf%abs_dens

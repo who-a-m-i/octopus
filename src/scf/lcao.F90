@@ -92,7 +92,6 @@ module lcao_oct_m
     complex(4), pointer :: zbuff(:, :, :, :) !< single-precision buffer
     logical           :: initialized_orbitals
     FLOAT             :: orbital_scale_factor
-    type(parser_t), pointer :: parser
 
     !> For the alternative LCAO
     logical             :: keep_orb     !< Whether we keep orbitals in memory.
@@ -130,11 +129,11 @@ contains
 
   ! ---------------------------------------------------------
   subroutine lcao_init(this, parser, gr, geo, st)
-    type(lcao_t),           intent(out) :: this
-    type(parser_t), target, intent(in)  :: parser
-    type(grid_t),           intent(in)  :: gr
-    type(geometry_t),       intent(in)  :: geo
-    type(states_t),         intent(in)  :: st
+    type(lcao_t),     intent(out) :: this
+    type(parser_t),   intent(in)  :: parser
+    type(grid_t),     intent(in)  :: gr
+    type(geometry_t), intent(in)  :: geo
+    type(states_t),   intent(in)  :: st
 
     integer :: ia, n, iorb, jj, maxj, idim
     integer :: ii, ll, mm
@@ -168,8 +167,6 @@ contains
 
     ! initialization, in case we leave this routine before LCAOAlternative is parsed
     this%alternative = .false.
-
-    this%parser => parser
 
     ! The initial LCAO calculation is done by default if we have species representing atoms.
     ! Otherwise, it is not the default value and has to be enforced in the input file.

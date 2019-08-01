@@ -133,8 +133,6 @@ module simul_box_oct_m
     type(c_ptr), private         :: image
     character(len=200), private  :: filename
 
-    type(parser_t), pointer :: parser
-
   end type simul_box_t
 
   character(len=22), parameter :: dump_tag = '*** simul_box_dump ***'
@@ -144,7 +142,7 @@ contains
   !--------------------------------------------------------------
   subroutine simul_box_init(sb, parser, geo, space)
     type(simul_box_t),                   intent(inout) :: sb
-    type(parser_t), target,              intent(in)    :: parser
+    type(parser_t),                      intent(in)    :: parser
     type(geometry_t),                    intent(inout) :: geo
     type(space_t),                       intent(in)    :: space
 
@@ -162,7 +160,7 @@ contains
     call simul_box_build_lattice(sb, parser)       ! Build lattice vectors.
     call simul_box_atoms_in_box(sb, geo, .true.)   ! Put all the atoms inside the box.
 
-    call simul_box_check_atoms_are_too_close(geo, sb)
+    call simul_box_check_atoms_are_too_close(geo, sb, parser)
 
     call symmetries_init(sb%symm, parser, geo, sb%dim, sb%periodic_dim, sb%rlattice, sb%klattice)
 
@@ -171,8 +169,6 @@ contains
     call kpoints_init(sb%kpoints, parser, sb%symm, sb%dim, sb%rlattice, sb%klattice, only_gamma_kpoint)
 
     call simul_box_symmetry_check(sb, geo, sb%kpoints, sb%dim)
-
-    sb%parser => parser
 
     POP_SUB(simul_box_init)
 
@@ -1533,9 +1529,10 @@ contains
 
   ! -----------------------------------------------------
 
-  subroutine simul_box_check_atoms_are_too_close(geo, sb)
+  subroutine simul_box_check_atoms_are_too_close(geo, sb, parser)
     type(geometry_t),  intent(in) :: geo
     type(simul_box_t), intent(in) :: sb
+    type(parser_t),    intent(in) :: parser
 
     FLOAT :: mindist
     FLOAT, parameter :: threshold = CNST(1e-5)
@@ -1556,8 +1553,8 @@ contains
       call messages_warning(3)
 
       ! then write out the geometry, whether asked for or not in Output variable
-      call io_mkdir(get_static_dir(sb%parser))
-      call geometry_write_xyz(geo, trim(get_static_dir(sb%parser))//'/geometry')
+      call io_mkdir(get_static_dir(parser))
+      call geometry_write_xyz(geo, trim(get_static_dir(parser))//'/geometry')
     end if
 
     if(simul_box_min_distance(geo, sb, real_atoms_only = .true.) < threshold) then

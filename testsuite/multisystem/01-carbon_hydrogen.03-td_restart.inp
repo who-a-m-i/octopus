@@ -1,5 +1,4 @@
-CalculationMode = gs
-fromScratch = yes
+CalculationMode = td
 
 %Systems
  "Carbon"   | electronic
@@ -24,6 +23,14 @@ Carbon.ExtraStates = 2
  2/3 | 2/3 | 2/3
  0 | 0 | 0
 %
+
+TDMaxSteps = 40
+TDTimeStep = 0.01
+
+TDDeltaStrength = 0.01
+TDPolarizationDirection = 1
+
+TDEnergyUpdateIter = 1
 
 # Currently GPU is not supported
 DisableAccel = yes

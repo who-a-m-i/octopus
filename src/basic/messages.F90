@@ -45,8 +45,6 @@ module messages_oct_m
     messages_switch_status,     &
     delete_debug_trace,         &    
     print_date,                 &
-    time_diff,                  &
-    time_sum,                   &
     epoch_time_diff,            &
     alloc_error,                &
     dealloc_error,              &
@@ -71,7 +69,7 @@ module messages_oct_m
   character(len=256), dimension(max_lines), public :: message    !< to be output by fatal, warning
   character(len=68),      parameter, public :: hyphens = &
     '--------------------------------------------------------------------'
-  character(len=69),      parameter, public :: shyphens = '*'//hyphens
+  character(len=69),      parameter :: shyphens = '*'//hyphens
 
   logical,                           public :: flush_messages
 

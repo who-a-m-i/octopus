@@ -164,13 +164,13 @@ contains
     call parse_variable(namespace, 'NTypeParticleModelmb', 1, this%ntype_of_particle)
     call messages_print_var_value(stdout, "NTypeParticleModelmb", this%ntype_of_particle)
     if (this%ntype_of_particle > this%nparticle) then
-      write (messages_lines(1), '(2a,2I6)') ' Number of types of modelmb particles should be <= Number of modelmb particles ', &
+      write (message%lines(1), '(2a,2I6)') ' Number of types of modelmb particles should be <= Number of modelmb particles ', &
         this%ntype_of_particle, this%nparticle
       call messages_fatal(1)
     end if
     
     if (this%ndim*this%nparticle /= gr%sb%dim) then
-      messages_lines(1) = ' Number of modelmb particles * dimension of modelmb space must be = Ndim'
+      message%lines(1) = ' Number of modelmb particles * dimension of modelmb space must be = Ndim'
       call messages_fatal(1)
     end if
 
@@ -243,11 +243,11 @@ contains
         call parse_block_float(blk, ipart - 1, 3, this%charge_particle(ipart))
         call parse_block_integer(blk, ipart - 1, 4, this%bosonfermion(ipart))
         
-        write (messages_lines(1),'(a,a)') 'labels_particles = ', this%labels_particles(ipart)
-        write (messages_lines(2),'(a,i6)') 'particletype = ', this%particletype(ipart)
-        write (messages_lines(3),'(a,E20.10)') 'mass_particle = ', this%mass_particle(ipart)
-        write (messages_lines(4),'(a,E20.10)') 'charge_particle = ', this%charge_particle(ipart)
-        write (messages_lines(5),'(a,i6)') 'bosonfermion = ', this%bosonfermion(ipart)
+        write (message%lines(1),'(a,a)') 'labels_particles = ', this%labels_particles(ipart)
+        write (message%lines(2),'(a,i6)') 'particletype = ', this%particletype(ipart)
+        write (message%lines(3),'(a,E20.10)') 'mass_particle = ', this%mass_particle(ipart)
+        write (message%lines(4),'(a,E20.10)') 'charge_particle = ', this%charge_particle(ipart)
+        write (message%lines(5),'(a,i6)') 'bosonfermion = ', this%bosonfermion(ipart)
         call messages_info(5)
       end do
       call parse_block_end(blk)

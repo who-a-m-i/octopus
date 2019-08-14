@@ -435,7 +435,7 @@ contains
       write(*, *) 1.0e-10 * maxval(abs(mat))
       write(*, *) maxval(abs(vt)) > CNST(1.0e-10) * maxval(abs(mat))
       write(*, *) mat
-      write(messages_lines(1), '(a)') 'Pseudoinverse failed.'
+      write(message%lines(1), '(a)') 'Pseudoinverse failed.'
       call messages_fatal(1)
     end if
 

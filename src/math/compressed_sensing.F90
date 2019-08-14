@@ -154,7 +154,7 @@ contains
     freq_function(1:this%nfreq) = nrm/(this%dfreq*M_TWO/M_PI)*freq_function(1:this%nfreq)
 
     if(ierr < 0) then
-      messages_lines(1) = 'The Basis Pursuit Denoising process failed to converge.'
+      message%lines(1) = 'The Basis Pursuit Denoising process failed to converge.'
       call messages_warning(1)
     end if
 

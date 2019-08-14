@@ -95,7 +95,7 @@ contains
                          sys%ks%ks_inversion%aux_st, sys%hm, sys%psolver, 1)
     call density_calc(sys%ks%ks_inversion%aux_st, sys%gr, sys%ks%ks_inversion%aux_st%rho)
     
-    write(messages_lines(1),'(a)') "Calculating KS potential"
+    write(message%lines(1),'(a)') "Calculating KS potential"
     call messages_info(1)
        
     if (sys%ks%ks_inversion%method == XC_INV_METHOD_TWO_PARTICLE) then ! 2-particle exact inversion
@@ -130,7 +130,7 @@ contains
         end if
       end do
     end do
-    write (messages_lines(1),'(a,F16.6)') 'Achieved difference in densities wrt target:', &
+    write (message%lines(1),'(a,F16.6)') 'Achieved difference in densities wrt target:', &
         diffdensity
     call messages_info(1)
 
@@ -142,7 +142,7 @@ contains
     call restart_init(restart, sys%namespace, RESTART_GS, RESTART_TYPE_DUMP, sys%mc, err, mesh = sys%gr%mesh)
     call states_elec_dump(restart, sys%ks%ks_inversion%aux_st, sys%gr, err, 0)
     if (err /= 0) then
-      messages_lines(1) = "Unable to write states wavefunctions."
+      message%lines(1) = "Unable to write states wavefunctions."
       call messages_warning(1)
     end if
     call restart_end(restart)

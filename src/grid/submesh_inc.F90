@@ -324,7 +324,7 @@ subroutine X(submesh_batch_add_matrix)(this, factor, ss, mm)
                 mm%states(ist)%X(psi)(this%map(is), idim) + factor(jst, ist)*ss%states(jst)%zpsi(is, jdim)
             end forall
 #else
-            messages_lines(1) = "Internal error: cannot call dsubmesh_batch_add_matrix with complex batch ss"
+            message%lines(1) = "Internal error: cannot call dsubmesh_batch_add_matrix with complex batch ss"
             call messages_fatal(1)
 #endif
             
@@ -354,7 +354,7 @@ subroutine X(submesh_batch_add_matrix)(this, factor, ss, mm)
               mm%pack%X(psi)(ii, this%map(is)) = mm%pack%X(psi)(ii, this%map(is)) + factor(jst, ist)*ss%states(jst)%zpsi(is, jdim)
             end forall
 #else
-            messages_lines(1) = "Internal error: cannot call dsubmesh_batch_add_matrix with complex batch ss"
+            message%lines(1) = "Internal error: cannot call dsubmesh_batch_add_matrix with complex batch ss"
             call messages_fatal(1)
 #endif
             
@@ -413,7 +413,7 @@ subroutine X(submesh_batch_add)(this, ss, mm)
             mm%states(ist)%X(psi)(this%map(is), idim) + ss%states(ist)%zpsi(is, jdim)
         end forall
 #else
-        messages_lines(1) = "Internal error: cannot call dsubmesh_batch_add with complex batch ss"
+        message%lines(1) = "Internal error: cannot call dsubmesh_batch_add with complex batch ss"
         call messages_fatal(1)
 #endif
         
@@ -467,7 +467,7 @@ subroutine X(submesh_batch_dotp_matrix)(this, mm, ss, dot, reduce)
                 ss%states(ist)%zpsi(is, jdim)
             end do
 #else
-            messages_lines(1) = "Internal error: cannot call dsubmesh_batch_dotp_matrix with complex batch ss"
+            message%lines(1) = "Internal error: cannot call dsubmesh_batch_dotp_matrix with complex batch ss"
             call messages_fatal(1)
 #endif
 
@@ -503,7 +503,7 @@ subroutine X(submesh_batch_dotp_matrix)(this, mm, ss, dot, reduce)
                 ss%states(ist)%zpsi(is, jdim)
             end do
 #else
-            messages_lines(1) = "Internal error: cannot call dsubmesh_batch_dotp_matrix with complex batch ss"
+            message%lines(1) = "Internal error: cannot call dsubmesh_batch_dotp_matrix with complex batch ss"
             call messages_fatal(1)
 #endif
 

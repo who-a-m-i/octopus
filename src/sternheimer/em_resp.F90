@@ -164,7 +164,7 @@ contains
     if(abs(sys%ks%xc%kernel_lrc_alpha) > M_EPSILON) em_vars%lrc_kernel = .true.
 
     if(em_vars%lrc_kernel .and. gr%sb%periodic_dim < gr%sb%dim) then
-      messages_lines(1) = 'The use of the LRC kernel for non-periodic dimensions makes no sense.'
+      message%lines(1) = 'The use of the LRC kernel for non-periodic dimensions makes no sense.'
       call messages_warning(1)
     end if
 
@@ -175,7 +175,7 @@ contains
       call states_elec_look_and_load(gs_restart, sys%namespace, sys%st, sys%gr, is_complex = complex_response)
       call restart_end(gs_restart)
     else
-      messages_lines(1) = "Previous gs calculation is required."
+      message%lines(1) = "Previous gs calculation is required."
       call messages_fatal(1)
     end if
 
@@ -184,14 +184,14 @@ contains
     complex_response = states_are_complex(sys%st)
 
     if (states_are_real(sys%st)) then
-      messages_lines(1) = 'Info: Using real wavefunctions.'
+      message%lines(1) = 'Info: Using real wavefunctions.'
     else
-      messages_lines(1) = 'Info: Using complex wavefunctions.'
+      message%lines(1) = 'Info: Using complex wavefunctions.'
     end if
     call messages_info(1)
 
     ! setup Hamiltonian
-    messages_lines(1) = 'Info: Setting up Hamiltonian for linear response'
+    message%lines(1) = 'Info: Setting up Hamiltonian for linear response'
     call messages_info(1)
     call system_h_setup(sys)
 
@@ -199,19 +199,19 @@ contains
 
     if(use_kdotp .and. .not. smear_is_semiconducting(sys%st%smear)) then
       ! there needs to be a gap.
-      messages_lines(1) = "em_resp with kdotp can only be used with semiconducting smearing"
+      message%lines(1) = "em_resp with kdotp can only be used with semiconducting smearing"
       call messages_fatal(1)
     end if
 
     ! read kdotp wavefunctions if necessary
     if (use_kdotp) then
-      messages_lines(1) = "Reading kdotp wavefunctions for periodic directions."
+      message%lines(1) = "Reading kdotp wavefunctions for periodic directions."
       call messages_info(1)
 
       call restart_init(kdotp_restart, sys%namespace, RESTART_KDOTP, RESTART_TYPE_LOAD, sys%mc, ierr, mesh=sys%gr%mesh)
       if(ierr /= 0) then
-        messages_lines(1) = "Unable to read kdotp wavefunctions."
-        messages_lines(2) = "Previous kdotp calculation required."
+        message%lines(1) = "Unable to read kdotp wavefunctions."
+        message%lines(2) = "Previous kdotp calculation required."
         call messages_fatal(2)
       end if
       
@@ -227,8 +227,8 @@ contains
         call restart_close_dir(kdotp_restart)
 
         if(ierr /= 0) then
-          messages_lines(1) = "Could not load kdotp wavefunctions from '"//trim(wfs_tag_sigma(str_tmp, 1))//"'"
-          messages_lines(2) = "Previous kdotp calculation required."
+          message%lines(1) = "Could not load kdotp wavefunctions from '"//trim(wfs_tag_sigma(str_tmp, 1))//"'"
+          message%lines(2) = "Previous kdotp calculation required."
           call messages_fatal(2)
         end if
       end do
@@ -279,8 +279,8 @@ contains
     ! Magnetooptics is implemented only for projections of corrections to wavefunctions on unoccupied states.
     if(em_vars%calc_magnetooptics) then 
       if(em_vars%calc_hyperpol .and. use_kdotp) then
-        messages_lines(1) = "Hyperpolarizability and magnetooptics with kdotp are not compatible."
-        messages_lines(2) = "Only calculation of hyperpolarizability will be performed."
+        message%lines(1) = "Hyperpolarizability and magnetooptics with kdotp are not compatible."
+        message%lines(2) = "Only calculation of hyperpolarizability will be performed."
         call messages_warning(2)
         em_vars%calc_magnetooptics = .false.
       else
@@ -319,9 +319,9 @@ contains
 
         if(gr%sb%periodic_dim < gr%sb%dim) then
           if(pert_type(em_vars%perturbation) == PERTURBATION_MAGNETIC) then
-            messages_lines(1) = "All directions should be periodic for magnetic perturbations with kdotp."
+            message%lines(1) = "All directions should be periodic for magnetic perturbations with kdotp."
           else
-            messages_lines(1) = "All directions should be periodic for magnetooptics with kdotp."
+            message%lines(1) = "All directions should be periodic for magnetooptics with kdotp."
           end if
           call messages_fatal(1)
         end if
@@ -357,7 +357,7 @@ contains
 
     if(em_vars%lrc_kernel .and. (.not. sternheimer_add_hartree(sh)) &
       .and. (.not. sternheimer_add_fxc(sh))) then
-      messages_lines(1) = "Only the G = G'= 0 term of the LRC kernel is taken into account."
+      message%lines(1) = "Only the G = G'= 0 term of the LRC kernel is taken into account."
       call messages_warning(1)
     end if   
         
@@ -433,7 +433,7 @@ contains
         if(em_vars%calc_magnetooptics .and. ifactor == 2) frequency_eta = frequency - M_zI * em_vars%eta
 
         if(abs(frequency) < M_EPSILON .and. em_vars%calc_magnetooptics .and. use_kdotp) then
-          messages_lines(1) = "Magnetooptical response with kdotp requires non-zero frequency."
+          message%lines(1) = "Magnetooptical response with kdotp requires non-zero frequency."
           call messages_warning(1)       
         end if
 
@@ -713,7 +713,7 @@ contains
         do irow = 0, nrow-1
           call parse_block_integer(blk, irow, 0, nfreqs_in_row)
           if(nfreqs_in_row < 1) then
-            messages_lines(1) = "EMFreqs: invalid number of frequencies."
+            message%lines(1) = "EMFreqs: invalid number of frequencies."
             call messages_fatal(1)
           end if
           em_vars%nomega = em_vars%nomega + nfreqs_in_row
@@ -775,7 +775,7 @@ contains
 
       call parse_variable(sys%namespace, 'EMEta', M_ZERO, em_vars%eta, units_inp%energy)
       if(em_vars%eta < -M_EPSILON) then
-        messages_lines(1) = "EMEta cannot be negative."
+        message%lines(1) = "EMEta cannot be negative."
         call messages_fatal(1)
       end if
 
@@ -837,7 +837,7 @@ contains
           call parse_block_end(blk)
 
           if(abs(sum(em_vars%freq_factor(1:3))) > M_EPSILON) then
-            messages_lines(1) = "Frequency factors specified by EMHyperpol must sum to zero."
+            message%lines(1) = "Frequency factors specified by EMHyperpol must sum to zero."
             call messages_fatal(1)
           end if
 
@@ -914,7 +914,7 @@ contains
 
       call parse_variable(sys%namespace, 'EMOccupiedResponse', .false., em_vars%occ_response)
       if(em_vars%occ_response .and. .not. (smear_is_semiconducting(sys%st%smear) .or. sys%st%smear%method == SMEAR_FIXED_OCC)) then
-        messages_lines(1) = "EMOccupiedResponse cannot be used if there are partial occupations."
+        message%lines(1) = "EMOccupiedResponse cannot be used if there are partial occupations."
         call messages_fatal(1)
       end if
 
@@ -943,25 +943,25 @@ contains
       call pert_info(em_vars%perturbation)
       if(pert_type(em_vars%perturbation) == PERTURBATION_ELECTRIC) then
         if(em_vars%calc_hyperpol) then 
-          write(messages_lines(1),'(a)') 'Linear-Response First-Order Hyperpolarizabilities'
-          call messages_print_stress(stdout, trim(messages_lines(1)))
+          write(message%lines(1),'(a)') 'Linear-Response First-Order Hyperpolarizabilities'
+          call messages_print_stress(stdout, trim(message%lines(1)))
         else 
-          write(messages_lines(1),'(a)') 'Linear-Response Polarizabilities'
-          call messages_print_stress(stdout, trim(messages_lines(1)))
+          write(message%lines(1),'(a)') 'Linear-Response Polarizabilities'
+          call messages_print_stress(stdout, trim(message%lines(1)))
         end if
       else
-        write(messages_lines(1),'(a)') 'Magnetic Susceptibilities'
-        call messages_print_stress(stdout, trim(messages_lines(1)))
+        write(message%lines(1),'(a)') 'Magnetic Susceptibilities'
+        call messages_print_stress(stdout, trim(message%lines(1)))
       end if
 
       if (states_are_real(sys%st)) then 
-        messages_lines(1) = 'Wavefunctions type: Real'
+        message%lines(1) = 'Wavefunctions type: Real'
       else
-        messages_lines(1) = 'Wavefunctions type: Complex'
+        message%lines(1) = 'Wavefunctions type: Complex'
       end if
       call messages_info(1)
 
-      write(messages_lines(1),'(a,i3,a)') 'Calculating response for ', em_vars%nomega, ' frequencies.'
+      write(message%lines(1),'(a,i3,a)') 'Calculating response for ', em_vars%nomega, ' frequencies.'
       call messages_info(1)
 
       call messages_print_stress(stdout)
@@ -1465,7 +1465,7 @@ contains
 
       if(states_are_complex(st) .and. em_vars%nsigma == 2) then       
 
-        messages_lines(1) = "Info: Calculating rotatory response."
+        message%lines(1) = "Info: Calculating rotatory response."
         call messages_info(1)
 
         call pert_init(angular_momentum, namespace, PERTURBATION_MAGNETIC, gr, geo)

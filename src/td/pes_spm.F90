@@ -104,7 +104,7 @@ contains
     sdim   = st%d%dim
     mdim   = mesh%sb%dim
 
-    messages_lines(1) = 'Info: Calculating PES using sample point technique.'
+    message%lines(1) = 'Info: Calculating PES using sample point technique.'
     call messages_info(1)
 
     !%Variable PES_spm_points
@@ -127,9 +127,9 @@ contains
     end if
 
     if(this%sphgrid) then
-      messages_lines(1) = 'Info: Using spherical grid.'
+      message%lines(1) = 'Info: Using spherical grid.'
     else
-      messages_lines(1) = 'Info: Using sample points from block.'
+      message%lines(1) = 'Info: Using sample points from block.'
     end if
     call messages_info(1)
 
@@ -164,7 +164,7 @@ contains
     this%onfly = .false.
     if(this%omegamax > M_ZERO) then
       this%onfly = .true.
-      messages_lines(1) = 'Info: Calculating PES during time propagation.'
+      message%lines(1) = 'Info: Calculating PES during time propagation.'
       call messages_info(1)
       call messages_print_var_value(stdout, "PES_spm_OmegaMax", this%omegamax)
     end if
@@ -226,8 +226,8 @@ contains
         case(SPHERE)
           radius = mesh%sb%rsize
         case default
-          messages_lines(1) = "Spherical grid not implemented for this box shape."
-          messages_lines(2) = "Specify sample points with block PES_spm_points."
+          message%lines(1) = "Spherical grid not implemented for this box shape."
+          message%lines(2) = "Specify sample points with block PES_spm_points."
           call messages_fatal(2)
         end select
       end if
@@ -270,7 +270,7 @@ contains
 
     if(.not. this%sphgrid) then
 
-      messages_lines(1) = 'Info: Reading sample points from input.'
+      message%lines(1) = 'Info: Reading sample points from input.'
       call messages_info(1)
 
       ! read points from input file
@@ -286,7 +286,7 @@ contains
 
     else ! this%sphgrid == .true.
 
-      messages_lines(1) = 'Info: Initializing spherical grid.'
+      message%lines(1) = 'Info: Initializing spherical grid.'
       call messages_info(1)
 
       ! initializing spherical grid
@@ -827,7 +827,7 @@ contains
     end if
     
     if (debug%info) then
-      messages_lines(1) = "Debug: Writing PES_spm restart."
+      message%lines(1) = "Debug: Writing PES_spm restart."
       call messages_info(1)
     end if
 
@@ -845,7 +845,7 @@ contains
     if (err /= 0) ierr = ierr + 1
     
     if (debug%info) then
-      messages_lines(1) = "Debug: Writing PES_spm restart done."
+      message%lines(1) = "Debug: Writing PES_spm restart done."
       call messages_info(1)
     end if
     
@@ -873,7 +873,7 @@ contains
     end if
     
     if (debug%info) then
-      messages_lines(1) = "Debug: Reading PES_spm restart."
+      message%lines(1) = "Debug: Reading PES_spm restart."
       call messages_info(1)
     end if
 
@@ -891,7 +891,7 @@ contains
     if (err /= 0) ierr = ierr + 1
     
     if(debug%info) then
-      messages_lines(1) = "Debug: Reading PES_spm restart done."
+      message%lines(1) = "Debug: Reading PES_spm restart done."
       call messages_info(1)
     end if
     

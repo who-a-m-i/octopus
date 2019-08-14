@@ -56,7 +56,7 @@ contains
     case(8)
       !O.K.
     case default
-      messages_lines(1) = "Only interpolating functions 8, 14, 16, 20, 24, 30, 40, 50, 60, 100."
+      message%lines(1) = "Only interpolating functions 8, 14, 16, 20, 24, 30, 40, 50, 60, 100."
       call messages_fatal(1)
     end select
 !!$  write(unit=*,fmt="(1x,a,i0,a)") &
@@ -118,7 +118,7 @@ contains
     case(8)
       !O.K.
     case default
-      messages_lines(1) = "Only interpolating functions 8, 14, 16, 20, 24, 30, 40, 50, 60, 100."
+      message%lines(1) = "Only interpolating functions 8, 14, 16, 20, 24, 30, 40, 50, 60, 100."
       call messages_fatal(1)
     end select
 

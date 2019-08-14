@@ -159,7 +159,7 @@ contains
         call periodic_copy_end(pc)
       end do
 
-      write(messages_lines(1),'(a, i3, a)')    'Intersite interaction will be computed for ', this%nneighbors, ' neighboring atoms.'
+      write(message%lines(1),'(a, i3, a)')    'Intersite interaction will be computed for ', this%nneighbors, ' neighboring atoms.'
       call messages_info(1)
 
 
@@ -179,7 +179,7 @@ contains
         call submesh_merge(sm, sb, der%mesh, this%sphere, os(ios)%sphere, &
                        shift = this%V_ij(inn, 1:sb%dim))
 
-        write(messages_lines(1),'(a, i3, a, f6.3, a, i5, a)') 'Neighbor ', inn, ' is located at ', &
+        write(message%lines(1),'(a, i3, a, f6.3, a, i5, a)') 'Neighbor ', inn, ' is located at ', &
                              this%V_ij(inn, sb%dim+1), ' Bohr and has ', sm%np, ' grid points.'
         call messages_info(1)
 

@@ -94,8 +94,8 @@ program photoelectron_spectrum
   
   call getopt_init(ierr)
   if(ierr /= 0) then
-    messages_lines(1) = "Your Fortran compiler doesn't support command-line arguments;"
-    messages_lines(2) = "the oct-photoelectron-spectrum command is not available."
+    message%lines(1) = "Your Fortran compiler doesn't support command-line arguments;"
+    message%lines(2) = "the oct-photoelectron-spectrum command is not available."
     call messages_fatal(2)
   end if
 
@@ -238,7 +238,7 @@ program photoelectron_spectrum
   call restart_module_init(default_namespace)
   call restart_init(restart, default_namespace, RESTART_TD, RESTART_TYPE_LOAD, mc, ierr)
   if(ierr /= 0) then
-    messages_lines(1) = "Unable to read time-dependent restart information."
+    message%lines(1) = "Unable to read time-dependent restart information."
     call messages_fatal(1)
   end if
   
@@ -279,7 +279,7 @@ program photoelectron_spectrum
     krng(1) = kpoints_number(sb%kpoints) - sb%kpoints%nik_skip  + 1
     
     call messages_print_stress(stdout, "Kpoint selection")
-    write(messages_lines(1), '(a)') 'Will use a zero-weight path in reciprocal space with the following points'
+    write(message%lines(1), '(a)') 'Will use a zero-weight path in reciprocal space with the following points'
     call messages_info(1)
     ! Figure out the direction of the path - it must be along kx or ky only
 !     call get_kpath_direction(sb%kpoints, krng, kpth_dir, pvec)
@@ -394,7 +394,7 @@ program photoelectron_spectrum
 
   call unit_system_init(default_namespace)
  
-  write(messages_lines(1),'(a,f10.2,a2,f10.2,a2,f10.2,a1)') &
+  write(message%lines(1),'(a,f10.2,a2,f10.2,a2,f10.2,a1)') &
                    "Zenith axis: (",pol(1),", ",pol(2),", ",pol(3),")"
   call messages_info(1)
 
@@ -436,7 +436,7 @@ program photoelectron_spectrum
 
 
 
-  write(messages_lines(1), '(a)') 'Done'
+  write(message%lines(1), '(a)') 'Done'
   call messages_info(1)
 
   call messages_print_stress(stdout)
@@ -519,16 +519,16 @@ program photoelectron_spectrum
       if (st%d%ispin /= UNPOLARIZED .or. ist>0) call messages_print_stress(stdout)
       
       if (ist > 0 ) then 
-        write(messages_lines(1), '(a,i4)') 'State = ', ist
+        write(message%lines(1), '(a,i4)') 'State = ', ist
         call messages_info(1)
       end if
       
       if (st%d%ispin /= UNPOLARIZED) then
         if (ispin > 0 ) then 
-          write(messages_lines(1), '(a,i1)') 'Spin component= ', ispin
+          write(message%lines(1), '(a,i1)') 'Spin component= ', ispin
           call messages_info(1)
         else 
-          write(messages_lines(1), '(a)') 'Spinless'
+          write(message%lines(1), '(a)') 'Spinless'
           call messages_info(1)
         end if
       end if
@@ -574,15 +574,15 @@ program photoelectron_spectrum
         end if
 
         if (dir == -1) then
-            write(messages_lines(1), '(a)') 'Unrecognized plane. Use -u to change.'
+            write(message%lines(1), '(a)') 'Unrecognized plane. Use -u to change.'
             call messages_fatal(1)
           else
-            write(messages_lines(1), '(a)') 'Save velocity map on plane: '//index2axis(dir)//" = 0"
+            write(message%lines(1), '(a)') 'Save velocity map on plane: '//index2axis(dir)//" = 0"
             call messages_info(1)
         end if
 
         if(integrate /= INTEGRATE_NONE) then
-          write(messages_lines(1), '(a)') 'Integrate on: '//index2var(integrate)
+          write(message%lines(1), '(a)') 'Integrate on: '//index2var(integrate)
           call messages_info(1)
           filename = trim(filename)//'.i_'//trim(index2var(integrate))
         end if
@@ -621,7 +621,7 @@ program photoelectron_spectrum
       if(bitand(pesout%what, OPTION__PHOTOELECTRONSPECTRUMOUTPUT__ENERGY_TH_PH) /= 0) then
         call messages_print_stress(stdout, "PES on spherical cuts")
 
-        write(messages_lines(1), '(a,es19.12,a2,es19.12,2x,a19)') &
+        write(message%lines(1), '(a,es19.12,a2,es19.12,2x,a19)') &
               'Save PES on a spherical cut at E= ',Emin,", ",Emax, &
                str_center('['//trim(units_abbrev(units_out%energy)) // ']', 19)
         call messages_info(1)
@@ -710,13 +710,13 @@ program photoelectron_spectrum
       
       if (sum((kpt(:) - (/1,0,0/))**2) < M_EPSILON) then
         kpth_dir = 1
-        write(messages_lines(1), '(a)') 'along kx'
+        write(message%lines(1), '(a)') 'along kx'
         pvec = (/0,1,0/)
       end if        
               
       if (sum((kpt(:) - (/0,1,0/))**2) < M_EPSILON) then 
         kpth_dir = 2
-        write(messages_lines(1), '(a)') 'along ky'
+        write(message%lines(1), '(a)') 'along ky'
         pvec = (/1,0,0/)        
       end if
       
@@ -724,7 +724,7 @@ program photoelectron_spectrum
       
     
       if (kpth_dir == -1) then
-        messages_lines(1) = "K-points with zero weight path works only with paths along kx or ky."
+        message%lines(1) = "K-points with zero weight path works only with paths along kx or ky."
         call messages_fatal(1)
       end if
       
@@ -743,14 +743,14 @@ program photoelectron_spectrum
       PUSH_SUB(write_kpoints_info)
 
       do ik = ikstart, ikend
-        write(messages_lines(1),'(i8,1x)') ik
+        write(message%lines(1),'(i8,1x)') ik
         write(str_tmp,'(f12.6)') kpoints_get_weight(kpoints, ik)
-        messages_lines(1) = trim(messages_lines(1)) // trim(str_tmp)//' |'
+        message%lines(1) = trim(message%lines(1)) // trim(str_tmp)//' |'
         do idir = 1, kpoints%full%dim
           write(str_tmp,'(f12.6)') kpoints%reduced%red_point(idir, ik)
-          messages_lines(1) = trim(messages_lines(1)) // trim(str_tmp)
+          message%lines(1) = trim(message%lines(1)) // trim(str_tmp)
         end do
-        messages_lines(1) = trim(messages_lines(1)) //' |'
+        message%lines(1) = trim(message%lines(1)) //' |'
         call messages_info(1)
       end do
       
@@ -783,8 +783,8 @@ program photoelectron_spectrum
         lPol(:) = abs(cPol)
         
         if(no_l > 1) then
-          messages_lines(1)="There is more than one external field. Polarization will be selected"
-          messages_lines(2)="from the first field. Use -V to change axis."
+          message%lines(1)="There is more than one external field. Polarization will be selected"
+          message%lines(2)="from the first field. Use -V to change axis."
           call messages_info(2)
         end if
 

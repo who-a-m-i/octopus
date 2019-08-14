@@ -111,14 +111,14 @@ contains
     PUSH_SUB(ps_fhi_process)
 
     if(lmax /= ps_fhi%fhi_file%lmax) then
-      messages_lines(1) = "Inconsistency in pseudopotential :"
-      write(messages_lines(2),'(a,i2,a,i2)') "  Input file says lmax = ", lmax, &
+      message%lines(1) = "Inconsistency in pseudopotential :"
+      write(message%lines(2),'(a,i2,a,i2)') "  Input file says lmax = ", lmax, &
         " but ps file says lmax = ", ps_fhi%fhi_file%lmax
       call messages_warning(2)
     end if
     if(lloc /= ps_fhi%fhi_file%lloc) then
-      messages_lines(1) = "Inconsistency in pseudopotential :"
-      write(messages_lines(2),'(a,i2,a,i2)') "  Input file says lloc = ", lloc, &
+      message%lines(1) = "Inconsistency in pseudopotential :"
+      write(message%lines(2),'(a,i2,a,i2)') "  Input file says lloc = ", lloc, &
         " but ps file says lloc = ", ps_fhi%fhi_file%lloc
       call messages_warning(2)
     end if

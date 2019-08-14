@@ -115,8 +115,8 @@ contains
     call calc_mode_par_set_parallelization(P_STRATEGY_STATES, default = .false.)
     call system_init(sys, default_namespace)
 
-    messages_lines(1) = 'Info: Converting files'
-    messages_lines(2) = ''
+    message%lines(1) = 'Info: Converting files'
+    message%lines(2) = ''
     call messages_info(2)
 
     !%Variable ConvertFilename
@@ -302,12 +302,12 @@ contains
     SAFE_ALLOCATE(pot(1:mesh%np))
     read_rff(:) = M_ZERO
    
-    write(messages_lines(1),'(5a,i5,a,i5,a,i5)') "Converting '", trim(in_folder), "/", trim(basename), &
+    write(message%lines(1),'(5a,i5,a,i5,a,i5)') "Converting '", trim(in_folder), "/", trim(basename), &
          "' from ", c_start, " to ", c_end, " every ", c_step
     call messages_info(1)
  
     if (subtract_file) then
-      write(messages_lines(1),'(a,a,a,a)') "Reading ref-file from ", trim(ref_folder), trim(ref_name),".obf"
+      write(message%lines(1),'(a,a,a,a)') "Reading ref-file from ", trim(ref_folder), trim(ref_name),".obf"
       call restart_init(restart, namespace, RESTART_UNDEFINED, RESTART_TYPE_LOAD, mc, ierr, &
                         dir=trim(ref_folder), mesh = mesh)
       ! FIXME: why only real functions? Please generalize.
@@ -315,8 +315,8 @@ contains
         call drestart_read_mesh_function(restart, trim(ref_name), mesh, read_rff, ierr)
         call restart_end(restart)
       else
-        write(messages_lines(1),'(2a)') "Failed to read from ref-file ", trim(ref_name)
-        write(messages_lines(2), '(2a)') "from folder ", trim(ref_folder)
+        write(message%lines(1),'(2a)') "Failed to read from ref-file ", trim(ref_name)
+        write(message%lines(2), '(2a)') "from folder ", trim(ref_folder)
         call messages_fatal(2)
       end if
     end if
@@ -364,9 +364,9 @@ contains
       end if
 
       if (ierr /= 0) then
-        write(messages_lines(1), '(a,a)') "Error reading the file ", filename
-        write(messages_lines(2), '(a,i4)') "Error code: ",ierr
-        write(messages_lines(3), '(a)') "Skipping...."
+        write(message%lines(1), '(a,a)') "Error reading the file ", filename
+        write(message%lines(2), '(a,i4)') "Error code: ",ierr
+        write(message%lines(3), '(a)') "Skipping...."
         call messages_warning(3)
         cycle
       end if
@@ -448,8 +448,8 @@ contains
     fdefault = M_ZERO
     call parse_variable(namespace, 'TDTimeStep', fdefault, dt, unit = units_inp%time)
     if (dt <= M_ZERO) then
-      write(messages_lines(1),'(a)') 'Input: TDTimeStep must be positive.'
-      write(messages_lines(2),'(a)') 'Input: TDTimeStep reset to 0. Check input file'
+      write(message%lines(1),'(a)') 'Input: TDTimeStep must be positive.'
+      write(message%lines(2),'(a)') 'Input: TDTimeStep reset to 0. Check input file'
       call messages_info(2)
     end if
 
@@ -482,8 +482,8 @@ contains
     if ( chunk_size == 0) chunk_size = mesh%np
     ! Parallel version just work in domains and chunk_size equal to mesh%np 
     if(mesh%mpi_grp%size > 1 .and. chunk_size /= mesh%np) then
-      write(messages_lines(1),*)'Incompatible value for ConvertReadSize and Parallelizaion in Domains'
-      write(messages_lines(2),*)'Use the default value for ConvertReadSize (or set it to 0)'
+      write(message%lines(1),*)'Incompatible value for ConvertReadSize and Parallelizaion in Domains'
+      write(message%lines(2),*)'Use the default value for ConvertReadSize (or set it to 0)'
       call messages_fatal(2)
     end if
     
@@ -504,10 +504,10 @@ contains
     fdefault = units_from_atomic(units_inp%energy, w_max)
     call parse_variable(namespace, 'ConvertEnergyMax',fdefault, max_energy, units_inp%energy)
     if (max_energy > w_max) then
-      write(messages_lines(1),'(a,f12.7)')'Impossible to set ConvertEnergyMax to ', &
+      write(message%lines(1),'(a,f12.7)')'Impossible to set ConvertEnergyMax to ', &
            units_from_atomic(units_inp%energy, max_energy)
-      write(messages_lines(2),'(a)')'ConvertEnergyMax is too large.'
-      write(messages_lines(3),'(a,f12.7,a)')'ConvertEnergyMax reset to ', &
+      write(message%lines(2),'(a)')'ConvertEnergyMax is too large.'
+      write(message%lines(3),'(a,f12.7,a)')'ConvertEnergyMax reset to ', &
            units_from_atomic(units_inp%energy, w_max),'[' // trim(units_abbrev(units_out%energy)) // ']'
       call messages_info(3)
       max_energy = w_max
@@ -575,14 +575,14 @@ contains
 
     e_start = nint(min_energy / dw)
     e_end   = nint(max_energy / dw)
-    write(messages_lines(1),'(a,1x,i0.7,a,f12.7,a,i0.7,a,f12.7,a)')'Frequency index:',e_start,'(',&
+    write(message%lines(1),'(a,1x,i0.7,a,f12.7,a,i0.7,a,f12.7,a)')'Frequency index:',e_start,'(',&
          units_from_atomic(units_out%energy, e_start * dw),')-',e_end,'(',units_from_atomic(units_out%energy, e_end * dw),')' 
-    write(messages_lines(2),'(a,f12.7,a)')'Frequency Step, dw:  ', units_from_atomic(units_out%energy, dw), &
+    write(message%lines(2),'(a,f12.7,a)')'Frequency Step, dw:  ', units_from_atomic(units_out%energy, dw), &
          '[' // trim(units_abbrev(units_out%energy)) // ']'
     call messages_info(2)
 
     if (subtract_file) then
-      write(messages_lines(1),'(a,a,a,a)') "Reading ref-file from ", trim(ref_folder), trim(ref_name),".obf"
+      write(message%lines(1),'(a,a,a,a)') "Reading ref-file from ", trim(ref_folder), trim(ref_name),".obf"
       call messages_info(1)
       call restart_init(restart, namespace, RESTART_UNDEFINED, RESTART_TYPE_LOAD, mc, ierr, &
                         dir=trim(ref_folder), mesh = mesh)
@@ -591,8 +591,8 @@ contains
         call drestart_read_mesh_function(restart, trim(ref_name), mesh, read_rff, ierr)
         call restart_end(restart)
       else
-        write(messages_lines(1),'(2a)') "Failed to read from ref-file ", trim(ref_name)
-        write(messages_lines(2), '(2a)') "from folder ", trim(ref_folder)
+        write(message%lines(1),'(2a)') "Failed to read from ref-file ", trim(ref_name)
+        write(message%lines(2), '(2a)') "from folder ", trim(ref_folder)
         call messages_fatal(2)
       end if
     end if
@@ -600,10 +600,10 @@ contains
     call messages_print_stress(wd_info, "File Information")
     do i_energy = e_start, e_end
       write(filename,'(a14,i0.7,a1)')'wd.general/wd.',i_energy,'/'
-      write(messages_lines(1),'(a,a,f12.7,a,1x,i7,a)')trim(filename),' w =', &
+      write(message%lines(1),'(a,a,f12.7,a,1x,i7,a)')trim(filename),' w =', &
            units_from_atomic(units_out%energy,(i_energy) * dw), & 
            '[' // trim(units_abbrev(units_out%energy)) // ']'
-      if (mpi_world%rank == 0) write(wd_info,'(a)') messages_lines(1)
+      if (mpi_world%rank == 0) write(wd_info,'(a)') message%lines(1)
       call messages_info(1)
       call io_mkdir(trim(filename), namespace)
     end do
@@ -650,9 +650,9 @@ contains
         call profiling_out(prof_io)
 
         if (ierr /= 0 .and. i_space == 1) then
-          write(messages_lines(1), '(a,a,2i10)') "Error reading the file ", trim(filename), i_space, i_time
-          write(messages_lines(2), '(a)') "Skipping...."
-          write(messages_lines(3), '(a,i0)') "Error :", ierr
+          write(message%lines(1), '(a,a,2i10)') "Error reading the file ", trim(filename), i_space, i_time
+          write(message%lines(2), '(a)') "Skipping...."
+          write(message%lines(3), '(a,i0)') "Error :", ierr
           call messages_warning(3)
           cycle
         end if
@@ -697,8 +697,8 @@ contains
       !print out wd densities from (ii-chunksize,ii] if running in serial
       if (mesh%mpi_grp%size == 1) then
         if (mod(i_space, chunk_size) == 0) then
-          write(messages_lines(1),'(a)') ""
-          write(messages_lines(2),'(a,i0)') "Writing binary output: step ", i_space/chunk_size
+          write(message%lines(1),'(a)') ""
+          write(message%lines(2),'(a,i0)') "Writing binary output: step ", i_space/chunk_size
           call messages_info(2)
           do i_energy = e_start, e_end
             write(filename,'(a14,i0.7,a12)')'wd.general/wd.',i_energy,'/density.obf'
@@ -793,7 +793,7 @@ contains
     end if
 
     if (n_operations == 0) then
-      write(messages_lines(1),'(a)')'No operations found. Check the input file'
+      write(message%lines(1),'(a)')'No operations found. Check the input file'
       call messages_fatal(1)
     end if
 
@@ -844,8 +844,8 @@ contains
       if(ierr == 0) then
         call drestart_read_mesh_function(restart, trim(filename), mesh, tmp_ff, ierr)
       else
-        write(messages_lines(1),'(2a)') "Failed to read from file ", trim(filename)
-        write(messages_lines(2), '(2a)') "from folder ", trim(folder)
+        write(message%lines(1),'(2a)') "Failed to read from file ", trim(filename)
+        write(message%lines(2), '(2a)') "from folder ", trim(folder)
         call messages_fatal(2)
       end if
       !read scalar expression

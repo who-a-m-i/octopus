@@ -195,8 +195,8 @@ contains
       call parse_variable(namespace, 'OCTEta', M_ONE, oct%eta)
       call parse_variable(namespace, 'OCTDelta', M_ZERO, oct%delta)
 #else
-      write(messages_lines(1), '(a)') '"OCTScheme = oct_nlopt_bobyqa" or "OCTScheme = oct_nlopt_lbfgs" are'
-      write(messages_lines(2), '(a)') ' only possible if the nlopt library has been compiled.'
+      write(message%lines(1), '(a)') '"OCTScheme = oct_nlopt_bobyqa" or "OCTScheme = oct_nlopt_lbfgs" are'
+      write(message%lines(2), '(a)') ' only possible if the nlopt library has been compiled.'
       call messages_fatal(2)
 #endif
     case default

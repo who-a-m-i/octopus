@@ -175,7 +175,7 @@ contains
       ! no default, since we do not do this unless the input tag is present
       call parse_variable(namespace, 'PDB'//trim(what), '', str)
 
-      messages_lines(1) = "Reading " // trim(what) // " from " // trim(str)
+      message%lines(1) = "Reading " // trim(what) // " from " // trim(str)
       call messages_info(1)
 
       iunit = io_open(str, namespace, action='read')
@@ -215,14 +215,14 @@ contains
       ! no default, since we do not do this unless the input tag is present
       call parse_variable(namespace, 'XYZ'//trim(what), '', str)
 
-      messages_lines(1) = "Reading " // trim(what) // " from " // trim(str)
+      message%lines(1) = "Reading " // trim(what) // " from " // trim(str)
       call messages_info(1)
 
       iunit = io_open(str, namespace, action='read', status='old')
       read(iunit, *) gf%n
 
       if(gf%n <= 0) then
-        write(messages_lines(1),'(a,i6)') "Invalid number of atoms ", gf%n
+        write(message%lines(1),'(a,i6)') "Invalid number of atoms ", gf%n
         call messages_fatal(1)
       end if
 
@@ -257,7 +257,7 @@ contains
       ! no default, since we do not do this unless the input tag is present
       call parse_variable(namespace, 'XSF'//trim(what), '', str)
 
-      messages_lines(1) = "Reading " // trim(what) // " from " // trim(str)
+      message%lines(1) = "Reading " // trim(what) // " from " // trim(str)
       call messages_info(1)
 
       iunit = io_open(str, namespace, action='read', status='old')
@@ -277,13 +277,13 @@ contains
         !%End
         call parse_variable(namespace, 'XSFCoordinatesAnimStep', 1, step_to_use)
         if(step_to_use < 1) then
-          messages_lines(1) = "XSFCoordinatesAnimStep must be > 0."
+          message%lines(1) = "XSFCoordinatesAnimStep must be > 0."
           call messages_fatal(1)
         else if(step_to_use > nsteps) then
-          write(messages_lines(1),'(a,i9)') "XSFCoordinatesAnimStep must be <= available number of steps ", nsteps
+          write(message%lines(1),'(a,i9)') "XSFCoordinatesAnimStep must be <= available number of steps ", nsteps
           call messages_fatal(1)
         end if
-        write(messages_lines(1),'(a,i9,a,i9)') 'Using animation step ', step_to_use, ' out of ', nsteps
+        write(message%lines(1),'(a,i9,a,i9)') 'Using animation step ', step_to_use, ' out of ', nsteps
         call messages_info(1)
       else
         nsteps = 0
@@ -303,7 +303,7 @@ contains
       case('ATOMS')
         call messages_not_implemented("Input from XSF file beginning with ATOMS")
       case default
-        write(messages_lines(1),'(3a)') 'Line in file was "', trim(str), '" instead of CRYSTAL/SLAB/POLYMER/MOLECULE.'
+        write(message%lines(1),'(3a)') 'Line in file was "', trim(str), '" instead of CRYSTAL/SLAB/POLYMER/MOLECULE.'
         call messages_fatal(1)
       end select
 
@@ -321,13 +321,13 @@ contains
 
       read(iunit, '(a256)') str
       if(str(1:7) /= 'PRIMVEC') then
-        write(messages_lines(1),'(3a)') 'Line in file was "', trim(str), '" instead of "PRIMVEC".'
+        write(message%lines(1),'(3a)') 'Line in file was "', trim(str), '" instead of "PRIMVEC".'
         call messages_warning(1)
       end if
       if(nsteps > 0) then
         read(str(8:), *) istep
         if(istep /= step_to_use) then
-          write(messages_lines(1), '(a,i9,a,i9)') 'Found PRIMVEC index ', istep, ' instead of ', step_to_use
+          write(message%lines(1), '(a,i9,a,i9)') 'Found PRIMVEC index ', istep, ' instead of ', step_to_use
           call messages_fatal(1)
         end if
       end if
@@ -339,34 +339,34 @@ contains
         latvec(jdir, jdir) = M_ZERO
       end do
       if(any(abs(latvec(1:space%dim, 1:space%dim)) > M_EPSILON)) then
-        messages_lines(1) = 'XSF file has non-orthogonal lattice vectors. Only orthogonal is supported.'
+        message%lines(1) = 'XSF file has non-orthogonal lattice vectors. Only orthogonal is supported.'
         call messages_fatal(1)
       end if
       if(any(gf%lsize(1:space%dim) < M_EPSILON)) then
-        messages_lines(1) = "XSF file must have positive lattice vectors."
+        message%lines(1) = "XSF file must have positive lattice vectors."
         call messages_fatal(1)
       end if
 
       read(iunit, '(a256)') str
       if(str(1:9) /= 'PRIMCOORD') then
-        write(messages_lines(1),'(3a)') 'Line in file was "', trim(str), '" instead of "PRIMCOORD".'
+        write(message%lines(1),'(3a)') 'Line in file was "', trim(str), '" instead of "PRIMCOORD".'
         call messages_warning(1)
       end if
       if(nsteps > 0) then
         read(str(10:), *) istep
         if(istep /= step_to_use) then
-          write(messages_lines(1), '(a,i9,a,i9)') 'Found PRIMCOORD index ', istep, ' instead of ', step_to_use
+          write(message%lines(1), '(a,i9,a,i9)') 'Found PRIMCOORD index ', istep, ' instead of ', step_to_use
           call messages_fatal(1)
         end if
       end if
 
       read(iunit, *) gf%n, int_one
       if(gf%n <= 0) then
-        write(messages_lines(1),'(a,i6)') "Invalid number of atoms ", gf%n
+        write(message%lines(1),'(a,i6)') "Invalid number of atoms ", gf%n
         call messages_fatal(1)
       end if
       if(int_one /= 1) then
-        write(messages_lines(1),'(a,i6,a)') 'Number in file was ', int_one, ' instead of 1.'
+        write(message%lines(1),'(a,i6,a)') 'Number in file was ', int_one, ' instead of 1.'
         call messages_warning(1)
       end if
       SAFE_ALLOCATE(gf%atom(1:gf%n))
@@ -411,7 +411,7 @@ contains
       gf%source = READ_COORDS_INP
       gf%flags = ior(gf%flags, XYZ_FLAGS_MOVE)
 
-      messages_lines(1) = "Reading " // trim(what) // " from " // trim(what) // " block"
+      message%lines(1) = "Reading " // trim(what) // " from " // trim(what) // " block"
       call messages_info(1)
 
       SAFE_ALLOCATE(gf%atom(1:gf%n))
@@ -419,7 +419,7 @@ contains
       do ia = 1, gf%n
         ncol = parse_block_cols(blk, ia - 1)
         if((ncol  <  space%dim + 1) .or. (ncol > space%dim + 2)) then
-          write(messages_lines(1), '(3a,i2)') 'Error in block ', what, ' line #', ia
+          write(message%lines(1), '(3a,i2)') 'Error in block ', what, ' line #', ia
           call messages_fatal(1)
         end if
         call parse_block_string (blk, ia - 1, 0, gf%atom(ia)%label)
@@ -461,7 +461,7 @@ contains
         gf%source = READ_COORDS_REDUCED
         gf%flags = ior(gf%flags, XYZ_FLAGS_MOVE)
 
-        messages_lines(1) = "Reading " // trim(what) // " from Reduced" // trim(what) // " block"
+        message%lines(1) = "Reading " // trim(what) // " from Reduced" // trim(what) // " block"
         call messages_info(1)
 
         SAFE_ALLOCATE(gf%atom(1:gf%n))
@@ -469,7 +469,7 @@ contains
         do ia = 1, gf%n
           ncol = parse_block_cols(blk, ia - 1)
           if((ncol  <  space%dim + 1) .or. (ncol > space%dim + 2)) then
-            write(messages_lines(1), '(3a,i2)') 'Error in block ', what, ' line #', ia
+            write(message%lines(1), '(3a,i2)') 'Error in block ', what, ' line #', ia
             call messages_fatal(1)
           end if
           call parse_block_string (blk, ia - 1, 0, gf%atom(ia)%label)
@@ -518,7 +518,7 @@ contains
       if(.not. done) then
         done = .true.
       else
-        messages_lines(1) = 'Multiple definitions of '//trim(what)//' in the input file.'
+        message%lines(1) = 'Multiple definitions of '//trim(what)//' in the input file.'
         call messages_fatal(1)
       end if
 

@@ -179,8 +179,8 @@
       call MPI_Get_count(status, R_MPITYPE, write_count, mpi_err)
  #endif
       if (write_count /= np) then
-        write(messages_lines(1),'(1x,2a,i8,a,i8)') TOSTRING(R_TYPE), " wrote elements=", write_count, " instead of", np
-        write(messages_lines(2), '(a,a)') " of file= ", fname
+        write(message%lines(1),'(1x,2a,i8,a,i8)') TOSTRING(R_TYPE), " wrote elements=", write_count, " instead of", np
+        write(message%lines(2), '(a,a)') " of file= ", fname
         call messages_warning(2)
         ierr = 999
       end if
@@ -249,8 +249,8 @@
         call MPI_Get_count(status, R_MPITYPE, read_count, mpi_err)
 #endif
         if (read_count /= np) then
-          write(messages_lines(1),'(1x,2a,i8,a,i8)') TOSTRING(R_TYPE), " read elements=", read_count, " instead of", np
-          write(messages_lines(2), '(a,a)') " of file= ", fname
+          write(message%lines(1),'(1x,2a,i8,a,i8)') TOSTRING(R_TYPE), " read elements=", read_count, " instead of", np
+          write(message%lines(2), '(a,a)') " of file= ", fname
           call messages_warning(2)
           ierr = 999
         end if

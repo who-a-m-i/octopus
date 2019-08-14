@@ -663,8 +663,8 @@ subroutine X(compute_ACBNO_U)(this, ios)
         this%orbsets(ios)%Ubar = R_REAL(this%coulomb(1,1,1,1,ios))
       else
         this%orbsets(ios)%Ubar = (numU/denomU)
-        write(messages_lines(1),'(a,a)')' Small denominator value for the s orbital ', this%orbsets(ios)%Ubar
-        write(messages_lines(2),'(a,a)')' to be multiplied by ',  this%coulomb(1,1,1,1,ios)
+        write(message%lines(1),'(a,a)')' Small denominator value for the s orbital ', this%orbsets(ios)%Ubar
+        write(message%lines(2),'(a,a)')' to be multiplied by ',  this%coulomb(1,1,1,1,ios)
         call messages_warning(2) 
         this%orbsets(ios)%Ubar = this%orbsets(ios)%Ubar*this%coulomb(1,1,1,1,ios)
       end if
@@ -1570,7 +1570,7 @@ end subroutine X(compute_periodic_coulomb_integrals)
 
    !TODO: Implement
    if(this%intersite) then
-     messages_lines(1) = "Intersite V forces are not implemented."
+     message%lines(1) = "Intersite V forces are not implemented."
      call messages_warning(1)
    end if
 

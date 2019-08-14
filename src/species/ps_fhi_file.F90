@@ -68,8 +68,8 @@ contains
     read(unit, *) psf%pspcod, psf%pspxc, psf%lmax, psf%lloc, psf%mmax, psf%r2well
 
     if(psf%pspcod /= 6) then
-      messages_lines(1) = "Inconsistency in pseudopotential file:"
-      write(messages_lines(2),'(a,i2)') "  expecting pspcod = 6, but found ", psf%pspcod
+      message%lines(1) = "Inconsistency in pseudopotential file:"
+      write(message%lines(2),'(a,i2)') "  expecting pspcod = 6, but found ", psf%pspcod
       call messages_fatal(2)
     end if
     

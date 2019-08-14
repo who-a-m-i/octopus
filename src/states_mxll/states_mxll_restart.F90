@@ -134,8 +134,8 @@ contains
       ! find out how many lines (i.e. states) the block has
       nlines = parse_block_n(blk)
 
-      write(messages_lines(1), '(a,i5)') 'Maxwell electromagnetic fields are added.'
-      write(messages_lines(2), '(a,i5)') ''
+      write(message%lines(1), '(a,i5)') 'Maxwell electromagnetic fields are added.'
+      write(message%lines(2), '(a,i5)') ''
       call messages_info(2)
 
       ! read all lines
@@ -143,8 +143,8 @@ contains
         ! Check that number of columns is five or six.
         ncols = parse_block_cols(blk, il - 1)
         if(ncols  <  4 .or. ncols > 4) then
-          messages_lines(1) = 'Each line in the UserDefinedMaxwellStates block must have'
-          messages_lines(2) = 'four columns.'
+          message%lines(1) = 'Each line in the UserDefinedMaxwellStates block must have'
+          message%lines(2) = 'four columns.'
           call messages_fatal(2)
         end if
 
@@ -203,8 +203,8 @@ contains
             call messages_write("  E-field in dimension "//trim(cdim)//" : "//trim(filename_e_field), fmt='(a,i1,2a)')
             call dio_function_input(filename_e_field, namespace, mesh, e_field(:), ierr)
             if (ierr > 0) then
-              messages_lines(1) = 'Could not read the file!'
-              write(messages_lines(2),'(a,i1)') 'Error code: ', ierr
+              message%lines(1) = 'Could not read the file!'
+              write(message%lines(2),'(a,i1)') 'Error code: ', ierr
               call messages_fatal(2)
             end if
             e_field = units_to_atomic(units_inp%energy/units_inp%length, e_field)
@@ -213,8 +213,8 @@ contains
             call messages_write("  B-field in dimension "//trim(cdim)//" : "//trim(filename_b_field), fmt='(a,i1,2a)')
             call dio_function_input(filename_b_field, namespace, mesh, b_field(:), ierr)
             if (ierr > 0) then
-              messages_lines(1) = 'Could not read the file!'
-              write(messages_lines(2),'(a,i1)') 'Error code: ', ierr
+              message%lines(1) = 'Could not read the file!'
+              write(message%lines(2),'(a,i1)') 'Error code: ', ierr
               call messages_fatal(2)
             end if
             b_field = units_to_atomic(unit_one/units_inp%length**2, b_field)
@@ -227,8 +227,8 @@ contains
           SAFE_DEALLOCATE_A(b_field)
 
         case default
-          messages_lines(1) = 'Wrong entry in UserDefinedMaxwellStates, column 2.'
-          messages_lines(2) = 'You may state "formula" or "file" here.'
+          message%lines(1) = 'Wrong entry in UserDefinedMaxwellStates, column 2.'
+          message%lines(2) = 'You may state "formula" or "file" here.'
           call messages_fatal(2)
         end select
 
@@ -246,7 +246,7 @@ contains
       !call messages_print_stress(stdout)
 
     else
-      messages_lines(1) = "'UserDefineInitialdStates' has to be specified as block."
+      message%lines(1) = "'UserDefineInitialdStates' has to be specified as block."
       call messages_fatal(1)
     end if
 
@@ -286,8 +286,8 @@ contains
     end if
 
     if(verbose_) then
-      messages_lines(1) = "Info: Writing Maxwell states."
-      call print_date(trim(messages_lines(1))//' ')
+      message%lines(1) = "Info: Writing Maxwell states."
+      call print_date(trim(message%lines(1))//' ')
     end if
 
     call profiling_in(prof_write, "MAXWELL_RESTART_WRITE")
@@ -352,8 +352,8 @@ contains
     call restart_close(restart, iunit_wfns)
 
     if(verbose_) then
-      messages_lines(1) = "Info: Finished writing Maxwell states."
-      call print_date(trim(messages_lines(1))//' ')
+      message%lines(1) = "Info: Finished writing Maxwell states."
+      call print_date(trim(message%lines(1))//' ')
     end if
 
     call restart_unblock_signals()
@@ -414,12 +414,12 @@ contains
       label_ = trim(label)
     end if
 
-    messages_lines(1) = 'Info: Reading Maxwell states'
+    message%lines(1) = 'Info: Reading Maxwell states'
     if (len(trim(label_)) > 0) then
-      messages_lines(1) = trim(messages_lines(1)) // trim(label_)
+      message%lines(1) = trim(message%lines(1)) // trim(label_)
     end if
-    messages_lines(1) = trim(messages_lines(1)) // "."
-    if(verbose_) call print_date(trim(messages_lines(1))//' ')
+    message%lines(1) = trim(message%lines(1)) // "."
+    if(verbose_) call print_date(trim(message%lines(1))//' ')
 
     states_file  = restart_open(restart, 'maxwell_states')
     call restart_read(restart, states_file, lines, 3, err)
@@ -545,14 +545,14 @@ contains
 
       write(str, '(a,i5)') 'Reading Maxwell states.'
       call messages_print_stress(stdout, trim(str))
-      write(messages_lines(1),'(a,i6,a,i6,a)') 'Only ', iread,' files out of ', &
+      write(message%lines(1),'(a,i6,a,i6,a)') 'Only ', iread,' files out of ', &
            st%nst * zff_dim, ' could be read.'
       call messages_info(1)
       call messages_print_stress(stdout)
     end if
 
-    messages_lines(1) = 'Info: Maxwell states reading done.'
-    if(verbose_) call print_date(trim(messages_lines(1))//' ')
+    message%lines(1) = 'Info: Maxwell states reading done.'
+    if(verbose_) call print_date(trim(message%lines(1))//' ')
 
     call profiling_out(prof_read)
     POP_SUB(states_mxll_load)

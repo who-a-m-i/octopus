@@ -195,7 +195,7 @@
 
         end do
       else
-        messages_lines(1) = 'No current density output for real states since it is identically zero.'
+        message%lines(1) = 'No current density output for real states since it is identically zero.'
         call messages_warning(1)
       end if
     end if
@@ -219,7 +219,7 @@
             grp = st%st_kpt_mpi_grp, vector_dim_labels = (/'x', 'y', 'z'/))
         SAFE_DEALLOCATE_A(current_kpt)
       else
-        messages_lines(1) = 'No current density output for real states since it is identically zero.'
+        message%lines(1) = 'No current density output for real states since it is identically zero.'
         call messages_warning(1)
       end if
     end if

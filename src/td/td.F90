@@ -164,7 +164,7 @@ contains
     call parse_variable(sys%namespace, 'TDIonicTimeScale', CNST(1.0), td%mu)
 
     if (td%mu <= M_ZERO) then
-      write(messages_lines(1),'(a)') 'Input: TDIonicTimeScale must be positive.'
+      write(message%lines(1),'(a)') 'Input: TDIonicTimeScale must be positive.'
       call messages_fatal(1)
     end if
 
@@ -193,7 +193,7 @@ contains
     call parse_variable(sys%namespace, 'TDTimeStep', default_dt, td%dt, unit = units_inp%time)
 
     if (td%dt <= M_ZERO) then
-      write(messages_lines(1),'(a)') 'Input: TDTimeStep must be positive.'
+      write(message%lines(1),'(a)') 'Input: TDTimeStep must be positive.'
       call messages_fatal(1)
     end if
 
@@ -240,8 +240,8 @@ contains
     call messages_print_var_value(stdout, 'TDMaxSteps', td%max_iter)
 
     if(td%max_iter < 1) then
-      write(messages_lines(1), '(a,i6,a)') "Input: '", td%max_iter, "' is not a valid value for TDMaxSteps."
-      messages_lines(2) = '(TDMaxSteps <= 1)'
+      write(message%lines(1), '(a,i6,a)') "Input: '", td%max_iter, "' is not a valid value for TDMaxSteps."
+      message%lines(2) = '(TDMaxSteps <= 1)'
       call messages_fatal(2)
     end if
 
@@ -539,7 +539,7 @@ contains
 
     subroutine print_header()
 
-      write(messages_lines(1), '(a7,1x,a14,a14,a10,a17)') 'Iter ', 'Time ', 'Energy ', 'SC Steps', 'Elapsed Time '
+      write(message%lines(1), '(a7,1x,a14,a14,a10,a17)') 'Iter ', 'Time ', 'Energy ', 'SC Steps', 'Elapsed Time '
 
       call messages_info(1)
       call messages_print_stress(stdout)
@@ -550,7 +550,7 @@ contains
     subroutine check_point()
       PUSH_SUB(td_run.check_point)
 
-      write(messages_lines(1), '(i7,1x,2f14.6,i10,f14.3)') iter, &
+      write(message%lines(1), '(i7,1x,2f14.6,i10,f14.3)') iter, &
         units_from_atomic(units_out%time, iter*td%dt), &
         units_from_atomic(units_out%energy, sys%hm%energy%total + geo%kinetic_energy), &
         scsteps, loct_clock() - etime
@@ -572,7 +572,7 @@ contains
         call td_write_data(write_handler, td%dt)
         call td_dump(restart_dump, gr, st, sys%hm, td, iter, ierr)
         if (ierr /= 0) then
-          messages_lines(1) = "Unable to write time-dependent restart information."
+          message%lines(1) = "Unable to write time-dependent restart information."
           call messages_warning(1)
         end if
 
@@ -586,7 +586,7 @@ contains
           call states_elec_allocate_wfns(sys%st, gr%mesh)
           call td_load(restart_load, sys%namespace, gr, st, sys%hm, td, ierr)
           if (ierr /= 0) then
-            messages_lines(1) = "Unable to load TD states."
+            message%lines(1) = "Unable to load TD states."
             call messages_fatal(1)
           end if
           call density_calc(st, gr, st%rho)
@@ -665,14 +665,14 @@ contains
         if(ierr /= 0) then
           fromScratch = .true.
           td%iter = 0
-          messages_lines(1) = "Unable to read time-dependent restart information: Starting from scratch"
+          message%lines(1) = "Unable to read time-dependent restart information: Starting from scratch"
           call messages_warning(1)
         end if
         call restart_end(restart)
       end if
 
       if (td%iter >= td%max_iter) then
-        messages_lines(1) = "All requested iterations have already been done. Use FromScratch = yes if you want to redo them."
+        message%lines(1) = "All requested iterations have already been done. Use FromScratch = yes if you want to redo them."
         call messages_info(1)
         POP_SUB(td_run.init_wfs)
         return
@@ -684,7 +684,7 @@ contains
         if(.not. st%only_userdef_istates) then
           if(ierr == 0) call states_elec_load(restart, sys%namespace, st, gr, ierr, label = ": gs")
           if (ierr /= 0) then
-            messages_lines(1) = 'Unable to read ground-state wavefunctions.'
+            message%lines(1) = 'Unable to read ground-state wavefunctions.'
             call messages_fatal(1)
           end if
         end if
@@ -713,12 +713,12 @@ contains
             call td_load_frozen(restart, gr, st, sys%hm, ierr)
           if(ierr /= 0) then
             td%iter = 0
-            messages_lines(1) = "Unable to read frozen restart information."
+            message%lines(1) = "Unable to read frozen restart information."
             call messages_fatal(1)
           end if
           call restart_end(restart)
         end if
-        write(messages_lines(1),'(a,i4,a,i4,a)') 'Info: The lowest', freeze_orbitals, &
+        write(message%lines(1),'(a,i4,a,i4,a)') 'Info: The lowest', freeze_orbitals, &
           ' orbitals have been frozen.', st%nst, ' will be propagated.'
         call messages_info(1)
         call states_elec_freeze_adjust_qtot(st)
@@ -727,7 +727,7 @@ contains
       elseif(freeze_orbitals < 0) then
         ! This means SAE approximation. We calculate the Hxc first, then freeze all
         ! orbitals minus one.
-        write(messages_lines(1),'(a)') 'Info: The single-active-electron approximation will be used.'
+        write(message%lines(1),'(a)') 'Info: The single-active-electron approximation will be used.'
         call messages_info(1)
         call v_ks_calc(sys%ks, sys%namespace, sys%hm, st, sys%geo, calc_eigenval=.true., time = td%iter*td%dt)
         if(fromScratch) then
@@ -753,7 +753,7 @@ contains
       !%End
       call parse_variable(sys%namespace, 'TDFreezeHXC', .false., freeze_hxc)
       if(freeze_hxc) then 
-        write(messages_lines(1),'(a)') 'Info: Freezing Hartree and exchange-correlation potentials.'
+        write(message%lines(1),'(a)') 'Info: Freezing Hartree and exchange-correlation potentials.'
         call messages_info(1)
         call v_ks_freeze_hxc(sys%ks)
 
@@ -784,7 +784,7 @@ contains
       !%End
       call parse_variable(sys%namespace, 'TDFreezeDFTUOccupations', .false., freeze_occ)
       if(freeze_occ) then
-        write(messages_lines(1),'(a)') 'Info: Freezing DFT+U occupation matrices that enters in the DFT+U potential.'
+        write(message%lines(1),'(a)') 'Info: Freezing DFT+U occupation matrices that enters in the DFT+U potential.'
         call messages_info(1)
         call lda_u_freeze_occ(sys%hm%lda_u)
 
@@ -805,7 +805,7 @@ contains
       !%End
       call parse_variable(sys%namespace, 'TDFreezeU', .false., freeze_u)
       if(freeze_u) then
-        write(messages_lines(1),'(a)') 'Info: Freezing the effective U of DFT+U.'
+        write(message%lines(1),'(a)') 'Info: Freezing the effective U of DFT+U.'
         call messages_info(1)
         call lda_u_freeze_u(sys%hm%lda_u)
 
@@ -814,7 +814,7 @@ contains
           call restart_init(restart_frozen, sys%namespace, RESTART_GS, RESTART_TYPE_LOAD, sys%mc, ierr, mesh=gr%mesh)
           call lda_u_load(restart_frozen, sys%hm%lda_u, st, ierr, u_only = .true.)
           call restart_end(restart_frozen)    
-          write(messages_lines(1),'(a)') 'Loaded GS effective U of DFT+U'
+          write(message%lines(1),'(a)') 'Loaded GS effective U of DFT+U'
           call messages_info(1)
           call lda_u_write_U(sys%hm%lda_u, stdout)
           call lda_u_write_V(sys%hm%lda_u, stdout)
@@ -861,8 +861,8 @@ contains
       open(unit = iunit, file = io_workpath('td.general/coordinates', sys%namespace), action='read', status='old')
 
       if(iunit < 0) then
-        messages_lines(1) = "Could not open file '"//trim(io_workpath('td.general/coordinates', sys%namespace))//"'."
-        messages_lines(2) = "Starting simulation from initial geometry."
+        message%lines(1) = "Could not open file '"//trim(io_workpath('td.general/coordinates', sys%namespace))//"'."
+        message%lines(2) = "Starting simulation from initial geometry."
         call messages_warning(2)
         POP_SUB(td_run.td_read_coordinates)
         return
@@ -942,7 +942,7 @@ contains
         if(st%parallel_in_states) &
           call messages_not_implemented(trim(block_name) // " parallel in states")
         if(parse_block_n(blk) /= st%nst) then
-          messages_lines(1) = "Number of rows in block " // trim(block_name) // " must equal number of states in this calculation."
+          message%lines(1) = "Number of rows in block " // trim(block_name) // " must equal number of states in this calculation."
           call messages_fatal(1)
         end if
         call states_elec_copy(stin, st, exclude_wfns = .true.)
@@ -958,7 +958,7 @@ contains
         do ist = 1, st%nst
           ncols = parse_block_cols(blk, ist-1)
           if(ncols /= stin%nst) then            
-            write(messages_lines(1),'(a,i6,a,i6,3a,i6,a)') "Number of columns (", ncols, ") in row ", ist, " of block ", &
+            write(message%lines(1),'(a,i6,a,i6,3a,i6,a)') "Number of columns (", ncols, ") in row ", ist, " of block ", &
               trim(block_name), " must equal number of states (", stin%nst, ") read from gs restart."
             call messages_fatal(1)
           end if
@@ -1019,7 +1019,7 @@ contains
     end if
 
     if (debug%info) then
-      messages_lines(1) = "Debug: Writing td restart."
+      message%lines(1) = "Debug: Writing td restart."
       call messages_info(1)
     end if
 
@@ -1051,7 +1051,7 @@ contains
     end if
 
     if (debug%info) then
-      messages_lines(1) = "Debug: Writing td restart done."
+      message%lines(1) = "Debug: Writing td restart done."
       call messages_info(1)
     end if
 
@@ -1080,7 +1080,7 @@ contains
     end if
 
     if (debug%info) then
-      messages_lines(1) = "Debug: Reading td restart."
+      message%lines(1) = "Debug: Reading td restart."
       call messages_info(1)
     end if
 
@@ -1112,7 +1112,7 @@ contains
     end if
 
     if (debug%info) then
-      messages_lines(1) = "Debug: Reading td restart done."
+      message%lines(1) = "Debug: Reading td restart done."
       call messages_info(1)
     end if
 
@@ -1138,7 +1138,7 @@ contains
     end if
 
     if (debug%info) then
-      messages_lines(1) = "Debug: Reading td frozen restart."
+      message%lines(1) = "Debug: Reading td frozen restart."
       call messages_info(1)
     end if
 
@@ -1152,7 +1152,7 @@ contains
     call states_elec_load_frozen(restart, st, gr, ierr)
 
     if (debug%info) then
-      messages_lines(1) = "Debug: Reading td frozen restart done."
+      message%lines(1) = "Debug: Reading td frozen restart done."
       call messages_info(1)
     end if
 

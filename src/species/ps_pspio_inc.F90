@@ -50,14 +50,14 @@
         if(found) exit
 
         if (idir == size(psp_dir)) then
-          messages_lines(1) = "Pseudopotential file '" // trim(filename) // " not found"
+          message%lines(1) = "Pseudopotential file '" // trim(filename) // " not found"
           call messages_fatal(1)
         end if
       end do
     end if
 
-    messages_lines(1) = "Reading pseudopotential from file:"
-    write(messages_lines(2), '(6x,3a)') "'", trim(filename2), "'"
+    message%lines(1) = "Reading pseudopotential from file:"
+    write(message%lines(2), '(6x,3a)') "'", trim(filename2), "'"
     call messages_info(2)
 
     ! Init pspio data structure and parse file
@@ -72,7 +72,7 @@
     ps%conf%z = nint(z)
     call ps_pspio_read_info(ps, pspdata)
     lmax = ps%lmax
-    write(messages_lines(1), '(a,i2,a)') "Info: l = ", ps%lmax, " is maximum angular momentum considered."
+    write(message%lines(1), '(a,i2,a)') "Info: l = ", ps%lmax, " is maximum angular momentum considered."
     call messages_info(1)
 
     ! Mesh
@@ -107,7 +107,7 @@
     call fpspio_pspdata_free(pspdata)
 
 #else
-    messages_lines(1) = 'PSPIO selected for pseudopotential parsing, but the code was compiled witout PSPIO support.'
+    message%lines(1) = 'PSPIO selected for pseudopotential parsing, but the code was compiled witout PSPIO support.'
     call messages_fatal(1)
 #endif
 
@@ -148,7 +148,7 @@
     r_tmp => fpspio_mesh_get_r(mesh)
     if(any(abs(r_tmp(2:ps%g%nrval)) < M_EPSILON)) then
       ! only the first point is allowed to be zero
-      messages_lines(1) = "Illegal zero values in PSPIO radial grid"
+      message%lines(1) = "Illegal zero values in PSPIO radial grid"
       call messages_fatal(1)
     end if
     if (abs(r_tmp(1)) <= M_EPSILON) then
@@ -362,7 +362,7 @@
 
     PUSH_SUB(ps_pspio_read_potentials)
 
-    messages_lines(1) = "Not yet implemented"
+    message%lines(1) = "Not yet implemented"
     call messages_fatal(1)
 
     POP_SUB(ps_pspio_read_potentials)
@@ -416,7 +416,7 @@
 
     if (ierr /= PSPIO_SUCCESS) then
       call fpspio_error_flush()
-      messages_lines(1) = "PSPIO error"
+      message%lines(1) = "PSPIO error"
       call messages_fatal(1)
     end if
 

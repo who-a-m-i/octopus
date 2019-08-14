@@ -186,7 +186,7 @@ contains
         call parse_block_string(blk, i-1, 1, expression)
         call tdf_read(this%td_displacements(iatom)%fx, namespace, trim(expression), ierr)
         if (ierr /= 0) then            
-          write(messages_lines(1),'(3A)') 'Could not find "', trim(expression), '" in the TDFunctions block:'
+          write(message%lines(1),'(3A)') 'Could not find "', trim(expression), '" in the TDFunctions block:'
           call messages_warning(1)
         end if
         
@@ -194,14 +194,14 @@ contains
         call parse_block_string(blk, i-1, 2, expression)
         call tdf_read(this%td_displacements(iatom)%fy, namespace, trim(expression), ierr)
         if (ierr /= 0) then            
-          write(messages_lines(1),'(3A)') 'Could not find "', trim(expression), '" in the TDFunctions block:'
+          write(message%lines(1),'(3A)') 'Could not find "', trim(expression), '" in the TDFunctions block:'
           call messages_warning(1)
         end if
         
         call parse_block_string(blk, i-1, 3, expression)
         call tdf_read(this%td_displacements(iatom)%fz, namespace, trim(expression), ierr)
         if (ierr /= 0) then            
-          write(messages_lines(1),'(3A)') 'Could not find "', trim(expression), '" in the TDFunctions block:'
+          write(message%lines(1),'(3A)') 'Could not find "', trim(expression), '" in the TDFunctions block:'
           call messages_warning(1)
         end if
         
@@ -261,8 +261,8 @@ contains
       call tdf_read(this%temperature_function, namespace, temp_function_name, ierr)
 
       if(ierr /= 0) then
-        messages_lines(1) = "You have enabled a thermostat but Octopus could not find"
-        messages_lines(2) = "the '"//trim(temp_function_name)//"' function in the TDFunctions block."
+        message%lines(1) = "You have enabled a thermostat but Octopus could not find"
+        message%lines(2) = "the '"//trim(temp_function_name)//"' function in the TDFunctions block."
         call messages_fatal(2)
       end if
 
@@ -345,12 +345,12 @@ contains
         geo%atom(i)%v(:) =  sqrt(kin1/kin2)*geo%atom(i)%v(:)
       end do
 
-      write(messages_lines(1),'(a,f10.4,1x,a)') 'Info: Initial velocities randomly distributed with T =', &
+      write(message%lines(1),'(a,f10.4,1x,a)') 'Info: Initial velocities randomly distributed with T =', &
         units_from_atomic(unit_kelvin, temperature), units_abbrev(unit_kelvin)
-      write(messages_lines(2),'(2x,a,f8.4,1x,a)') '<K>       =', &
+      write(message%lines(2),'(2x,a,f8.4,1x,a)') '<K>       =', &
         units_from_atomic(units_out%energy, ion_dynamics_kinetic_energy(geo)/geo%natoms), &
         units_abbrev(units_out%energy)
-      write(messages_lines(3),'(2x,a,f8.4,1x,a)') '3/2 k_B T =', &
+      write(message%lines(3),'(2x,a,f8.4,1x,a)') '3/2 k_B T =', &
         units_from_atomic(units_out%energy, (M_THREE/M_TWO)*temperature), &
         units_abbrev(units_out%energy)
       call messages_info(3)
@@ -412,7 +412,7 @@ contains
         have_velocities = .true.
 
         if(geo%natoms /= xyz%n) then
-          write(messages_lines(1), '(a,i4,a,i4)') 'I need exactly ', geo%natoms, ' velocities, but I found ', xyz%n
+          write(message%lines(1), '(a,i4,a,i4)') 'I need exactly ', geo%natoms, ' velocities, but I found ', xyz%n
           call messages_fatal(1)
         end if
 
@@ -502,7 +502,7 @@ contains
       this%current_temperature = units_to_atomic(unit_kelvin, tdf(this%temperature_function, time))
 
       if(this%current_temperature < M_ZERO) then 
-        write(messages_lines(1), '(a, f10.3, 3a, f10.3, 3a)') &
+        write(message%lines(1), '(a, f10.3, 3a, f10.3, 3a)') &
           "Negative temperature (", &
           units_from_atomic(unit_kelvin, this%current_temperature), " ", units_abbrev(unit_kelvin), &
           ") at time ", &

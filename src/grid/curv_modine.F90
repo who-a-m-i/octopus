@@ -163,7 +163,7 @@ contains
     cv%L(1:sb%dim) = sb%lsize(1:sb%dim) / cv%Jbar
 
     if(cv%xbar<M_ZERO.or.cv%xbar>M_ONE) then
-      messages_lines(1) = 'The parameter "CurvModineXBar" must lie between 0 and 1.'
+      message%lines(1) = 'The parameter "CurvModineXBar" must lie between 0 and 1.'
       call messages_fatal(1)
     end if
 
@@ -193,7 +193,7 @@ contains
     call parse_variable(namespace, 'CurvModineJrange', M_TWO, cv%Jrange(1), units_inp%length)
 
     if(cv%Jlocal(1)<M_ZERO.or.cv%Jlocal(1)>M_ONE) then
-      messages_lines(1) = 'The parameter "CurvModineJlocal" must lie between 0 and 1.'
+      message%lines(1) = 'The parameter "CurvModineJlocal" must lie between 0 and 1.'
       call messages_fatal(1)
     end if
 
@@ -266,8 +266,8 @@ contains
       call droot_solver_run(rs, getf2, my_csi, conv, startval=start_csi)
 
       if(.not.conv) then
-        messages_lines(1) = "During the construction of the adaptive grid, the Newton-Raphson"
-        messages_lines(2) = "method did not converge."
+        message%lines(1) = "During the construction of the adaptive grid, the Newton-Raphson"
+        message%lines(2) = "method did not converge."
         call messages_fatal(2)
       end if
 
@@ -479,9 +479,9 @@ contains
     nullify(cv_p)
 
     if(.not.conv) then
-      messages_lines(1) = "During the construction of the adaptive grid, the Newton-Raphson"
-      messages_lines(2) = "method did not converge for point:"
-      write(messages_lines(3),'(3f14.6)') xx(1:sb%dim)
+      message%lines(1) = "During the construction of the adaptive grid, the Newton-Raphson"
+      message%lines(2) = "method did not converge for point:"
+      write(message%lines(3),'(3f14.6)') xx(1:sb%dim)
       call messages_fatal(3)
     end if
 

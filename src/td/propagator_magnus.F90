@@ -102,8 +102,8 @@ contains
           end do
           SAFE_DEALLOCATE_A(pot)
         case(E_FIELD_MAGNETIC, E_FIELD_VECTOR_POTENTIAL)
-          write(messages_lines(1),'(a)') 'The Magnus propagator cannot be used with magnetic fields, or'
-          write(messages_lines(2),'(a)') 'with an electric field described in the velocity gauge.'
+          write(message%lines(1),'(a)') 'The Magnus propagator cannot be used with magnetic fields, or'
+          write(message%lines(2),'(a)') 'with an electric field described in the velocity gauge.'
           call messages_fatal(2)
         end select
       end do
@@ -152,7 +152,7 @@ contains
     FLOAT, allocatable :: vhxc1(:, :), vhxc2(:, :)
 
     if(ion_dynamics_ions_move(ions) .or. gauge_field_is_applied(hm%ep%gfield)) then
-      messages_lines(1) = "The commutator-free Magnus expansion cannot be used with moving ions or gauge fields"
+      message%lines(1) = "The commutator-free Magnus expansion cannot be used with moving ions or gauge fields"
       call messages_fatal(1)
     end if
 

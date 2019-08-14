@@ -209,7 +209,7 @@ contains
         w = eigenvalues(1), z = devec(1, 1), iz = 1, jz = 1, descz = desc(1), work = dworksize, lwork = -1, info = info)
       
       if(info /= 0) then
-        write(messages_lines(1),'(a,i6)') "ScaLAPACK pdsyev workspace query failure, error code = ", info
+        write(message%lines(1),'(a,i6)') "ScaLAPACK pdsyev workspace query failure, error code = ", info
         call messages_fatal(1)
       end if
 
@@ -245,7 +245,7 @@ contains
         rwork = lrwork, lrwork = -1, info = info)
       
       if(info /= 0) then
-        write(messages_lines(1),'(a,i6)') "ScaLAPACK pdsyev workspace query failure, error code = ", info
+        write(message%lines(1),'(a,i6)') "ScaLAPACK pdsyev workspace query failure, error code = ", info
         call messages_fatal(1)
       end if
 

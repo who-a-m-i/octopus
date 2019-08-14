@@ -80,7 +80,7 @@ contains
         n_divisors = n_divisors + 1
 
         if(n_divisors > max_d - 1) then
-          messages_lines(1) = "Internal error in get_divisors. Please increase n_divisors"
+          message%lines(1) = "Internal error in get_divisors. Please increase n_divisors"
           call messages_fatal(1)
         end if
 
@@ -203,45 +203,45 @@ contains
     call io_dump_file(stdout, trim(trim(conf%share) // '/logo'))
 
     ! Let us print the version
-    messages_lines(1) = ""
-    messages_lines(2) = str_center("Running octopus", 70)
-    messages_lines(3) = ""
+    message%lines(1) = ""
+    message%lines(2) = str_center("Running octopus", 70)
+    message%lines(3) = ""
     call messages_info(3)
 
-    messages_lines(1) = &
+    message%lines(1) = &
          "Version                : " // trim(conf%version)
-    messages_lines(2) = &
+    message%lines(2) = &
          "Commit                 : "// trim(conf%git_commit)
-    messages_lines(3) = &
+    message%lines(3) = &
          "Build time             : "// trim(conf%build_time)
     call messages_info(3)
 
-    messages_lines(1) = 'Configuration options  : ' // trim(get_config_opts())
-    messages_lines(2) = 'Optional libraries     :'  // trim(get_optional_libraries())
+    message%lines(1) = 'Configuration options  : ' // trim(get_config_opts())
+    message%lines(2) = 'Optional libraries     :'  // trim(get_optional_libraries())
 
-    messages_lines(3) = 'Architecture           : ' + TOSTRING(OCT_ARCH)
+    message%lines(3) = 'Architecture           : ' + TOSTRING(OCT_ARCH)
     call messages_info(3)
 
-    messages_lines(1) = &
+    message%lines(1) = &
          "C compiler             : "//trim(conf%cc)
-    messages_lines(2) = &
+    message%lines(2) = &
          "C compiler flags       : "//trim(conf%cflags)
 #ifdef HAVE_FC_COMPILER_VERSION
-    messages_lines(3) = "Fortran compiler       : "//trim(conf%fc) //" ("//compiler_version()//")"
+    message%lines(3) = "Fortran compiler       : "//trim(conf%fc) //" ("//compiler_version()//")"
 #else
-    messages_lines(3) = "Fortran compiler       : "//trim(conf%fc)
+    message%lines(3) = "Fortran compiler       : "//trim(conf%fc)
 #endif
-    messages_lines(4) = &
+    message%lines(4) = &
          "Fortran compiler flags : "//trim(conf%fcflags)
     call messages_info(4)
 
-    messages_lines(1) = ""
+    message%lines(1) = ""
     call messages_info(1)
 
     ! Let us print where we are running
     call loct_sysname(sys_name)
-    write(messages_lines(1), '(a)') str_center("The octopus is swimming in " // trim(sys_name), 70)
-    messages_lines(2) = ""
+    write(message%lines(1), '(a)') str_center("The octopus is swimming in " // trim(sys_name), 70)
+    message%lines(2) = ""
     call messages_info(2)
 
 #if defined(HAVE_MPI)

@@ -194,11 +194,11 @@ contains
     nullify(sb_p); nullify(cv_p)
 
     if(.not.conv) then
-      messages_lines(1) = "During the construction of the adaptive grid, the Newton-Raphson"
-      messages_lines(2) = "method did not converge for point:"
-      write(messages_lines(3),'(9f14.6)') x(1:sb%dim)
-      messages_lines(4) = "Try varying the Gygi parameters -- usually reducing CurvGygiA or"
-      messages_lines(5) = "CurvGygiAlpha (or both) solves the problem."
+      message%lines(1) = "During the construction of the adaptive grid, the Newton-Raphson"
+      message%lines(2) = "method did not converge for point:"
+      write(message%lines(3),'(9f14.6)') x(1:sb%dim)
+      message%lines(4) = "Try varying the Gygi parameters -- usually reducing CurvGygiA or"
+      message%lines(5) = "CurvGygiAlpha (or both) solves the problem."
       call messages_fatal(5)
     end if
 

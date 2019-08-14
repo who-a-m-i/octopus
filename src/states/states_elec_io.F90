@@ -100,31 +100,31 @@ contains
       ns = 1
       if(st%d%nspin == 2) ns = 2
       
-      messages_lines(1) = 'Eigenvalues [' // trim(units_abbrev(units_out%energy)) // ']'
+      message%lines(1) = 'Eigenvalues [' // trim(units_abbrev(units_out%energy)) // ']'
       call messages_info(1, iunit)
 
       if(st%d%ispin  ==  SPINORS) then
-        write(messages_lines(1), '(a4,1x,a5,1x,a12,1x,a12,2x,a4,4x,a4,4x,a4)')   &
+        write(message%lines(1), '(a4,1x,a5,1x,a12,1x,a12,2x,a4,4x,a4,4x,a4)')   &
           '#st',' Spin',' Eigenvalue', 'Occupation ', '<Sx>', '<Sy>', '<Sz>'
       else
-        write(messages_lines(1), '(a4,1x,a5,1x,a12,4x,a12)')       &
+        write(message%lines(1), '(a4,1x,a5,1x,a12,4x,a12)')       &
           '#st',' Spin',' Eigenvalue', 'Occupation'
       end if
       if(present(error)) &
-        write(messages_lines(1),'(a,a10)') trim(messages_lines(1)), ' Error'
+        write(message%lines(1),'(a,a10)') trim(message%lines(1)), ' Error'
       call messages_info(1, iunit)
 
       do ik = 1, st%d%nik, ns
         if(simul_box_is_periodic(sb)) then
           ikk = states_elec_dim_get_kpoint_index(st%d, ik)
           kpoint(1:sb%dim) = kpoints_get_point(sb%kpoints, ikk, absolute_coordinates = .false.)
-          write(messages_lines(1), '(a,i4,a)') '#k =', ikk, ', k = ('
+          write(message%lines(1), '(a,i4,a)') '#k =', ikk, ', k = ('
           do idir = 1, sb%dim
             write(tmp_str(1), '(f10.6)') kpoint(idir)
-            messages_lines(1) = trim(messages_lines(1))//trim(tmp_str(1))
-            if(idir < sb%dim) messages_lines(1) = trim(messages_lines(1))//','
+            message%lines(1) = trim(message%lines(1))//trim(tmp_str(1))
+            if(idir < sb%dim) message%lines(1) = trim(message%lines(1))//','
           end do
-          messages_lines(1) = trim(messages_lines(1))//')'
+          message%lines(1) = trim(message%lines(1))//')'
           call messages_info(1, iunit)
         end if
 
@@ -145,9 +145,9 @@ contains
               if(present(error)) write(tmp_str(3), '(a7,es7.1,a1)')'      (', error(ist, ik+is), ')'
             end if
             if(present(error)) then
-              messages_lines(1) = trim(tmp_str(1))//trim(tmp_str(2))//trim(tmp_str(3))
+              message%lines(1) = trim(tmp_str(1))//trim(tmp_str(2))//trim(tmp_str(3))
             else
-              messages_lines(1) = trim(tmp_str(1))//trim(tmp_str(2))
+              message%lines(1) = trim(tmp_str(1))//trim(tmp_str(2))
             end if
             call messages_info(1, iunit)
           end do
@@ -289,7 +289,7 @@ contains
     end if
 
     if(st%smear%method /= SMEAR_SEMICONDUCTOR .and. st%smear%method /= SMEAR_FIXED_OCC) then
-      write(messages_lines(1), '(a,f12.6,1x,a)') "Fermi energy = ", &
+      write(message%lines(1), '(a,f12.6,1x,a)') "Fermi energy = ", &
         units_from_atomic(units_out%energy, st%smear%e_fermi), units_abbrev(units_out%energy)
       call messages_info(1, iunit)
     end if
@@ -415,12 +415,12 @@ contains
     egindir = lumo-homo
 
     if(lumo == -1 .or. egdir <= M_EPSILON) then
-      write(messages_lines(1),'(a)') 'The system seems to have no gap.'
+      write(message%lines(1),'(a)') 'The system seems to have no gap.'
       call messages_info(1, iunit)
     else
-      write(messages_lines(1),'(a,i5,a,f7.4,a)') 'Direct gap at ik=', egdirk, ' of ', &
+      write(message%lines(1),'(a,i5,a,f7.4,a)') 'Direct gap at ik=', egdirk, ' of ', &
               units_from_atomic(units_out%energy, egdir),  ' ' // trim(units_abbrev(units_out%energy))
-      write(messages_lines(2),'(a,i5,a,i5,a,f7.4,a)') 'Indirect gap between ik=', homok, ' and ik=', lumok, &
+      write(message%lines(2),'(a,i5,a,i5,a,f7.4,a)') 'Indirect gap between ik=', homok, ' and ik=', lumok, &
             ' of ', units_from_atomic(units_out%energy, egindir),  ' ' // trim(units_abbrev(units_out%energy))
       call messages_info(2, iunit)
     end if
@@ -533,19 +533,19 @@ contains
 
       ! header
       if(use_qvector) then
-        write (messages_lines(1),'(a1,a30,3(es14.5,1x),a1)') '#', ' momentum-transfer vector : (', &
+        write (message%lines(1),'(a1,a30,3(es14.5,1x),a1)') '#', ' momentum-transfer vector : (', &
           (units_from_atomic(unit_one / units_out%length, qvector(icoord)), icoord=1, gr%mesh%sb%dim),')'
         select case(gr%mesh%sb%dim)
-          case(1); write(messages_lines(2), '(a1,4(a15,1x))') '#', 'E' , '<x>', '<f>', 'S(q,omega)'
-          case(2); write(messages_lines(2), '(a1,5(a15,1x))') '#', 'E' , '<x>', '<y>', '<f>', 'S(q,omega)'
-          case(3); write(messages_lines(2), '(a1,6(a15,1x))') '#', 'E' , '<x>', '<y>', '<z>', '<f>', 'S(q,omega)'
+          case(1); write(message%lines(2), '(a1,4(a15,1x))') '#', 'E' , '<x>', '<f>', 'S(q,omega)'
+          case(2); write(message%lines(2), '(a1,5(a15,1x))') '#', 'E' , '<x>', '<y>', '<f>', 'S(q,omega)'
+          case(3); write(message%lines(2), '(a1,6(a15,1x))') '#', 'E' , '<x>', '<y>', '<z>', '<f>', 'S(q,omega)'
         end select
         call messages_info(2,iunit)
       else
         select case(gr%mesh%sb%dim)
-          case(1); write(messages_lines(1), '(a1,3(a15,1x))') '#', 'E' , '<x>', '<f>'
-          case(2); write(messages_lines(1), '(a1,4(a15,1x))') '#', 'E' , '<x>', '<y>', '<f>'
-          case(3); write(messages_lines(1), '(a1,5(a15,1x))') '#', 'E' , '<x>', '<y>', '<z>', '<f>'
+          case(1); write(message%lines(1), '(a1,3(a15,1x))') '#', 'E' , '<x>', '<f>'
+          case(2); write(message%lines(1), '(a1,4(a15,1x))') '#', 'E' , '<x>', '<y>', '<f>'
+          case(3); write(message%lines(1), '(a1,5(a15,1x))') '#', 'E' , '<x>', '<y>', '<z>', '<f>'
         end select
         call messages_info(1,iunit)
       end if
@@ -594,10 +594,11 @@ contains
         if(mpi_grp_is_root(mpi_world)) then
 
           if(use_qvector) then
-            write(messages_lines(1), '(1x,6(es15.8,1x))') units_from_atomic(units_out%energy, transition_energy), osc(:), osc_strength, &
-                                                   units_from_atomic(unit_one/units_out%energy, dsf)
+            write(message%lines(1), '(1x,6(es15.8,1x))') units_from_atomic(units_out%energy, transition_energy), &
+              osc(:), osc_strength, units_from_atomic(unit_one/units_out%energy, dsf)
           else
-            write(messages_lines(1), '(1x,6(es15.8,1x))') units_from_atomic(units_out%energy, transition_energy), osc(:), osc_strength
+            write(message%lines(1), '(1x,6(es15.8,1x))') units_from_atomic(units_out%energy, transition_energy), &
+              osc(:), osc_strength
           end if
 
           call messages_info(1,iunit)

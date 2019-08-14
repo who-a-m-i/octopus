@@ -60,7 +60,7 @@ subroutine X(preconditioner_apply)(pre, gr, hm, psolver, a, b, omega)
     call multigrid()
 
   case default
-   write(messages_lines(1), '(a,i4,a)') "Unknown preconditioner ", pre%which, "."
+   write(message%lines(1), '(a,i4,a)') "Unknown preconditioner ", pre%which, "."
    call messages_fatal(1)
 
   end select

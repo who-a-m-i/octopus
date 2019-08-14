@@ -95,7 +95,7 @@ contains
     ! The number of partitions in group 1 should be a multiple of the
     ! number of partitions in group 2.
     if (mod(grp1%size, grp2%size) /= 0) then
-      messages_lines(1) = "Incompatible size of mpi groups in partition_transfer_init"
+      message%lines(1) = "Incompatible size of mpi groups in partition_transfer_init"
       call messages_fatal(1)
     end if
     n12 = grp1%size/grp2%size
@@ -125,7 +125,7 @@ contains
           pcount = pcount + 1
           
           if (pcount > n12 .or. any(partno_list(1, ip) == part_map(1:ipart,:))) then
-            messages_lines(1) = "Incompatible mpi groups in partition_transfer_init"
+            message%lines(1) = "Incompatible mpi groups in partition_transfer_init"
             call messages_fatal(1)
           end if
           part_map(ipart, pcount) = partno_list(1, ip)
@@ -133,7 +133,7 @@ contains
         end if
       end do
       if (pcount /= n12) then
-        messages_lines(1) = "Incompatible mpi groups in partition_transfer_init"
+        message%lines(1) = "Incompatible mpi groups in partition_transfer_init"
         call messages_fatal(1)
       end if
     end do

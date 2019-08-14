@@ -210,8 +210,8 @@ contains
     call messages_print_var_option(stdout, 'PropagationSpectrumDampMode', spectrum%damp)
 
     if(spectrum%method == SPECTRUM_COMPRESSED_SENSING .and. spectrum%damp /= SPECTRUM_DAMP_NONE) then
-      messages_lines(1) = 'Using damping with compressed sensing, this is not required'
-      messages_lines(2) = 'and can introduce noise in the spectra.'
+      message%lines(1) = 'Using damping with compressed sensing, this is not required'
+      message%lines(2) = 'and can introduce noise in the spectra.'
       call messages_warning(2)
     end if
 
@@ -635,24 +635,24 @@ contains
           (time_steps /= ref_time_steps) .or. &
           (.not.(dt .app. ref_dt))         .or. &
           (lmax /= ref_lmax) ) then
-        write(messages_lines(1),'(a)') 'The multipoles and reference multipoles files do not match.'
+        write(message%lines(1),'(a)') 'The multipoles and reference multipoles files do not match.'
         call messages_fatal(1)
       end if
     end if
 
     ! Now we cannot process files that do not contain the dipole, or that contain more than the dipole.
     if(lmax /= 1) then
-      messages_lines(1) = 'Multipoles file should contain the dipole -- and only the dipole.'
+      message%lines(1) = 'Multipoles file should contain the dipole -- and only the dipole.'
       call messages_fatal(1)
     end if
 
     if(kick%function_mode /= KICK_FUNCTION_DIPOLE) then
-      messages_lines(1) = "Kick function must have been dipole to run this utility."
+      message%lines(1) = "Kick function must have been dipole to run this utility."
       call messages_fatal(1)
     end if
 
     if(kick%pol_dir < 1) then
-      messages_lines(1) = "Kick polarization direction is not set. Probably no kick was used."
+      message%lines(1) = "Kick polarization direction is not set. Probably no kick was used."
       call messages_fatal(1)
     end if
 
@@ -1065,7 +1065,7 @@ contains
 
     ! Now we cannot process files that do not contain the dipole, or that contain more than the dipole.
     if (lmax /= 1) then
-      messages_lines(1) = 'Multipoles file should contain the dipole -- and only the dipole.'
+      message%lines(1) = 'Multipoles file should contain the dipole -- and only the dipole.'
       call messages_fatal(1)
     end if
 
@@ -1199,7 +1199,7 @@ contains
     call spectrum_count_time_steps(in_file_cos, time_steps_cos, dt_cos)
 
     if(dt_sin /= dt_cos) then
-      messages_lines(1) = "dt is different in ftchds.cos and ftchds.sin!"
+      message%lines(1) = "dt is different in ftchds.cos and ftchds.sin!"
       call messages_fatal(1)
     end if
 
@@ -1383,16 +1383,22 @@ contains
     SAFE_DEALLOCATE_A(angular)
 
     ! print some info
-    write(messages_lines(1), '(a,i8)')    'Number of time steps = ', ntiter
-    write(messages_lines(2), '(a,i4)')    'PropagationSpectrumDampMode   = ', spectrum%damp
-    write(messages_lines(3), '(a,f10.4)') 'PropagationSpectrumDampFactor = ', units_from_atomic(units_out%time**(-1), spectrum%damp_factor)
-    write(messages_lines(4), '(a,f10.4)') 'PropagationSpectrumStartTime  = ', units_from_atomic(units_out%time, spectrum%start_time)
-    write(messages_lines(5), '(a,f10.4)') 'PropagationSpectrumEndTime    = ', units_from_atomic(units_out%time, spectrum%end_time)
-    write(messages_lines(6), '(a,f10.4)') 'PropagationSpectrumMaxEnergy  = ', units_from_atomic(units_inp%energy, spectrum%max_energy) 
-    write(messages_lines(7),'(a,f10.4)')  'PropagationSpectrumEnergyStep = ', units_from_atomic(units_inp%energy, spectrum%energy_step)
-    messages_lines(8) = ""
-    write(messages_lines(9), '(a,5e15.6,5e15.6)') 'R(0) sum rule = ', sum1
-    write(messages_lines(10),'(a,5e15.6,5e15.6)') 'R(2) sum rule = ', sum2
+    write(message%lines(1), '(a,i8)')    'Number of time steps = ', ntiter
+    write(message%lines(2), '(a,i4)')    'PropagationSpectrumDampMode   = ', & 
+      spectrum%damp
+    write(message%lines(3), '(a,f10.4)') 'PropagationSpectrumDampFactor = ', &
+      units_from_atomic(units_out%time**(-1), spectrum%damp_factor)
+    write(message%lines(4), '(a,f10.4)') 'PropagationSpectrumStartTime  = ', &
+      units_from_atomic(units_out%time, spectrum%start_time)
+    write(message%lines(5), '(a,f10.4)') 'PropagationSpectrumEndTime    = ', &
+      units_from_atomic(units_out%time, spectrum%end_time)
+    write(message%lines(6), '(a,f10.4)') 'PropagationSpectrumMaxEnergy  = ', &
+      units_from_atomic(units_inp%energy, spectrum%max_energy) 
+    write(message%lines(7),'(a,f10.4)')  'PropagationSpectrumEnergyStep = ', &
+      units_from_atomic(units_inp%energy, spectrum%energy_step)
+    message%lines(8) = ""
+    write(message%lines(9), '(a,5e15.6,5e15.6)') 'R(0) sum rule = ', sum1
+    write(message%lines(10),'(a,5e15.6,5e15.6)') 'R(2) sum rule = ', sum2
     call messages_info(10)
 
 
@@ -1522,8 +1528,8 @@ contains
     end if
 
     if(ierr /= 0) then
-      write(messages_lines(1),'(a,f14.6,a)') 'spectrum_hsfunction_min: The maximum at', xx,' was not properly converged.'
-      write(messages_lines(2),'(a,i12)')      'Error code: ', ierr
+      write(message%lines(1),'(a,f14.6,a)') 'spectrum_hsfunction_min: The maximum at', xx,' was not properly converged.'
+      write(message%lines(2),'(a,i12)')      'Error code: ', ierr
       call messages_warning(2)
     end if
     call hsfunction(xx, hsval)
@@ -2308,7 +2314,7 @@ contains
     time_steps = time_steps - 1
     
     if(time_steps < 3) then
-      messages_lines(1) = "Empty file?"
+      message%lines(1) = "Empty file?"
       call messages_fatal(1)
     end if
 
@@ -2346,7 +2352,7 @@ contains
     dw = units_to_atomic(units_out%energy, e2 - e1)
 
     if(energy_steps < 3) then
-      messages_lines(1) = "Empty multipole file?"
+      message%lines(1) = "Empty multipole file?"
       call messages_fatal(1)
     end if
 
@@ -2395,7 +2401,7 @@ contains
     time_steps = time_steps - 1
 
     if(time_steps < 3) then
-      messages_lines(1) = "Empty file?"
+      message%lines(1) = "Empty file?"
       call messages_fatal(1)
     end if
 

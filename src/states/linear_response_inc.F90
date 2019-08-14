@@ -312,7 +312,7 @@ subroutine X(lr_dump_rho)(lr, mesh, nspin, restart, rho_tag, ierr)
   end if
 
   if (debug%info) then
-    messages_lines(1) = "Debug: Writing linear-response density restart."
+    message%lines(1) = "Debug: Writing linear-response density restart."
     call messages_info(1)
   end if
 
@@ -325,7 +325,7 @@ subroutine X(lr_dump_rho)(lr, mesh, nspin, restart, rho_tag, ierr)
   if (err2 /= 0) ierr = ierr + 1
 
   if (debug%info) then
-    messages_lines(1) = "Debug: Writing linear-response density restart done."
+    message%lines(1) = "Debug: Writing linear-response density restart done."
     call messages_info(1)
   end if
 
@@ -356,7 +356,7 @@ subroutine X(lr_load_rho)(dl_rho, mesh, nspin, restart, rho_tag, ierr)
   end if
 
   if (debug%info) then
-    messages_lines(1) = "Debug: Reading linear-response density restart."
+    message%lines(1) = "Debug: Reading linear-response density restart."
     call messages_info(1)
   end if
 
@@ -372,7 +372,7 @@ subroutine X(lr_load_rho)(dl_rho, mesh, nspin, restart, rho_tag, ierr)
   if (err2 /= 0) ierr = ierr + 1
 
   if (debug%info) then
-    messages_lines(1) = "Debug: Reading linear-response density restart done."
+    message%lines(1) = "Debug: Reading linear-response density restart done."
     call messages_info(1)
   end if
 

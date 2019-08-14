@@ -159,7 +159,7 @@ subroutine X(bgw_vxc_dat)(bgw, dir, st, gr, hm, psolver, namespace, vxc)
   end if
 
 #else
-    messages_lines(1) = "Cannot do BerkeleyGW output: the library was not linked."
+    message%lines(1) = "Cannot do BerkeleyGW output: the library was not linked."
     call messages_fatal(1)
 #endif
 
@@ -310,7 +310,7 @@ subroutine X(bgw_write_fs)(iunit, field_r, field_g, shell, nspin, gr, cube, cf, 
     if(is_wfn) then
       field_g(:,:) = field_g(:,:) / sqrt(norm)
       if(abs(norm - M_ONE) > CNST(0.01)) then
-        write(messages_lines(1), '(a,f12.6)') 'Wavefunction norm within G-sphere (before renormalization) is only ', norm
+        write(message%lines(1), '(a,f12.6)') 'Wavefunction norm within G-sphere (before renormalization) is only ', norm
         call messages_warning(1)
       end if
     end if

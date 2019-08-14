@@ -122,17 +122,17 @@ contains
         lsize = this%num, scalapack_compat = scalapack_compat)
 
       if(present(tag)) then
-        messages_lines(1) = 'Info: Parallelization in ' // trim(tag)
+        message%lines(1) = 'Info: Parallelization in ' // trim(tag)
         call messages_info(1)
       end if
 
       do kk = 1, this%mpi_grp%size
 
         if(present(tag)) then
-          write(messages_lines(1),'(a,i4,a,i6,a)') 'Info: Node in group ', kk - 1, &
+          write(message%lines(1),'(a,i4,a,i6,a)') 'Info: Node in group ', kk - 1, &
             ' will manage ', this%num(kk - 1), ' '//trim(tag)
           if(this%num(kk - 1) > 0) then
-            write(messages_lines(1),'(a,a,i6,a,i6)') trim(messages_lines(1)), ':', this%range(1, kk - 1), " - ", this%range(2, kk - 1)
+            write(message%lines(1),'(a,a,i6,a,i6)') trim(message%lines(1)), ':', this%range(1, kk - 1), " - ", this%range(2, kk - 1)
           end if
           call messages_info(1)
         end if

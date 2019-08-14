@@ -181,7 +181,7 @@ subroutine X(lcao_wf)(this, st, gr, geo, hm, psolver, namespace, start)
 
   PUSH_SUB(X(lcao_wf))
   
-  write(messages_lines(1),'(a,i6,a)') 'Info: Performing initial LCAO calculation with ', &
+  write(message%lines(1),'(a,i6,a)') 'Info: Performing initial LCAO calculation with ', &
        this%norbs,' orbitals.'
   call messages_info(1)
           
@@ -203,7 +203,7 @@ subroutine X(lcao_wf)(this, st, gr, geo, hm, psolver, namespace, start)
   ie = 0
   maxmtxel = this%norbs * (this%norbs + 1)/2
 
-  messages_lines(1) = "Info: Getting Hamiltonian matrix elements."
+  message%lines(1) = "Info: Getting Hamiltonian matrix elements."
   call messages_info(1)
 
   if(mpi_grp_is_root(mpi_world)) call loct_progress_bar(-1, maxmtxel)
@@ -430,7 +430,7 @@ subroutine X(init_orbitals)(this, st, gr, geo, start)
   if(iorb <= this%norbs) then
 
     size = (this%norbs - iorb + 1) * st%d%spin_channels
-    write(messages_lines(1), '(a, i5, a)') "Info: Single-precision storage for ", size, " extra orbitals will be allocated."
+    write(message%lines(1), '(a, i5, a)') "Info: Single-precision storage for ", size, " extra orbitals will be allocated."
     call messages_info(1)
 
     SAFE_ALLOCATE(this%X(buff)(1:gr%mesh%np, 1:st%d%dim, iorb:this%norbs, 1:st%d%spin_channels))
@@ -497,18 +497,18 @@ subroutine X(lcao_alt_init_orbitals)(this, st, gr, geo, start)
     ASSERT(start == 1)
   end if
 
-  write(messages_lines(1), '(a,i6,a)') 'Info: Performing LCAO calculation with ', this%norbs, ' orbitals.'
-  write(messages_lines(2), '(a)') ' '
+  write(message%lines(1), '(a,i6,a)') 'Info: Performing LCAO calculation with ', this%norbs, ' orbitals.'
+  write(message%lines(2), '(a)') ' '
   call messages_info(2)
 
   if (this%norbs < st%nst) then
-    write(messages_lines(1), '(a)') 'Not enough atomic orbitals to initialize all states,'
-    write(messages_lines(2), '(i6,a)') st%nst - this%norbs, ' states will be randomized.'
+    write(message%lines(1), '(a)') 'Not enough atomic orbitals to initialize all states,'
+    write(message%lines(2), '(i6,a)') st%nst - this%norbs, ' states will be randomized.'
     if(this%derivative) then
       call messages_warning(2)
     else
-      write(messages_lines(3), '(a)') 'You can double the number of atomic orbitals by setting'
-      write(messages_lines(4), '(a)') 'LCAOExtraOrbitals to yes.'
+      write(message%lines(3), '(a)') 'You can double the number of atomic orbitals by setting'
+      write(message%lines(4), '(a)') 'LCAOExtraOrbitals to yes.'
       call messages_warning(4)
     end if
   end if
@@ -597,9 +597,9 @@ subroutine X(lcao_alt_wf) (this, st, gr, geo, hm, psolver, namespace, start)
   do ispin = 1, st%d%spin_channels
 
     if(st%d%spin_channels > 1) then
-      write(messages_lines(1), '(a)') ' '
-      write(messages_lines(2), '(a,i1)') 'LCAO for spin channel ', ispin
-      write(messages_lines(3), '(a)') ' '
+      write(message%lines(1), '(a)') ' '
+      write(message%lines(2), '(a,i1)') 'LCAO for spin channel ', ispin
+      write(message%lines(3), '(a)') ' '
       call messages_info(3)
     end if
 
@@ -615,9 +615,9 @@ subroutine X(lcao_alt_wf) (this, st, gr, geo, hm, psolver, namespace, start)
       if(ispin /= states_elec_dim_get_spin_index(st%d, ik)) cycle
 
       if(st%d%nik > st%d%spin_channels) then
-        write(messages_lines(1), '(a)') ' '
-        write(messages_lines(2), '(a,i5)') 'LCAO for k-point ', states_elec_dim_get_kpoint_index(st%d, ik)
-        write(messages_lines(3), '(a)') ' '
+        write(message%lines(1), '(a)') ' '
+        write(message%lines(2), '(a,i5)') 'LCAO for k-point ', states_elec_dim_get_kpoint_index(st%d, ik)
+        write(message%lines(3), '(a)') ' '
         call messages_info(3)
       end if
 
@@ -947,7 +947,7 @@ contains
 #endif
 
       if(info /= 0) then
-        write(messages_lines(1), '(a,i4,a)') &
+        write(message%lines(1), '(a,i4,a)') &
           'Workspace query for LCAO parallel diagonalization failed. ScaLAPACK returned info code ', info, '.'
         call messages_warning(1)
       end if
@@ -982,7 +982,7 @@ contains
 #endif
 
       if(info /= 0) then
-        write(messages_lines(1), '(a,i4,a)') 'LCAO parallel diagonalization failed. ScaLAPACK returned info code ', info, '.'
+        write(message%lines(1), '(a,i4,a)') 'LCAO parallel diagonalization failed. ScaLAPACK returned info code ', info, '.'
         call messages_warning(1)
       end if
 
@@ -1122,7 +1122,8 @@ contains
           work = tmp(1), lwork = -1, rwork = rwork(1), iwork = iwork(1), ifail = ifail(1), info = info)
 #endif
         if(info /= 0) then
-          write(messages_lines(1), '(a,i4,a)') 'Workspace query for LCAO diagonalization failed. LAPACK returned info code ', info, '.'
+          write(message%lines(1), '(a,i4,a)') 'Workspace query for LCAO diagonalization failed. '//&
+            'LAPACK returned info code ', info, '.'
           call messages_warning(1)
         end if
         
@@ -1146,7 +1147,7 @@ contains
 #endif
 
         if(info /= 0) then
-          write(messages_lines(1), '(a,i4,a)') 'LCAO diagonalization failed. LAPACK returned info code ', info, '.'
+          write(message%lines(1), '(a,i4,a)') 'LCAO diagonalization failed. LAPACK returned info code ', info, '.'
           call messages_warning(1)
         end if
         

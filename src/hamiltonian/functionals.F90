@@ -177,44 +177,44 @@ contains
 
       ! FIXME: no need to say this for kernel
       if(bitand(functl%flags, XC_FLAGS_HAVE_EXC) == 0) then
-        messages_lines(1) = 'Specified functional does not have total energy available.'
-        messages_lines(2) = 'Corresponding component of energy will just be left as zero.'
+        message%lines(1) = 'Specified functional does not have total energy available.'
+        message%lines(2) = 'Corresponding component of energy will just be left as zero.'
         call messages_warning(2)
       end if
 
       if(bitand(functl%flags, XC_FLAGS_HAVE_VXC) == 0) then
-        messages_lines(1) = 'Specified functional does not have XC potential available.'
-        messages_lines(2) = 'Cannot run calculations. Choose another XCFunctional.'
+        message%lines(1) = 'Specified functional does not have XC potential available.'
+        message%lines(2) = 'Cannot run calculations. Choose another XCFunctional.'
         call messages_fatal(2)
       end if
 
       ok = bitand(functl%flags, XC_FLAGS_1D) /= 0
       if((ndim /= 1).and.ok) then
-        messages_lines(1) = 'Specified functional is only allowed in 1D.'
+        message%lines(1) = 'Specified functional is only allowed in 1D.'
         call messages_fatal(1)
       end if
       if(ndim==1.and.(.not.ok)) then
-        messages_lines(1) = 'Cannot use the specified functionals in 1D.'
+        message%lines(1) = 'Cannot use the specified functionals in 1D.'
         call messages_fatal(1)
       end if
 
       ok = bitand(functl%flags, XC_FLAGS_2D) /= 0
       if((ndim /= 2).and.ok) then
-        messages_lines(1) = 'Specified functional is only allowed in 2D.'
+        message%lines(1) = 'Specified functional is only allowed in 2D.'
         call messages_fatal(1)
       end if
       if(ndim==2.and.(.not.ok)) then
-        messages_lines(1) = 'Cannot use the specified functionals in 2D.'
+        message%lines(1) = 'Cannot use the specified functionals in 2D.'
         call messages_fatal(1)
       end if
 
       ok = bitand(functl%flags, XC_FLAGS_3D) /= 0
       if((ndim /= 3).and.ok) then
-        messages_lines(1) = 'Specified functional is only allowed in 3D.'
+        message%lines(1) = 'Specified functional is only allowed in 3D.'
         call messages_fatal(1)
       end if
       if(ndim==3.and.(.not.ok)) then
-        messages_lines(1) = 'Cannot use the specified functionals in 3D.'
+        message%lines(1) = 'Cannot use the specified functionals in 3D.'
         call messages_fatal(1)
       end if
     end if
@@ -361,8 +361,8 @@ contains
 
       select case(functl%id)
       case(XC_OEP_X)
-        write(messages_lines(1), '(2x,a)') 'Exchange'
-        write(messages_lines(2), '(4x,a)') 'Exact exchange'
+        write(message%lines(1), '(2x,a)') 'Exchange'
+        write(message%lines(2), '(4x,a)') 'Exact exchange'
         call messages_info(2, iunit)
       end select
 
@@ -370,8 +370,8 @@ contains
       ! this is handled separately
       select case(functl%id)
       case(XC_KS_INVERSION)
-        write(messages_lines(1), '(2x,a)') 'Exchange-Correlation:'
-        write(messages_lines(2), '(4x,a)') '  KS Inversion'
+        write(message%lines(1), '(2x,a)') 'Exchange-Correlation:'
+        write(message%lines(2), '(4x,a)') '  KS Inversion'
         call messages_info(2, iunit)
       end select
 
@@ -379,22 +379,22 @@ contains
       call libvdwxc_write_info(functl%libvdwxc, iunit)
 
     else if(functl%id == XC_HALF_HARTREE) then
-      write(messages_lines(1), '(2x,a)') 'Exchange-Correlation:'
-      write(messages_lines(2), '(4x,a)') 'Half-Hartree two-electron exchange'
+      write(message%lines(1), '(2x,a)') 'Exchange-Correlation:'
+      write(message%lines(2), '(4x,a)') 'Half-Hartree two-electron exchange'
       call messages_info(2, iunit)
       
     else if(functl%family /= XC_FAMILY_NONE) then ! all the other families
       select case(functl%type)
       case(XC_EXCHANGE)
-        write(messages_lines(1), '(2x,a)') 'Exchange'
+        write(message%lines(1), '(2x,a)') 'Exchange'
       case(XC_CORRELATION)
-        write(messages_lines(1), '(2x,a)') 'Correlation'
+        write(message%lines(1), '(2x,a)') 'Correlation'
       case(XC_EXCHANGE_CORRELATION)
-        write(messages_lines(1), '(2x,a)') 'Exchange-correlation'
+        write(message%lines(1), '(2x,a)') 'Exchange-correlation'
       case(XC_KINETIC)
         call messages_not_implemented("kinetic-energy functionals")
       case default
-        write(messages_lines(1), '(a,i6,a,i6)') "Unknown functional type ", functl%type, ' for functional ', functl%id
+        write(message%lines(1), '(a,i6,a,i6)') "Unknown functional type ", functl%type, ' for functional ', functl%id
         call messages_fatal(1)
       end select
 
@@ -406,7 +406,7 @@ contains
         case (XC_FAMILY_HYB_MGGA);  write(s2,'(a)') "Hybrid MGGA"
         case (XC_FAMILY_MGGA);      write(s2,'(a)') "MGGA"
       end select
-      write(messages_lines(2), '(4x,4a)') trim(s1), ' (', trim(s2), ')'
+      write(message%lines(2), '(4x,4a)') trim(s1), ' (', trim(s2), ')'
       call messages_info(2, iunit)
       
       ii = 0
@@ -416,7 +416,7 @@ contains
       call XC_F90(info_refs)(functl%info, ii, str, s1)
 #endif
       do while(ii >= 0)
-        write(messages_lines(1), '(4x,a,i1,2a)') '[', ii, '] ', trim(s1)
+        write(message%lines(1), '(4x,a,i1,2a)') '[', ii, '] ', trim(s1)
         call messages_info(1, iunit)
 #if defined HAVE_LIBXC3 || defined HAVE_LIBXC4
         call XC_F90(info_refs)(functl%info, ii, s1)

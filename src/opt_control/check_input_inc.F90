@@ -30,7 +30,7 @@
 
     ! No QOCT runs with periodic boundary conditions.
     if(simul_box_is_periodic(sys%gr%sb)) then
-      write(messages_lines(1), '(a)') 'No QOCT runs with periodic boundary conditions. '
+      write(message%lines(1), '(a)') 'No QOCT runs with periodic boundary conditions. '
       call messages_fatal(1)
     end if
 
@@ -42,33 +42,33 @@
       call occupied_states(sys%st, 1, n_filled, n_partially_filled, n_half_filled)
       no_electrons = 2*n_filled + n_half_filled
       if(n_partially_filled > 0 ) then
-        write(messages_lines(1),'(a)') 'No partially filled orbitals are allowed in OCT calculations.'
+        write(message%lines(1),'(a)') 'No partially filled orbitals are allowed in OCT calculations.'
         call messages_fatal(1)
       end if
     case(SPIN_POLARIZED)
       call occupied_states(sys%st, 1, n_filled, n_partially_filled, n_half_filled)
       if(n_partially_filled > 0 .or. n_half_filled > 0) then
-        write(messages_lines(1),'(a)') 'No partially filled orbitals are allowed in OCT calculations.'
+        write(message%lines(1),'(a)') 'No partially filled orbitals are allowed in OCT calculations.'
         call messages_fatal(1)
       end if
       no_electrons = n_filled
       call occupied_states(sys%st, 2, n_filled, n_partially_filled, n_half_filled)
       no_electrons = n_filled + no_electrons
       if(n_partially_filled > 0 .or. n_half_filled > 0) then
-        write(messages_lines(1),'(a)') 'No partially filled orbitals are allowed in OCT calculations.'
+        write(message%lines(1),'(a)') 'No partially filled orbitals are allowed in OCT calculations.'
         call messages_fatal(1)
       end if
     case(SPINORS)
       call occupied_states(sys%st, 1, n_filled, n_partially_filled, n_half_filled)
       no_electrons = n_filled
       if(n_partially_filled > 0 .or. n_half_filled > 0) then
-        write(messages_lines(1),'(a)') 'No partially filled orbitals are allowed in OCT calculations.'
+        write(message%lines(1),'(a)') 'No partially filled orbitals are allowed in OCT calculations.'
         call messages_fatal(1)
       end if
     end select
 
     if(abs(sys%st%qtot - real(no_electrons, REAL_PRECISION) ) > CNST(1.0e-8)) then
-      write(messages_lines(1), '(a)') 'Error in check_faulty_runmodes'
+      write(message%lines(1), '(a)') 'Error in check_faulty_runmodes'
       call messages_fatal(1)
     end if
 
@@ -77,10 +77,10 @@
       case(oct_tg_groundstate, oct_tg_gstransformation, &
            oct_tg_userdefined)
       case default
-        write(messages_lines(1), '(a)') 'The scheme "OCTScheme = oct_zbr98 can only be used if'
-        write(messages_lines(2), '(a)') 'the target state is "OCTTargetOperator = oct_tg_gstransformation"'
-        write(messages_lines(3), '(a)') 'or "OCTTargetOperator = oct_tg_groundstate"'
-        write(messages_lines(4), '(a)') 'or "OCTTargetOperator = oct_tg_userdefined".'
+        write(message%lines(1), '(a)') 'The scheme "OCTScheme = oct_zbr98 can only be used if'
+        write(message%lines(2), '(a)') 'the target state is "OCTTargetOperator = oct_tg_gstransformation"'
+        write(message%lines(3), '(a)') 'or "OCTTargetOperator = oct_tg_groundstate"'
+        write(message%lines(4), '(a)') 'or "OCTTargetOperator = oct_tg_userdefined".'
         call messages_fatal(4)
       end select 
     end if
@@ -88,7 +88,7 @@
     ! Filters only with the WG05 scheme.
     if(filter_number(filter) /= 0) then
       if(oct%algorithm /= OPTION__OCTSCHEME__OCT_WG05) then
-        write(messages_lines(1), '(a)') 'Filters can only be used with the WG05 QOCT algorithm.'
+        write(message%lines(1), '(a)') 'Filters can only be used with the WG05 QOCT algorithm.'
         call messages_fatal(1)
       end if
     end if
@@ -98,8 +98,8 @@
        target_type(oct_target)  ==  oct_tg_jdensity .or. &
        target_type(oct_target)  ==  oct_tg_td_local) then
       if(oct%algorithm  ==  OPTION__OCTSCHEME__OCT_ZBR98) then
-        write(messages_lines(1), '(a)') 'Cannot use ZBR98 OCT scheme if the target is oct_tg_jdensity,'
-        write(messages_lines(2), '(a)') 'oct_tg_local or oct_tg_td_local.'
+        write(message%lines(1), '(a)') 'Cannot use ZBR98 OCT scheme if the target is oct_tg_jdensity,'
+        write(message%lines(2), '(a)') 'oct_tg_local or oct_tg_td_local.'
         call messages_fatal(2)
       end if
     end if
@@ -114,25 +114,25 @@
           select case(tr%te%exp_method)
             case(EXP_TAYLOR)
             case default
-              write(messages_lines(1), '(a)') 'If you use time-dependent target, and you set'
-              write(messages_lines(2), '(a)') '"TDPropagator = qoct_tddft_propagator", '
-              write(messages_lines(3), '(a)') 'then you must set "TDExponentialMethod = taylor".'
+              write(message%lines(1), '(a)') 'If you use time-dependent target, and you set'
+              write(message%lines(2), '(a)') '"TDPropagator = qoct_tddft_propagator", '
+              write(message%lines(3), '(a)') 'then you must set "TDExponentialMethod = taylor".'
               call messages_fatal(3)
           end select
         case(PROP_EXPONENTIAL_MIDPOINT)
           select case(tr%te%exp_method)
             case(EXP_LANCZOS)
             case default
-              write(messages_lines(1), '(a)') 'If you use time-dependent target, and you set'
-              write(messages_lines(2), '(a)') '"TDPropagator = exp_mid", '
-              write(messages_lines(3), '(a)') 'then you must set "TDExponentialMethod = lanczos".'
+              write(message%lines(1), '(a)') 'If you use time-dependent target, and you set'
+              write(message%lines(2), '(a)') '"TDPropagator = exp_mid", '
+              write(message%lines(3), '(a)') 'then you must set "TDExponentialMethod = lanczos".'
               call messages_fatal(3)
           end select
         case default
-          write(messages_lines(1), '(a)') 'If you use time-dependent target, then you must set'
-          write(messages_lines(2), '(a)') '"TDPropagator = crank_nicolson", '
-          write(messages_lines(3), '(a)') '"TDPropagator = qoct_tddft_propagator", or'
-          write(messages_lines(4), '(a)') '"TDPropagator = exp_mid".'
+          write(message%lines(1), '(a)') 'If you use time-dependent target, then you must set'
+          write(message%lines(2), '(a)') '"TDPropagator = crank_nicolson", '
+          write(message%lines(3), '(a)') '"TDPropagator = qoct_tddft_propagator", or'
+          write(message%lines(4), '(a)') '"TDPropagator = exp_mid".'
           call messages_fatal(4)
         end select
       end if
@@ -141,25 +141,25 @@
 
     if(target_type(oct_target)  ==  oct_tg_excited) then
       if(sys%st%d%ispin  ==  UNPOLARIZED) then
-        write(messages_lines(1), '(a)') 'If OCTTargetMode = oct_tg_excited, then you must run either with'
-        write(messages_lines(1), '(a)') 'SpinComponents = spin_polarized or SpinComponents = spinors.'
+        write(message%lines(1), '(a)') 'If OCTTargetMode = oct_tg_excited, then you must run either with'
+        write(message%lines(1), '(a)') 'SpinComponents = spin_polarized or SpinComponents = spinors.'
         call messages_fatal(2)
       end if
     end if
 
     if( sys%hm%theory_level /= INDEPENDENT_PARTICLES ) then
       if(sys%hm%theory_level /= KOHN_SHAM_DFT) then
-        write(messages_lines(1), '(a)') 'In optimal control theory mode, you can only use either independent'
-        write(messages_lines(2), '(a)') 'particles "TheoryLevel = independent_particles", or Kohn-Sham DFT'
-        write(messages_lines(3), '(a)') '"TheoryLevel = dft".'
+        write(message%lines(1), '(a)') 'In optimal control theory mode, you can only use either independent'
+        write(message%lines(2), '(a)') 'particles "TheoryLevel = independent_particles", or Kohn-Sham DFT'
+        write(message%lines(3), '(a)') '"TheoryLevel = dft".'
         call messages_fatal(3)
       end if
       if( (tr%method /= PROP_QOCT_TDDFT_PROPAGATOR) .and. &
           (tr%method /= PROP_EXPLICIT_RUNGE_KUTTA4) .and. &
           (tr%method /= PROP_RUNGE_KUTTA2) ) then
         if( .not. oct_algorithm_is_direct(oct) ) then
-          write(messages_lines(1), '(a)') 'When doing QOCT with interacting electrons, then you must set'
-          write(messages_lines(2), '(a)') 'TDPropagator = qoct_tddft_propagator'
+          write(message%lines(1), '(a)') 'When doing QOCT with interacting electrons, then you must set'
+          write(message%lines(2), '(a)') 'TDPropagator = qoct_tddft_propagator'
           call messages_fatal(2)
         end if
       end if
@@ -168,22 +168,22 @@
     if(sys%hm%bc%abtype == MASK_ABSORBING) then
       if( (oct%algorithm /= OPTION__OCTSCHEME__OCT_DIRECT) .and. &
           (oct%algorithm /= OPTION__OCTSCHEME__OCT_NLOPT_BOBYQA) ) then
-        write(messages_lines(1), '(a)') 'Cannot do QOCT with mask absorbing boundaries. Use either'
-        write(messages_lines(2), '(a)') '"AbsorbingBoundaries = cap" or "AbsorbingBoundaries = no".'
+        write(message%lines(1), '(a)') 'Cannot do QOCT with mask absorbing boundaries. Use either'
+        write(message%lines(2), '(a)') '"AbsorbingBoundaries = cap" or "AbsorbingBoundaries = no".'
         call messages_fatal(2)
       end if
     end if
 
     if(target_type(oct_target)  ==  oct_tg_exclude_state ) then
       if(no_electrons > 1) then
-        write(messages_lines(1), '(a)') 'If "OCTTargetOperator = oct_tg_exclude_state", you can only do'
-        write(messages_lines(2), '(a)') 'one-electron runs.'
+        write(message%lines(1), '(a)') 'If "OCTTargetOperator = oct_tg_exclude_state", you can only do'
+        write(message%lines(2), '(a)') 'one-electron runs.'
         call messages_fatal(2)
       end if
       if(sys%st%d%ispin  ==  SPIN_POLARIZED) then
-        write(messages_lines(1), '(a)') 'If "OCTTargetOperator = oct_tg_exclude_state", you can only do'
-        write(messages_lines(2), '(a)') 'runs in spin restricted, or in spinors mode (spin-polarized is'
-        write(messages_lines(3), '(a)') 'is not allowed.'
+        write(message%lines(1), '(a)') 'If "OCTTargetOperator = oct_tg_exclude_state", you can only do'
+        write(message%lines(2), '(a)') 'runs in spin restricted, or in spinors mode (spin-polarized is'
+        write(message%lines(3), '(a)') 'is not allowed.'
         call messages_fatal(3)
       end if
     end if
@@ -193,17 +193,17 @@
             (oct%algorithm /= OPTION__OCTSCHEME__OCT_NLOPT_BOBYQA) .and. & 
             (oct%algorithm /= OPTION__OCTSCHEME__OCT_BFGS) .and. & 
             (oct%algorithm /= OPTION__OCTSCHEME__OCT_CG) ) then
-          write(messages_lines(1), '(a)') 'If "OCTTargetOperator = oct_tg_velocity", you can only use'
-          write(messages_lines(2), '(a)') '"OCTScheme = oct_direct" or'
-          write(messages_lines(3), '(a)') '"OCTScheme = oct_bobyqa" or'
-          write(messages_lines(4), '(a)') '"OCTScheme = oct_cg" for the optimization.'
+          write(message%lines(1), '(a)') 'If "OCTTargetOperator = oct_tg_velocity", you can only use'
+          write(message%lines(2), '(a)') '"OCTScheme = oct_direct" or'
+          write(message%lines(3), '(a)') '"OCTScheme = oct_bobyqa" or'
+          write(message%lines(4), '(a)') '"OCTScheme = oct_cg" for the optimization.'
           call messages_fatal(4)
        end if
        if( ((oct%algorithm  ==  OPTION__OCTSCHEME__OCT_CG) .or. (oct%algorithm == OPTION__OCTSCHEME__OCT_BFGS)) &
            .and. target_move_ions(oct_target)) then
-          write(messages_lines(1), '(a)') 'If "OCTTargetOperator = oct_tg_velocity", and'
-          write(messages_lines(2), '(a)') '"OCTScheme = oct_cg", or "OCTScheme = oct_bfgs",'
-          write(messages_lines(3), '(a)') 'then you have to set "MoveIons = false"'
+          write(message%lines(1), '(a)') 'If "OCTTargetOperator = oct_tg_velocity", and'
+          write(message%lines(2), '(a)') '"OCTScheme = oct_cg", or "OCTScheme = oct_bfgs",'
+          write(message%lines(3), '(a)') 'then you have to set "MoveIons = false"'
           call messages_fatal(3)
        end if
     end if
@@ -213,17 +213,17 @@
             (oct%algorithm /= OPTION__OCTSCHEME__OCT_NLOPT_BOBYQA) .and. & 
             (oct%algorithm /= OPTION__OCTSCHEME__OCT_BFGS) .and. & 
             (oct%algorithm /= OPTION__OCTSCHEME__OCT_CG) ) then
-          write(messages_lines(1), '(a)') 'If "OCTTargetOperator = oct_tg_hhgnew", you can only use'
-          write(messages_lines(2), '(a)') '"OCTScheme = oct_direct" or'
-          write(messages_lines(3), '(a)') '"OCTScheme = oct_bobyqa" or'
-          write(messages_lines(4), '(a)') '"OCTScheme = oct_cg" for the optimization.'
+          write(message%lines(1), '(a)') 'If "OCTTargetOperator = oct_tg_hhgnew", you can only use'
+          write(message%lines(2), '(a)') '"OCTScheme = oct_direct" or'
+          write(message%lines(3), '(a)') '"OCTScheme = oct_bobyqa" or'
+          write(message%lines(4), '(a)') '"OCTScheme = oct_cg" for the optimization.'
           call messages_fatal(4)
        end if
        if( ((oct%algorithm  ==  OPTION__OCTSCHEME__OCT_CG) .or. (oct%algorithm  ==  OPTION__OCTSCHEME__OCT_BFGS)) &
            .and. target_move_ions(oct_target)) then
-          write(messages_lines(1), '(a)') 'If "OCTTargetOperator = oct_tg_hhgnew", and'
-          write(messages_lines(2), '(a)') '"OCTScheme = oct_cg", or "OCTScheme = oct_bfgs",'
-          write(messages_lines(3), '(a)') 'then you have to set "MoveIons = false"'
+          write(message%lines(1), '(a)') 'If "OCTTargetOperator = oct_tg_hhgnew", and'
+          write(message%lines(2), '(a)') '"OCTScheme = oct_cg", or "OCTScheme = oct_bfgs",'
+          write(message%lines(3), '(a)') 'then you have to set "MoveIons = false"'
           call messages_fatal(3)
        end if
     end if
@@ -232,10 +232,10 @@
       select case(sys%st%d%ispin)
       case(UNPOLARIZED)
       case(SPIN_POLARIZED)
-        messages_lines(1) = 'Spin_polarized! Do not use OCT current functionals.'
+        message%lines(1) = 'Spin_polarized! Do not use OCT current functionals.'
         call messages_fatal(1)
       case(SPINORS)
-        messages_lines(1) = 'Spinors! Do not use OCT current functionals.'
+        message%lines(1) = 'Spinors! Do not use OCT current functionals.'
         call messages_fatal(1)
       end select
     end if
@@ -244,9 +244,9 @@
     case(controlfunction_mode_f)
       if(.not. oct_algorithm_is_direct(oct)) then
         if(oct%algorithm /= OPTION__OCTSCHEME__OCT_CG .and. oct%algorithm /= OPTION__OCTSCHEME__OCT_BFGS) then
-          messages_lines(1) = 'If you attempt an envelope-only or phase-only optimization, then'
-          messages_lines(2) = 'you must use either a gradient-free algorithm, oct_algorithm_cg, or'
-          messages_lines(3) = 'oct_algorithm_bfgs algorithm.'
+          message%lines(1) = 'If you attempt an envelope-only or phase-only optimization, then'
+          message%lines(2) = 'you must use either a gradient-free algorithm, oct_algorithm_cg, or'
+          message%lines(3) = 'oct_algorithm_bfgs algorithm.'
           call messages_fatal(3)
         end if
       end if

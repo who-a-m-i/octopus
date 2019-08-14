@@ -201,7 +201,7 @@ contains
     call v_ks_calc(sys%ks, sys%namespace, sys%hm, sys%st, sys%geo, calc_eigenval = calc_eigenval_) ! get potentials
 
     if(sys%st%restart_reorder_occs .and. .not. sys%st%fromScratch) then
-      messages_lines(1) = "Reordering occupations for restart."
+      message%lines(1) = "Reordering occupations for restart."
       call messages_info(1)
 
       SAFE_ALLOCATE(ind(1:sys%st%nst))

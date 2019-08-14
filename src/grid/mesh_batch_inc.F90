@@ -475,7 +475,7 @@ subroutine X(mesh_batch_exchange_points)(mesh, aa, forward_map, backward_map)
   end if
 
   if(.not. mesh%parallel_in_domains) then
-    messages_lines(1) = "Not implemented for the serial case. Really, only in parallel."
+    message%lines(1) = "Not implemented for the serial case. Really, only in parallel."
     call messages_fatal(1)
   else
 

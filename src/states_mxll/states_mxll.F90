@@ -298,7 +298,7 @@ contains
       do il=1, nlines
         ncols = parse_block_cols(blk,0)
         if (ncols < 3 .or. ncols > 3) then
-            messages_lines(1) = 'MaxwellFieldCoordinate must have 3 columns.'
+            message%lines(1) = 'MaxwellFieldCoordinate must have 3 columns.'
             call messages_fatal(1)
         end if
         do idim=1, st%d%dim

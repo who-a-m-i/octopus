@@ -65,19 +65,19 @@ contains
     select case(os%solver_type)
     case(ODE_RK4)
       os%vsize = 4
-      messages_lines(1) = 'Info: ode_solver: Using Runge-Kutta, 4th order.'
+      message%lines(1) = 'Info: ode_solver: Using Runge-Kutta, 4th order.'
       call messages_info(1)
     case(ODE_FB78)
       os%vsize = 13
-      messages_lines(1) = 'Info: ode_solver: Using Fehlberg, 7th/8th order.'
+      message%lines(1) = 'Info: ode_solver: Using Fehlberg, 7th/8th order.'
       call messages_info(1)
     case(ODE_VR89)
       os%vsize = 16
-      messages_lines(1) = 'Info: ode_solver: Using Verner, 8th/9th order.'
+      message%lines(1) = 'Info: ode_solver: Using Verner, 8th/9th order.'
       call messages_info(1)
     case(ODE_PD89)
       os%vsize = 13
-      messages_lines(1) = 'Info: ode_solver: Using Prince-Dormand, 8th/9th order.'
+      message%lines(1) = 'Info: ode_solver: Using Prince-Dormand, 8th/9th order.'
       call messages_info(1)
     end select
     

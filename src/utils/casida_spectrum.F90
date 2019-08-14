@@ -135,14 +135,14 @@ program casida_spectrum
     end do
     call parse_block_end(blk)
 
-    messages_lines(1) = "Info: Applying rotation matrix"
+    message%lines(1) = "Info: Applying rotation matrix"
     call messages_info(1)
     call output_tensor(stdout, rotation, cs%space%dim, unit_one, write_average = .false.)
 
     ! allowing inversions is fine
     rot2(:,:) = abs(matmul(transpose(rotation), rotation))
     if(any(abs(rot2(:,:) - identity(:,:)) > CNST(1e-6))) then
-      write(messages_lines(1),'(a,es12.6)') "Rotation matrix is not orthogonal. max discrepancy in product = ", &
+      write(message%lines(1),'(a,es12.6)') "Rotation matrix is not orthogonal. max discrepancy in product = ", &
         maxval(abs(rot2(:,:) - identity(:,:)))
       call messages_warning(1)
     end if
@@ -196,8 +196,8 @@ contains
     iunit = io_open(trim(dir)// fname, default_namespace, action='read', status='old', die = .false.)
 
     if(iunit < 0) then
-      messages_lines(1) = 'Cannot open file "'//trim(dir)//trim(fname)//'".'
-      messages_lines(2) = 'The '//trim(fname)//' spectrum was not generated.'
+      message%lines(1) = 'Cannot open file "'//trim(dir)//trim(fname)//'".'
+      message%lines(2) = 'The '//trim(fname)//' spectrum was not generated.'
       call messages_warning(2)
       return
     end if
@@ -231,7 +231,7 @@ contains
       if(ios < 0) then
         exit ! end of file
       else if(ios > 0) then
-        messages_lines(1) = "Error parsing file " // trim(fname)
+        message%lines(1) = "Error parsing file " // trim(fname)
         call messages_fatal(1)
       end if
 

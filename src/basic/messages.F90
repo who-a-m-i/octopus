@@ -34,6 +34,7 @@ module messages_oct_m
   private
 
   public ::                     &
+    message_t,                  &
     messages_init,              &
     messages_end,               &
     messages_fatal,             &
@@ -66,7 +67,14 @@ module messages_oct_m
     debug
 
   integer, parameter :: max_lines = 20
-  character(len=256), dimension(max_lines), public :: messages_lines    !< to be output by fatal, warning
+
+  type message_t
+    private
+    character(len=256), dimension(max_lines), public :: lines    !< to be output by fatal, warning
+  end type message_t
+
+  type(message_t), public :: message
+
   character(len=68),      parameter, public :: hyphens = &
     '--------------------------------------------------------------------'
   character(len=69),      parameter :: shyphens = '*'//hyphens
@@ -175,7 +183,7 @@ contains
     if(mpi_grp_is_root(mpi_world)) then
   
       if(experimentals > 0 .or. warnings > 0) then
-        messages_lines(1) = ''
+        message%lines(1) = ''
         call messages_info(1)      
       end if
 
@@ -311,7 +319,7 @@ contains
 #endif
     call flush_msg(stderr, shyphens)
     do ii = 1, no_lines_
-      write(msg, '(a,1x,a)') '*', trim(messages_lines(ii))
+      write(msg, '(a,1x,a)') '*', trim(message%lines(ii))
       call flush_msg(stderr, msg)
     end do
 
@@ -391,7 +399,7 @@ contains
 #endif
 
       do il = 1, no_lines_
-        write(msg , '(a,3x,a)') '**', trim(messages_lines(il))
+        write(msg , '(a,3x,a)') '**', trim(message%lines(il))
         call flush_msg(stderr, msg)
       end do
       call flush_msg(stderr, '')
@@ -444,7 +452,7 @@ contains
 
     do il = 1, no_lines_
       if(.not. present(verbose_limit) .or. debug%info) then
-        write(msg, '(a)') trim(messages_lines(il))
+        write(msg, '(a)') trim(message%lines(il))
         call flush_msg(iu, msg)
       end if
     end do
@@ -478,7 +486,7 @@ contains
 
     call open_debug_trace(iunit)
     do il = 1, no_lines
-      write(msg, '(a)') trim(messages_lines(il))
+      write(msg, '(a)') trim(message%lines(il))
       call flush_msg(iunit, msg)
     end do
     close(iunit)
@@ -522,7 +530,7 @@ contains
 
     if(.not. debug%info) return
 
-    write(messages_lines(1), '(a,i3)') 'debug marker #', no
+    write(message%lines(1), '(a,i3)') 'debug marker #', no
     call messages_debug(1)
 
   end subroutine messages_debug_marker
@@ -583,7 +591,7 @@ contains
     character(len=*), intent(in) :: file
     integer,          intent(in) :: line
 
-    write(messages_lines(1), '(a,i18,3a,i5)') "Failed to allocate ", size, " words in file '", trim(file), "' line ", line
+    write(message%lines(1), '(a,i18,3a,i5)') "Failed to allocate ", size, " words in file '", trim(file), "' line ", line
     call messages_fatal(1)
 
   end subroutine alloc_error
@@ -595,7 +603,7 @@ contains
     character(len=*), intent(in) :: file
     integer,          intent(in) :: line
 
-    write(messages_lines(1), '(a,i18,3a,i5)') "Failed to deallocate array of ", size, " words in file '", trim(file), "' line ", line
+    write(message%lines(1), '(a,i18,3a,i5)') "Failed to deallocate array of ", size, " words in file '", trim(file), "' line ", line
     call messages_fatal(1)
 
   end subroutine dealloc_error
@@ -879,12 +887,12 @@ contains
     integer :: val(8)
 
     call date_and_time(values=val)
-    messages_lines(1) = ""
-    write(messages_lines(3),'(a,i4,a1,i2.2,a1,i2.2,a,i2.2,a1,i2.2,a1,i2.2)') &
+    message%lines(1) = ""
+    write(message%lines(3),'(a,i4,a1,i2.2,a1,i2.2,a,i2.2,a1,i2.2,a1,i2.2)') &
       str , val(1), "/", val(2), "/", val(3), &
       " at ", val(5), ":", val(6), ":", val(7)
-    messages_lines(2) = str_center(trim(messages_lines(3)), 70)
-    messages_lines(3) = ""
+    message%lines(2) = str_center(trim(message%lines(3)), 70)
+    message%lines(3) = ""
     call messages_info(3)
 
   end subroutine print_date
@@ -966,7 +974,7 @@ contains
     no_sub_stack = no_sub_stack + 1
     if(no_sub_stack > 49) then
       sub_stack(50) = 'push_sub'
-      messages_lines(1) = 'Too many recursion levels (max=50)'
+      message%lines(1) = 'Too many recursion levels (max=50)'
       call messages_fatal(1)
     end if
 
@@ -1024,7 +1032,7 @@ contains
     if(no_sub_stack <= 0) then
       no_sub_stack = 1
       sub_stack(1) = 'pop_sub'
-      messages_lines(1) = 'Too few recursion levels.'
+      message%lines(1) = 'Too few recursion levels.'
       call messages_fatal(1)
     end if
 
@@ -1033,9 +1041,9 @@ contains
     sub_name_short = trim(messages_clean_path(sub_name))
 
     if(sub_name_short /= sub_stack(no_sub_stack)) then
-      write (messages_lines(1),'(a)') 'Wrong sub name on pop_sub :'
-      write (messages_lines(2),'(2a)') ' got      : ', sub_name_short
-      write (messages_lines(3),'(2a)') ' expected : ', sub_stack(no_sub_stack)
+      write (message%lines(1),'(a)') 'Wrong sub name on pop_sub :'
+      write (message%lines(2),'(2a)') ' got      : ', sub_name_short
+      write (message%lines(3),'(2a)') ' expected : ', sub_stack(no_sub_stack)
       call messages_fatal(3)
     end if
 
@@ -1084,13 +1092,13 @@ contains
     
     if(parse_is_defined(namespace, trim(name))) then 
 
-      write(messages_lines(1), '(a)') 'Input variable '//trim(name)//' is obsolete.'
+      write(message%lines(1), '(a)') 'Input variable '//trim(name)//' is obsolete.'
 
       if(present(rep)) then
-        write(messages_lines(2), '(a)') ' '
-        write(messages_lines(3), '(a)') 'Equivalent functionality can be obtained with the '//trim(rep)
-        write(messages_lines(4), '(a)') 'variable. Check the documentation for details.'
-        write(messages_lines(5), '(a)') '(You can use the `oct-help -p '//trim(rep)//'` command).'
+        write(message%lines(2), '(a)') ' '
+        write(message%lines(3), '(a)') 'Equivalent functionality can be obtained with the '//trim(rep)
+        write(message%lines(4), '(a)') 'variable. Check the documentation for details.'
+        write(message%lines(5), '(a)') '(You can use the `oct-help -p '//trim(rep)//'` command).'
         call messages_fatal(5, only_root_writes = .true.)
       else
         call messages_fatal(1, only_root_writes = .true.)
@@ -1117,8 +1125,8 @@ contains
       call messages_new_line()
       call messages_fatal(only_root_writes = .true.)
     else
-      write(messages_lines(1), '(a)') trim(name)//' is under development.'
-      write(messages_lines(2), '(a)') 'It might not work or produce wrong results.'
+      write(message%lines(1), '(a)') trim(name)//' is under development.'
+      write(message%lines(2), '(a)') 'It might not work or produce wrong results.'
       call messages_warning(2)
 
       ! remove this warning from the count
@@ -1150,12 +1158,12 @@ contains
     end if
 
     if(is_bad) then
-      write(messages_lines(1), '(3a)') "The value for '", name, "' is inconsistent with the recommended value."
+      write(message%lines(1), '(3a)') "The value for '", name, "' is inconsistent with the recommended value."
       if(present(unit)) then
-        write(messages_lines(2), '(a,f8.3,4a,f8.3,a,a)') 'given ', units_from_atomic(unit, var), ' ', trim(units_abbrev(unit)), &
+        write(message%lines(2), '(a,f8.3,4a,f8.3,a,a)') 'given ', units_from_atomic(unit, var), ' ', trim(units_abbrev(unit)), &
           op_str, 'recommended ', units_from_atomic(unit, def), ' ', trim(units_abbrev(unit))
       else
-        write(messages_lines(2), '(a,f8.3,2a,f8.3)') 'given ', var, op_str, 'recommended ', def
+        write(message%lines(2), '(a,f8.3,2a,f8.3)') 'given ', var, op_str, 'recommended ', def
       end if
       call messages_warning(2)
     end if
@@ -1170,7 +1178,7 @@ contains
 
     PUSH_SUB(messages_not_implemented)
 
-    messages_lines(1) = trim(feature)//" not implemented."
+    message%lines(1) = trim(feature)//" not implemented."
     call messages_fatal(1, only_root_writes = .true.)
 
     POP_SUB(messages_not_implemented)
@@ -1181,7 +1189,7 @@ contains
   subroutine messages_reset_lines()
 
     current_line = 1
-    messages_lines(1) = ''
+    message%lines(1) = ''
     
   end subroutine messages_reset_lines
 
@@ -1190,7 +1198,7 @@ contains
   subroutine messages_new_line()
     
     current_line = current_line + 1
-    messages_lines(current_line) = ''
+    message%lines(current_line) = ''
 
     if(current_line > max_lines) stop 'Too many message lines.'
    
@@ -1220,10 +1228,10 @@ contains
 
     if(optional_default(align_left, .false.)) number = ' '//adjustl(number)
 
-    write(messages_lines(current_line), '(a, a)') trim(messages_lines(current_line)), trim(number)
+    write(message%lines(current_line), '(a, a)') trim(message%lines(current_line)), trim(number)
 
     if(present(units) .and. optional_default(print_units, .true.)) then
-      write(messages_lines(current_line), '(a, a, a)') trim(messages_lines(current_line)), ' ', trim(units_abbrev(units))
+      write(message%lines(current_line), '(a, a, a)') trim(message%lines(current_line)), ' ', trim(units_abbrev(units))
     end if
 
     if(optional_default(new_line, .false.)) call messages_new_line()
@@ -1246,15 +1254,15 @@ contains
     if(present(units)) val_conv = int(nint(units_from_atomic(units, dble(val))), 8)
 
     if(present(fmt)) then
-      write(messages_lines(current_line), '(a, '//trim(fmt)//')') trim(messages_lines(current_line)), val_conv
+      write(message%lines(current_line), '(a, '//trim(fmt)//')') trim(message%lines(current_line)), val_conv
     else
       write(number, '(i10)') val_conv
-      write(messages_lines(current_line), '(3a)') trim(messages_lines(current_line)), ' ', trim(adjustl(number))
+      write(message%lines(current_line), '(3a)') trim(message%lines(current_line)), ' ', trim(adjustl(number))
     end if
 
 
     if(present(units) .and. optional_default(print_units, .true.)) then
-      write(messages_lines(current_line), '(a, a, a)') trim(messages_lines(current_line)), ' ', trim(units_abbrev(units))
+      write(message%lines(current_line), '(a, a, a)') trim(message%lines(current_line)), ' ', trim(units_abbrev(units))
     end if
 
     if(present(new_line)) then
@@ -1285,13 +1293,13 @@ contains
 
     character(len=100) :: fmt_
 
-    if(len(trim(messages_lines(current_line))) + len(trim(val)) > len(messages_lines(current_line))) then
+    if(len(trim(message%lines(current_line))) + len(trim(val)) > len(message%lines(current_line))) then
       ! cannot use normal message approach without interfering with message we are trying to write
       ! write directly in case trim(val) is itself too long
       write(0, *) "Exceeded message line length limit, to write string:", trim(val)
     else
       fmt_ = optional_default(fmt, '(a)')
-      write(messages_lines(current_line), '(a, '//trim(fmt_)//')') trim(messages_lines(current_line)), trim(val)
+      write(message%lines(current_line), '(a, '//trim(fmt_)//')') trim(message%lines(current_line)), trim(val)
     end if
 
     if(present(new_line)) then
@@ -1314,12 +1322,12 @@ contains
       text = 'no'
     end if
 
-    if(len(trim(messages_lines(current_line))) + len(trim(text)) > len(messages_lines(current_line))) then
-      write(messages_lines(current_line + 1), '(3a)') "Exceeded message line length limit, to write logical value '", trim(text), "'"
+    if(len(trim(message%lines(current_line))) + len(trim(text)) > len(message%lines(current_line))) then
+      write(message%lines(current_line + 1), '(3a)') "Exceeded message line length limit, to write logical value '", trim(text), "'"
       call messages_fatal(current_line + 1)
     end if
 
-    write(messages_lines(current_line), '(a,1x,a)') trim(messages_lines(current_line)), trim(text)
+    write(message%lines(current_line), '(a,1x,a)') trim(message%lines(current_line)), trim(text)
 
     if(present(new_line)) then
       if(new_line) call messages_new_line()

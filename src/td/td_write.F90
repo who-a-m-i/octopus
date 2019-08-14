@@ -319,7 +319,7 @@ contains
     if(writ%out(OUT_KP_PROJ)%write.or.writ%out(OUT_FLOQUET)%write) then
       ! make sure this is not domain distributed
       if(gr%mesh%np /= gr%mesh%np_global) then
-        messages_lines(1) = "TDOutput option td_kpoint_occup and td_floquet do not work with domain parallelization"
+        message%lines(1) = "TDOutput option td_kpoint_occup and td_floquet do not work with domain parallelization"
         call messages_fatal(1)
       end if
     end if
@@ -334,15 +334,15 @@ contains
     !%End
     call parse_variable(namespace, 'TDMultipoleLmax', 1, writ%lmax)
     if (writ%lmax < 0) then
-      write(messages_lines(1), '(a,i6,a)') "Input: '", writ%lmax, "' is not a valid TDMultipoleLmax."
-      messages_lines(2) = '(Must be TDMultipoleLmax >= 0 )'
+      write(message%lines(1), '(a,i6,a)') "Input: '", writ%lmax, "' is not a valid TDMultipoleLmax."
+      message%lines(2) = '(Must be TDMultipoleLmax >= 0 )'
       call messages_fatal(2)
     end if
     call messages_obsolete_variable(namespace, 'TDDipoleLmax', 'TDMultipoleLmax')
 
     ! Compatibility test
     if( (writ%out(OUT_ACC)%write) .and. ions_move ) then
-      messages_lines(1) = 'If harmonic spectrum is to be calculated, atoms should not be allowed to move.'
+      message%lines(1) = 'If harmonic spectrum is to be calculated, atoms should not be allowed to move.'
       call messages_fatal(1)
     end if
 
@@ -362,12 +362,12 @@ contains
       .or.writ%out(OUT_KP_PROJ)%write .or. writ%out(OUT_N_EX)%write) then
 
       if(st%parallel_in_states .and. writ%out(OUT_POPULATIONS)%write) then
-        messages_lines(1) = "Options TDOutput = populations are not implemented for parallel in states."
+        message%lines(1) = "Options TDOutput = populations are not implemented for parallel in states."
         call messages_fatal(1)
       end if
 
       if (writ%out(OUT_N_EX)%write .and. st%parallel_in_states ) then
-        messages_lines(1) = "Options TDOutput = n_excited_el is not implemented for parallel in states."
+        message%lines(1) = "Options TDOutput = n_excited_el is not implemented for parallel in states."
         call messages_fatal(1)
       end if
       
@@ -388,7 +388,7 @@ contains
           call states_elec_look(restart_gs, ii, jj, writ%gs_st%nst, ierr)
           writ%gs_st%st_end = writ%gs_st%nst
         if(ierr /= 0) then
-          messages_lines(1) = "Unable to read states information."
+          message%lines(1) = "Unable to read states information."
           call messages_fatal(1)
         end if
  
@@ -440,7 +440,7 @@ contains
 
       if(ierr /= 0 .and. ierr /= (writ%gs_st%st_end-writ%gs_st%st_start+1)*writ%gs_st%d%nik &
                                       *writ%gs_st%d%dim*writ%gs_st%mpi_grp%size) then
-        messages_lines(1) = "Unable to read wavefunctions for TDOutput."
+        message%lines(1) = "Unable to read wavefunctions for TDOutput."
         call messages_fatal(1)
       end if
       call restart_end(restart_gs)
@@ -510,7 +510,7 @@ contains
     !%End
     call parse_variable(namespace, 'TDOutputComputeInterval', 50, writ%compute_interval)
     if(writ%compute_interval < 0) then
-      messages_lines(1) = "TDOutputComputeInterval must be >= 0."
+      message%lines(1) = "TDOutputComputeInterval must be >= 0."
       call messages_fatal(1)
     end if
 
@@ -2657,7 +2657,7 @@ contains
     call parse_variable(namespace, 'TDFloquetFrequency', M_ZERO, omega, units_inp%energy)
     call messages_print_var_value(stdout,'Frequency used for Floquet analysis', omega)
     if(abs(omega)<=M_EPSILON) then
-       messages_lines(1) = "Please give a non-zero value for TDFloquetFrequency"
+       message%lines(1) = "Please give a non-zero value for TDFloquetFrequency"
        call messages_fatal(1)
     endif
 
@@ -2689,7 +2689,7 @@ contains
        !Dimension of multiphoton Floquet-Hamiltonian
        Fdim = 2*Forder+1
     else
-       messages_lines(1) = 'Floquet-Hamiltonian is downfolded'
+       message%lines(1) = 'Floquet-Hamiltonian is downfolded'
        call messages_info(1)
        downfolding = .true.
        Forder = 1

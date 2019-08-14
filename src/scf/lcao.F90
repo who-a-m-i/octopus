@@ -249,7 +249,7 @@ contains
     ! DAS: For spinors, you will always get magnetization in (1, 0, 0) direction, and the
     ! eigenvalues will be incorrect. This is due to confusion between spins and spinors in the code.
     if(st%d%ispin == SPINORS .and. this%alternative) then
-      messages_lines(1) = "LCAOAlternative is not working for spinors."
+      message%lines(1) = "LCAOAlternative is not working for spinors."
       call messages_fatal(1)
     end if
     if(simul_box_is_periodic(gr%mesh%sb) .and. this%alternative) then
@@ -540,7 +540,7 @@ contains
         call messages_experimental('LCAO extra orbitals')
 
         if(st%nst * st%smear%el_per_state > st%qtot) then
-          messages_lines(1) = "Lower-lying empty states may be missed with LCAOExtraOrbitals."
+          message%lines(1) = "Lower-lying empty states may be missed with LCAOExtraOrbitals."
           call messages_warning(1)
         end if
       end if
@@ -656,7 +656,7 @@ contains
           st%dom_st_proc_grid%context, this%lsize(1), info)
 
         if(info /= 0) then
-          write(messages_lines(1), '(a,i6)') 'descinit for BLACS failed with error code ', info
+          write(message%lines(1), '(a,i6)') 'descinit for BLACS failed with error code ', info
           call messages_fatal(1)
         end if
 
@@ -734,7 +734,7 @@ contains
 
       ! set up Hamiltonian (we do not call system_h_setup here because we do not want to
       ! overwrite the guess density)
-      messages_lines(1) = 'Info: Setting up Hamiltonian.'
+      message%lines(1) = 'Info: Setting up Hamiltonian.'
       call messages_info(1)
 
       ! get the effective potential (we don`t need the eigenvalues yet)
@@ -751,7 +751,7 @@ contains
       lcao_done = .true.
 
       if(present(st_start)) then
-        write(messages_lines(1),'(a,i8,a)') 'Performing LCAO for states ', st_start, ' and above'
+        write(message%lines(1),'(a,i8,a)') 'Performing LCAO for states ', st_start, ' and above'
         call messages_info(1)
       end if
 
@@ -790,7 +790,7 @@ contains
       if(present(st_start)) st_start_random = max(st_start, st_start_random)
 
       if(st_start_random > 1) then
-        write(messages_lines(1),'(a,i8,a)') 'Generating random wavefunctions for states ', st_start_random, ' and above'
+        write(message%lines(1),'(a,i8,a)') 'Generating random wavefunctions for states ', st_start_random, ' and above'
         call messages_info(1)
       end if
 
@@ -1203,12 +1203,12 @@ contains
       !% to this number, which is the maximum possible magnetization.
       !%End
       if(parse_block(namespace, 'AtomsMagnetDirection', blk) < 0) then
-        messages_lines(1) = "AtomsMagnetDirection block is not defined."
+        message%lines(1) = "AtomsMagnetDirection block is not defined."
         call messages_fatal(1)
       end if
 
       if (parse_block_n(blk) /= geo%natoms) then
-        messages_lines(1) = "AtomsMagnetDirection block has the wrong number of rows."
+        message%lines(1) = "AtomsMagnetDirection block has the wrong number of rows."
         call messages_fatal(1)
       end if
 
@@ -1318,7 +1318,7 @@ contains
       call comm_allreduce(gr%fine%mesh%mpi_grp%comm, rr)
     end if
 
-    write(messages_lines(1),'(a,f13.6)')'Info: Unnormalized total charge = ', rr
+    write(message%lines(1),'(a,f13.6)')'Info: Unnormalized total charge = ', rr
     call messages_info(1)
 
     if (abs(rr) > M_EPSILON) then ! We only renormalize if the density is not zero
@@ -1333,7 +1333,7 @@ contains
       call comm_allreduce(gr%fine%mesh%mpi_grp%comm, rr)
     end if
 
-    write(messages_lines(1),'(a,f13.6)')'Info: Renormalized total charge = ', rr
+    write(message%lines(1),'(a,f13.6)')'Info: Renormalized total charge = ', rr
     call messages_info(1)
 
     SAFE_DEALLOCATE_A(atom_rho)

@@ -44,24 +44,24 @@ subroutine X(root_solver_run)(rs, func, root, success, startval, coeff)
 #endif
   case(ROOT_WATTERSTROM)
 #ifdef R_TREAL
-    messages_lines(1) = 'root_solver: Watterstrom method not defined for pure real arithmetic'
+    message%lines(1) = 'root_solver: Watterstrom method not defined for pure real arithmetic'
     call messages_fatal(1)
 #endif
 #ifdef R_TCOMPLEX
     if(present(coeff)) then
-      messages_lines(1) = 'Info: root_solver: Using Watterstrom method.'
+      message%lines(1) = 'Info: root_solver: Using Watterstrom method.'
       call messages_info(1)
       call zroot_watterstrom(rs, root, coeff)
     else
-      messages_lines(1) = 'root_solver: Watterstrom method only valid for polynomials.'
+      message%lines(1) = 'root_solver: Watterstrom method only valid for polynomials.'
       call messages_fatal(1)
     end if
 #endif
 
   case default
-    write(messages_lines(1), '(a,i4,a)') "Input: '", rs%solver_type, &
+    write(message%lines(1), '(a,i4,a)') "Input: '", rs%solver_type, &
       "' is not a valid root solver"
-    messages_lines(2) = '( root solver = root_newton | root_watterstrom )'
+    message%lines(2) = '( root solver = root_newton | root_watterstrom )'
     call messages_fatal(2)
   end select
 

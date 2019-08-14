@@ -116,7 +116,7 @@ program oct_floquet
   call restart_init(restart, default_namespace, RESTART_GS, RESTART_TYPE_LOAD, sys%mc, ierr, mesh=gr%mesh, exact=.true.)
   if(ierr == 0) call states_elec_load(restart, default_namespace, st, gr, ierr, label = ": gs")
   if (ierr /= 0) then
-     messages_lines(1) = 'Unable to read ground-state wavefunctions.'
+     message%lines(1) = 'Unable to read ground-state wavefunctions.'
      call messages_fatal(1)
   end if
 
@@ -159,7 +159,7 @@ contains
       call parse_variable(default_namespace, 'TDFloquetFrequency', M_ZERO, omega, units_inp%energy)
       call messages_print_var_value(stdout,'Frequency used for Floquet analysis', omega)
       if(abs(omega)<=M_EPSILON) then
-         messages_lines(1) = "Please give a non-zero value for TDFloquetFrequency"
+         message%lines(1) = "Please give a non-zero value for TDFloquetFrequency"
          call messages_fatal(1)
       endif
 
@@ -176,7 +176,7 @@ contains
         !Dimension of multiphoton Floquet-Hamiltonian
         Fdim = 2*Forder+1
       else
-        messages_lines(1) = 'Floquet-Hamiltonian is downfolded'
+        message%lines(1) = 'Floquet-Hamiltonian is downfolded'
         call messages_info(1)
         downfolding = .true.
         Forder = 1

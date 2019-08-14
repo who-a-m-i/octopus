@@ -186,7 +186,7 @@ contains
     call profiling_in(prof, 'CASIDA')
 
     if (simul_box_is_periodic(sys%gr%sb)) then
-      messages_lines(1) = "Casida oscillator strengths will be incorrect in periodic systems."
+      message%lines(1) = "Casida oscillator strengths will be incorrect in periodic systems."
       call messages_warning(1)
     end if
 
@@ -195,7 +195,7 @@ contains
       call messages_not_implemented("Casida with k-points")
     end if
 
-    messages_lines(1) = 'Info: Starting Casida linear-response calculation.'
+    message%lines(1) = 'Info: Starting Casida linear-response calculation.'
     call messages_info(1)
 
     call restart_init(gs_restart, sys%namespace, RESTART_GS, RESTART_TYPE_LOAD, sys%mc, ierr, mesh=sys%gr%mesh, exact=.true.)
@@ -203,7 +203,7 @@ contains
       call states_elec_look_and_load(gs_restart, sys%namespace, sys%st, sys%gr)
       call restart_end(gs_restart)
     else
-      messages_lines(1) = "Previous gs calculation is required."
+      message%lines(1) = "Previous gs calculation is required."
       call messages_fatal(1)
     end if
 
@@ -222,20 +222,20 @@ contains
 
     select case(sys%st%d%ispin)
     case(UNPOLARIZED, SPINORS)
-      write(messages_lines(1),'(a,i4,a)') "Info: Found", cas%n_occ(1), " occupied states."
-      write(messages_lines(2),'(a,i4,a)') "Info: Found", cas%n_unocc(1), " unoccupied states."
+      write(message%lines(1),'(a,i4,a)') "Info: Found", cas%n_occ(1), " occupied states."
+      write(message%lines(2),'(a,i4,a)') "Info: Found", cas%n_unocc(1), " unoccupied states."
       call messages_info(2)
     case(SPIN_POLARIZED)
-      write(messages_lines(1),'(a,i4,a)') "Info: Found", cas%n_occ(1), " occupied states with spin up."
-      write(messages_lines(2),'(a,i4,a)') "Info: Found", cas%n_unocc(1), " unoccupied states with spin up."
-      write(messages_lines(3),'(a,i4,a)') "Info: Found", cas%n_occ(2), " occupied states with spin down."
-      write(messages_lines(4),'(a,i4,a)') "Info: Found", cas%n_unocc(2), " unoccupied states with spin down."
+      write(message%lines(1),'(a,i4,a)') "Info: Found", cas%n_occ(1), " occupied states with spin up."
+      write(message%lines(2),'(a,i4,a)') "Info: Found", cas%n_unocc(1), " unoccupied states with spin up."
+      write(message%lines(3),'(a,i4,a)') "Info: Found", cas%n_occ(2), " occupied states with spin down."
+      write(message%lines(4),'(a,i4,a)') "Info: Found", cas%n_unocc(2), " unoccupied states with spin down."
       call messages_info(4)
     end select
 
 
     ! setup Hamiltonian, without recalculating eigenvalues (use the ones from the restart information)
-    messages_lines(1) = 'Info: Setting up Hamiltonian.'
+    message%lines(1) = 'Info: Setting up Hamiltonian.'
     call messages_info(1)
     call system_h_setup(sys, calc_eigenval=.false.)
 
@@ -278,7 +278,7 @@ contains
     if (states_are_complex(sys%st)) then
       if((bitand(theorylevel, CASIDA_VARIATIONAL) /= 0 &
         .or. bitand(theorylevel, CASIDA_CASIDA) /= 0)) then
-        messages_lines(1) = "Variational and full Casida theory levels do not apply to complex wavefunctions."
+        message%lines(1) = "Variational and full Casida theory levels do not apply to complex wavefunctions."
         call messages_fatal(1, only_root_writes = .true.)
         ! see section II.D of CV(2) paper regarding this assumption. Would be Eq. 30 with complex wfns.
       end if
@@ -317,7 +317,7 @@ contains
       end do
       call parse_block_end(blk)
       call messages_experimental("IXS/EELS transition rate calculation")
-      messages_lines(1) = "Info: Calculating IXS/EELS transition rates."
+      message%lines(1) = "Info: Calculating IXS/EELS transition rates."
       call messages_info(1)
       cas%qcalc = .true.
 
@@ -356,7 +356,7 @@ contains
 
     if(cas%triplet) then
       call messages_experimental("Casida triplet calculation")
-      messages_lines(1) = "Info: Using triplet kernel. Oscillator strengths will be for spin magnetic-dipole field."
+      message%lines(1) = "Info: Using triplet kernel. Oscillator strengths will be for spin magnetic-dipole field."
       call messages_info(1)
     end if
 
@@ -396,8 +396,8 @@ contains
     !%End
     call parse_variable(sys%namespace, 'CasidaWeightThreshold', -M_ONE, cas%weight_thresh)
     if (cas%weight_thresh > M_ONE) then
-      messages_lines(1) = 'Casida coefficients have values between 0 and 1'
-      messages_lines(2) = 'Threshold values reset to default value'
+      message%lines(1) = 'Casida coefficients have values between 0 and 1'
+      message%lines(2) = 'Threshold values reset to default value'
       call messages_warning(2)
       cas%weight_thresh = -M_ONE
     end if
@@ -461,7 +461,7 @@ contains
 
     ! First, print the differences between KS eigenvalues (first approximation to the excitation energies).
     if(bitand(theorylevel, CASIDA_EPS_DIFF) /= 0) then
-      messages_lines(1) = "Info: Approximating resonance energies through KS eigenvalue differences"
+      message%lines(1) = "Info: Approximating resonance energies through KS eigenvalue differences"
       call messages_info(1)
       cas%type = CASIDA_EPS_DIFF
       call casida_work(sys, cas)
@@ -471,7 +471,7 @@ contains
 
       if(bitand(theorylevel, CASIDA_TAMM_DANCOFF) /= 0) then
         call messages_experimental("Tamm-Dancoff calculation")
-        messages_lines(1) = "Info: Calculating matrix elements in the Tamm-Dancoff approximation"
+        message%lines(1) = "Info: Calculating matrix elements in the Tamm-Dancoff approximation"
         call messages_info(1)
         cas%type = CASIDA_TAMM_DANCOFF
         call casida_work(sys, cas)
@@ -479,14 +479,14 @@ contains
 
       if(bitand(theorylevel, CASIDA_VARIATIONAL) /= 0) then
         call messages_experimental("CV(2)-DFT calculation")
-        messages_lines(1) = "Info: Calculating matrix elements with the CV(2)-DFT theory"
+        message%lines(1) = "Info: Calculating matrix elements with the CV(2)-DFT theory"
         call messages_info(1)
         cas%type = CASIDA_VARIATIONAL
         call casida_work(sys, cas)
       end if
 
       if(bitand(theorylevel, CASIDA_CASIDA) /= 0) then
-        messages_lines(1) = "Info: Calculating matrix elements with the full Casida method"
+        message%lines(1) = "Info: Calculating matrix elements with the full Casida method"
         call messages_info(1)
         cas%type = CASIDA_CASIDA
         call casida_work(sys, cas)
@@ -495,7 +495,7 @@ contains
       ! Doing this first, if doing the others later, takes longer, because we would use
       ! each Poisson solution for only one matrix element instead of a whole column.
       if(bitand(theorylevel, CASIDA_PETERSILKA) /= 0) then
-        messages_lines(1) = "Info: Calculating resonance energies via the Petersilka approximation"
+        message%lines(1) = "Info: Calculating resonance energies via the Petersilka approximation"
         call messages_info(1)
         cas%type = CASIDA_PETERSILKA
         call casida_work(sys, cas)
@@ -522,11 +522,11 @@ contains
     cas%kernel_lrc_alpha = sys%ks%xc%kernel_lrc_alpha
     cas%states_are_real = states_are_real(sys%st)
 
-    write(messages_lines(1), '(a,i9)') "Number of occupied-unoccupied pairs: ", cas%n_pairs
+    write(message%lines(1), '(a,i9)') "Number of occupied-unoccupied pairs: ", cas%n_pairs
     call messages_info(1)
 
     if(cas%n_pairs < 1) then
-      messages_lines(1) = "No Casida pairs -- maybe there are no unoccupied states?"
+      message%lines(1) = "No Casida pairs -- maybe there are no unoccupied states?"
       call messages_fatal(1, only_root_writes = .true.)
     end if
 
@@ -775,9 +775,9 @@ contains
         cas%w(ia) = st%eigenval(cas%pair(ia)%a, cas%pair(ia)%kk) - &
                     st%eigenval(cas%pair(ia)%i, cas%pair(ia)%kk)
         if(cas%w(ia) < -M_EPSILON) then
-          messages_lines(1) = "There is a negative unocc-occ KS eigenvalue difference for"
-          write(messages_lines(2),'("states ",I5," and ",I5," of k-point ",I5,".")') cas%pair(ia)%i, cas%pair(ia)%a, cas%pair(ia)%kk
-          messages_lines(3) = "This indicates an inconsistency between gs, unocc, and/or casida calculations."
+          message%lines(1) = "There is a negative unocc-occ KS eigenvalue difference for"
+          write(message%lines(2),'("states ",I5," and ",I5," of k-point ",I5,".")') cas%pair(ia)%i, cas%pair(ia)%a, cas%pair(ia)%kk
+          message%lines(3) = "This indicates an inconsistency between gs, unocc, and/or casida calculations."
           call messages_fatal(3, only_root_writes = .true.)
         end if
         if(mpi_grp_is_root(mpi_world)) call loct_progress_bar(ia, cas%n_pairs)
@@ -807,11 +807,11 @@ contains
 
       !Check spin and triplets
       if (st%d%ispin /= UNPOLARIZED) then
-        messages_lines(1) = "Casida calculation with ADSIC not implemented for spin-polarized calculations."
+        message%lines(1) = "Casida calculation with ADSIC not implemented for spin-polarized calculations."
         call messages_fatal(1)
       end if
       if (cas%triplet) then
-        messages_lines(1) = "Casida calculation with ADSIC not implemented for triplet excitations."
+        message%lines(1) = "Casida calculation with ADSIC not implemented for triplet excitations."
         call messages_fatal(1)
       end if
 

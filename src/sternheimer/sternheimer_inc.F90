@@ -90,7 +90,7 @@ subroutine X(sternheimer_solve)(                           &
   if(present(have_restart_rho)) have_restart_rho_ = have_restart_rho
   if((.not. have_restart_rho_) .and. calculate_rho) call X(lr_build_dl_rho)(mesh, st, lr, nsigma)
 
-  messages_lines(1)="--------------------------------------------"
+  message%lines(1)="--------------------------------------------"
   call messages_info(1)
 
   total_iter = 0
@@ -119,14 +119,14 @@ subroutine X(sternheimer_solve)(                           &
   !self-consistency iteration for response
   iter_loop: do iter = 1, this%scf_tol%max_iter
     if (calculate_rho) then
-      write(messages_lines(1), '(a, i3)') "LR SCF Iteration: ", iter
+      write(message%lines(1), '(a, i3)') "LR SCF Iteration: ", iter
       call messages_info(1)
     end if
 
-    write(messages_lines(1), '(a, f20.6, a, f20.6, a, i1)') &
+    write(message%lines(1), '(a, f20.6, a, f20.6, a, i1)') &
       "Frequency: ", units_from_atomic(units_out%energy,  R_REAL(omega)), &
       " Eta : ",     units_from_atomic(units_out%energy, R_AIMAG(omega))
-    write(messages_lines(2), '(a)') &
+    write(message%lines(2), '(a)') &
       '   ik  ist                norm   iters            residual'
     call messages_info(2)
 
@@ -247,7 +247,7 @@ subroutine X(sternheimer_solve)(                           &
             states_conv = states_conv .and. (residue(sigma, ist) < tol)
             total_iter = total_iter + conv_iters(sigma, ist)
 
-            write(messages_lines(1), '(i5, i5, f20.6, i8, e20.6)') &
+            write(message%lines(1), '(i5, i5, f20.6, i8, e20.6)') &
               ik, (3 - 2*sigma)*ist, dpsimod(sigma, ist), conv_iters(sigma, ist), residue(sigma, ist)
             call messages_info(1)
           end do !sigma
@@ -284,7 +284,7 @@ subroutine X(sternheimer_solve)(                           &
         call X(lr_dump_rho)(lr(sigma_alt), sys%gr%mesh, st%d%nspin, restart, rho_tag, ierr)
       end if
       if (ierr /= 0) then
-        messages_lines(1) = "Unable to write response density '"//trim(rho_tag)//"'."
+        message%lines(1) = "Unable to write response density '"//trim(rho_tag)//"'."
         call messages_warning(1)
       end if
     end if
@@ -297,14 +297,14 @@ subroutine X(sternheimer_solve)(                           &
       call restart_open_dir(restart, wfs_tag_sigma(wfs_tag, sigma_alt), err)
       if (err == 0) call states_elec_dump(restart, st, sys%gr, err, iter = iter, lr = lr(sigma))
       if (err /= 0) then
-        messages_lines(1) = "Unable to write response wavefunctions."
+        message%lines(1) = "Unable to write response wavefunctions."
         call messages_warning(1)
       end if
       call restart_close_dir(restart)
     end do
 
     if (.not. states_conv) then
-      messages_lines(1) = "Linear solver failed to converge all states."
+      message%lines(1) = "Linear solver failed to converge all states."
       call messages_warning(1)
     end if
 
@@ -314,8 +314,8 @@ subroutine X(sternheimer_solve)(                           &
       ! convergence criterion is now about individual states, rather than SCF residual
       this%ok = states_conv
 
-      messages_lines(1)="--------------------------------------------"
-      write(messages_lines(2), '(a, i8)') &
+      message%lines(1)="--------------------------------------------"
+      write(message%lines(2), '(a, i8)') &
         'Info: Total Hamiltonian applications:', total_iter_reduced * linear_solver_ops_per_iter(this%solver)
       call messages_info(2)
       exit
@@ -324,7 +324,7 @@ subroutine X(sternheimer_solve)(                           &
     ! all the rest is the mixing and checking for convergence
 
     if(this%scf_tol%max_iter == iter) then 
-      messages_lines(1) = "Self-consistent iteration for response did not converge."
+      message%lines(1) = "Self-consistent iteration for response did not converge."
       this%ok = .false.
       call messages_warning(1)
     end if
@@ -343,9 +343,9 @@ subroutine X(sternheimer_solve)(                           &
     end do
     rel_dens = abs_dens / st%qtot
 
-    write(messages_lines(1), '(a,e16.6,a,e16.6,a)') "SCF Residual: ", abs_dens, " (abs), ", rel_dens, " (rel)"
+    write(message%lines(1), '(a,e16.6,a,e16.6,a)') "SCF Residual: ", abs_dens, " (abs), ", rel_dens, " (rel)"
 
-    messages_lines(2)="--------------------------------------------"
+    message%lines(2)="--------------------------------------------"
     call messages_info(2)
 
     if( (abs_dens <= this%scf_tol%conv_abs_dens .or. this%scf_tol%conv_abs_dens <= M_ZERO) .and. &
@@ -361,9 +361,9 @@ subroutine X(sternheimer_solve)(                           &
     if(conv) then
       this%ok = .true.
 
-      write(messages_lines(1), '(a, i4, a)') &
+      write(message%lines(1), '(a, i4, a)') &
         'Info: SCF for response converged in ', iter, ' iterations.'
-      write(messages_lines(2), '(a, i8)') &
+      write(message%lines(2), '(a, i8)') &
         '      Total Hamiltonian applications:', total_iter_reduced * linear_solver_ops_per_iter(this%solver)
       call messages_info(2)
       exit
@@ -371,7 +371,7 @@ subroutine X(sternheimer_solve)(                           &
       ! not quitting if converged allows results to be calculated if possible
       ! before dying on the next direction or frequency
       if(clean_stop(sys%mc%master_comm)) then
-        messages_lines(1) = "Exiting cleanly."
+        message%lines(1) = "Exiting cleanly."
         call messages_fatal(1, only_root_writes = .true.)
       end if
 
@@ -701,8 +701,8 @@ subroutine X(sternheimer_solve_order2)( &
           dl_eig2 = dl_eig2 + X(mf_dotp)(mesh, R_TOTYPE(abs(psi(:, idim))**2), hvar2(:, ispin, isigma))
         end do
 
-!        write(messages_lines(1),*) 'dl_eig1 ist ', ist, 'ik ', ik, dl_eig1
-!        write(messages_lines(2),*) 'dl_eig2 ist ', ist, 'ik ', ik, dl_eig2
+!        write(message%lines(1),*) 'dl_eig1 ist ', ist, 'ik ', ik, dl_eig1
+!        write(message%lines(2),*) 'dl_eig2 ist ', ist, 'ik ', ik, dl_eig2
 !        call messages_info(2)
 
         ! FIXME: sort out proper isigma`s when not just freq = 0 for second perturbation?

@@ -72,7 +72,7 @@ subroutine X(mf_normalize)(mesh, dim, psi, norm)
 
   norm_ = X(mf_nrm2) (mesh, dim, psi)
   if(abs(norm_) <= M_EPSILON) then
-    messages_lines(1) = "Mesh function has zero norm; cannot normalize."
+    message%lines(1) = "Mesh function has zero norm; cannot normalize."
     call messages_fatal(1)
   end if
 
@@ -398,7 +398,7 @@ subroutine X(mf_interpolate_points) (ndim, npoints_in, x_in, f_in, npoints_out, 
 
   case(1)
 #ifdef R_TCOMPLEX
-    messages_lines(1) = 'Believe it or not: cannot do 1D complex interpolation, only 2D or 3D.'
+    message%lines(1) = 'Believe it or not: cannot do 1D complex interpolation, only 2D or 3D.'
     call messages_fatal(1)
 #else
     call spline_init(interp1d)
@@ -518,7 +518,7 @@ R_TYPE function X(mf_surface_integral_scalar) (mesh, ff, plane) result(dd)
   PUSH_SUB(X(mf_surface_integral_scalar))
 
   if(mesh%sb%dim /= 3) then
-    messages_lines(1) = 'INTERNAL ERROR at Xmf_surface_integral: wrong dimensionality.'
+    message%lines(1) = 'INTERNAL ERROR at Xmf_surface_integral: wrong dimensionality.'
     call messages_fatal(1)
   end if
 
@@ -571,7 +571,7 @@ R_TYPE function X(mf_line_integral_scalar) (mesh, ff, line) result(dd)
   PUSH_SUB(X(mf_line_integral_scalar))
 
   if(mesh%sb%dim /= 2) then
-    messages_lines(1) = 'INTERNAL ERROR at Xmf_surface_integral: wrong dimensionality.'
+    message%lines(1) = 'INTERNAL ERROR at Xmf_surface_integral: wrong dimensionality.'
     call messages_fatal(1)
   end if
 

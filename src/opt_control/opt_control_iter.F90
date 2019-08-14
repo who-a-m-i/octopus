@@ -107,7 +107,7 @@ contains
     call parse_variable(namespace, 'OCTMaxIter', 10, iterator%ctr_iter_max)
 
     if( iterator%ctr_iter_max < 0 .and. iterator%eps < M_ZERO ) then
-      messages_lines(1) = "OCTMaxIter and OCTEps cannot be both < 0."
+      message%lines(1) = "OCTMaxIter and OCTEps cannot be both < 0."
       call messages_fatal(1)
     end if
     if(iterator%ctr_iter_max < 0) iterator%ctr_iter_max = huge(iterator%ctr_iter_max)
@@ -197,7 +197,7 @@ contains
     delta = controlfunction_diff(par, par_prev)
     
     if(iterator%ctr_iter  ==  iterator%ctr_iter_max) then
-      messages_lines(1) = "Info: Maximum number of iterations reached."
+      message%lines(1) = "Info: Maximum number of iterations reached."
       call messages_info(1)
       stoploop = .true.
     end if
@@ -205,20 +205,20 @@ contains
     if( (iterator%eps > M_ZERO) .and. &
         (delta < iterator%eps) .and. &
         (iterator%ctr_iter > 0 ) ) then
-      messages_lines(1) = "Info: Convergence threshold reached."
+      message%lines(1) = "Info: Convergence threshold reached."
       call messages_info(1)
       stoploop = .true.
     end if
 
-    write(messages_lines(1), '(a,i5)') 'Optimal control iteration #', iterator%ctr_iter
-    call messages_print_stress(stdout, trim(messages_lines(1)))
+    write(message%lines(1), '(a,i5)') 'Optimal control iteration #', iterator%ctr_iter
+    call messages_print_stress(stdout, trim(message%lines(1)))
 
-    write(messages_lines(1), '(6x,a,f12.5)')  " => J1       = ", j1
-    write(messages_lines(2), '(6x,a,f12.5)')  " => J        = ", jfunctional
-    write(messages_lines(3), '(6x,a,f12.5)')  " => J2       = ", j2
-    write(messages_lines(4), '(6x,a,f12.5)')  " => Fluence  = ", fluence
-    write(messages_lines(5), '(6x,a,f12.5)')  " => Penalty  = ", controlfunction_alpha(par, 1)
-    write(messages_lines(6), '(6x,a,es12.2)') " => D[e,e']  = ", delta
+    write(message%lines(1), '(6x,a,f12.5)')  " => J1       = ", j1
+    write(message%lines(2), '(6x,a,f12.5)')  " => J        = ", jfunctional
+    write(message%lines(3), '(6x,a,f12.5)')  " => J2       = ", j2
+    write(message%lines(4), '(6x,a,f12.5)')  " => Fluence  = ", fluence
+    write(message%lines(5), '(6x,a,f12.5)')  " => Penalty  = ", controlfunction_alpha(par, 1)
+    write(message%lines(6), '(6x,a,es12.2)') " => D[e,e']  = ", delta
     if(iterator%ctr_iter /= 0) then
       call messages_info(6)
     else
@@ -273,20 +273,20 @@ contains
     end if
 
     if(iterator%ctr_iter  ==  0) then
-      write(messages_lines(1), '(a)') 'Initial-guess field'
-      call messages_print_stress(stdout, trim(messages_lines(1)))
+      write(message%lines(1), '(a)') 'Initial-guess field'
+      call messages_print_stress(stdout, trim(message%lines(1)))
     else
-      write(messages_lines(1), '(a,i5)') 'Function evaluation #', iterator%ctr_iter
-      call messages_print_stress(stdout, trim(messages_lines(1)))
+      write(message%lines(1), '(a,i5)') 'Function evaluation #', iterator%ctr_iter
+      call messages_print_stress(stdout, trim(message%lines(1)))
     end if
 
-    write(messages_lines(1), '(6x,a,f12.5)')    " => J1       = ", j1
-    write(messages_lines(2), '(6x,a,f12.5)')    " => J        = ", j
-    write(messages_lines(3), '(6x,a,f12.5)')    " => J2       = ", j2
-    write(messages_lines(4), '(6x,a,f12.5)')    " => Fluence  = ", fluence
+    write(message%lines(1), '(6x,a,f12.5)')    " => J1       = ", j1
+    write(message%lines(2), '(6x,a,f12.5)')    " => J        = ", j
+    write(message%lines(3), '(6x,a,f12.5)')    " => J2       = ", j2
+    write(message%lines(4), '(6x,a,f12.5)')    " => Fluence  = ", fluence
     call messages_info(4)
     if(present(dx)) then
-      write(messages_lines(1), '(6x,a,f12.5)')  " => Delta    = ", dx
+      write(message%lines(1), '(6x,a,f12.5)')  " => Delta    = ", dx
       call messages_info(1)
     end if
     call messages_print_stress(stdout)

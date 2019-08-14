@@ -101,9 +101,9 @@ subroutine X(sparskit_solver_run)(sk, op, opt, sol, rhs)
     case(SK_DQGMRES)                       
       call dqgmres(sk%size, sk%sk_b, sk%sk_y, sk%ipar, sk%fpar, sk%sk_work)
     case default
-      write(messages_lines(1), '(a,i4,a)') "Input: '", sk%solver_type, &
+      write(message%lines(1), '(a,i4,a)') "Input: '", sk%solver_type, &
            "' is not a valid SPARSKIT solver."
-      messages_lines(2) = '( SPARSKITSolver =  cg | cgnr | bcg | dbcg | bcgstab | tfqmr | fom | gmres | fgmres | dqgmres )'
+      message%lines(2) = '( SPARSKITSolver =  cg | cgnr | bcg | dbcg | bcgstab | tfqmr | fom | gmres | fgmres | dqgmres )'
       call messages_fatal(2)
     end select
     !write(*, *) 'ITER = ', iter, sk%fpar(5)
@@ -138,34 +138,34 @@ subroutine X(sparskit_solver_run)(sk, op, opt, sol, rhs)
       !write(*, *) 'ITER = ', iter, sk%fpar(5)
       exit solver_iter
     case(-1)
-!      messages_lines(1) = 'Maximum iteration number "SPARSKITMaxIter" exceeded.'
+!      message%lines(1) = 'Maximum iteration number "SPARSKITMaxIter" exceeded.'
 !      call messages_warning(1)
       exit solver_iter
     case(-2)
-      messages_lines(1) = 'Insufficient work space.'
+      message%lines(1) = 'Insufficient work space.'
       call messages_fatal(1)
     case(-3)
-      messages_lines(1) = 'Anticipated break-down / divide by zero.'
+      message%lines(1) = 'Anticipated break-down / divide by zero.'
       call messages_fatal(1)
     case(-4)
-      messages_lines(1) = '"SPARSKITRelTolerance" and "SPARSKITAbsTolerance" are'
-      messages_lines(2) = 'both <= 0. Valid ranges are 0 <= SPARSKITRelTolerance < 1,'
-      messages_lines(3) = '0 <= SPARSKITAbsTolerance.'
+      message%lines(1) = '"SPARSKITRelTolerance" and "SPARSKITAbsTolerance" are'
+      message%lines(2) = 'both <= 0. Valid ranges are 0 <= SPARSKITRelTolerance < 1,'
+      message%lines(3) = '0 <= SPARSKITAbsTolerance.'
       call messages_fatal(3)
     case(-9)
-      messages_lines(1) = 'While trying to detect a break-down, an abnormal number is detected.'
+      message%lines(1) = 'While trying to detect a break-down, an abnormal number is detected.'
       call messages_fatal(1)
     case(-10)
-      messages_lines(1) = 'Return due to some non-numerical reasons, e.g. invalid floating-point numbers etc.'
+      message%lines(1) = 'Return due to some non-numerical reasons, e.g. invalid floating-point numbers etc.'
       call messages_fatal(1)
     case default
-      messages_lines(1) = 'Unknown SPARSKIT return value. Exiting ...'
+      message%lines(1) = 'Unknown SPARSKIT return value. Exiting ...'
       call messages_fatal(1)
     end select
 
     if(sk%iter_out > 0) then
       if(mod(iter, sk%iter_out) == 0) then
-        write(messages_lines(1), '(a,i7)') 'SPARSKIT Iter: ', iter
+        write(message%lines(1), '(a,i7)') 'SPARSKIT Iter: ', iter
         call messages_info(1)
       end if
     end if
@@ -174,7 +174,7 @@ subroutine X(sparskit_solver_run)(sk, op, opt, sol, rhs)
   end do solver_iter
 
   if(iter  > sk%maxiter) then
-!    messages_lines(1) = 'Maxiter reached'
+!    message%lines(1) = 'Maxiter reached'
 !    call messages_warning(1)
   end if
 
@@ -190,7 +190,7 @@ subroutine X(sparskit_solver_run)(sk, op, opt, sol, rhs)
 
   ! output status info
   if(sk%verbose) then
-    write(messages_lines(1), '(a,I5,a,E19.12)') 'SPARSKIT iter: ', sk%used_iter, ' residual norm: ', sk%residual_norm
+    write(message%lines(1), '(a,I5,a,E19.12)') 'SPARSKIT iter: ', sk%used_iter, ' residual norm: ', sk%residual_norm
     call messages_info(1)
   end if
 

@@ -189,10 +189,10 @@ contains
 
     call parse_variable(namespace, 'DerivativesStencil', default_stencil, der%stencil_type)
     
-    if(.not.varinfo_valid_option('DerivativesStencil', der%stencil_type)) call messages_input_error('DerivativesStencil')
-    call messages_print_var_option(stdout, "DerivativesStencil", der%stencil_type)
+    if(.not.varinfo_valid_option('DerivativesStencil', der%stencil_type)) call message%input_error('DerivativesStencil')
+    call message%print_var_option(stdout, "DerivativesStencil", der%stencil_type)
 
-    if(use_curvilinear  .and.  der%stencil_type < DER_CUBE) call messages_input_error('DerivativesStencil')
+    if(use_curvilinear  .and.  der%stencil_type < DER_CUBE) call message%input_error('DerivativesStencil')
     if(der%stencil_type == DER_VARIATIONAL) then
       call parse_variable(namespace, 'DerivativesLaplacianFilter', M_ONE, der%lapl_cutoff)
     end if
@@ -238,10 +238,10 @@ contains
     call parse_variable(namespace, 'ParallelizationOfDerivatives', NON_BLOCKING, der%comm_method)
     
     if(.not. varinfo_valid_option('ParallelizationOfDerivatives', der%comm_method)) then
-      call messages_input_error('ParallelizationOfDerivatives')
+      call message%input_error('ParallelizationOfDerivatives')
     end if
 
-    call messages_obsolete_variable(namespace, 'OverlapDerivatives', 'ParallelizationOfDerivatives')
+    call message%obsolete_variable(namespace, 'OverlapDerivatives', 'ParallelizationOfDerivatives')
 #endif
 
     ! if needed, der%masses should be initialized in modelmb_particles_init
@@ -635,7 +635,7 @@ contains
     SAFE_ALLOCATE(sol(1:op(1)%stencil%size, 1:nderiv))
 
     message%lines(1) = 'Info: Generating weights for finite-difference discretization of ' // trim(name)
-    call messages_info(1)
+    call message%info(1)
 
     ! use to generate power lookup table
     pow_max = maxval(pol)

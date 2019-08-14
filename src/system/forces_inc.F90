@@ -279,7 +279,7 @@ subroutine X(forces_from_potential)(gr, namespace, geo, hm, st, force, force_loc
                 if(iatom_symm > geo%natoms) then
                   write(message%lines(1),'(a,i6)') 'Internal error: could not find symmetric partner for atom number', iatom
                   write(message%lines(2),'(a,i3,a)') 'with symmetry operation number ', iop, '.'
-                  call messages_fatal(2)
+                  call message%fatal(2)
                 end if
 
                 do idir = 1, gr%mesh%sb%dim

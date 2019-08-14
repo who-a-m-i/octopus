@@ -136,7 +136,7 @@ contains
     !%End
     call parse_variable(namespace, 'TDDeltaKickTime', M_ZERO, kick%time, units_inp%time)
     if(kick%time > M_ZERO) then
-      call messages_experimental('TDDeltaKickTime > 0')
+      call message%experimental('TDDeltaKickTime > 0')
     end if
 
     !%Variable TDDeltaStrength
@@ -202,9 +202,9 @@ contains
     select case (kick%delta_strength_mode)
     case (KICK_DENSITY_MODE)
     case (KICK_SPIN_MODE, KICK_SPIN_DENSITY_MODE)
-      if (nspin == UNPOLARIZED) call messages_input_error('TDDeltaStrengthMode')
+      if (nspin == UNPOLARIZED) call message%input_error('TDDeltaStrengthMode')
     case default
-      call messages_input_error('TDDeltaStrengthMode')
+      call message%input_error('TDDeltaStrengthMode')
     end select
 
     if(parse_is_defined(namespace, 'TDDeltaUserDefined')) then
@@ -251,7 +251,7 @@ contains
         call parse_block_integer(blk, irow - 1, 0, kick%l(irow))
         call parse_block_integer(blk, irow - 1, 1, kick%m(irow))
         call parse_block_float(blk, irow - 1, 2, kick%weight(irow))
-        if( (kick%l(irow) < 0) .or. (abs(kick%m(irow)) > abs(kick%l(irow))) ) call messages_input_error('TDkickFunction')
+        if( (kick%l(irow) < 0) .or. (abs(kick%m(irow)) > abs(kick%l(irow))) ) call message%input_error('TDkickFunction')
       end do
 
     else
@@ -288,7 +288,7 @@ contains
 
       call parse_variable(namespace, 'TDPolarizationDirection', 0, kick%pol_dir)
 
-      if(kick%pol_dir < 1 .or. kick%pol_dir > dim) call messages_input_error('TDPolarizationDirection')
+      if(kick%pol_dir < 1 .or. kick%pol_dir > dim) call message%input_error('TDPolarizationDirection')
       
       !%Variable TDPolarization
       !%Type block
@@ -329,7 +329,7 @@ contains
       if(parse_block(namespace, 'TDPolarization', blk)==0) then
         n_rows = parse_block_n(blk)
         
-        if(n_rows < dim) call messages_input_error('TDPolarization')
+        if(n_rows < dim) call message%input_error('TDPolarization')
         
         do irow = 1, n_rows
           do idir = 1, 3
@@ -354,7 +354,7 @@ contains
 
       if(any(abs(kick%pol(1:periodic_dim, :)) > M_EPSILON)) then
         message%lines(1) = "Kick cannot be applied in a periodic direction. Use GaugeVectorField instead."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
 
       !%Variable TDPolarizationWprime
@@ -386,7 +386,7 @@ contains
     ! for non-dipole, it is more complicated to check whether it is actually in the periodic direction
     if(periodic_dim > 0) then
       message%lines(1) = "Kicks cannot be applied correctly in periodic directions."
-      call messages_warning(1)
+      call message%warning(1)
     end if
 
     !%Variable TDMomentumTransfer
@@ -562,7 +562,7 @@ contains
 
     if(kick%function_mode < 0) then
       message%lines(1) = "No kick could be read from file."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     POP_SUB(kick_read)
@@ -690,7 +690,7 @@ contains
         case default
            write(message%lines(1), '(a,3F9.6,a)') 'Info: Unknown field type!'
       end select
-      call messages_info(1)
+      call message%info(1)
 
       kick_function = M_z0
       do ip = 1, np
@@ -836,7 +836,7 @@ contains
       case (KICK_SPIN_DENSITY_MODE)
         message%lines(3) = "Info: Delta kick mode: Density + Spin modes"
       end select
-      call messages_info(3)
+      call message%info(3)
 
       SAFE_ALLOCATE(psi(1:mesh%np, 1:st%d%dim))
 

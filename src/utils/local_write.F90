@@ -134,14 +134,14 @@ contains
 
     call parse_variable(namespace, 'LDOutput', default, flags)
 
-    if(.not.varinfo_valid_option('LDOutput', flags, is_flag = .true.)) call messages_input_error('LDOutput')
+    if(.not.varinfo_valid_option('LDOutput', flags, is_flag = .true.)) call message%input_error('LDOutput')
 
     SAFE_ALLOCATE(writ%out(1:LOCAL_OUT_MAX, 1:nd))
     do iout = 1, LOCAL_OUT_MAX
       writ%out(iout,:)%write = (bitand(flags, 2**(iout - 1)) /= 0)
     end do
 
-    call messages_obsolete_variable(namespace, 'LDOutputHow', 'LDOutputFormat')
+    call message%obsolete_variable(namespace, 'LDOutputHow', 'LDOutputFormat')
     
     !%Variable LDOutputFormat
     !%Type flag
@@ -153,7 +153,7 @@ contains
     !%End
     call parse_variable(namespace, 'LDOutputFormat', 0, writ%how)
     if(.not.varinfo_valid_option('OutputFormat', writ%how, is_flag=.true.)) then
-      call messages_input_error('LDOutputFormat')
+      call message%input_error('LDOutputFormat')
     end if
 
     !%Variable LDMultipoleLmax
@@ -169,7 +169,7 @@ contains
     if (writ%lmax < 0) then
       write(message%lines(1), '(a,i6,a)') "Input: '", writ%lmax, "' is not a valid LDMultipoleLmax."
       message%lines(2) = '(Must be LDMultipoleLmax >= 0 )'
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
 
     call io_mkdir('local.general', namespace)

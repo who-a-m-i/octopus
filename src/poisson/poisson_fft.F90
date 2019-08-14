@@ -86,11 +86,11 @@ contains
     if(kernel == POISSON_FFT_KERNEL_HOCKNEY) then
       if (.not. present(fullcube)) then
         message%lines(1) = "Hockney's FFT-kernel needs cube of full unit cell "
-        call messages_fatal(1)
+        call message%fatal(1)
       else
         if (.not.associated(fullcube%fft)) then
           message%lines(1) = "Hockney's FFT-kernel needs PoissonSolver=fft"
-          call messages_fatal(1)
+          call message%fatal(1)
         end if
       end if
     end if
@@ -105,7 +105,7 @@ contains
         call poisson_fft_build_1d_1d(this, namespace, mesh, cube, soft_coulb_param)
       case default
         message%lines(1) = "Invalid Poisson FFT kernel for 1D."
-        call messages_fatal(1)
+        call message%fatal(1)
       end select
 
     case(2)
@@ -118,7 +118,7 @@ contains
         call poisson_fft_build_2d_2d(this, mesh, cube)
       case default
         message%lines(1) = "Invalid Poisson FFT kernel for 2D."
-        call messages_fatal(1)
+        call message%fatal(1)
       end select
 
     case(3)
@@ -140,7 +140,7 @@ contains
 
       case default
         message%lines(1) = "Invalid Poisson FFT kernel for 3D."
-        call messages_fatal(1)
+        call message%fatal(1)
       end select
     end select
 
@@ -158,14 +158,14 @@ contains
 
     call parse_variable(namespace, 'PoissonCutoffRadius', default_r_c, r_c, units_inp%length)
 
-    call messages_write('Info: Poisson Cutoff Radius     =')
-    call messages_write(r_c, units = units_out%length, fmt = '(f6.1)')
-    call messages_info()
+    call message%write('Info: Poisson Cutoff Radius     =')
+    call message%write(r_c, units = units_out%length, fmt = '(f6.1)')
+    call message%info()
 
     if ( r_c > default_r_c + M_EPSILON) then
-      call messages_write('Poisson cutoff radius is larger than cell size.', new_line = .true.)
-      call messages_write('You can see electrons in neighboring cell(s).')
-      call messages_warning()
+      call message%write('Poisson cutoff radius is larger than cell size.', new_line = .true.)
+      call message%write('You can see electrons in neighboring cell(s).')
+      call message%warning()
     end if
 
     POP_SUB(get_cutoff)

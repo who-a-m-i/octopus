@@ -99,11 +99,11 @@ contains
     gr  => sys%gr
 
     if(simul_box_is_periodic(gr%sb)) then
-      call messages_not_implemented('linear-response vib_modes for periodic systems')
+      call message%not_implemented('linear-response vib_modes for periodic systems')
     end if
 
     if(geo%nlcc) then
-      call messages_not_implemented('linear-response vib_modes with non-linear core corrections')
+      call message%not_implemented('linear-response vib_modes with non-linear core corrections')
     end if
 
     !%Variable CalcNormalModeWfs
@@ -139,7 +139,7 @@ contains
     call parse_variable(sys%namespace, 'SymmetrizeDynamicalMatrix', .true., symmetrize)
 
     ! replaced by properly saving and reading the dynamical matrix
-    call messages_obsolete_variable(sys%namespace, 'UseRestartDontSolve')
+    call message%obsolete_variable(sys%namespace, 'UseRestartDontSolve')
 
     natoms = geo%natoms
     ndim = gr%mesh%sb%dim
@@ -150,19 +150,19 @@ contains
       call restart_end(gs_restart)
     else
       message%lines(1) = "Previous gs calculation is required."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     ! read kdotp wavefunctions if necessary (for IR intensities)
     if (simul_box_is_periodic(gr%sb) .and. do_infrared) then
       message%lines(1) = "Reading kdotp wavefunctions for periodic directions."
-      call messages_info(1)
+      call message%info(1)
 
       call restart_init(kdotp_restart, sys%namespace, RESTART_KDOTP, RESTART_TYPE_LOAD, sys%mc, ierr, mesh=gr%mesh)
       if(ierr /= 0) then
         message%lines(1) = "Unable to read kdotp wavefunctions."
         message%lines(2) = "Previous kdotp calculation required."
-        call messages_fatal(2)
+        call message%fatal(2)
       end if
 
       do idir = 1, gr%sb%periodic_dim
@@ -178,14 +178,14 @@ contains
         if(ierr /= 0) then
           message%lines(1) = "Unable to read kdotp wavefunctions from '"//trim(wfs_tag_sigma(str_tmp, 1))//"'."
           message%lines(2) = "Previous kdotp calculation required."
-          call messages_fatal(2)
+          call message%fatal(2)
         end if
       end do
       call restart_end(kdotp_restart)
     end if
 
     message%lines(1) = 'Info: Setting up Hamiltonian for linear response.'
-    call messages_info(1)
+    call message%info(1)
 
     call system_h_setup(sys)
     call sternheimer_init(sh, sys, wfs_are_cplx = states_are_complex(st))
@@ -237,19 +237,19 @@ contains
       
       write(message%lines(1),'(a,i5,a,a1,a)') &
         "Calculating response to displacement of atom ", iatom, " in ", index2axis(idir), "-direction."
-      call messages_info(1)
+      call message%info(1)
 
       ! the converged wfns for the previous mode are probably not a good starting point
       call lr_zero(lr(1), st)
 
       if (.not. fromscratch) then
         message%lines(1) = "Loading restart wavefunctions for linear response."
-        call messages_info(1)
+        call message%info(1)
         call restart_open_dir(restart_load, wfs_tag_sigma(phn_wfs_tag(iatom, idir), 1), ierr)
         if (ierr == 0) call states_elec_load(restart_load, sys%namespace, st, gr, ierr, lr = lr(1))
         if (ierr /= 0) then
           message%lines(1) = "Unable to read response wavefunctions from '"//trim(wfs_tag_sigma(phn_wfs_tag(iatom, idir), 1))//"'."
-          call messages_warning(1)
+          call message%warning(1)
         end if
         call restart_close_dir(restart_load)
       end if
@@ -300,19 +300,19 @@ contains
         call restart_write(restart_dump, iunit_restart, line, 1, ierr)
         if (ierr /= 0) then
           message%lines(1) = "Could not write restart information."
-          call messages_warning(1)
+          call message%warning(1)
         end if
       end do
       write(line(1), *) imat, (vib%infrared(imat, idir), idir = 1, ndim)
       call restart_write(restart_dump, iunit_restart, line, 1, ierr)
       if (ierr /= 0) then
         message%lines(1) = "Could not write restart information."
-        call messages_warning(1)
+        call message%warning(1)
       end if
       call restart_close(restart_dump, iunit_restart)
 
       message%lines(1) = ""
-      call messages_info(1)
+      call message%info(1)
     end do 
 
     call pert_end(ionic_pert)
@@ -325,7 +325,7 @@ contains
     if(do_infrared) then
       if(simul_box_is_periodic(gr%sb) .and. .not. smear_is_semiconducting(st%smear)) then
         message%lines(1) = "Cannot calculate infrared intensities for periodic system with smearing (i.e. without a gap)."
-        call messages_info(1)
+        call message%info(1)
       else
         call born_from_infrared(vib, born)
         call out_Born_charges(born, geo, sys%namespace, ndim, VIB_MODES_DIR, write_real = .true.)
@@ -337,7 +337,7 @@ contains
 
     if(normal_mode_wfs) then
       message%lines(1) = "Calculating response wavefunctions for normal modes."
-      call messages_info(1)
+      call message%info(1)
       if(states_are_real(st)) then
         call dphonons_lr_wavefunctions(lr(1), sys%namespace, st, gr, vib, restart_load, restart_dump)
       else
@@ -559,11 +559,11 @@ contains
           read(line(1), fmt=*, iostat=ierr) jmode_read, imode_read, vib%dyn_matrix(jmode, imode)
           if(imode_read /= imode) then
             write(message%lines(1),'(a,i9,a,i9)') "Corruption of restart data: row ", imode, " is labeled as ", imode_read
-            call messages_fatal(1)
+            call message%fatal(1)
           end if
           if(jmode_read /= jmode) then
             write(message%lines(1),'(a,i9,a,i9)') "Corruption of restart data: column ", jmode, " is labeled as ", jmode_read
-            call messages_fatal(1)
+            call message%fatal(1)
           end if
         end do
 
@@ -575,20 +575,20 @@ contains
         read(line(1), fmt=*, iostat=ierr) imode_read, vib%infrared(imode, 1:vib%ndim)
         if(imode_read /= imode) then
           write(message%lines(1),'(a,i9,a,i9)') "Corruption of restart data: infrared row ", imode, " is labeled as ", imode_read
-          call messages_fatal(1)
+          call message%fatal(1)
         end if
       end do imode_loop
         
       write(message%lines(1),'(a,i9,a,i9)') 'Info: Read saved dynamical-matrix rows for ', &
         start_mode - 1, ' modes out of ', vib%num_modes
-      call messages_info(1)
+      call message%info(1)
       
       call restart_close(restart, iunit)
     else
       start_mode = 1
 
       message%lines(1) = "Could not open restart file 'restart'. Starting from scratch."
-      call messages_warning(1)
+      call message%warning(1)
     end if
 
     POP_SUB(phonons_load)

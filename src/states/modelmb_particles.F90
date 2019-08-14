@@ -140,7 +140,7 @@ contains
       return
     end if
 
-    call messages_print_var_value(stdout, "NParticleModelmb", this%nparticle)
+    call message%print_var_value(stdout, "NParticleModelmb", this%nparticle)
     
     !%Variable NDimModelmb
     !%Type integer
@@ -152,7 +152,7 @@ contains
     !%
     !%End
     call parse_variable(namespace, 'NDimModelmb', 1, this%ndim)
-    call messages_print_var_value(stdout, "NDimModelmb", this%ndim)
+    call message%print_var_value(stdout, "NDimModelmb", this%ndim)
     
     !%Variable NTypeParticleModelmb
     !%Type integer
@@ -162,16 +162,16 @@ contains
     !% Number of different types of particles in modelmb space.
     !%End
     call parse_variable(namespace, 'NTypeParticleModelmb', 1, this%ntype_of_particle)
-    call messages_print_var_value(stdout, "NTypeParticleModelmb", this%ntype_of_particle)
+    call message%print_var_value(stdout, "NTypeParticleModelmb", this%ntype_of_particle)
     if (this%ntype_of_particle > this%nparticle) then
       write (message%lines(1), '(2a,2I6)') ' Number of types of modelmb particles should be <= Number of modelmb particles ', &
         this%ntype_of_particle, this%nparticle
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
     
     if (this%ndim*this%nparticle /= gr%sb%dim) then
       message%lines(1) = ' Number of modelmb particles * dimension of modelmb space must be = Ndim'
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     ! read in blocks
@@ -225,15 +225,15 @@ contains
     
     if(parse_block(namespace, 'DescribeParticlesModelmb', blk) == 0) then
       
-      call messages_experimental("Model many-body")
+      call message%experimental("Model many-body")
       
       ncols = parse_block_cols(blk, 0)
       if(ncols /= 5 ) then
-        call messages_input_error("DescribeParticlesModelmb")
+        call message%input_error("DescribeParticlesModelmb")
       end if
       nline = parse_block_n(blk)
       if (nline /= this%nparticle) then
-        call messages_input_error("DescribeParticlesModelmb")
+        call message%input_error("DescribeParticlesModelmb")
       end if
       
       do ipart = 1, this%nparticle
@@ -248,7 +248,7 @@ contains
         write (message%lines(3),'(a,E20.10)') 'mass_particle = ', this%mass_particle(ipart)
         write (message%lines(4),'(a,E20.10)') 'charge_particle = ', this%charge_particle(ipart)
         write (message%lines(5),'(a,i6)') 'bosonfermion = ', this%bosonfermion(ipart)
-        call messages_info(5)
+        call message%info(5)
       end do
       call parse_block_end(blk)
       

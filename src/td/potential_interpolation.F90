@@ -325,7 +325,7 @@ contains
         if (err /= 0) then
           err2 = err2 + 1
           message%lines(1) = "Unable to read VKS restart file '" // trim(filename) // "'"
-          call messages_warning(1)
+          call message%warning(1)
         end if
       end do
     end do
@@ -340,7 +340,7 @@ contains
           if (err /= 0) then
             err2 = err2 + 1
             message%lines(1) = "Unable to read VKS restart file '" // trim(filename) // "'"
-            call messages_warning(1)
+            call message%warning(1)
           end if
         end do
       end do

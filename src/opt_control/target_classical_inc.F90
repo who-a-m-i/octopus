@@ -60,7 +60,7 @@
     else
       message%lines(1) = 'If OCTTargetOperator = oct_tg_classical, then you must give the shape'
       message%lines(2) = 'of this target in the block "OCTClassicalTarget".'
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
 
     !%Variable OCTMomentumDerivatives
@@ -85,7 +85,7 @@
       message%lines(1) = 'If "OCTTargetOperator = oct_classical" and "OCTScheme = oct_cg" or'
       message%lines(2) = '"OCTScheme = oct_bfgs", then you must define the blocks "OCTClassicalTarget",' 
       message%lines(3) = '"OCTPositionDerivatives" AND "OCTMomentumDerivatives"'
-      call messages_fatal(3)
+      call message%fatal(3)
     end if
 
     !%Variable OCTPositionDerivatives
@@ -110,7 +110,7 @@
       message%lines(1) = 'If "OCTTargetOperator = oct_tg_classical" and "OCTScheme = oct_cg" or'
       message%lines(2) = '"OCTScheme = oct_bfgs", then you must define the blocks "OCTClassicalTarget",'
       message%lines(3) = '"OCTPositionDerivatives" AND "OCTMomentumDerivatives"'
-      call messages_fatal(3)
+      call message%fatal(3)
     end if
 
     POP_SUB(target_init_classical)

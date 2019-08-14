@@ -101,11 +101,11 @@ contains
     !% (NOT WORKING).
     !%End
     call parse_variable(namespace, 'CurvMethod', CURV_METHOD_UNIFORM, cv%method)
-    if(.not.varinfo_valid_option('CurvMethod', cv%method)) call messages_input_error('CurvMethod')
-    call messages_print_var_option(stdout, "CurvMethod", cv%method)
+    if(.not.varinfo_valid_option('CurvMethod', cv%method)) call message%input_error('CurvMethod')
+    call message%print_var_option(stdout, "CurvMethod", cv%method)
 
     ! FIXME: The other two methods are apparently not working
-    if(cv%method > CURV_METHOD_GYGI) call messages_experimental('Selected curvilinear coordinates method')
+    if(cv%method > CURV_METHOD_GYGI) call message%experimental('Selected curvilinear coordinates method')
 
     select case(cv%method)
     case(CURV_METHOD_GYGI)
@@ -199,7 +199,7 @@ contains
       call curv_gygi_x2chi(sb, cv%gygi, x, chi)
     case(CURV_METHOD_BRIGGS, CURV_METHOD_MODINE)
       message%lines(1) = "Internal error in curvilinear_x2chi"
-      call messages_fatal(1)
+      call message%fatal(1)
     end select
 
     POP_SUB(curvilinear_x2chi)
@@ -261,15 +261,15 @@ contains
       write(message%lines(5), '(4x,3a,f6.3)') 'beta  [', &
         trim(units_abbrev(units_out%length)), '] = ', &
         units_from_atomic(units_out%length, cv%gygi%beta)
-      call messages_info(5, unit)
+      call message%info(5, unit)
 
     case(CURV_METHOD_BRIGGS)
       write(message%lines(1), '(a)') '  Curvilinear Method = briggs'
-      call messages_info(1, unit)
+      call message%info(1, unit)
 
     case(CURV_METHOD_MODINE)
       write(message%lines(1), '(a)') ' Curvilinear  Method = modine'
-      call messages_info(1, unit)
+      call message%info(1, unit)
 
     end select
 

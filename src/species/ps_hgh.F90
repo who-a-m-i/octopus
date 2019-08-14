@@ -95,8 +95,8 @@ contains
     iunit = io_open(trim(filename), namespace, action='read', form='formatted', status='old')
     i = load_params(iunit, psp)
     if(i /= 0) then
-      call messages_write('Error reading hgh file')
-      call messages_fatal()
+      call message%write('Error reading hgh file')
+      call message%fatal()
     end if
     call io_close(iunit)
 
@@ -179,7 +179,7 @@ contains
       write(message%lines(1),'(a)') 'The algorithm that calculates atomic wavefunctions could not'
       write(message%lines(2),'(a)') 'do its job. The program will continue, but expect poor'
       write(message%lines(3),'(a)') 'convergence properties.'
-      call messages_warning(3)
+      call message%warning(3)
       psp%conf%p = 0
     end if
 
@@ -634,7 +634,7 @@ contains
         if (e > CNST(1.0e-5)) then
           write(message%lines(1), '(a,i2,a)') "Eigenstate for n = ", n , ' is not normalized'
           write(message%lines(2), '(a, f12.6,a)') '(abs(1-norm) = ', e, ')'
-          call messages_warning(2)
+          call message%warning(2)
         end if
       end do
 

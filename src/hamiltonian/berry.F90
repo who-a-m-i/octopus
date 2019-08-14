@@ -138,7 +138,7 @@ contains
     PUSH_SUB(berry_phase_matrix)
 
     if(st%parallel_in_states) then
-      call messages_not_implemented("Berry phase parallel in states")
+      call message%not_implemented("Berry phase parallel in states")
     end if
 
     SAFE_ALLOCATE(tmp(1:mesh%np))
@@ -211,7 +211,7 @@ contains
             ! If det = 0, mu = -infinity, so this condition should never be reached
             ! if things are working properly.
             write(message%lines(1),*) "Divide by zero: dir = ", idir, " Berry-phase determinant = ", det
-            call messages_fatal(1)
+            call message%fatal(1)
           end if
           pot(1:mesh%np, ispin) = pot(1:mesh%np, ispin) + &
             aimag(factor * exp(M_PI * M_zI * mesh%x(1:mesh%np, idir) / mesh%sb%lsize(idir)))

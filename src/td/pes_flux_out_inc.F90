@@ -335,15 +335,15 @@ subroutine pes_flux_pmesh_pln(this, dim, kpoints, ll, LG, pmesh, idxZero, krng, 
   else   
     
     if (err == -1) then
-      call messages_write('Illformed momentum-space mesh: could not find p = 0 coordinate.')
-      call messages_fatal()
+      call message%write('Illformed momentum-space mesh: could not find p = 0 coordinate.')
+      call message%fatal()
     end if 
 
     if (err > 1) then
-      call messages_write('More than one point with p = 0 coordinate.')
-      call messages_new_line()
-      call messages_write('This can happen only if the kpoint mesh does not contain gamma.')
-      call messages_warning()
+      call message%write('More than one point with p = 0 coordinate.')
+      call message%new_line()
+      call message%write('This can happen only if the kpoint mesh does not contain gamma.')
+      call message%warning()
     end if 
 
   end if
@@ -353,8 +353,8 @@ subroutine pes_flux_pmesh_pln(this, dim, kpoints, ll, LG, pmesh, idxZero, krng, 
   end if
 
   if (err == -2) then
-    call messages_write('Illformed momentum-space mesh: two or more points with the same p.')
-    call messages_fatal()
+    call message%write('Illformed momentum-space mesh: two or more points with the same p.')
+    call message%fatal()
   end if 
   
  
@@ -1149,7 +1149,7 @@ subroutine pes_flux_dump(restart, this, mesh, st, ierr)
 
   if(debug%info) then
     message%lines(1) = "Debug: Writing pes_flux restart."
-    call messages_info(1)
+    call message%info(1)
   end if
 
   ierr = 0
@@ -1213,7 +1213,7 @@ subroutine pes_flux_dump(restart, this, mesh, st, ierr)
 
   if(debug%info) then
     message%lines(1) = "Debug: Writing pes_flux restart done."
-    call messages_info(1)
+    call message%info(1)
   end if
 
   POP_SUB(pes_flux_dump)
@@ -1251,7 +1251,7 @@ subroutine pes_flux_load(restart, this, mesh, st, ierr)
 
   if(debug%info) then
     message%lines(1) = "Debug: Reading pes_flux restart."
-    call messages_info(1)
+    call message%info(1)
   end if
 
   do ik = kptst, kptend
@@ -1302,7 +1302,7 @@ subroutine pes_flux_load(restart, this, mesh, st, ierr)
  
   if(debug%info) then
     message%lines(1) = "Debug: Reading pes_flux restart done."
-    call messages_info(1)
+    call message%info(1)
   end if
 
   POP_SUB(pes_flux_load)

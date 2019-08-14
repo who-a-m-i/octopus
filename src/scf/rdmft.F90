@@ -118,11 +118,11 @@ contains
     if(st%nst < st%qtot + 1) then   
       message%lines(1) = "Too few states to run RDMFT calculation"
       message%lines(2) = "Number of states should be at least the number of electrons plus one"
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
    
     if (states_are_complex(st)) then
-      call messages_not_implemented("Complex states for RDMFT")
+      call message%not_implemented("Complex states for RDMFT")
     end if
 
     !%Variable RDMTolerance
@@ -172,9 +172,9 @@ contains
     call parse_variable(namespace, 'RDMBasis',.true., rdm%do_basis)
     
     if (rdm%do_basis .and. fromScratch) then
-      call messages_write("RDMFT calculations with RDMBasis = yes cannot be started FromScratch", new_line=.true.)
-      call messages_write("Run a calculation for independent particles first")
-      call messages_fatal()
+      call message%write("RDMFT calculations with RDMBasis = yes cannot be started FromScratch", new_line=.true.)
+      call message%write("Run a calculation for independent particles first")
+      call message%fatal()
     end if
 
     !%Variable RDMHartreeFock
@@ -214,7 +214,7 @@ contains
     else
       ! initialize eigensolver. No preconditioner for rdmft is implemented, so we disable it.
       call eigensolver_init(rdm%eigens, namespace, gr, st, ks%xc, disable_preconditioner=.true.)
-      if (rdm%eigens%additional_terms) call messages_not_implemented("CG Additional Terms with RDMFT.")
+      if (rdm%eigens%additional_terms) call message%not_implemented("CG Additional Terms with RDMFT.")
     end if
 
     SAFE_ALLOCATE(rdm%eone(1:rdm%nst))
@@ -293,21 +293,21 @@ contains
     gs_run_ = .true.
 
     if (hm%d%ispin /= 1) then
-      call messages_not_implemented("RDMFT exchange function not yet implemented for spin_polarized or spinors")
+      call message%not_implemented("RDMFT exchange function not yet implemented for spin_polarized or spinors")
     end if
 
     ! problem is about k-points for exchange
     if (simul_box_is_periodic(gr%sb)) then
-      call messages_not_implemented("Periodic system calculations for RDMFT")
+      call message%not_implemented("Periodic system calculations for RDMFT")
     end if
 
     ! exchange routine needs all states on each processor currently
     if(st%parallel_in_states) then
-      call messages_not_implemented("RDMFT parallel in states")
+      call message%not_implemented("RDMFT parallel in states")
     end if
 
-    call messages_print_stress(stdout, 'RDMFT Calculation')
-    call messages_print_var_value(stdout, 'RDMBasis', rdm%do_basis)
+    call message%print_stress(stdout, 'RDMFT Calculation')
+    call message%print_var_value(stdout, 'RDMBasis', rdm%do_basis)
  
     !set initial values
     energy_old = CNST(1.0e20)
@@ -321,7 +321,7 @@ contains
       !precalculate matrix elements in basis
       write(message%lines(1),'(a)') 'Calculating Coulomb and exchange matrix elements in basis'
       write(message%lines(2),'(a)') '--this may take a while--'
-      call messages_info(2)
+      call message%info(2)
 
       call dstates_elec_me_two_body(gr, st, psolver, 1, st%nst, rdm%i_index, rdm%j_index, rdm%k_index, rdm%l_index, rdm%twoint)
       call rdm_integrals(rdm, hm, psolver, st, gr)
@@ -335,7 +335,7 @@ contains
       rdm%iter = rdm%iter + 1
       write(message%lines(1), '(a)') '**********************************************************************'
       write(message%lines(2),'(a, i4)') 'Iteration:', iter
-      call messages_info(2)
+      call message%info(2)
       ! occupation number optimization unless we are doing Hartree-Fock
       if (rdm%hf) then
         call scf_occ_NO(rdm, gr, hm, psolver, st, energy_occ)
@@ -344,7 +344,7 @@ contains
       end if
       ! orbital optimization
       write(message%lines(1), '(a)') 'Optimization of natural orbitals'
-      call messages_info(1)
+      call message%info(1)
       do icount = 1, maxcount 
         if (rdm%do_basis) then
           call scf_orb(rdm, gr, st, hm, psolver, energy)
@@ -374,11 +374,11 @@ contains
 
       write(message%lines(1),'(a,11x,es20.10)') 'Total energy:', units_from_atomic(units_out%energy,energy + hm%ep%eii) 
       write(message%lines(2),'(a,1x,es20.10)') 'Rel. energy difference:', rel_ener
-      call messages_info(2)
+      call message%info(2)
 
       if (.not. rdm%hf .and. rdm%do_basis) then
         write(message%lines(1),'(a,18x,es20.10)') 'Max F0:', rdm%maxFO
-        call messages_info(1)
+        call message%info(1)
       end if
 
 
@@ -425,13 +425,13 @@ contains
           if (.not. rdm%hf) then
             call calc_maxFO (hm, st, gr, rdm)
             write(message%lines(1),'(a,18x,es20.10)') 'Max F0:', rdm%maxFO
-            call messages_info(1)
+            call message%info(1)
           end if 
         endif
          
         if (ierr /= 0) then
           message%lines(1) = 'Unable to write states wavefunctions.'
-          call messages_warning(1)
+          call message%warning(1)
         end if
         
       endif
@@ -450,7 +450,7 @@ contains
     if(conv) then 
       write(message%lines(1),'(a,i3,a)')  'The calculation converged after ',rdm%iter,' iterations'
       write(message%lines(2),'(a,9x,es20.10)')  'The total energy is ', units_from_atomic(units_out%energy,energy + hm%ep%eii)
-      call messages_info(3)
+      call message%info(3)
       if(gs_run_) then 
         call scf_write_static(STATIC_DIR, "info")
         call output_all(outp, namespace, gr, geo, st, hm, psolver, ks, STATIC_DIR)
@@ -459,7 +459,7 @@ contains
       write(message%lines(1),'(a,i3,a)')  'The calculation did not converge after ', iter-1, ' iterations '
       write(message%lines(2),'(a,es15.5)') 'Relative energy difference between the last two iterations ', rel_ener
       write(message%lines(3),'(a,es15.5)') 'The maximal non-diagonal element of the Hermitian matrix F is ', rdm%maxFO
-      call messages_info(3)
+      call message%info(3)
     end if
  
     POP_SUB(scf_rdmft) 
@@ -607,7 +607,7 @@ contains
     PUSH_SUB(scf_occ_NO)
 
     write(message%lines(1),'(a)') 'SKIP Optimization of occupation numbers'
-    call messages_info(1)
+    call message%info(1)
     
     call set_occ_pinning(st)
     
@@ -620,16 +620,16 @@ contains
     rdm%occsum = sum(st%occ(1:st%nst, 1:st%d%nik))
     
     write(message%lines(1),'(a4,5x,a12)')'#st','Occupation'
-    call messages_info(1)   
+    call message%info(1)   
 
     do ist = 1, st%nst
       write(message%lines(1),'(i4,3x,f11.9)') ist, st%occ(ist, 1)
-      call messages_info(1)
+      call message%info(1)
     end do
 
     write(message%lines(1),'(a,1x,f13.9)') 'Sum of occupation numbers', rdm%occsum
     write(message%lines(2),'(a,es20.10)') 'Total energy occ', units_from_atomic(units_out%energy,energy + hm%ep%eii) 
-    call messages_info(2)   
+    call message%info(2)   
     
     POP_SUB(scf_occ_NO)
   end subroutine scf_occ_NO
@@ -655,7 +655,7 @@ contains
     call profiling_in(prof_occ, "SCF_OCC")
 
     write(message%lines(1),'(a)') 'Optimization of occupation numbers'
-    call messages_info(1)
+    call message%info(1)
     
     SAFE_ALLOCATE(occin(1:st%nst, 1:st%d%nik))
     SAFE_ALLOCATE(theta(1:st%nst))
@@ -750,7 +750,7 @@ contains
 
     if (icycle >= 50) then
       write(message%lines(1),'(a,1x,f11.4)') 'Bisection ended without finding mu, sum of occupation numbers:', rdm%occsum
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     do ist = 1, st%nst
@@ -761,16 +761,16 @@ contains
     energy = objective
     
     write(message%lines(1),'(a4,5x,a12)')'#st','Occupation'
-    call messages_info(1)   
+    call message%info(1)   
 
     do ist = 1, st%nst
       write(message%lines(1),'(i4,3x,f14.12)') ist, st%occ(ist, 1)
-      call messages_info(1)
+      call message%info(1)
     end do
 
     write(message%lines(1),'(a,3x,f11.9)') 'Sum of occupation numbers: ', rdm%occsum
     write(message%lines(2),'(a,11x,es20.10)') 'Total energy: ', units_from_atomic(units_out%energy, energy + hm%ep%eii)
-    call messages_info(2)   
+    call message%info(2)   
 
     SAFE_DEALLOCATE_A(occin)
     SAFE_DEALLOCATE_A(theta)

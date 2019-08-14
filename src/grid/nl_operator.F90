@@ -191,10 +191,10 @@ contains
     default = OP_VEC
 
     call parse_variable(namespace, 'OperateDouble', default, dfunction_global)
-    if(.not.varinfo_valid_option('OperateDouble', dfunction_global)) call messages_input_error('OperateDouble')
+    if(.not.varinfo_valid_option('OperateDouble', dfunction_global)) call message%input_error('OperateDouble')
 
     call parse_variable(namespace, 'OperateComplex', default, zfunction_global)
-    if(.not.varinfo_valid_option('OperateComplex', zfunction_global)) call messages_input_error('OperateComplex')
+    if(.not.varinfo_valid_option('OperateComplex', zfunction_global)) call message%input_error('OperateComplex')
 
 
     !%Variable OperateSingle
@@ -224,10 +224,10 @@ contains
     !%End
     
     call parse_variable(namespace, 'OperateSingle', OP_FORTRAN, sfunction_global)
-    if(.not.varinfo_valid_option('OperateSingle', sfunction_global)) call messages_input_error('OperateSingle')
+    if(.not.varinfo_valid_option('OperateSingle', sfunction_global)) call message%input_error('OperateSingle')
     
     call parse_variable(namespace, 'OperateComplexSingle', OP_FORTRAN, cfunction_global)
-    if(.not.varinfo_valid_option('OperateComplexSingle', cfunction_global)) call messages_input_error('OperateComplexSingle')
+    if(.not.varinfo_valid_option('OperateComplexSingle', cfunction_global)) call message%input_error('OperateComplexSingle')
 
     if(accel_is_enabled()) then
 
@@ -247,7 +247,7 @@ contains
       !%End
       call parse_variable(namespace, 'OperateAccel',  OP_MAP, function_opencl)
 
-      call messages_obsolete_variable(namespace, 'OperateOpenCL', 'OperateAccel')
+      call message%obsolete_variable(namespace, 'OperateOpenCL', 'OperateAccel')
 
     end if
 
@@ -265,7 +265,7 @@ contains
     call parse_variable(namespace, 'NLOperatorCompactBoundaries', .false., compact_boundaries)
 
     if(compact_boundaries) then
-      call messages_experimental('NLOperatorCompactBoundaries')
+      call message%experimental('NLOperatorCompactBoundaries')
     end if
       
     POP_SUB(nl_operator_global_init)
@@ -373,7 +373,7 @@ contains
     PUSH_SUB(nl_operator_build)
 
     if(mesh%parallel_in_domains .and. .not. const_w) then
-      call messages_experimental('Domain parallelization with curvilinear coordinates')
+      call message%experimental('Domain parallelization with curvilinear coordinates')
     end if
 
     ASSERT(np > 0)
@@ -389,13 +389,13 @@ contains
       SAFE_ALLOCATE(op%w(1:op%stencil%size, 1:1))
       if(debug%info) then
         message%lines(1) = 'Info: nl_operator_build: working with constant weights.'
-        call messages_info(1)
+        call message%info(1)
       end if
     else
       SAFE_ALLOCATE(op%w(1:op%stencil%size, 1:op%np))
       if(debug%info) then
         message%lines(1) = 'Info: nl_operator_build: working with non-constant weights.'
-        call messages_info(1)
+        call message%info(1)
       end if
     end if
 
@@ -708,11 +708,11 @@ contains
       do idir = 1, this%mesh%sb%dim
         write(message%lines(2), '(a,f16.8)') trim(message%lines(2)), this%mesh%spacing(idir)
       end do
-      call messages_info(2)
+      call message%info(2)
       
       do istencil = 1, this%stencil%size
         write(message%lines(1), '(a,i3,3i4,f25.10)') '      ', istencil, this%stencil%points(1:3, istencil), this%w(istencil, 1)
-        call messages_info(1)
+        call message%info(1)
       end do
       
     end if

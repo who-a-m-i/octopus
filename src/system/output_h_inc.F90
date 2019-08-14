@@ -196,7 +196,7 @@
         end do
       else
         message%lines(1) = 'No current density output for real states since it is identically zero.'
-        call messages_warning(1)
+        call message%warning(1)
       end if
     end if
    
@@ -220,7 +220,7 @@
         SAFE_DEALLOCATE_A(current_kpt)
       else
         message%lines(1) = 'No current density output for real states since it is identically zero.'
-        call messages_warning(1)
+        call message%warning(1)
       end if
     end if
 

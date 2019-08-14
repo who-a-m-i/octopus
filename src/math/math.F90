@@ -825,7 +825,7 @@ contains
 
     if (n < 1) then
       message%lines(1) = "Internal error: is_prime does not take negative numbers."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
     if (n == 1) then
       is_prime = .false.
@@ -1016,7 +1016,7 @@ contains
     
     if(abs(h) <= M_EPSILON) then
       message%lines(1) = "h must be nonzero in numder_ridders"
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     SAFE_ALLOCATE(a(1:ntab, 1:ntab))

@@ -169,21 +169,21 @@ contains
     if(order /= 2) then
       write(message%lines(1),'(a)') 'The run mode #3 is only compatible with the analysis of the'
       write(message%lines(2),'(a)') 'second-order response.'
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
   
     ! First, let us check that the file "ot" exists.
     inquire(file="ot", exist  = file_exists)
     if(.not.file_exists) then
       write(message%lines(1),'(a)') "Could not find 'ot' file."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
   
     ! Now, we should find out which units the file "ot" has.
     call unit_system_from_file(units, "ot", namespace, ierr)
     if(ierr /= 0) then
       write(message%lines(1),'(a)') "Could not retrieve units in the 'ot' file."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
   
     mode = COSINE_TRANSFORM
@@ -191,7 +191,7 @@ contains
     iunit = io_open(trim(ffile), namespace, action='read', status='old', die=.false.)
     if(iunit == 0) then
       write(message%lines(1),'(a)') 'Could not open '//trim(ffile)//' file.'
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
   
     call io_skip_header(iunit)
@@ -232,7 +232,7 @@ contains
   
     if(order_in_file /= order) then
       write(message%lines(1), '(a)') 'The ot file should contain the second-order response in this run mode.'
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
   
     if(final_time > M_ZERO) then
@@ -242,7 +242,7 @@ contains
         write(message%lines(1), '(a)')        'The requested total time to process is larger than the time available in the input file.'
         write(message%lines(2), '(a,f8.4,a)') 'The time has been adjusted to ', &
           units_from_atomic(units%time, total_time), units_abbrev(units%time)
-        call messages_warning(2)
+        call message%warning(2)
       end if
       time_steps = int(total_time / dt)
       total_time = time_steps * dt
@@ -305,14 +305,14 @@ contains
     inquire(file="ot", exist  = file_exists)
     if(.not.file_exists) then
       write(message%lines(1),'(a)') "Could not find 'ot' file."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
   
     ! Now, we should find out which units the file "ot" has.
     call unit_system_from_file(units, "ot", namespace, ierr)
     if(ierr /= 0) then
       write(message%lines(1),'(a)') "Could not retrieve units in the 'ot' file."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
   
     if(omega > M_ZERO) then
@@ -334,7 +334,7 @@ contains
   
     if(order_in_file /= order) then
       write(message%lines(1), '(a)') 'Internal error in analyze_signal'
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
   
     if(mod(order, 2) == 1) then
@@ -350,7 +350,7 @@ contains
         write(message%lines(1), '(a)')        'The requested total time to process is larger than the time available in the input file.'
         write(message%lines(2), '(a,f8.4,a)') 'The time has been adjusted to ', &
           units_from_atomic(units%time, total_time), units_abbrev(units%time)
-        call messages_warning(2)
+        call message%warning(2)
       end if
       time_steps = int(total_time / dt)
       total_time = time_steps * dt
@@ -497,7 +497,7 @@ contains
         units_from_atomic(units%energy, leftbound), ',', units_from_atomic(units%energy, rightbound), ']'
       write(message%lines(4), '(a,f12.4,a)')         '   Search discretization = ', &
         units_from_atomic(units%energy, dw), ' '//trim(units_abbrev(units%energy))
-      call messages_fatal(4)
+      call message%fatal(4)
     end if
   
     SAFE_DEALLOCATE_A(warray)
@@ -523,7 +523,7 @@ contains
     case(SINE_TRANSFORM)
       power = power / (M_ONE - sin(M_TWO*omega*total_time)/(M_TWO*omega*total_time))
     case(COSINE_TRANSFORM)
-      call messages_not_implemented("resonance first order cosine transform")
+      call message%not_implemented("resonance first order cosine transform")
     end select
   
     write(message%lines(1), '(a)')                 '******************************************************************'
@@ -542,7 +542,7 @@ contains
                                              ' '//trim(units_abbrev(units_out%energy))
     write(message%lines(10), '(a)')                '******************************************************************'
     write(message%lines(11), '(a)')
-    call messages_info(11)
+    call message%info(11)
   
     POP_SUB(resonance_first_order)
   
@@ -579,11 +579,11 @@ contains
                                              ' '//trim(units_abbrev(units_out%energy))//' = ', omega, ' Ha'
     write(message%lines(4), '(a,f12.8,a,f12.8,a)') 'C(omega) = ', units_from_atomic(units_out%length**3, power), &
                                              ' '//trim(units_abbrev(units_out%length**3))//' = ', power, ' b^3'
-    call messages_info(4)
+    call message%info(4)
 
     if(c01*c02 /= M_ZERO) then
       write(message%lines(1), '(a,f12.8)')         '    C(omega)/(C0i*C0j) = ', power / (c01 * c02)
-      call messages_info(1)
+      call message%info(1)
    end if
   
     write(message%lines(1), '(a)')
@@ -591,7 +591,7 @@ contains
                                              units_from_atomic(units_out%energy, rightbound), ']'
     write(message%lines(3), '(a)')                 '******************************************************************'
     write(message%lines(4), '(a)')
-    call messages_info(4)
+    call message%info(4)
   
     POP_SUB(resonance_second_order)
   end subroutine resonance_second_order
@@ -631,12 +631,12 @@ contains
     ! WARNING: Check that order is smaller or equal to nfiles
     if(nfiles == 0) then
       write(message%lines(1),'(a)') 'No multipoles.x file was found'
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
     if(order > nfiles) then
       write(message%lines(1),'(a)') 'The order that you ask for is higher than the number'
       write(message%lines(2),'(a)') 'of multipoles.x file that you supply.'
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
   
     ! Open the files.
@@ -936,7 +936,7 @@ contains
     iunit = io_open('ot', namespace, action='read', status='old')
     if(iunit == 0) then
       write(message%lines(1),'(a)') 'A file called ot should be present and was not found.'
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
   
     read(iunit, '(15x,i2)') nspin
@@ -961,7 +961,7 @@ contains
     else
       write(message%lines(1),'(a)') 'Problem reading "ot" file: could not figure out the shape'
       write(message%lines(2),'(a)') 'of the observation operator.'
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
   
     call kick_read(kick, iunit)
@@ -973,7 +973,7 @@ contains
     call unit_system_from_file(units, "ot", namespace, ierr)
     if(ierr /= 0) then
       write(message%lines(1), '(a)') 'Could not figure out the units in file "ot".'
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
   
     select case(observable(1))
@@ -1033,14 +1033,14 @@ contains
     inquire(file="ot", exist  = file_exists)
     if(.not.file_exists) then
       write(message%lines(1),'(a)') "Could not find 'ot' file."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
   
     ! Now, we should find out which units the file "ot" has.
     call unit_system_from_file(units, "ot", namespace, ierr)
     if(ierr /= 0) then
       write(message%lines(1),'(a)') "Could not retrieve units in the 'ot' file."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
   
     if(omega > M_ZERO) then
@@ -1076,7 +1076,7 @@ contains
         write(message%lines(1), '(a)')        'The requested total time to process is larger than the time available in the input file.'
         write(message%lines(2), '(a,f8.4,a)') 'The time has been adjusted to ', &
           units_from_atomic(units_out%time, total_time), trim(units_abbrev(units_out%time))
-        call messages_warning(2)
+        call message%warning(2)
       end if
       time_steps = int(total_time / dt)
       total_time = time_steps * dt
@@ -1144,7 +1144,7 @@ program oscillator_strength
   if(ierr /= 0) then
     message%lines(1) = "Your Fortran compiler doesn't support command-line arguments;"
     message%lines(2) = "the oct-oscillator-strength command is not available."
-    call messages_fatal(2)
+    call message%fatal(2)
   end if
 
   ! Set the default values

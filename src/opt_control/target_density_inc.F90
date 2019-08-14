@@ -37,7 +37,7 @@
     PUSH_SUB(target_init_density)
 
     message%lines(1) =  'Info: Target is a combination of a density and/or a current functional.'
-    call messages_info(1)
+    call message%info(1)
 
     tg%move_ions = ion_dynamics_ions_move(td%ions)
     tg%dt = td%dt
@@ -122,8 +122,8 @@
           call parse_block_end(blk)
         else
           message%lines(1) = '"OCTTargetDensityState" has to be specified as block.'
-          call messages_info(1)
-          call messages_input_error('OCTTargetDensity')
+          call message%info(1)
+          call message%input_error('OCTTargetDensity')
         end if
 
       else
@@ -237,20 +237,20 @@
     call parse_variable(namespace, 'OCTCurrentWeight', M_ZERO, tg%curr_weight)
     write(message%lines(1), '(a,i3)')   'Info: OCTCurrentFunctional = ', tg%curr_functional
     write(message%lines(2), '(a,f8.3)') 'Info: OCTCurrentWeight = ',  tg%curr_weight
-    call messages_info(2)
+    call message%info(2)
 
     if (target_mode(tg)  ==  oct_targetmode_td) then
       call parse_variable(namespace, 'OCTStartIterCurrTg', 0, tg%strt_iter_curr_tg)
       if (tg%strt_iter_curr_tg  <  0) then
         message%lines(1) = 'OCTStartIterCurrTg must be positive.'
-        call messages_fatal(1)
+        call message%fatal(1)
       elseif (tg%strt_iter_curr_tg >= td%max_iter) then
         message%lines(1) = 'OCTStartIterCurrTg has to be  <  TDMaximumIter.'
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
       write(message%lines(1), '(a,i3)')   'Info: TargetMode = ', target_mode(tg)
       write(message%lines(2), '(a,i8)') 'Info: OCTStartIterCurrTg = ',  tg%strt_iter_curr_tg
-      call messages_info(2)
+      call message%info(2)
       tg%dt = td%dt
       SAFE_ALLOCATE(tg%td_fitness(0:td%max_iter))
       tg%td_fitness = M_ZERO
@@ -273,7 +273,7 @@
             write(message%lines(1), '(a,i3)') 'Error in "OCTSpatialCurrWeight" block, line:', ib
             write(message%lines(2), '(a)'   ) '"dimension" has to be positive'
             write(message%lines(3), '(a)'   ) 'and must not exceed dimensions of the system.'
-            call messages_fatal(3)
+            call message%fatal(3)
           end if
           cstr_dim(idim) = 1
           xp(1:gr%mesh%np_part) = gr%mesh%x(1:gr%mesh%np_part, idim)
@@ -284,7 +284,7 @@
           if (mod(no_ptpair,2) /= 0) then
             write(message%lines(1), '(a,i3)') 'Error in "OCTSpatialCurrWeight" block, line:', ib
             write(message%lines(2), '(a)'   ) 'Each interval needs start and end point!'
-            call messages_fatal(2)
+            call message%fatal(2)
           end if
               
           do jj= 2, no_ptpair, 2
@@ -294,7 +294,7 @@
             if (xstart >= xend) then
               write(message%lines(1), '(a,i3)') 'Error in "OCTSpatialCurrWeight" block, line:', ib
               write(message%lines(2), '(a)'   ) 'Set "startpoint"  <  "endpoint" ' 
-              call messages_fatal(2)
+              call message%fatal(2)
             end if
 
             do ip = 1, gr%mesh%np_part
@@ -315,8 +315,8 @@
         call parse_block_end(blk)     
       else
         message%lines(1) = '"OCTSpatialCurrWeight" has to be specified as a block.'
-        call messages_info(1)
-        call messages_input_error('OCTEvalBoxCurrTg')
+        call message%info(1)
+        call message%input_error('OCTEvalBoxCurrTg')
       end if
     end if
 
@@ -401,7 +401,7 @@
       if(conf%devel_version) then
         write(message%lines(1), '(6x,a,f12.5)')    " => Other functional   = ", j1
         write(message%lines(2), '(6x,a,f12.5)')    " => Current functional = ", currfunc_tmp
-        call messages_info(2)
+        call message%info(2)
       end if
       ! accumulating functional values
       j1 = j1 + currfunc_tmp
@@ -470,10 +470,10 @@
 
     case(SPIN_POLARIZED)
        message%lines(1) = 'Error in target.target_chi_density: spin_polarized.'
-       call messages_fatal(1)
+       call message%fatal(1)
     case(SPINORS)
        message%lines(1) = 'Error in target.target_chi_density: spinors.'
-       call messages_fatal(1)
+       call message%fatal(1)
     end select
 
     end if
@@ -541,7 +541,7 @@
       call states_elec_calc_quantities(gr%der, psi, .false., paramagnetic_current=psi%current) 
 
       if(gr%sb%dim /= M_TWO) then
-        call messages_not_implemented('Target for dimension != 2')
+        call message%not_implemented('Target for dimension != 2')
       end if
 
       do ip = 1, gr%mesh%np
@@ -551,7 +551,7 @@
       end do
     case default
       message%lines(1) = 'Error in target.jcurr_functional: chosen target does not exist'
-      call messages_fatal(1)
+      call message%fatal(1)
     end select
 
  
@@ -674,7 +674,7 @@
       
     case default
       message%lines(1) = 'Error in target.chi_current: chosen target does not exist'
-      call messages_fatal(1)
+      call message%fatal(1)
     end select  
 
     SAFE_DEALLOCATE_A(grad_psi_in)       

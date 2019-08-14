@@ -164,7 +164,7 @@ contains
 
     if(cv%xbar<M_ZERO.or.cv%xbar>M_ONE) then
       message%lines(1) = 'The parameter "CurvModineXBar" must lie between 0 and 1.'
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     SAFE_ALLOCATE(cv%Jlocal(1:geo%natoms))
@@ -194,7 +194,7 @@ contains
 
     if(cv%Jlocal(1)<M_ZERO.or.cv%Jlocal(1)>M_ONE) then
       message%lines(1) = 'The parameter "CurvModineJlocal" must lie between 0 and 1.'
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     cv%Jlocal(:) = cv%Jlocal(1)
@@ -268,7 +268,7 @@ contains
       if(.not.conv) then
         message%lines(1) = "During the construction of the adaptive grid, the Newton-Raphson"
         message%lines(2) = "method did not converge."
-        call messages_fatal(2)
+        call message%fatal(2)
       end if
 
       ! Now set csi to the new values
@@ -482,7 +482,7 @@ contains
       message%lines(1) = "During the construction of the adaptive grid, the Newton-Raphson"
       message%lines(2) = "method did not converge for point:"
       write(message%lines(3),'(3f14.6)') xx(1:sb%dim)
-      call messages_fatal(3)
+      call message%fatal(3)
     end if
 
     POP_SUB(curv_modine_x2chi)

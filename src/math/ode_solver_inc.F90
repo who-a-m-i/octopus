@@ -54,7 +54,7 @@ subroutine X(ode_solver_run)(os, func, startval, solutionp, solutionvec)
     write(message%lines(1), '(a,i4,a)') "Input: '", os%solver_type, &
       "' is not a valid ODE solver"
     message%lines(2) = '( ODE solver =  ode_rk4 | ode_fb7 | ode_vr8 | ode_pd8 )'
-    call messages_fatal(2)
+    call message%fatal(2)
   end select
 
   ! start stepping

@@ -148,11 +148,11 @@ contains
     !% real numbers. No extra operations are needed during matrix vector multiplication.
     !%End
     call parse_variable(namespace, 'NFFTPrecompute', NFFT_PRE_PSI, nfft%precompute)
-     if(.not.varinfo_valid_option('NFFTPrecompute', nfft%precompute)) call messages_input_error('NFFTPrecompute')
-!    call messages_print_var_option(stdout, "NFFTPrecompute", nfft%precompute)
+     if(.not.varinfo_valid_option('NFFTPrecompute', nfft%precompute)) call message%input_error('NFFTPrecompute')
+!    call message%print_var_option(stdout, "NFFTPrecompute", nfft%precompute)
 
 !     if(.not.varinfo_valid_option('NFFTPrecompute', nfft%precompute, is_flag=.true.)) then
-!       call messages_input_error('NFFTPrecompute')
+!       call message%input_error('NFFTPrecompute')
 !     end if
 
 
@@ -236,54 +236,54 @@ contains
 
     PUSH_SUB(nfft_write_info)
 
-    call messages_write("Info: NFFT parameters")
-    call messages_new_line()
-    call messages_write("      Fourier coefficients      N = ")
+    call message%write("Info: NFFT parameters")
+    call message%new_line()
+    call message%write("      Fourier coefficients      N = ")
     do idir = 1,  nfft%dim
-      call messages_write(nfft%N(idir))
-      if(idir < nfft%dim) call messages_write(" x ")
+      call message%write(nfft%N(idir))
+      if(idir < nfft%dim) call message%write(" x ")
     end do
-    call messages_new_line()
+    call message%new_line()
 
-    call messages_write("      Spatial nodes             M = ")
+    call message%write("      Spatial nodes             M = ")
 
 !     mm = nfft%M(1)*nfft%M(2)*nfft%M(3)
 !
-!     call messages_write(mm)
-!     call messages_new_line()
+!     call message%write(mm)
+!     call message%new_line()
     do idir = 1,  nfft%dim
-      call messages_write(nfft%M(idir))
-      if(idir < nfft%dim) call messages_write(" x ")
+      call message%write(nfft%M(idir))
+      if(idir < nfft%dim) call message%write(" x ")
     end do
-    call messages_new_line()
+    call message%new_line()
 
 
-    call messages_write("      Oversampling factor   sigma = ")
-    call messages_write(nfft%sigma)
-    call messages_new_line()
+    call message%write("      Oversampling factor   sigma = ")
+    call message%write(nfft%sigma)
+    call message%new_line()
 
-    call messages_write("      FFT grid size             n = ")
+    call message%write("      FFT grid size             n = ")
     do idir = 1,  nfft%dim
-      call messages_write(nfft%fftN(idir))
-      if(idir < nfft%dim) call messages_write(" x ")
+      call message%write(nfft%fftN(idir))
+      if(idir < nfft%dim) call message%write(" x ")
     end do
-    call messages_new_line()
+    call message%new_line()
 
-    call messages_write("      Real space cutoff         m = ")
-    call messages_write(nfft%mm)
-    call messages_new_line()
+    call message%write("      Real space cutoff         m = ")
+    call message%write(nfft%mm)
+    call message%new_line()
 
-    call messages_write("      Pre-computation strategy    = ")
+    call message%write("      Pre-computation strategy    = ")
     select case(nfft%precompute)
     case(nfft_PRE_LIN_PSI)
-      call messages_write(" NFFT_PRE_LIN_PSI")
+      call message%write(" NFFT_PRE_LIN_PSI")
     case(nfft_PRE_PSI)
-      call messages_write(" NFFT_PRE_PSI")
+      call message%write(" NFFT_PRE_PSI")
     case(nfft_PRE_FULL_PSI)
-      call messages_write(" NFFT_PRE_FULL_PSI")
+      call message%write(" NFFT_PRE_FULL_PSI")
     end select
 
-    call messages_info()
+    call message%info()
 
 
     POP_SUB(nfft_write_info)
@@ -416,7 +416,7 @@ contains
 
 
     write(message%lines(1), '(a)') "Info: NFFT plan precomputed."
-    call messages_info(1)
+    call message%info(1)
 
 
     POP_SUB(nfft_precompute)

@@ -115,11 +115,11 @@
         write(message%lines(1), '(70(''#''))')
         write(message%lines(2), *) &
           'GRADIENT (FORWARD-BACKWARD) |         GRADIENT (NUMERICAL)          |'
-        call messages_info(2)
+        call message%info(2)
         do j = 1, n
           write(message%lines(1), '(4x,es18.8,7x,a,3x,es18.8,a4,es8.1,6x,a)') &
             df(j), '|', dfn(j), ' +/-', abserr(j), '|'
-          call messages_info(1)
+          call message%info(1)
         end do
         write(message%lines(1), '(70(''-''))')
         write(message%lines(2), '(a,es18.8,''                                        |'')') 'ABS DIFF = ', &
@@ -127,7 +127,7 @@
         write(message%lines(3), '(a,es18.8,''                                        |'')') 'REL DIFF = ', &
           sqrt(dot_product(df-dfn,df-dfn))/sqrt(dot_product(dfn, dfn))
         write(message%lines(4), '(70(''#''))')
-        call messages_info(4)
+        call message%info(4)
 
         SAFE_DEALLOCATE_A(dfn)
         SAFE_DEALLOCATE_A(x_)
@@ -170,15 +170,15 @@
     j1 = j - j2
 
     write(message%lines(1), '(a,i5)') 'CG optimization iteration #', iter
-    call messages_print_stress(stdout, trim(message%lines(1)))
+    call message%print_stress(stdout, trim(message%lines(1)))
 
     write(message%lines(1), '(6x,a,f12.5)')    " => J1       = ", j1
     write(message%lines(2), '(6x,a,f12.5)')    " => J        = ", j
     write(message%lines(3), '(6x,a,f12.5)')    " => J2       = ", j2
     write(message%lines(4), '(6x,a,f12.5)')    " => Fluence  = ", fluence
     write(message%lines(5), '(6x,a,f12.5)')    " => Delta    = ", maxdx
-    call messages_info(5)
-    call messages_print_stress(stdout)
+    call message%info(5)
+    call message%print_stress(stdout)
 
     call iteration_manager_main(iterator, j, j1, j2, real(maxdx, REAL_PRECISION))
 
@@ -251,15 +251,15 @@
     j1 = j - j2
 
     write(message%lines(1), '(a,i5)') 'Direct optimization iteration #', iter
-    call messages_print_stress(stdout, trim(message%lines(1)))
+    call message%print_stress(stdout, trim(message%lines(1)))
 
     write(message%lines(1), '(6x,a,f12.5)')    " => J1       = ", j1
     write(message%lines(2), '(6x,a,f12.5)')    " => J        = ", j
     write(message%lines(3), '(6x,a,f12.5)')    " => J2       = ", j2
     write(message%lines(4), '(6x,a,f12.5)')    " => Fluence  = ", fluence
     write(message%lines(5), '(6x,a,f12.5)')    " => Delta    = ", maxdx
-    call messages_info(5)
-    call messages_print_stress(stdout)
+    call message%info(5)
+    call message%print_stress(stdout)
 
     call iteration_manager_main(iterator, j, j1, j2, real(maxdx, REAL_PRECISION))
 

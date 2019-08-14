@@ -836,7 +836,7 @@ subroutine X(batch_get_points)(this, sp, ep, psi)
     end if
 
   case(BATCH_DEVICE_PACKED)
-    call messages_not_implemented('batch_get_points for CL packed batches')
+    call message%not_implemented('batch_get_points for CL packed batches')
   end select
 
   call profiling_out(get_points_prof)
@@ -913,7 +913,7 @@ subroutine X(batch_set_points)(this, sp, ep, psi)
     end if
 
   case(BATCH_DEVICE_PACKED)
-    call messages_not_implemented('batch_set_points for CL packed batches')
+    call message%not_implemented('batch_set_points for CL packed batches')
   end select
 
   call profiling_out(set_points_prof)
@@ -972,7 +972,7 @@ subroutine X(batch_mul)(np, ff,  xx, yy)
 
     call accel_release_buffer(ff_buffer)
 #else
-    call messages_not_implemented("OpenCL batch_mul")
+    call message%not_implemented("OpenCL batch_mul")
 #endif
 
   case(BATCH_PACKED)

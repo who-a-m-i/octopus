@@ -80,7 +80,7 @@ contains
     PUSH_SUB(poisson_corrections_init)
 
     if(simul_box_is_periodic(mesh%sb)) &
-      call messages_not_implemented("Poisson boundary corrections for periodic systems")
+      call message%not_implemented("Poisson boundary corrections for periodic systems")
 
     !%Variable PoissonSolverBoundaries
     !%Type integer
@@ -144,8 +144,8 @@ contains
       end do
 
     case(CORR_EXACT)
-      call messages_experimental('Exact Poisson solver boundaries')
-      if(mesh%parallel_in_domains) call messages_not_implemented('Exact Poisson solver boundaries with domain parallelization')
+      call message%experimental('Exact Poisson solver boundaries')
+      if(mesh%parallel_in_domains) call message%not_implemented('Exact Poisson solver boundaries with domain parallelization')
 
     end select
 

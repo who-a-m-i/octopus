@@ -252,7 +252,7 @@ subroutine X(eigensolver_cg2) (gr, st, hm, psolver, xc, pre, tol, niter, converg
         if(debug%info) then
           write(message%lines(1), '(a,i4,a,i4,a,i4,a,es13.6,a,i4)') 'Debug: CG Eigensolver - ik', ik, &
                ' ist ', ist, ' iter ', iter, ' res ', res, " max ", maxter
-          call messages_info(1)
+          call message%info(1)
         end if
         exit
       end if
@@ -271,7 +271,7 @@ subroutine X(eigensolver_cg2) (gr, st, hm, psolver, xc, pre, tol, niter, converg
         case (OPTION__CGDIRECTION__POLAK)
           gamma = (gg - gg1)/gg0   ! (Polack-Ribiere)
         case default
-          call messages_input_error('Conjugate Direction')
+          call message%input_error('Conjugate Direction')
         end select
         ! save for next iteration
         gg0 = gg
@@ -414,7 +414,7 @@ subroutine X(eigensolver_cg2) (gr, st, hm, psolver, xc, pre, tol, niter, converg
         write(message%lines(1), '(a,i4,a,i4,a,i4,a,es12.5,a,es12.5,a,i4)') 'Debug: CG Eigensolver - ik', ik, ' ist ', ist, &
              ' iter ', iter, ' deltae ', abs(st%eigenval(ist, ik) - old_energy), ' ', &
              abs(st%eigenval(ist, ik) - old_energy)/first_delta_e, " max ", maxter
-        call messages_info(1)
+        call message%info(1)
       end if
 
       if(iter > 1) then
@@ -573,7 +573,7 @@ subroutine X(eigensolver_cg2_new) (gr, st, hm, psolver, tol, niter, converged, i
         norm = X(mf_nrm2)(gr%mesh, dim, phi)
         write(message%lines(1), '(a,i4,a,i4,a,i4,a,es13.6,a,es13.6)') 'Debug: CG New Eigensolver - ik', ik, &
           ' ist ', ist, ' iter ', i + 1, ' res ', res, ' ', res/norm
-        call messages_info(1)
+        call message%info(1)
       end if
 
       if(present(diff)) diff(ist) = res

@@ -33,7 +33,7 @@
 
     message%lines(1) =  'Info: The target functional is the exclusion of a number of states defined by'
     message%lines(2) =  '      "OCTExcludedStates".'
-    call messages_info(2)
+    call message%info(2)
     !%Variable OCTExcludedStates
     !%Type string
     !%Section Calculation Modes::Optimal Control

@@ -68,16 +68,16 @@ program oct_convert
   call parser_init()
   default_namespace = namespace_t("")
   
-  call messages_init(default_namespace)
+  call message%init(default_namespace)
 
   call io_init(default_namespace)
   call profiling_init(default_namespace)
-  call messages_experimental("oct-convert utility")
+  call message%experimental("oct-convert utility")
 
   call print_header()
 
-  call messages_print_stress(stdout, "Convert mode")
-  call messages_print_stress(stdout)
+  call message%print_stress(stdout, "Convert mode")
+  call message%print_stress(stdout)
 
   call restart_module_init(default_namespace)
   call fft_all_init(default_namespace)
@@ -89,7 +89,7 @@ program oct_convert
   call profiling_end(default_namespace)
   call io_end()
   call print_date("Calculation ended on ")
-  call messages_end()
+  call message%end()
 
   call parser_end()
 
@@ -117,7 +117,7 @@ contains
 
     message%lines(1) = 'Info: Converting files'
     message%lines(2) = ''
-    call messages_info(2)
+    call message%info(2)
 
     !%Variable ConvertFilename
     !%Type string
@@ -304,7 +304,7 @@ contains
    
     write(message%lines(1),'(5a,i5,a,i5,a,i5)') "Converting '", trim(in_folder), "/", trim(basename), &
          "' from ", c_start, " to ", c_end, " every ", c_step
-    call messages_info(1)
+    call message%info(1)
  
     if (subtract_file) then
       write(message%lines(1),'(a,a,a,a)') "Reading ref-file from ", trim(ref_folder), trim(ref_name),".obf"
@@ -317,7 +317,7 @@ contains
       else
         write(message%lines(1),'(2a)') "Failed to read from ref-file ", trim(ref_name)
         write(message%lines(2), '(2a)') "from folder ", trim(ref_folder)
-        call messages_fatal(2)
+        call message%fatal(2)
       end if
     end if
 
@@ -367,7 +367,7 @@ contains
         write(message%lines(1), '(a,a)') "Error reading the file ", filename
         write(message%lines(2), '(a,i4)') "Error code: ",ierr
         write(message%lines(3), '(a)') "Skipping...."
-        call messages_warning(3)
+        call message%warning(3)
         cycle
       end if
       if (subtract_file) then
@@ -450,12 +450,12 @@ contains
     if (dt <= M_ZERO) then
       write(message%lines(1),'(a)') 'Input: TDTimeStep must be positive.'
       write(message%lines(2),'(a)') 'Input: TDTimeStep reset to 0. Check input file'
-      call messages_info(2)
+      call message%info(2)
     end if
 
     call io_mkdir('wd.general', namespace)
     wd_info = io_open('wd.general/wd.info', default_namespace, action='write')
-    call messages_print_stress(wd_info, "Fourier Transform Options")
+    call message%print_stress(wd_info, "Fourier Transform Options")
 
     !%Variable ConvertEnergyMin
     !%Type float
@@ -465,7 +465,7 @@ contains
     !% Minimum energy to output from Fourier transform.
     !%End
     call parse_variable(namespace, 'ConvertEnergyMin', M_ZERO, min_energy, units_inp%energy)
-    call messages_print_var_value(wd_info, 'ConvertEnergyMin', min_energy, unit = units_out%energy)
+    call message%print_var_value(wd_info, 'ConvertEnergyMin', min_energy, unit = units_out%energy)
 
     !%Variable ConvertReadSize
     !%Type integer
@@ -477,14 +477,14 @@ contains
     !% of 100-1000 will speed-up the execution time by this factor.
     !%End
     call parse_variable(namespace, 'ConvertReadSize', mesh%np, chunk_size)
-    call messages_print_var_value(wd_info, 'ConvertReadSize', chunk_size)
+    call message%print_var_value(wd_info, 'ConvertReadSize', chunk_size)
     !Check that default value is set when ConvertReadSize = 0
     if ( chunk_size == 0) chunk_size = mesh%np
     ! Parallel version just work in domains and chunk_size equal to mesh%np 
     if(mesh%mpi_grp%size > 1 .and. chunk_size /= mesh%np) then
       write(message%lines(1),*)'Incompatible value for ConvertReadSize and Parallelizaion in Domains'
       write(message%lines(2),*)'Use the default value for ConvertReadSize (or set it to 0)'
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
     
     ! Calculate the limits in frequency space.
@@ -509,10 +509,10 @@ contains
       write(message%lines(2),'(a)')'ConvertEnergyMax is too large.'
       write(message%lines(3),'(a,f12.7,a)')'ConvertEnergyMax reset to ', &
            units_from_atomic(units_inp%energy, w_max),'[' // trim(units_abbrev(units_out%energy)) // ']'
-      call messages_info(3)
+      call message%info(3)
       max_energy = w_max
     end if
-    call messages_print_var_value(wd_info, 'ConvertEnergyMax', max_energy, unit = units_out%energy)
+    call message%print_var_value(wd_info, 'ConvertEnergyMax', max_energy, unit = units_out%energy)
 
     !%Variable ConvertFTMethod
     !%Type integer
@@ -528,7 +528,7 @@ contains
     !% a time-propagation calculation. 
     !%End
     call parse_variable(namespace, 'ConvertFTMethod', 1, ft_method)
-    call messages_print_var_option(wd_info, 'ConvertFTMethod', ft_method)
+    call message%print_var_option(wd_info, 'ConvertFTMethod', ft_method)
 
     !TODO: check if e_point can be used instead of e_point+1
     SAFE_ALLOCATE(read_ft(0:time_steps))
@@ -567,7 +567,7 @@ contains
         SAFE_ALLOCATE(tdrho_a(0:time_steps, 1, 1))
         SAFE_ALLOCATE(wdrho_a(0:time_steps, 1, 1))
     end select
-    call messages_print_var_value(wd_info, 'ConvertEnergyStep', dw, unit = units_out%energy)
+    call message%print_var_value(wd_info, 'ConvertEnergyStep', dw, unit = units_out%energy)
 
     !TODO: set system variable common for all the program in 
     !      order to use call kick_init(kick, sy%st%d%nspin, sys%space%dim, sys%geo%periodic_dim)
@@ -579,11 +579,11 @@ contains
          units_from_atomic(units_out%energy, e_start * dw),')-',e_end,'(',units_from_atomic(units_out%energy, e_end * dw),')' 
     write(message%lines(2),'(a,f12.7,a)')'Frequency Step, dw:  ', units_from_atomic(units_out%energy, dw), &
          '[' // trim(units_abbrev(units_out%energy)) // ']'
-    call messages_info(2)
+    call message%info(2)
 
     if (subtract_file) then
       write(message%lines(1),'(a,a,a,a)') "Reading ref-file from ", trim(ref_folder), trim(ref_name),".obf"
-      call messages_info(1)
+      call message%info(1)
       call restart_init(restart, namespace, RESTART_UNDEFINED, RESTART_TYPE_LOAD, mc, ierr, &
                         dir=trim(ref_folder), mesh = mesh)
       ! FIXME: why only real functions? Please generalize.
@@ -593,18 +593,18 @@ contains
       else
         write(message%lines(1),'(2a)') "Failed to read from ref-file ", trim(ref_name)
         write(message%lines(2), '(2a)') "from folder ", trim(ref_folder)
-        call messages_fatal(2)
+        call message%fatal(2)
       end if
     end if
     
-    call messages_print_stress(wd_info, "File Information")
+    call message%print_stress(wd_info, "File Information")
     do i_energy = e_start, e_end
       write(filename,'(a14,i0.7,a1)')'wd.general/wd.',i_energy,'/'
       write(message%lines(1),'(a,a,f12.7,a,1x,i7,a)')trim(filename),' w =', &
            units_from_atomic(units_out%energy,(i_energy) * dw), & 
            '[' // trim(units_abbrev(units_out%energy)) // ']'
       if (mpi_world%rank == 0) write(wd_info,'(a)') message%lines(1)
-      call messages_info(1)
+      call message%info(1)
       call io_mkdir(trim(filename), namespace)
     end do
     call io_close(wd_info)
@@ -653,7 +653,7 @@ contains
           write(message%lines(1), '(a,a,2i10)') "Error reading the file ", trim(filename), i_space, i_time
           write(message%lines(2), '(a)') "Skipping...."
           write(message%lines(3), '(a,i0)') "Error :", ierr
-          call messages_warning(3)
+          call message%warning(3)
           cycle
         end if
 
@@ -699,7 +699,7 @@ contains
         if (mod(i_space, chunk_size) == 0) then
           write(message%lines(1),'(a)') ""
           write(message%lines(2),'(a,i0)') "Writing binary output: step ", i_space/chunk_size
-          call messages_info(2)
+          call message%info(2)
           do i_energy = e_start, e_end
             write(filename,'(a14,i0.7,a12)')'wd.general/wd.',i_energy,'/density.obf'
             ! If it is the first time entering here, write the header. But, only once
@@ -794,7 +794,7 @@ contains
 
     if (n_operations == 0) then
       write(message%lines(1),'(a)')'No operations found. Check the input file'
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     !%Variable ConvertOutputFolder
@@ -846,7 +846,7 @@ contains
       else
         write(message%lines(1),'(2a)') "Failed to read from file ", trim(filename)
         write(message%lines(2), '(2a)') "from folder ", trim(folder)
-        call messages_fatal(2)
+        call message%fatal(2)
       end if
       !read scalar expression
       call parse_block_string(blk, i_op-1, 3, scalar_expression)

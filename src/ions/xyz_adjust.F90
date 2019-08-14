@@ -75,7 +75,7 @@ contains
       to = to / sqrt(sum(to(1:geo%space%dim)**2))
 
       write(message%lines(1),'(a,6f15.6)') 'Using main axis ', to(1:geo%space%dim)
-      call messages_info(1)
+      call message%info(1)
 
       !%Variable MainAxis
       !%Type block
@@ -113,10 +113,10 @@ contains
         default = NONE
       end if
       call parse_variable(namespace, 'AxisType', default, axis_type)
-      call messages_print_var_option(stdout, "AxisType", axis_type)
+      call message%print_var_option(stdout, "AxisType", axis_type)
 
       if(geo%space%dim /= 3 .and. axis_type /= NONE) then
-        call messages_not_implemented("alignment to axes (AxisType /= none) in other than 3 dimensions")
+        call message%not_implemented("alignment to axes (AxisType /= none) in other than 3 dimensions")
       end if
 
       select case(axis_type)
@@ -125,7 +125,7 @@ contains
 
         write(message%lines(1),'(3a,99f15.6)') 'Center of mass [', trim(units_abbrev(units_out%length)), '] = ', &
           (units_from_atomic(units_out%length, center(idir)), idir = 1, geo%space%dim)
-        call messages_info(1)
+        call message%info(1)
 
         call translate(geo, center)
         call axis_inertia(geo, x1, x2, pseudo = (axis_type==PSEUDO))
@@ -134,18 +134,18 @@ contains
 
         write(message%lines(1),'(3a,99f15.6)') 'Center [', trim(units_abbrev(units_out%length)), '] = ', &
           (units_from_atomic(units_out%length, center(idir)), idir = 1, geo%space%dim)
-        call messages_info(1)
+        call message%info(1)
 
         call translate(geo, center)
         call axis_large(geo, x1, x2)
       case default
         write(message%lines(1), '(a,i2,a)') 'AxisType = ', axis_type, ' not known by Octopus.'
-        call messages_fatal(1)
+        call message%fatal(1)
       end select
 
       write(message%lines(1),'(a,99f15.6)') 'Found primary   axis ', x1(1:geo%space%dim)
       write(message%lines(2),'(a,99f15.6)') 'Found secondary axis ', x2(1:geo%space%dim)
-      call messages_info(2)
+      call message%info(2)
 
       if(axis_type /= NONE) call geometry_rotate(geo, x1, x2, to)
 
@@ -283,14 +283,14 @@ contains
     else
       write(message%lines(1),'(a)') 'Moment of inertia tensor [amu*' // trim(units_abbrev(unit)) // ']'
     end if
-    call messages_info(1)
+    call message%info(1)
     call output_tensor(stdout, tinertia, geo%space%dim, unit, write_average = .true.)
 
     call lalg_eigensolve(geo%space%dim, tinertia, eigenvalues)
 
     write(message%lines(1),'(a,6f25.6)') 'Eigenvalues: ', &
       (units_from_atomic(unit, eigenvalues(jj)), jj = 1, geo%space%dim)
-    call messages_info(1)
+    call message%info(1)
 
     ! make a choice to fix the sign of the axis.
     do ii = 1, 2
@@ -339,7 +339,7 @@ contains
     PUSH_SUB(geometry_rotate)
 
     if(geo%space%dim /= 3) &
-      call messages_not_implemented("geometry_rotate in other than 3 dimensions")
+      call message%not_implemented("geometry_rotate in other than 3 dimensions")
 
     ! initialize matrices
     m1 = M_ZERO

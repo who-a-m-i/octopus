@@ -113,8 +113,8 @@ contains
       this%method = SMEAR_FIXED_OCC
     else
       call parse_variable(namespace, 'SmearingFunction', SMEAR_SEMICONDUCTOR, this%method)
-      if(.not. varinfo_valid_option('SmearingFunction', this%method)) call messages_input_error('SmearingFunction')
-      call messages_print_var_option(stdout, 'SmearingFunction', this%method)
+      if(.not. varinfo_valid_option('SmearingFunction', this%method)) call message%input_error('SmearingFunction')
+      call message%print_var_option(stdout, 'SmearingFunction', this%method)
     end if
 
     !%Variable Smearing
@@ -131,7 +131,7 @@ contains
       call parse_variable(namespace, 'Smearing', CNST(0.1) / (M_TWO * P_Ry), this%dsmear, units_inp%energy)
     end if
 
-    call messages_obsolete_variable(namespace, 'ElectronicTemperature', 'Smearing')
+    call message%obsolete_variable(namespace, 'ElectronicTemperature', 'Smearing')
 
     this%el_per_state = 1
     if(ispin == 1) & ! unpolarized
@@ -149,7 +149,7 @@ contains
       if(this%nik_factor == 0) then
         message%lines(1) = "k-point weights in KPoints or KPointsReduced blocks "//&
           "must be rational numbers for semiconducting smearing."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
     end if
 
@@ -212,7 +212,7 @@ contains
       message%lines(1) = 'Not enough states'
       write(message%lines(2),'(6x,a,f12.6,a,i10)')'(total charge = ', qtot, &
         ' max charge = ', maxq
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
 
     conv = .true.
@@ -305,7 +305,7 @@ contains
 
       if(.not.conv) then
         message%lines(1) = 'Fermi: did not converge.'
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
 
     end if
@@ -425,7 +425,7 @@ contains
     select case(this%method)
     case(SMEAR_FIXED_OCC)
       message%lines(1) = "smear_delta_function is not defined for SMEAR_FIXED_OCC."
-      call messages_fatal(1)
+      call message%fatal(1)
 
     case(SMEAR_SEMICONDUCTOR)
       if(abs(xx) <= M_EPSILON) &
@@ -484,7 +484,7 @@ contains
     select case(this%method)
     case(SMEAR_FIXED_OCC)
       message%lines(1) = "smear_step_function is not defined for SMEAR_FIXED_OCC."
-      call messages_fatal(1)
+      call message%fatal(1)
 
     case(SMEAR_SEMICONDUCTOR)
       if(xx > M_ZERO) then
@@ -557,7 +557,7 @@ contains
     select case(this%method)
     case(SMEAR_FIXED_OCC)
       message%lines(1) = "smear_entropy_function is not defined for SMEAR_FIXED_OCC."
-      call messages_fatal(1)
+      call message%fatal(1)
 
     case(SMEAR_SEMICONDUCTOR)
 

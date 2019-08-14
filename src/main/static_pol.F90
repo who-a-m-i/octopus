@@ -85,18 +85,18 @@ contains
     if(ierr == 0) call states_elec_load(gs_restart, sys%namespace, sys%st, sys%gr, ierr)
     if (ierr /= 0) then
       message%lines(1) = "Unable to read wavefunctions."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
     call restart_end(gs_restart)
 
     if(simul_box_is_periodic(sys%gr%sb)) then
       message%lines(1) = "Electric field cannot be applied to a periodic system (currently)."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     ! set up Hamiltonian
     message%lines(1) = 'Info: Setting up Hamiltonian.'
-    call messages_info(1)
+    call message%info(1)
     call system_h_setup (sys, calc_eigenval = .false.) ! we read them from restart
 
     ! Allocate the dipole
@@ -143,7 +143,7 @@ contains
       ! if saved dipoles used a different e_field, we cannot use them
       if(field_written .and. abs(e_field_saved - e_field) > CNST(1e-15)) then
         message%lines(1) = "Saved dipoles are from a different electric field, cannot use them."
-        call messages_warning(1)
+        call message%warning(1)
         center_written = .false.
         diagonal_done = .false.
         i_start = 1
@@ -153,7 +153,7 @@ contains
       if(center_written) read_count = read_count + 1
       if(diagonal_done)  read_count = read_count + 1
       write(message%lines(1),'(a,i1,a)') "Using ", read_count, " dipole(s) from file."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     if(bitand(sys%outp%what, OPTION__OUTPUT__DENSITY) /= 0 .or. &
@@ -172,7 +172,7 @@ contains
       call restart_write(restart_dump, iunit, line, 1, ierr)
       if (ierr /= 0) then
         message%lines(1) = "Unsuccessful write of electric field."
-        call messages_warning(1)
+        call message%warning(1)
       end if
       call restart_close(restart_dump, iunit)
       center_written = .false.
@@ -200,7 +200,7 @@ contains
 
     write(message%lines(1), '(a)')
     write(message%lines(2), '(a)') 'Info: Calculating dipole moment for zero field.'
-    call messages_info(2)
+    call message%info(2)
     call scf_run(scfv, sys%namespace, sys%mc, sys%gr, sys%geo, sys%st, sys%ks, sys%hm, sys%psolver, sys%outp, &
       gs_run=.false., verbosity = verbosity)
 
@@ -222,7 +222,7 @@ contains
       call restart_write(restart_dump, iunit, line, 1, ierr)
       if (ierr /= 0) then
         message%lines(1) = "Unsuccessful write of center dipole."
-        call messages_warning(1)
+        call message%warning(1)
       end if
       call restart_close(restart_dump, iunit)
     end if
@@ -239,7 +239,7 @@ contains
         write(message%lines(2), '(a,f6.4,5a)') 'Info: Calculating dipole moment for field ', &
           units_from_atomic(units_out%force, (-1)**isign * e_field), ' ', &
           trim(units_abbrev(units_out%force)), ' in the ', index2axis(ii), '-direction.'
-        call messages_info(2)
+        call message%info(2)
         ! there would be an extra factor of -1 in here that is for the electronic charge
         ! except that we treat electrons as positive
 
@@ -299,7 +299,7 @@ contains
           call restart_close_dir(restart_dump)
           if(ierr /= 0) then
             message%lines(1) = 'Unable to write states wavefunctions.'
-            call messages_warning(1)
+            call message%warning(1)
           end if
         end if
       end do
@@ -310,7 +310,7 @@ contains
       call restart_write(restart_dump, iunit, line, 1, ierr)
       if (ierr /= 0) then
         message%lines(1) = "Unsuccessful write of dipole."
-        call messages_warning(1)
+        call message%warning(1)
       end if
       call restart_close(restart_dump, iunit)
     end do
@@ -322,7 +322,7 @@ contains
          trim(units_abbrev(units_out%force)), ' in the '//index2axis(2)//'-direction plus ', &
          units_from_atomic(units_out%force, e_field), ' ', &
          trim(units_abbrev(units_out%force)), ' in the '//index2axis(3)//'-direction.'
-      call messages_info(2)
+      call message%info(2)
   
       sys%hm%ep%vpsl(1:sys%gr%mesh%np) = vpsl_save(1:sys%gr%mesh%np) &
         - (sys%gr%mesh%x(1:sys%gr%mesh%np, 2) + sys%gr%mesh%x(1:sys%gr%mesh%np, 3)) * e_field
@@ -378,7 +378,7 @@ contains
       call restart_write(restart_dump, iunit, line, 1, ierr)
       if (ierr /= 0) then
         message%lines(1) = "Unsuccessful write of dipole."
-        call messages_warning(1)
+        call message%warning(1)
       end if
       call restart_close(restart_dump, iunit)
 
@@ -388,7 +388,7 @@ contains
         call restart_close_dir(restart_dump)
         if(ierr /= 0) then
           message%lines(1) = 'Unable to write states wavefunctions.'
-          call messages_warning(1)
+          call message%warning(1)
         end if
       end if
 
@@ -415,7 +415,7 @@ contains
 
       call states_elec_allocate_wfns(sys%st, sys%gr%mesh)
 
-      call messages_obsolete_variable(sys%namespace, "EMStaticField", "EMStaticElectricField")
+      call message%obsolete_variable(sys%namespace, "EMStaticField", "EMStaticElectricField")
       !%Variable EMStaticElectricField
       !%Type float
       !%Default 0.01 a.u.
@@ -428,12 +428,12 @@ contains
       if (e_field <= M_ZERO) then
         write(message%lines(1), '(a,e14.6,a)') "Input: '", e_field, "' is not a valid EMStaticElectricField."
         message%lines(2) = '(Must have EMStaticElectricField > 0)'
-        call messages_fatal(2)
+        call message%fatal(2)
       end if
 
       ! variable defined in em_resp
       call parse_variable(sys%namespace, 'EMCalcBornCharges', .false., calc_Born)
-      if (calc_Born) call messages_experimental("Calculation of Born effective charges")
+      if (calc_Born) call message%experimental("Calculation of Born effective charges")
 
       !%Variable EMStartDensityIsZeroField
       !%Type logical

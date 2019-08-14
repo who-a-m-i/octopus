@@ -421,10 +421,10 @@ contains
     SAFE_DEALLOCATE_A(region_count)
 
     if(debug%info) then
-      call messages_write('The atoms can be separated in ')
-      call messages_write(nregion)
-      call messages_write(' non-overlapping groups.')
-      call messages_info()
+      call message%write('The atoms can be separated in ')
+      call message%write(nregion)
+      call message%write(' non-overlapping groups.')
+      call message%info()
     end if
 
     do iregion = 1, nregion

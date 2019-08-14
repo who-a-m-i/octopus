@@ -57,7 +57,7 @@
     call parser_init()
     default_namespace = namespace_t("")
     
-    call messages_init(default_namespace)
+    call message%init(default_namespace)
 
     call io_init(default_namespace)
 
@@ -118,7 +118,7 @@
     call space_end(space)
 
     call io_end()
-    call messages_end()
+    call message%end()
 
     call parser_end()
     call global_end()
@@ -176,7 +176,7 @@
 
       write (message%lines(1), '(a)') "Read dipole moment from '"// &
         trim(io_workpath('td.general/multipoles', default_namespace))//"'."
-      call messages_info(1)
+      call message%info(1)
 
       POP_SUB(read_dipole)
     end subroutine read_dipole
@@ -213,7 +213,7 @@
       end do
 
       write (message%lines(1), '(a)') "Taking the Fourier transform."
-      call messages_info(1)
+      call message%info(1)
 
       !now calculate the FT
       !$omp parallel do private(ww, jj)
@@ -228,7 +228,7 @@
       !$omp end parallel do
 
       write (message%lines(1), '(a)') "Done."
-      call messages_info(1)
+      call message%info(1)
 
       POP_SUB(fourier)
     end subroutine fourier

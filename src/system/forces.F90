@@ -394,7 +394,7 @@ contains
         case(E_FIELD_MAGNETIC, E_FIELD_SCALAR_POTENTIAL)
           write(message%lines(1),'(a)') 'The forces are currently not properly calculated if time-dependent'
           write(message%lines(2),'(a)') 'magnetic fields are present.'
-          call messages_fatal(2)
+          call message%fatal(2)
         end select
       end do
     end if

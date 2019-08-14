@@ -392,7 +392,7 @@ subroutine X(exchange_operator)(hm, der, psolver, ik, exx_coef, psib, hpsib)
 
   ASSERT(associated(hm%hf_st))
 
-  if(der%mesh%sb%kpoints%full%npoints > 1) call messages_not_implemented("exchange operator with k-points")
+  if(der%mesh%sb%kpoints%full%npoints > 1) call message%not_implemented("exchange operator with k-points")
 
   SAFE_ALLOCATE(psi(1:der%mesh%np, 1:hm%d%dim))
   SAFE_ALLOCATE(hpsi(1:der%mesh%np, 1:hm%d%dim))
@@ -480,8 +480,8 @@ subroutine X(exchange_operator_hartree) (hm, der, psolver, ik, exx_coef, psib, h
 
   PUSH_SUB(X(exchange_operator))
 
-  if(der%mesh%sb%kpoints%full%npoints > 1) call messages_not_implemented("exchange operator with k-points")
-  if(hm%hf_st%parallel_in_states) call messages_not_implemented("exchange operator parallel in states")
+  if(der%mesh%sb%kpoints%full%npoints > 1) call message%not_implemented("exchange operator with k-points")
+  if(hm%hf_st%parallel_in_states) call message%not_implemented("exchange operator parallel in states")
 
   SAFE_ALLOCATE(psi(1:der%mesh%np, 1:hm%d%dim))
   SAFE_ALLOCATE(hpsi(1:der%mesh%np, 1:hm%d%dim))
@@ -555,7 +555,7 @@ subroutine X(scdm_exchange_operator) (hm, der, psib, hpsib, ik, exx_coef)
   
   call profiling_in(prof_exx_scdm, 'SCDM_EXX_OPERATOR')
 
-  if(der%mesh%sb%kpoints%full%npoints > 1) call messages_not_implemented("exchange operator with k-points")
+  if(der%mesh%sb%kpoints%full%npoints > 1) call message%not_implemented("exchange operator with k-points")
   
   ! make sure scdm is localized
   call X(scdm_localize)(hm%hf_st, der%mesh, hm%scdm)
@@ -692,7 +692,7 @@ subroutine X(magnus) (hm, der, psolver, psi, hpsi, ik, vmagnus, set_phase)
 
   ! We will assume, for the moment, no spinors.
   if(hm%d%dim /= 1) &
-    call messages_not_implemented("Magnus with spinors")
+    call message%not_implemented("Magnus with spinors")
 
   SAFE_ALLOCATE( auxpsi(1:der%mesh%np_part, 1:hm%d%dim))
   SAFE_ALLOCATE(aux2psi(1:der%mesh%np,      1:hm%d%dim))

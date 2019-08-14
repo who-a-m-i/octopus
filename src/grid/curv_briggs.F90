@@ -61,7 +61,7 @@ contains
 
     if(cv%beta<M_ZERO.or.cv%beta>M_ONE) then
       message%lines(1) = 'The parameter "CurvBriggsBeta" must lie between 0 and 1.'
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
   end subroutine curv_briggs_init

@@ -102,7 +102,7 @@ contains
     if(bitand(how, OPTION__OUTPUTFORMAT__NETCDF) /= 0) then
       filename = trim(file)//".ncdf"
       write(message%lines(1), '(a)') 'Writing netcdf format file: '
-      call messages_info(1)
+      call message%info(1)
   
       call dout_cf_netcdf(filename, ierr, cf, cube, sb%dim, dk(:) , & 
             .false., sqrt(units_out%energy)**sb%dim)
@@ -114,7 +114,7 @@ contains
     if(bitand(how, OPTION__OUTPUTFORMAT__VTK) /= 0)  then
       filename = trim(file)//".vtk"
       write(message%lines(1), '(a)') 'Writing vtk format file: '
-      call messages_info(1)
+      call message%info(1)
     
       if (present(pmesh)) then          
         call dvtk_out_cf_structured(filename, namespace, 'PES_vel_map', ierr, cf, cube,& 
@@ -472,15 +472,15 @@ contains
     PUSH_SUB(pes_out_interpolator_init)
 
 
-    call messages_write("Initializing Qshep interpolator. Be patient it may take a while... ")
-    call messages_info()
+    call message%write("Initializing Qshep interpolator. Be patient it may take a while... ")
+    call message%info()
 
     np = ll(1)*ll(2)*ll(3)
 
     !check dim
     if (dim  <  2 .or. dim > 3) then
       message%lines(1) = "This interpolator works only for 2 <= dim <= 3."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     SAFE_ALLOCATE(cube_f(1:np))
@@ -545,9 +545,9 @@ contains
     SAFE_DEALLOCATE_A(ky)
     SAFE_DEALLOCATE_A(kz)
 
-    call messages_write("done")
-    call messages_new_line()
-    call messages_info()
+    call message%write("done")
+    call message%new_line()
+    call message%info()
 
 
     POP_SUB(pes_out_interpolator_init)

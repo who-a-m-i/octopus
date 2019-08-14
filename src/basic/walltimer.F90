@@ -165,7 +165,7 @@ contains
     if(optional_default(print, .false.)) then
       write(message%lines(1), '("Walltimer_tap:   elapsed time = ",F6.2," (", 3F10.5, "), active = ",L1 )')  &
         now - start_time, duration, iteration_time, margin, active
-      call messages_info(1, all_nodes=.true.)
+      call message%info(1, all_nodes=.true.)
     end if
 
     POP_SUB(walltimer_tap)
@@ -184,7 +184,7 @@ contains
     if(optional_default(print, .false.)) then
       write(message%lines(1), '("Walltimer_alarm: elapsed time = ",F6.2," (", 3F10.5, "), active = ",L1 )')  &
         now - start_time, duration, iteration_time, margin, active
-      call messages_info(1, all_nodes=.true.)
+      call message%info(1, all_nodes=.true.)
     end if
     
     if(auto_tap) call walltimer_tap()
@@ -193,7 +193,7 @@ contains
   
     if(walltimer_alarm) then
       write(message%lines(1), '("Walltimer stopping execution after = ",F6.2," minutes.")') (now - start_time)/CNST(60.0)
-      call messages_info(1)
+      call message%info(1)
     end if
   
     POP_SUB(walltimer_alarm)

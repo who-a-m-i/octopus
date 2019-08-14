@@ -193,7 +193,7 @@ contains
       message%lines(1) = "The number of rows and columns in PNFFT processor grid is not equal to "
       message%lines(2) = "the number of processor in the MPI communicator."
       message%lines(3) = "Please check it."
-      call messages_fatal(3)
+      call message%fatal(3)
     end if
         
     POP_SUB(pnfft_init_procmesh)
@@ -225,35 +225,35 @@ contains
 
 
 
-    call messages_write("Info: PNFFT parameters")
-    call messages_new_line()
-    call messages_write("      Fourier coefficients      N = ")
+    call message%write("Info: PNFFT parameters")
+    call message%new_line()
+    call message%write("      Fourier coefficients      N = ")
     do idir = 1, 3
-      call messages_write(pnfft%N(idir))
-      if(idir < 3) call messages_write(" x ")
+      call message%write(pnfft%N(idir))
+      if(idir < 3) call message%write(" x ")
     end do
-    call messages_new_line()
-    call messages_write("      Spatial nodes per process   = ")
-    call messages_write(pnfft%local_M)
-    call messages_new_line()
-    call messages_write("      Oversampling factor   sigma = ")
-    call messages_write(pnfft%sigma)
-    call messages_new_line()
-    call messages_write("      FFT grid size             n = ")
+    call message%new_line()
+    call message%write("      Spatial nodes per process   = ")
+    call message%write(pnfft%local_M)
+    call message%new_line()
+    call message%write("      Oversampling factor   sigma = ")
+    call message%write(pnfft%sigma)
+    call message%new_line()
+    call message%write("      FFT grid size             n = ")
     do idir = 1, 3
-      call messages_write(pnfft%Nos(idir))
-      if(idir < 3) call messages_write(" x ")
+      call message%write(pnfft%Nos(idir))
+      if(idir < 3) call message%write(" x ")
     end do
-    call messages_new_line()
-    call messages_write("      Real Space cutoff           = ")
-    call messages_write(pnfft%mm)  
-    call messages_new_line()
-    call messages_write("      Process mesh             np = ")
+    call message%new_line()
+    call message%write("      Real Space cutoff           = ")
+    call message%write(pnfft%mm)  
+    call message%new_line()
+    call message%write("      Process mesh             np = ")
     do idir = 1, 3
-      call messages_write(pnfft%np(idir))
-      if(idir < 3) call messages_write(" x ")
+      call message%write(pnfft%np(idir))
+      if(idir < 3) call message%write(" x ")
     end do
-    call messages_info()
+    call message%info()
  
     POP_SUB(pnfft_write_info)
   end subroutine pnfft_write_info

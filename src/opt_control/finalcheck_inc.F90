@@ -50,13 +50,13 @@
     jfunctional = j1 + j2
 
     write(message%lines(1), '(a)') 'Final propagation with the best field'
-    call messages_print_stress(stdout, trim(message%lines(1)))
+    call message%print_stress(stdout, trim(message%lines(1)))
     write(message%lines(1), '(6x,a,f12.5)') " => J1       = ", j1
     write(message%lines(2), '(6x,a,f12.5)') " => J        = ", jfunctional
     write(message%lines(3), '(6x,a,f12.5)') " => J2       = ", j2
     write(message%lines(4), '(6x,a,f12.5)') " => Fluence  = ", fluence
-    call messages_info(4)
-    call messages_print_stress(stdout)
+    call message%info(4)
+    call message%print_stress(stdout)
 
     call output_states(psi, sys%namespace, sys%gr, sys%geo, sys%hm, OCT_DIR//'final', sys%outp)
 

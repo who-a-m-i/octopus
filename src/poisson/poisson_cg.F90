@@ -97,7 +97,7 @@ contains
       message%lines(1) = 'Conjugate-gradients Poisson solver did not converge.'
       write(message%lines(2), '(a,i8)')    '  Iter = ',iter
       write(message%lines(3), '(a,e14.6)') '  Res = ', res
-      call messages_warning(3)
+      call message%warning(3)
     end if
     nullify(der_pointer, mesh_pointer)
     pot(1:der%mesh%np) = pot(1:der%mesh%np) + pk(1:der%mesh%np)
@@ -136,7 +136,7 @@ contains
       message%lines(1) = 'Conjugate-gradients Poisson solver did not converge.'
       write(message%lines(2), '(a,i8)')    '  Iter = ', iter
       write(message%lines(3), '(a,e14.6)') '  Res = ', res
-      call messages_warning(3)
+      call message%warning(3)
     end if
 
     call lalg_copy(der%mesh%np, potc, pot)

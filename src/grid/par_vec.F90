@@ -903,7 +903,7 @@ contains
         write(message%lines(1), '(a)') "You are trying to access a neighbour that does not exist."
         write(message%lines(2), '(a, i5)') "Global point = ", global_point
         write(message%lines(3), '(a, 3i5)') "x,y,z point  = ", jx
-        call messages_warning(3)
+        call message%warning(3)
       end if
     end if
     

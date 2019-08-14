@@ -82,7 +82,7 @@ contains
     !% restart, and stop.
     !%End
     call parse_variable(sys%namespace, 'MaximumIter', 50, max_iter)
-    call messages_obsolete_variable(sys%namespace, 'UnoccMaximumIter', 'MaximumIter')
+    call message%obsolete_variable(sys%namespace, 'UnoccMaximumIter', 'MaximumIter')
     if(max_iter < 0) max_iter = huge(max_iter)
 
     !%Variable UnoccShowOccStates
@@ -157,7 +157,7 @@ contains
       message%lines(1) = "Be sure your gs run is well converged since you have an orbital-dependent functional."
       message%lines(2) = "Otherwise, the occupied states may change in CalculationMode = unocc, and your"
       message%lines(3) = "unoccupied states will not be consistent with the gs run."
-      call messages_warning(3)
+      call message%warning(3)
     end if
 
     if(ierr_rho /= 0 .or. is_orbital_dependent) then
@@ -177,11 +177,11 @@ contains
 
         message%lines(2) = "Not all the occupied orbitals could be read."
         message%lines(3) = "Please run a ground-state calculation first!"
-        call messages_fatal(3, only_root_writes = .true.)
+        call message%fatal(3, only_root_writes = .true.)
       end if
 
       message%lines(1) = "Unable to read density: Building density from wavefunctions."
-      call messages_info(1)
+      call message%info(1)
 
       call density_calc(sys%st, sys%gr, sys%st%rho)
     end if
@@ -191,7 +191,7 @@ contains
     else
       message%lines(1) = 'Info: Using complex wavefunctions.'
     end if
-    call messages_info(1)
+    call message%info(1)
 
     if(fromScratch .or. ierr /= 0) then
       if(fromScratch) then
@@ -224,7 +224,7 @@ contains
     if(bandstructure_mode) then
       message%lines(1) = "Info: The code will run in band structure mode."
       message%lines(2) = "      No restart information will be printed."
-      call messages_info(2)
+      call message%info(2)
     end if
 
     if(.not. bandstructure_mode) then
@@ -237,7 +237,7 @@ contains
     end if
 
     message%lines(1) = "Info: Starting calculation of unoccupied states."
-    call messages_info(1)
+    call message%info(1)
 
     ! reset this variable, so that the eigensolver passes through all states
     eigens%converged(:) = 0
@@ -281,7 +281,7 @@ contains
           call states_elec_dump(restart_dump, sys%st, sys%gr, ierr, iter=iter)
           if(ierr /= 0) then
             message%lines(1) = "Unable to write states wavefunctions."
-            call messages_warning(1)
+            call message%warning(1)
           end if
         end if
       end if 
@@ -299,14 +299,14 @@ contains
 
     if(any(eigens%converged(:) < occ_states(:))) then
       write(message%lines(1),'(a)') 'Some of the occupied states are not fully converged!'
-      call messages_warning(1)
+      call message%warning(1)
     end if
 
     SAFE_DEALLOCATE_A(occ_states)
 
     if(.not. converged) then
       write(message%lines(1),'(a)') 'Some of the unoccupied states are not fully converged!'
-      call messages_warning(1)
+      call message%warning(1)
     end if
 
     if(simul_box_is_periodic(sys%gr%sb).and. sys%st%d%nik > sys%st%d%nspin) then
@@ -332,7 +332,7 @@ contains
 
       PUSH_SUB(unocc_run.init_)
 
-      call messages_obsolete_variable(sys%namespace, "NumberUnoccStates", "ExtraStates")
+      call message%obsolete_variable(sys%namespace, "NumberUnoccStates", "ExtraStates")
 
       call states_elec_allocate_wfns(st, mesh)
 
@@ -342,7 +342,7 @@ contains
       if(eigens%es_type == RS_RMMDIIS) then
         message%lines(1) = "With the RMMDIIS eigensolver for unocc, you will need to stop the calculation"
         message%lines(2) = "by hand, since the highest states will probably never converge."
-        call messages_warning(2)
+        call message%warning(2)
       end if
       
       POP_SUB(unocc_run.init_)
@@ -371,10 +371,10 @@ contains
       PUSH_SUB(unocc_run.write_iter_)
 
       write(str, '(a,i5)') 'Unoccupied states iteration #', iter
-      call messages_print_stress(stdout, trim(str))
+      call message%print_stress(stdout, trim(str))
        
       write(message%lines(1),'(a,i6,a,i6)') 'Converged states: ', minval(eigens%converged(1:st%d%nik))
-      call messages_info(1)
+      call message%info(1)
 
       call states_elec_write_eigenvalues(stdout, sys%st%nst, sys%st, sys%gr%sb, eigens%diff, st_start = showstart, compact = .true.)
 
@@ -385,10 +385,10 @@ contains
         mem = mem_tmp
 #endif
         write(message%lines(1),'(a,f14.2)') 'Memory usage [Mbytes]     :', mem
-        call messages_info(1)
+        call message%info(1)
       end if
 
-      call messages_print_stress(stdout)
+      call message%print_stress(stdout)
 
       POP_SUB(unocc_run.write_iter_)
     end subroutine write_iter_

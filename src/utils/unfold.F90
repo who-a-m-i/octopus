@@ -95,16 +95,16 @@ program oct_unfold
   default_namespace = namespace_t("")
   call calc_mode_par_init()
 
-  call messages_init(default_namespace)
+  call message%init(default_namespace)
 
   call io_init(default_namespace)
   call profiling_init(default_namespace)
 
   call print_header()
-  call messages_print_stress(stdout, "Unfolding Band-structure")
-  call messages_print_stress(stdout)
+  call message%print_stress(stdout, "Unfolding Band-structure")
+  call message%print_stress(stdout)
 
-  call messages_experimental("oct-unfold utility")
+  call message%experimental("oct-unfold utility")
   call fft_all_init(default_namespace)
   call unit_system_init(default_namespace)
   call restart_module_init(default_namespace)
@@ -115,15 +115,15 @@ program oct_unfold
 
   if(sb%periodic_dim == 0) then
     message%lines(1) = "oct-unfold can only be used for periodic ystems."
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
   if(sys%st%parallel_in_states) then
-    call messages_not_implemented("oct-unfold with states parallelization.")
+    call message%not_implemented("oct-unfold with states parallelization.")
   end if 
 
   if(sys%st%d%ispin == SPINORS) then
-    call messages_not_implemented("oct-unfold for spinors")
+    call message%not_implemented("oct-unfold for spinors")
   end if
 
 
@@ -142,7 +142,7 @@ program oct_unfold
   !%End
   call parse_variable(default_namespace, 'UnfoldMode', 0, run_mode)
   if( .not. varinfo_valid_option('UnfoldMode', run_mode)) then
-    call messages_input_error("UnfoldMode must be set to a value different from 0.")
+    call message%input_error("UnfoldMode must be set to a value different from 0.")
   end if
 
   !%Variable UnfoldLatticeParameters
@@ -159,7 +159,7 @@ program oct_unfold
     end do
   else
     message%lines(1) = "UnfoldLatticeParameters is not specified"
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
   !%Variable UnfoldLatticeVectors
@@ -181,7 +181,7 @@ program oct_unfold
     call parse_block_end(blk)
   else
     message%lines(1) = "UnfoldLatticeVectors is not specified"
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
   do idim = 1, sb%dim
@@ -203,7 +203,7 @@ program oct_unfold
   !%End
   if(parse_block(default_namespace, 'UnfoldKPointsPath', blk) /= 0) then
     write(message%lines(1),'(a)') 'Error while reading UnfoldPointsPath.'
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
   ! There is one high symmetry k-point per line
@@ -212,7 +212,7 @@ program oct_unfold
   if( nhighsympoints /= nsegments+1) then
     write(message%lines(1),'(a,i3,a,i3)') 'The first row of UnfoldPointsPath is not compatible '//&
       'with the number of specified k-points.'
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
   SAFE_ALLOCATE(resolution(1:nsegments))
@@ -228,7 +228,7 @@ program oct_unfold
     ncols = parse_block_cols(blk, ik)
     if(ncols /= sb%dim) then
       write(message%lines(1),'(a,i3,a,i3)') 'UnfoldPointsPath row ', ik, ' has ', ncols, ' columns but must have ', sb%dim
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     do idir = 1, sb%dim
@@ -266,7 +266,7 @@ program oct_unfold
     read(file_gvec, *) ik
     if(ik /= path_kpoints_grid%npoints) then
       message%lines(1) = 'There is an inconsistency between unfold_gvec.dat and the input file'
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
     call io_close(file_gvec)
  
@@ -276,7 +276,7 @@ program oct_unfold
     if(ierr == 0) call states_elec_load(restart, default_namespace, sys%st, sys%gr, ierr, label = ": unfold")
     if(ierr /= 0) then
       message%lines(1) = 'Unable to read unocc wavefunctions.'
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
     call restart_end(restart)  
 
@@ -294,7 +294,7 @@ program oct_unfold
 
   else
     message%lines(1) = "Unsupported or incorrect value of UnfoldMode." 
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
   SAFE_DEALLOCATE_A(coord_along_path)
@@ -307,7 +307,7 @@ program oct_unfold
   call profiling_end(default_namespace)
   call io_end()
   call print_date("Calculation ended on ")
-  call messages_end()
+  call message%end()
   call parser_end()
   call global_end()
 
@@ -380,7 +380,7 @@ contains
     call parse_variable(default_namespace, 'UnfoldEnergyStep', M_ZERO, de)
     if(de < M_ZERO) then
       message%lines(1) = "UnfoldEnergyStep must be positive"
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     !%Variable UnfoldMinEnergy
@@ -476,7 +476,7 @@ contains
         end do !ig
 
       case default
-        call messages_not_implemented("Unfolding for periodic dimensions other than 2 or 3") 
+        call message%not_implemented("Unfolding for periodic dimensions other than 2 or 3") 
       end select
 
       if(mpi_grp_is_root(gr%mesh%mpi_grp)) then

@@ -142,14 +142,14 @@ subroutine mesh_init_stage_1(mesh, sb, cv, spacing, enlarge)
   end do
 
   if( any(abs(mesh%spacing(1:sb%periodic_dim) - spacing(1:sb%periodic_dim)) > CNST(1e-6)) ) then
-    call messages_write('The spacing has been modified to make it commensurate with the periodicity of the system.')
-    call messages_warning()
+    call message%write('The spacing has been modified to make it commensurate with the periodicity of the system.')
+    call message%warning()
   end if
 
   do idir = sb%periodic_dim + 1, sb%dim
     if(mesh%idx%nr(2, idir) == 0) then
       write(message%lines(1),'(a,i2)') 'Spacing > box size in direction ', idir
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
   end do
 
@@ -300,7 +300,7 @@ subroutine mesh_init_stage_2(mesh, sb, geo, cv, stencil)
   ! MPI2 not working could also provoke a segmentation fault in the line above, which we cannot catch.
   if(all(mesh%idx%lxyz_inv(:,:,:) == 0)) then
     message%lines(1) = "Failure of MPI_Allreduce in place for lxyz_inv. MPI2 is not working correctly."
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
   call profiling_out(prof_reduce)
@@ -419,7 +419,7 @@ subroutine mesh_init_stage_2(mesh, sb, geo, cv, stencil)
 
                      message%lines(1) = 'Multiresolution radii are too close to each other (or outer boundary)'
                      write(message%lines(2),'(7I4)') ix,iy,iz,newi,newj,newk,mesh%resolution(ix,iy,iz)
-                     call messages_fatal(2)
+                     call message%fatal(2)
                 end if
               end do
             end do
@@ -552,8 +552,8 @@ contains
     select case(order)
     case(ORDER_BLOCKS)
 
-      call messages_obsolete_variable(namespace, 'MeshBlockSizeXY', 'MeshBlockSize')
-      call messages_obsolete_variable(namespace, 'MeshBlockSizeZ', 'MeshBlockSize')
+      call message%obsolete_variable(namespace, 'MeshBlockSizeXY', 'MeshBlockSize')
+      call message%obsolete_variable(namespace, 'MeshBlockSizeZ', 'MeshBlockSize')
 
       !%Variable MeshBlockSize
       !%Type block
@@ -644,7 +644,7 @@ contains
 
     case(ORDER_HILBERT)
 
-      call messages_experimental('Hilbert grid ordering')
+      call message%experimental('Hilbert grid ordering')
 
       size = maxval(mesh%idx%nr(2, 1:mesh%sb%dim) - mesh%idx%nr(1, 1:mesh%sb%dim) + 1)
 
@@ -702,7 +702,7 @@ contains
 
     case(ORDER_HILBERT_2D)
 
-      call messages_experimental('Hilbert 2D grid ordering')
+      call message%experimental('Hilbert 2D grid ordering')
 
       size = maxval(mesh%idx%nr(2, 1:2) - mesh%idx%nr(1, 1:2) + 1)
 
@@ -779,7 +779,7 @@ contains
       if(ien /= mesh%np_part_global) then
         write(message%lines(1), '(a,i9,a,i9)') 'Assertion failure from create_x_lxyz: ien = ', ien, ' /= ', mesh%np_part_global
         write(message%lines(2), '(a)') 'Probably MPI2 is not working correctly.'
-        call messages_fatal(2)
+        call message%fatal(2)
       end if
 
       POP_SUB(mesh_init_stage_3.create_x_lxyz)
@@ -823,7 +823,7 @@ contains
       if (vsize /= mesh%mpi_grp%size) then
         write(message%lines(1),'(a,I7)') "Changing the partition size to", vsize
         write(message%lines(2),'(a)') "The execution will crash."
-        call messages_warning(2)
+        call message%warning(2)
         has_virtual_partition = .true.
       else 
         has_virtual_partition = .false.
@@ -855,8 +855,8 @@ contains
       call print_date("Calculation ended on ")
       write(message%lines(1),'(a)') "Execution has ended."
       write(message%lines(2),'(a)') "If you want to run your system, do not use MeshPartitionVirtualSize."
-      call messages_warning(2)
-      call messages_end()
+      call message%warning(2)
+      call message%end()
       call global_end()
       stop
     end if
@@ -1046,7 +1046,7 @@ contains
       if(mesh%sb%mr_flag) then
 
         message%lines(1) = 'Info: Point volumes are calculated by solving interpolation coefficients for the intermediate points.'
-        call messages_info(1)
+        call message%info(1)
 
         ! The following interpolation routine is essentially the same as in the calculation of the Laplacian
 
@@ -1084,7 +1084,7 @@ contains
         do i_lev = 1, sb%hr_area%num_radii
 
           write (message%lines(1),'(a,I2,a,I2)') 'Info: Point volume calculation at stage ',i_lev,'/',sb%hr_area%num_radii
-          call messages_info(1)
+          call message%info(1)
 
           ! loop through _all_ the points
           do iz = mesh%idx%nr(1,3), mesh%idx%nr(2,3)
@@ -1140,7 +1140,7 @@ contains
         end do
        
         write (message%lines(1),'(a,F26.12)') 'Info: Point volume calculation finished. Total volume :',sum(mesh%vol_pp(1:mesh%np))
-        call messages_info(1)
+        call message%info(1)
 
         SAFE_DEALLOCATE_A(ww)
         SAFE_DEALLOCATE_A(pos)

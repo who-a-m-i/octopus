@@ -72,7 +72,7 @@ contains
         case (SYSTEM_ELECTRONIC)
           allocate(system_t::system)
         case default
-          call messages_input_error('Systems')
+          call message%input_error('Systems')
         end select
         call systems%add(system)
         deallocate(system)

@@ -73,7 +73,7 @@ contains
     call vdwxc_new(functional, libvdwxc%libvdwxc_ptr)
 #else
     message%lines(1) = "Octopus not compiled with libvdwxc"
-    call messages_fatal(1)
+    call message%fatal(1)
 #endif
     ASSERT(associated(libvdwxc%libvdwxc_ptr))
     libvdwxc%functional = functional
@@ -121,7 +121,7 @@ contains
     else
       write(message%lines(2), '(4x,a)') 'unknown libvdwxc functional'
     end if
-    call messages_info(2, iunit)
+    call message%info(2, iunit)
     POP_SUB(libvdwxc_write_info)
   end subroutine libvdwxc_write_info
 
@@ -213,7 +213,7 @@ contains
 #else
       message%lines(1) = "libvdwxc was not compiled with MPI"
       message%lines(2) = "Recompile libvdwxc with MPI for vdW with domain decomposition"
-      call messages_fatal(2)
+      call message%fatal(2)
 #endif
     end if
     call vdwxc_print(this%libvdwxc_ptr)
@@ -326,7 +326,7 @@ contains
     write(message%lines(1), '(a,f18.10,a)') 'libvdwxc non-local correlation energy: ', energy_and_integrals_buffer(1), ' Ha'
     write(message%lines(2), '(a,f18.10)')   '                      n-dedn integral: ', energy_and_integrals_buffer(2)
     write(message%lines(3), '(a,f18.10)')   '              gradn-dedgradn integral: ', energy_and_integrals_buffer(3)
-    call messages_info(3)
+    call message%info(3)
 
     SAFE_DEALLOCATE_A(workbuffer)
     SAFE_DEALLOCATE_A(cube_rho)

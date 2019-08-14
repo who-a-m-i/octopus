@@ -123,7 +123,7 @@ contains
 
       if(present(tag)) then
         message%lines(1) = 'Info: Parallelization in ' // trim(tag)
-        call messages_info(1)
+        call message%info(1)
       end if
 
       do kk = 1, this%mpi_grp%size
@@ -134,7 +134,7 @@ contains
           if(this%num(kk - 1) > 0) then
             write(message%lines(1),'(a,a,i6,a,i6)') trim(message%lines(1)), ':', this%range(1, kk - 1), " - ", this%range(2, kk - 1)
           end if
-          call messages_info(1)
+          call message%info(1)
         end if
         
         if(this%mpi_grp%rank  ==  kk - 1) then

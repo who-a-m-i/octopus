@@ -533,7 +533,7 @@ end subroutine X(bi_conjugate_gradients)
 
     if (err>0) then
       write(message%lines(2), '(a)') "Try to change some system parameters (e.g. Spacing, TDTimeStep, ...)."
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
 
     if(showprogress_) write(*,*) ''
@@ -747,7 +747,7 @@ end subroutine X(bi_conjugate_gradients)
       else
         write(message%lines(1), '(a)') "QMR solver not converged!"
         write(message%lines(2), '(a)') "Try increasing the maximum number of iterations or the tolerance."
-        call messages_warning(2)
+        call message%warning(2)
       end if
     case(1)
       write(message%lines(1), '(a)') "QMR failure, can't continue: b or P*b is the zero vector!"
@@ -761,7 +761,7 @@ end subroutine X(bi_conjugate_gradients)
 
     if (err>0) then
       write(message%lines(2), '(a)') "Try to change some system parameters (e.g. Spacing, TDTimeStep, ...)."
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
 
     if(showprogress_) write(*,*) ''
@@ -902,7 +902,7 @@ end subroutine X(bi_conjugate_gradients)
     if ( present(tolerance) ) then
       if ( tolerance < 0 ) then
         message%lines(1) = 'The tolerance parameter in idrs routine must be non-negative'
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
       tol = tolerance 
     else
@@ -947,7 +947,7 @@ end subroutine X(bi_conjugate_gradients)
     if ( out_resvec ) then
       if ( maxit+1 > size(resvec) ) then
         message%lines(1) = 'idrs: Length of vector with residual norms too small, should be maxit+1'
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
     end if
 
@@ -956,7 +956,7 @@ end subroutine X(bi_conjugate_gradients)
       nritz = size(H,1)-1
       if ( size(H,2) /= nritz ) then
         message%lines(1) = 'Second dimension of H incompatible, with first'
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
       H = M_ZERO
     end if

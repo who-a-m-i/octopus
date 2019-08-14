@@ -173,7 +173,7 @@ contains
     prefix = ""
     if(present(prefix_)) prefix = prefix_
 
-    call messages_obsolete_variable(namespace, 'TypeOfMixing', 'MixingScheme')
+    call message%obsolete_variable(namespace, 'TypeOfMixing', 'MixingScheme')
     
     !%Variable MixingScheme
     !%Type integer
@@ -201,10 +201,10 @@ contains
     !% <i>Chem. Phys.  Lett.</i> <b>325</b>, 473 (2000)].
     !%End
     call parse_variable(namespace, trim(prefix)//'MixingScheme', def, smix%scheme)
-    if(.not.varinfo_valid_option('MixingScheme', smix%scheme)) call messages_input_error('MixingScheme', 'invalid option')
-    call messages_print_var_option(stdout, "MixingScheme", smix%scheme)
+    if(.not.varinfo_valid_option('MixingScheme', smix%scheme)) call message%input_error('MixingScheme', 'invalid option')
+    call message%print_var_option(stdout, "MixingScheme", smix%scheme)
 
-    if(smix%scheme == OPTION__MIXINGSCHEME__DIIS) call messages_experimental('MixingScheme = diis')
+    if(smix%scheme == OPTION__MIXINGSCHEME__DIIS) call message%experimental('MixingScheme = diis')
 
     !%Variable MixingPreconditioner
     !%Type logical
@@ -215,7 +215,7 @@ contains
     !% for the mixing operator.
     !%End
     call parse_variable(namespace, trim(prefix)+'MixingPreconditioner', .false., smix%precondition)
-    if(smix%precondition) call messages_experimental('MixingPreconditioner')
+    if(smix%precondition) call message%experimental('MixingPreconditioner')
     
     !%Variable Mixing
     !%Type float
@@ -227,7 +227,7 @@ contains
     !%End
     call parse_variable(namespace, trim(prefix)+'Mixing', CNST(0.3), smix%coeff)
     if(smix%coeff <= M_ZERO .or. smix%coeff > M_ONE) then
-      call messages_input_error('Mixing', 'Value should be positive and smaller than one.')
+      call message%input_error('Mixing', 'Value should be positive and smaller than one.')
     end if
     
     !%Variable MixingResidual
@@ -240,7 +240,7 @@ contains
     !%End
     call parse_variable(namespace, trim(prefix)+'MixingResidual', CNST(0.05), smix%residual_coeff)
     if(smix%residual_coeff <= M_ZERO .or. smix%residual_coeff > M_ONE) then
-      call messages_input_error('MixingResidual', 'Value should be positive and smaller than one.')
+      call message%input_error('MixingResidual', 'Value should be positive and smaller than one.')
     end if
     
     !%Variable MixNumberSteps
@@ -254,7 +254,7 @@ contains
     !%End
     if (smix%scheme /= OPTION__MIXINGSCHEME__LINEAR) then
       call parse_variable(namespace, trim(prefix)//'MixNumberSteps', 3, smix%ns)
-      if(smix%ns <= 1) call messages_input_error('MixNumberSteps')
+      if(smix%ns <= 1) call message%input_error('MixNumberSteps')
     else
       smix%ns = 0
     end if
@@ -270,7 +270,7 @@ contains
     !% mixing. For the moment this variable only works with DIIS mixing.
     !%End
     call parse_variable(namespace, trim(prefix)//'MixInterval', 1, smix%interval)
-    if(smix%interval < 1) call messages_input_error('MixInterval', 'MixInterval must be larger or equal than 1')
+    if(smix%interval < 1) call message%input_error('MixInterval', 'MixInterval must be larger or equal than 1')
     
     smix%iter = 0
 
@@ -393,7 +393,7 @@ contains
       smix%coeff = newmixing
     else
     !  message%lines(1) = "Mixing can only be adjusted in linear mixing scheme."
-    !  call messages_fatal(1)
+    !  call message%fatal(1)
     end if
     
     POP_SUB(mix_set_mixing)
@@ -422,7 +422,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Writing mixing restart."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     ! functions to be written need to be compatible with the mesh
@@ -496,7 +496,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Writing mixing restart done."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     POP_SUB(mix_dump)
@@ -529,7 +529,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Reading mixing restart."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     ! First we read some information about the mixing
@@ -554,7 +554,7 @@ contains
       ! We can only use the restart information if the mixing scheme and the number of steps used remained the same
       if (scheme /= smix%scheme .or. ns /= smix%ns) then
         message%lines(1) = "The mixing scheme from the restart data is not the same as the one used in the current calculation."
-        call messages_warning(1)
+        call message%warning(1)
         ierr = ierr + 2
       end if
 
@@ -562,7 +562,7 @@ contains
       if (mesh%np_global /= d1 .or. mesh%np /= smix%mixfield%d1 .or. d2 /= smix%mixfield%d2 .or. d3 /= smix%mixfield%d3 ) then
         message%lines(1) = "The dimensions of the arrays from the mixing restart data"
         message%lines(2) = "are not the same as the ones used in this calculation."
-        call messages_warning(2)
+        call message%warning(2)
         ierr = ierr + 4
       end if
     end if
@@ -628,7 +628,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Reading mixing restart done."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     POP_SUB(mix_load)
@@ -684,10 +684,10 @@ contains
     smix%auxmixfield(smix%nauxmixfield)%p => mixfield 
 
     if( smix%scheme == OPTION__MIXINGSCHEME__DIIS) &
-      call messages_input_error('Mixing scheme  DIIS is not implemented for auxiliary mixing fields')
+      call message%input_error('Mixing scheme  DIIS is not implemented for auxiliary mixing fields')
 
     if( smix%scheme == OPTION__MIXINGSCHEME__BOWLER_GILLAN) &
-      call messages_input_error('Mixing scheme  Bowler Gillan is not implemented for auxiliary mixing fields')
+      call message%input_error('Mixing scheme  Bowler Gillan is not implemented for auxiliary mixing fields')
 
     POP_SUB(mix_add_auxmixfield)
   end subroutine mix_add_auxmixfield

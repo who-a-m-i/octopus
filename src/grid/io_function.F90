@@ -112,7 +112,7 @@ contains
 
     how = 0_8
     
-    call messages_obsolete_variable(namespace, 'OutputHow', 'OutputFormat')
+    call message%obsolete_variable(namespace, 'OutputHow', 'OutputFormat')
     
     !%Variable OutputFormat
     !%Type flag
@@ -204,62 +204,62 @@ contains
     !%End
     call parse_variable(namespace, 'OutputFormat', 0, how)
     if(.not.varinfo_valid_option('OutputFormat', how, is_flag=.true.)) then
-      call messages_input_error('OutputFormat')
+      call message%input_error('OutputFormat')
     end if
 
     if(how  ==  0 .and. .not. optional_default(ignore_error, .false.)) then
       write(message%lines(1), '(a)') 'Must specify output method with variable OutputFormat.'
-      call messages_fatal(1, only_root_writes = .true.)
+      call message%fatal(1, only_root_writes = .true.)
      end if
 
     ! some modes are not available in some circumstances
     if(sb%dim == 1) then
       if(bitand(how, OPTION__OUTPUTFORMAT__AXIS_Y) /= 0) then
         message%lines(1) = "OutputFormat = axis_y not available with Dimensions = 1."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
       if(bitand(how, OPTION__OUTPUTFORMAT__PLANE_Z) /= 0) then
         message%lines(1) = "OutputFormat = plane_z not available with Dimensions = 1."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
       if(bitand(how, OPTION__OUTPUTFORMAT__XCRYSDEN) /= 0) then
         message%lines(1) = "OutputFormat = xcrysden not available with Dimensions = 1."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
     end if
 
     if(sb%dim <= 2) then
       if(bitand(how, OPTION__OUTPUTFORMAT__AXIS_Z) /= 0) then
         message%lines(1) = "OutputFormat = axis_z not available with Dimensions <= 2."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
       if(bitand(how, OPTION__OUTPUTFORMAT__PLANE_X) /= 0) then
         message%lines(1) = "OutputFormat = plane_x not available with Dimensions <= 2."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
       if(bitand(how, OPTION__OUTPUTFORMAT__PLANE_Y) /= 0) then
         message%lines(1) = "OutputFormat = plane_y not available with Dimensions <= 2."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
       if(bitand(how, OPTION__OUTPUTFORMAT__INTEGRATE_XY) /= 0) then
         message%lines(1) = "OutputFormat = integrate_xy not available with Dimensions <= 2."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
       if(bitand(how, OPTION__OUTPUTFORMAT__INTEGRATE_XZ) /= 0) then
         message%lines(1) = "OutputFormat = integrate_xz not available with Dimensions <= 2."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
       if(bitand(how, OPTION__OUTPUTFORMAT__INTEGRATE_YZ) /= 0) then
         message%lines(1) = "OutputFormat = integrate_yz not available with Dimensions <= 2."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
       if(bitand(how, OPTION__OUTPUTFORMAT__DX) /= 0) then
         message%lines(1) = "OutputFormat = dx not available with Dimensions <= 2."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
       if(bitand(how, OPTION__OUTPUTFORMAT__CUBE) /= 0) then
         message%lines(1) = "OutputFormat = cube not available with Dimensions <= 2."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
     end if
 
@@ -267,14 +267,14 @@ contains
     if (bitand(how, OPTION__OUTPUTFORMAT__NETCDF) /= 0) then
       message%lines(1) = 'Octopus was compiled without NetCDF support.'
       message%lines(2) = 'It is not possible to write output in NetCDF format.'
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
 #endif
 #if !defined(HAVE_ETSF_IO)
     if (bitand(how, OPTION__OUTPUTFORMAT__ETSF) /= 0) then
       message%lines(1) = 'Octopus was compiled without ETSF_IO support.'
       message%lines(2) = 'It is not possible to write output in ETSF format.'
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
 #endif
 
@@ -539,7 +539,7 @@ contains
     write(message%lines(1),'(3a)') "NETCDF error in function '" , trim(func) , "'"
     write(message%lines(2),'(3a)') "(reading/writing ", trim(filename) , ")"
     write(message%lines(3), '(6x,a,a)')'Error code = ', trim(nf90_strerror(status))
-    call messages_warning(3)
+    call message%warning(3)
     ierr = 5
 
     POP_SUB(ncdf_error)

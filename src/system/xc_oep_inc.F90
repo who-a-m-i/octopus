@@ -164,7 +164,7 @@ subroutine X(xc_oep_solve) (gr, hm, psolver, st, is, vxc, oep)
   PUSH_SUB(X(xc_oep_solve))
 
   if(st%parallel_in_states) &
-    call messages_not_implemented("Full OEP parallel in states")
+    call message%not_implemented("Full OEP parallel in states")
 
   SAFE_ALLOCATE(     bb(1:gr%mesh%np, 1:1))
   SAFE_ALLOCATE(     ss(1:gr%mesh%np))
@@ -223,7 +223,7 @@ subroutine X(xc_oep_solve) (gr, hm, psolver, st, is, vxc, oep)
 
       if(debug%info) then
         write(message%lines(1), '(a,es14.6,a,es14.8)') "Info: oep%mixing:", oep%mixing, " norm2ss: ", dmf_nrm2(gr%mesh, ss)
-        call messages_info(1)
+        call message%info(1)
       end if
 
       call lalg_copy(gr%mesh%np, is, oep%vxc, oep%vxc_old)
@@ -252,7 +252,7 @@ subroutine X(xc_oep_solve) (gr, hm, psolver, st, is, vxc, oep)
 
   if(ff > oep%scftol%conv_abs_dens) then
     write(message%lines(1), '(a)') "OEP did not converge."
-    call messages_warning(1)
+    call message%warning(1)
 
     ! otherwise the number below will be one too high
     iter = iter - 1
@@ -260,7 +260,7 @@ subroutine X(xc_oep_solve) (gr, hm, psolver, st, is, vxc, oep)
 
   write(message%lines(1), '(a,i4,a,es14.6)') "Info: After ", iter, " iterations, the OEP residual = ", ff
   message%lines(2) = ''
-  call messages_info(2)
+  call message%info(2)
 
   call lalg_copy(gr%mesh%np, vxc_old, vxc)
 

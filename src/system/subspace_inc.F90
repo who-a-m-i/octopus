@@ -195,7 +195,7 @@ subroutine X(subspace_diag_scalapack)(der, st, hm, psolver, ik, eigenval, psi, d
 
   if(info /= 0) then
     write(message%lines(1), '(a,i6)') "subspace diagonalization descinit for psi failed with error code ", info
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
   ! select the blocksize, we use the division used for state
@@ -212,7 +212,7 @@ subroutine X(subspace_diag_scalapack)(der, st, hm, psolver, ik, eigenval, psi, d
 
   if(info /= 0) then
     write(message%lines(1), '(a,i6)') "subspace diagonalization descinit for Hamiltonian failed with error code ", info
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
   ! calculate |hpsi> = H |psi>
@@ -254,7 +254,7 @@ subroutine X(subspace_diag_scalapack)(der, st, hm, psolver, ik, eigenval, psi, d
 #ifdef HAVE_ELPA
   if (elpa_init(20170403) /= elpa_ok) then
     write(message%lines(1),'(a)') "ELPA API version not supported"
-    call messages_fatal(1)
+    call message%fatal(1)
   endif
   elpa => elpa_allocate()
 
@@ -280,7 +280,7 @@ subroutine X(subspace_diag_scalapack)(der, st, hm, psolver, ik, eigenval, psi, d
   if (info /= elpa_ok) then
     write(message%lines(1),'(a,i6,a,a)') "Error in ELPA, code: ", info, ", message: ", &
       elpa_strerr(info)
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
   call elpa_deallocate(elpa)
@@ -297,7 +297,7 @@ subroutine X(subspace_diag_scalapack)(der, st, hm, psolver, ik, eigenval, psi, d
 
   if(info /= 0) then
     write(message%lines(1),'(a,i6)') "ScaLAPACK pzheev workspace query failure, error code = ", info
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
   lwork = nint(abs(rttmp))
@@ -312,7 +312,7 @@ subroutine X(subspace_diag_scalapack)(der, st, hm, psolver, ik, eigenval, psi, d
 
   if(info /= 0) then
     write(message%lines(1),'(a,i6)') "ScaLAPACK pzheev call failure, error code = ", info
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
   SAFE_DEALLOCATE_A(work)
@@ -325,7 +325,7 @@ subroutine X(subspace_diag_scalapack)(der, st, hm, psolver, ik, eigenval, psi, d
 
   if(info /= 0) then
     write(message%lines(1),'(a,i6)') "ScaLAPACK pdsyev workspace query failure, error code = ", info
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
   lwork = nint(abs(rttmp))
@@ -336,7 +336,7 @@ subroutine X(subspace_diag_scalapack)(der, st, hm, psolver, ik, eigenval, psi, d
 
   if(info /= 0) then
     write(message%lines(1),'(a,i6)') "ScaLAPACK pdsyev call failure, error code = ", info
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
   
   SAFE_DEALLOCATE_A(work)

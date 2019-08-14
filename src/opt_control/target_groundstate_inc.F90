@@ -31,12 +31,12 @@
     PUSH_SUB(target_init_groundstate)
 
     message%lines(1) =  'Info: Using Ground State for TargetOperator'
-    call messages_info(1)
+    call message%info(1)
 
     call states_elec_load(restart, namespace, tg%st, gr, ierr)
     if (ierr /= 0) then
       message%lines(1) = "Unable to read wavefunctions."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     tg%move_ions = ion_dynamics_ions_move(td%ions)

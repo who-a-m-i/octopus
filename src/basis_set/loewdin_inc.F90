@@ -38,7 +38,7 @@
 
    if(debug%info) then
     write(message%lines(1), '(a)') 'Debug: Orthogonalizing the atomic orbital basis.'
-    call messages_info(1)
+    call message%info(1)
    end if
 
    do ik = kpt%start, kpt%end
@@ -93,7 +93,7 @@
 
    if(debug%info) then
     write(message%lines(1), '(a)') 'Debug: Orthogonalization completed.'
-    call messages_info(1)
+    call message%info(1)
    end if
 
    call profiling_out(prof)
@@ -136,7 +136,7 @@
         end do
  #endif
       else
-        call messages_not_implemented("Lowdin orthogonalization with submeshes.")
+        call message%not_implemented("Lowdin orthogonalization with submeshes.")
       end if
     end do !ind2
   end do !ind

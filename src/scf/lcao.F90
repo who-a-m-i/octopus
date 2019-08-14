@@ -223,12 +223,12 @@ contains
     !% memory than other methods.
     !%End
     call parse_variable(namespace, 'LCAOStart', mode_default, this%mode)
-    if(.not.varinfo_valid_option('LCAOStart', this%mode)) call messages_input_error('LCAOStart')
+    if(.not.varinfo_valid_option('LCAOStart', this%mode)) call message%input_error('LCAOStart')
 
-    call messages_print_var_option(stdout, 'LCAOStart', this%mode)
+    call message%print_var_option(stdout, 'LCAOStart', this%mode)
 
     if(this%mode == OPTION__LCAOSTART__LCAO_SIMPLE) then
-      call messages_experimental('LCAOStart = lcao_simple')
+      call message%experimental('LCAOStart = lcao_simple')
     end if
 
     if(this%mode == OPTION__LCAOSTART__LCAO_NONE) then
@@ -250,10 +250,10 @@ contains
     ! eigenvalues will be incorrect. This is due to confusion between spins and spinors in the code.
     if(st%d%ispin == SPINORS .and. this%alternative) then
       message%lines(1) = "LCAOAlternative is not working for spinors."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
     if(simul_box_is_periodic(gr%mesh%sb) .and. this%alternative) then
-      call messages_experimental("LCAOAlternative in periodic systems")
+      call message%experimental("LCAOAlternative in periodic systems")
       ! specifically, if you get the message about submesh radius > box size, results will probably be totally wrong.
     end if
 
@@ -306,7 +306,7 @@ contains
       !% procedure will be rescaled by the value of this variable. 1.0 means no rescaling.
       !%End
       call parse_variable(namespace, 'LCAOScaleFactor', CNST(1.0), this%orbital_scale_factor)
-      call messages_print_var_value(stdout, 'LCAOScaleFactor', this%orbital_scale_factor)
+      call message%print_var_value(stdout, 'LCAOScaleFactor', this%orbital_scale_factor)
 
       !%Variable LCAOMaximumOrbitalRadius
       !%Type float
@@ -317,7 +317,7 @@ contains
       !% extent greater that this value.
       !%End
       call parse_variable(namespace, 'LCAOMaximumOrbitalRadius', CNST(20.0), max_orb_radius, unit = units_inp%length)
-      call messages_print_var_value(stdout, 'LCAOMaximumOrbitalRadius', max_orb_radius, units_out%length)
+      call message%print_var_value(stdout, 'LCAOMaximumOrbitalRadius', max_orb_radius, units_out%length)
 
       ! count the number of orbitals available
       maxj = 0
@@ -330,8 +330,8 @@ contains
       this%maxorbs = this%maxorbs*st%d%dim
 
       if(this%maxorbs == 0) then
-        call messages_write('The are no atomic orbitals available, cannot do LCAO.')
-        call messages_warning()
+        call message%write('The are no atomic orbitals available, cannot do LCAO.')
+        call message%warning()
         this%mode = OPTION__LCAOSTART__LCAO_NONE
         POP_SUB(lcao_init)
         return
@@ -399,32 +399,32 @@ contains
 
       ! some orbitals might have been removed because of their radii
       if(this%maxorbs /= iorb - 1) then
-        call messages_write('Info: ')
-        call messages_write(this%maxorbs - iorb + 1)
-        call messages_write(' of ')
-        call messages_write(this%maxorbs)
-        call messages_write(' orbitals cannot be used for the LCAO calculation,')
-        call messages_new_line()
-        call messages_write('      their radii exceeds LCAOMaximumOrbitalRadius (')
-        call messages_write(max_orb_radius, units = units_out%length, fmt = '(f6.1)')
-        call messages_write(').')
-        call messages_warning()
+        call message%write('Info: ')
+        call message%write(this%maxorbs - iorb + 1)
+        call message%write(' of ')
+        call message%write(this%maxorbs)
+        call message%write(' orbitals cannot be used for the LCAO calculation,')
+        call message%new_line()
+        call message%write('      their radii exceeds LCAOMaximumOrbitalRadius (')
+        call message%write(max_orb_radius, units = units_out%length, fmt = '(f6.1)')
+        call message%write(').')
+        call message%warning()
 
         this%maxorbs = iorb - 1
       end if
 
       if(this%maxorbs < st%nst) then
-        call messages_write('Cannot do LCAO for all states because there are not enough atomic orbitals.')
-        call messages_new_line()
+        call message%write('Cannot do LCAO for all states because there are not enough atomic orbitals.')
+        call message%new_line()
 
-        call messages_write('Required: ')
-        call messages_write(st%nst)
-        call messages_write('. Available: ')
-        call messages_write(this%maxorbs)
-        call messages_write('. ')
-        call messages_write(st%nst - this%maxorbs)
-        call messages_write(' orbitals will be randomized.')
-        call messages_warning()
+        call message%write('Required: ')
+        call message%write(st%nst)
+        call message%write('. Available: ')
+        call message%write(this%maxorbs)
+        call message%write('. ')
+        call message%write(st%nst - this%maxorbs)
+        call message%write(' orbitals will be randomized.')
+        call message%warning()
       end if
 
       !%Variable LCAODimension
@@ -492,10 +492,10 @@ contains
 #endif
       PUSH_SUB(lcao_init.lcao2_init)
 
-      call messages_write('Info: Using LCAO alternative implementation.')
-      call messages_info()
+      call message%write('Info: Using LCAO alternative implementation.')
+      call message%info()
 
-      call messages_experimental('LCAO alternative implementation')
+      call message%experimental('LCAO alternative implementation')
 
       !%Variable LCAOKeepOrbitals
       !%Type logical
@@ -537,11 +537,11 @@ contains
       ! instead to be sure of getting decent results!
 
       if(this%derivative) then
-        call messages_experimental('LCAO extra orbitals')
+        call message%experimental('LCAO extra orbitals')
 
         if(st%nst * st%smear%el_per_state > st%qtot) then
           message%lines(1) = "Lower-lying empty states may be missed with LCAOExtraOrbitals."
-          call messages_warning(1)
+          call message%warning(1)
         end if
       end if
 
@@ -657,7 +657,7 @@ contains
 
         if(info /= 0) then
           write(message%lines(1), '(a,i6)') 'descinit for BLACS failed with error code ', info
-          call messages_fatal(1)
+          call message%fatal(1)
         end if
 
         this%calc_atom = .false.
@@ -735,7 +735,7 @@ contains
       ! set up Hamiltonian (we do not call system_h_setup here because we do not want to
       ! overwrite the guess density)
       message%lines(1) = 'Info: Setting up Hamiltonian.'
-      call messages_info(1)
+      call message%info(1)
 
       ! get the effective potential (we don`t need the eigenvalues yet)
       call v_ks_calc(sys%ks, sys%namespace, sys%hm, sys%st, sys%geo, calc_eigenval=.false., calc_berry=.false.)
@@ -752,7 +752,7 @@ contains
 
       if(present(st_start)) then
         write(message%lines(1),'(a,i8,a)') 'Performing LCAO for states ', st_start, ' and above'
-        call messages_info(1)
+        call message%info(1)
       end if
 
       if(lcao%mode == OPTION__LCAOSTART__LCAO_SIMPLE) then
@@ -791,14 +791,14 @@ contains
 
       if(st_start_random > 1) then
         write(message%lines(1),'(a,i8,a)') 'Generating random wavefunctions for states ', st_start_random, ' and above'
-        call messages_info(1)
+        call message%info(1)
       end if
 
       ! Randomly generate the initial wavefunctions.
       call states_elec_generate_random(sys%st, sys%gr%mesh, sys%gr%sb, ist_start_ = st_start_random, normalized = .false.)
 
-      call messages_write('Orthogonalizing wavefunctions.')
-      call messages_info()
+      call message%write('Orthogonalizing wavefunctions.')
+      call message%info()
       call states_elec_orthogonalize(sys%st, sys%gr%mesh)
 
       if(.not. lcao_done) then
@@ -814,8 +814,8 @@ contains
     else if (present(st_start)) then
 
       if(st_start > 1) then
-        call messages_write('Orthogonalizing wavefunctions.')
-        call messages_info()
+        call message%write('Orthogonalizing wavefunctions.')
+        call message%info()
         call states_elec_orthogonalize(sys%st, sys%gr%mesh)
       end if
 
@@ -1117,8 +1117,8 @@ contains
       !% the <tt>AtomsMagnetDirection</tt> block has to be set.
       !%End
       call parse_variable(namespace, 'GuessMagnetDensity', INITRHO_FERROMAGNETIC, gmd_opt)
-      if(.not.varinfo_valid_option('GuessMagnetDensity', gmd_opt)) call messages_input_error('GuessMagnetDensity')
-      call messages_print_var_option(stdout, 'GuessMagnetDensity', gmd_opt)
+      if(.not.varinfo_valid_option('GuessMagnetDensity', gmd_opt)) call message%input_error('GuessMagnetDensity')
+      call message%print_var_option(stdout, 'GuessMagnetDensity', gmd_opt)
     end if
 
     rho = M_ZERO
@@ -1204,12 +1204,12 @@ contains
       !%End
       if(parse_block(namespace, 'AtomsMagnetDirection', blk) < 0) then
         message%lines(1) = "AtomsMagnetDirection block is not defined."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
 
       if (parse_block_n(blk) /= geo%natoms) then
         message%lines(1) = "AtomsMagnetDirection block has the wrong number of rows."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
 
       SAFE_ALLOCATE(atom_rho(1:gr%fine%mesh%np, 1:2))
@@ -1319,7 +1319,7 @@ contains
     end if
 
     write(message%lines(1),'(a,f13.6)')'Info: Unnormalized total charge = ', rr
-    call messages_info(1)
+    call message%info(1)
 
     if (abs(rr) > M_EPSILON) then ! We only renormalize if the density is not zero
       rr = qtot / rr
@@ -1334,7 +1334,7 @@ contains
     end if
 
     write(message%lines(1),'(a,f13.6)')'Info: Renormalized total charge = ', rr
-    call messages_info(1)
+    call message%info(1)
 
     SAFE_DEALLOCATE_A(atom_rho)
     POP_SUB(lcao_guess_density)

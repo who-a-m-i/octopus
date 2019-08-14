@@ -55,7 +55,7 @@
     else
       message%lines(1) = 'If OCTTargetOperator = oct_tg_local, then you must give the shape'
       message%lines(2) = 'of this target in variable "OCTLocalTarget".'
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
 
     POP_SUB(target_init_local)

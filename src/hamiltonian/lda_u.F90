@@ -210,8 +210,8 @@ contains
 
    ASSERT(.not. (level == DFT_U_NONE))
 
-   call messages_print_stress(stdout, "DFT+U")
-   if(gr%mesh%parallel_in_domains) call messages_experimental("dft+u parallel in domains")
+   call message%print_stress(stdout, "DFT+U")
+   if(gr%mesh%parallel_in_domains) call message%experimental("dft+u parallel in domains")
    this%level = level
 
    call lda_u_write_info(this, stdout)
@@ -227,7 +227,7 @@ contains
    !% The states are defined via the block DFTUBasisStates
    !%End
    call parse_variable(namespace, 'DFTUBasisFromStates', .false., this%basisfromstates)
-   if(this%basisfromstates) call messages_experimental("DFTUBasisFromStates") 
+   if(this%basisfromstates) call message%experimental("DFTUBasisFromStates") 
 
    !%Variable DFTUDoubleCounting
    !%Type integer
@@ -242,10 +242,10 @@ contains
    !% (Experimental) Around mean field double counting, as defined in PRB 44, 943 (1991) and PRB 49, 14211 (1994).
    !%End
    call parse_variable(namespace, 'DFTUDoubleCounting', DFT_U_FLL, this%double_couting)
-   call messages_print_var_option(stdout,  'DFTUDoubleCounting', this%double_couting)
-   if(this%double_couting /= DFT_U_FLL) call messages_experimental("DFTUDoubleCounting = dft_u_amf")
+   call message%print_var_option(stdout,  'DFTUDoubleCounting', this%double_couting)
+   if(this%double_couting /= DFT_U_FLL) call message%experimental("DFTUDoubleCounting = dft_u_amf")
    if(st%d%ispin == SPINORS .and. this%double_couting /= DFT_U_FLL) then
-     call messages_not_implemented("AMF double couting with spinors.")
+     call message%not_implemented("AMF double couting with spinors.")
    end if
 
    if( this%level == DFT_U_ACBN0 ) then
@@ -259,7 +259,7 @@ contains
      !% It is strongly recommended to set AOLoewdin=yes when using the option.
      !%End
      call parse_variable(namespace, 'UseAllAtomicOrbitals', .false., this%useAllOrbitals)
-     if(this%useAllOrbitals) call messages_experimental("UseAllAtomicOrbitals")
+     if(this%useAllOrbitals) call message%experimental("UseAllAtomicOrbitals")
 
      !%Variable SkipSOrbitals
      !%Type logical
@@ -270,7 +270,7 @@ contains
      !% from the peusopotential but s orbitals. Only available with ACBN0 functional.
      !%End
      call parse_variable(namespace, 'SkipSOrbitals', .true., this%skipSOrbitals)   
-     if(.not.this%SkipSOrbitals) call messages_experimental("SkipSOrbitals")
+     if(.not.this%SkipSOrbitals) call message%experimental("SkipSOrbitals")
 
      !%Variable ACBN0Screening
      !%Type float
@@ -282,7 +282,7 @@ contains
      !% of the U, as defined in the ACBN0 functional, is used.
      !%End
      call parse_variable(namespace, 'ACBN0Screening', M_ONE, this%acbn0_screening)
-     call messages_print_var_value(stdout, 'ACBN0Screening', this%acbn0_screening)
+     call message%print_var_value(stdout, 'ACBN0Screening', this%acbn0_screening)
 
      !%Variable ACBN0RotationallyInvariant
      !%Type logical
@@ -293,9 +293,9 @@ contains
      !% This is activated by default, except in the case of spinors, as this is not yet implemented in this case.
      !%End
      call parse_variable(namespace, 'ACBN0RotationallyInvariant', st%d%ispin /= SPINORS, this%rot_inv)
-     call messages_print_var_value(stdout, 'ACBN0RotationallyInvariant', this%rot_inv)
+     call message%print_var_value(stdout, 'ACBN0RotationallyInvariant', this%rot_inv)
      if(this%rot_inv .and. st%d%ispin == SPINORS ) then
-       call messages_not_implemented("Rotationally invariant ACBN0 with spinors.")
+       call message%not_implemented("Rotationally invariant ACBN0 with spinors.")
      end if
 
      !%Variable ACBN0IntersiteInteraction
@@ -308,15 +308,15 @@ contains
      !% It is strongly recommended to set AOLoewdin=yes when using the option.
      !%End
      call parse_variable(namespace, 'ACBN0IntersiteInteraction', .false., this%intersite)
-     if(this%intersite) call messages_experimental("ACBN0IntersiteInteraction")
-     call messages_print_var_value(stdout, 'ACBN0IntersiteInteraction', this%intersite)
+     if(this%intersite) call message%experimental("ACBN0IntersiteInteraction")
+     call message%print_var_value(stdout, 'ACBN0IntersiteInteraction', this%intersite)
 
      if(this%intersite) then
 
        !This is a non local operator. To make this working, one probably needs to apply the 
        ! symmetries to the generalized occupation matrices 
        if(gr%sb%kpoints%use_symmetries) then
-         call messages_not_implemented("Intersite interaction with kpoint symmetries")
+         call message%not_implemented("Intersite interaction with kpoint symmetries")
        end if
  
        !%Variable ACBN0IntersiteCutoff
@@ -328,8 +328,8 @@ contains
        !%End
        call parse_variable(namespace, 'ACBN0IntersiteCutoff', M_ZERO, this%intersite_radius, unit = units_inp%length)
        if(abs(this%intersite_radius) < M_EPSILON) then
-         call messages_write("ACBN0IntersiteCutoff must be greater than 0")
-         call messages_fatal(1)
+         call message%write("ACBN0IntersiteCutoff must be greater than 0")
+         call message%fatal(1)
        end if
      end if
 
@@ -376,7 +376,7 @@ contains
          if(this%orbsets(ios)%ndim  > 1) complex_coulomb_integrals = .true.
        end do
 
-       call messages_info(1)
+       call message%info(1)
        if(.not. complex_coulomb_integrals) then 
          write(message%lines(1),'(a)')    'Computing the Coulomb integrals of the localized basis.'
          if (states_are_real(st)) then
@@ -406,7 +406,7 @@ contains
        this%maxnorbs = parse_block_n(blk) 
        if(this%maxnorbs <1) then
          write(message%lines(1),'(a,i3,a,i3)') 'DFTUBasisStates must contains at least one state.'
-         call messages_fatal(1)
+         call message%fatal(1)
        end if
        SAFE_ALLOCATE(this%basisstates(1:this%maxnorbs))
        do is = 1, this%maxnorbs
@@ -415,7 +415,7 @@ contains
        call parse_block_end(blk)
      else
        write(message%lines(1),'(a,i3,a,i3)') 'DFTUBasisStates must be specified if DFTUBasisFromStates=yes'
-       call messages_fatal(1)
+       call message%fatal(1)
      end if
 
      if (states_are_real(st)) then
@@ -443,7 +443,7 @@ contains
 
    end if
 
-   call messages_print_stress(stdout)
+   call message%print_stress(stdout)
 
    POP_SUB(lda_u_init)
  end subroutine lda_u_init
@@ -729,20 +729,20 @@ contains
     PUSH_SUB(lda_u_write_info)
 
     write(message%lines(1), '(1x)')
-    call messages_info(1, iunit)
+    call message%info(1, iunit)
     if(this%level == DFT_U_EMPIRICAL) then
       write(message%lines(1), '(a)') "Method:"
       write(message%lines(2), '(a)') "  [1] Dudarev et al., Phys. Rev. B 57, 1505 (1998)"
-      call messages_info(2, iunit)
+      call message%info(2, iunit)
     else
       write(message%lines(1), '(a)') "Method:"
       write(message%lines(2), '(a)') "  [1] Agapito et al., Phys. Rev. X 5, 011006 (2015)"
-      call messages_info(2, iunit)
+      call message%info(2, iunit)
     end if
     write(message%lines(1), '(a)') "Implementation:"
     write(message%lines(2), '(a)') "  [1] Tancogne-Dejean, Oliveira, and Rubio, Phys. Rev. B 69, 245133 (2017)"
     write(message%lines(3), '(1x)')
-    call messages_info(3, iunit)
+    call message%info(3, iunit)
 
     POP_SUB(lda_u_write_info)
 

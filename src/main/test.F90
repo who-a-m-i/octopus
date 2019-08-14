@@ -74,7 +74,7 @@ contains
     
     PUSH_SUB(test_run)
 
-    call messages_obsolete_variable(namespace, 'WhichTest', 'TestMode')
+    call message%obsolete_variable(namespace, 'WhichTest', 'TestMode')
 
     !%Variable TestMode
     !%Type integer
@@ -104,8 +104,8 @@ contains
     !%End
     call parse_variable(namespace, 'TestMode', OPTION__TESTMODE__HARTREE, test_mode)
 
-    call messages_obsolete_variable(namespace, 'TestDerivatives', 'TestType')
-    call messages_obsolete_variable(namespace, 'TestOrthogonalization', 'TestType')
+    call message%obsolete_variable(namespace, 'TestDerivatives', 'TestType')
+    call message%obsolete_variable(namespace, 'TestOrthogonalization', 'TestType')
   
     !%Variable TestType
     !%Type integer
@@ -127,7 +127,7 @@ contains
     call parse_variable(namespace, 'TestType', OPTION__TESTTYPE__ALL, param%type)
     if(param%type < 1 .or. param%type > 5) then
       message%lines(1) = "Invalid option for TestType."
-      call messages_fatal(1, only_root_writes = .true.)
+      call message%fatal(1, only_root_writes = .true.)
     endif
   
     !%Variable TestRepetitions
@@ -171,13 +171,13 @@ contains
     !%End
     call parse_variable(namespace, 'TestMaxBlockSize', 128, param%max_blocksize)
 
-    call messages_print_stress(stdout, "Test mode")
-    call messages_print_var_option(stdout, "TestMode", test_mode)
-    call messages_print_var_option(stdout, "TestType", param%type)
-    call messages_print_var_value(stdout, "TestRepetitions", param%repetitions)
-    call messages_print_var_value(stdout, "TestMinBlockSize", param%min_blocksize)
-    call messages_print_var_value(stdout, "TestMaxBlockSize", param%max_blocksize)
-    call messages_print_stress(stdout)
+    call message%print_stress(stdout, "Test mode")
+    call message%print_var_option(stdout, "TestMode", test_mode)
+    call message%print_var_option(stdout, "TestType", param%type)
+    call message%print_var_value(stdout, "TestRepetitions", param%repetitions)
+    call message%print_var_value(stdout, "TestMinBlockSize", param%min_blocksize)
+    call message%print_var_value(stdout, "TestMaxBlockSize", param%max_blocksize)
+    call message%print_stress(stdout)
   
     select case(test_mode)
     case(OPTION__TESTMODE__HARTREE)
@@ -235,10 +235,10 @@ contains
 
     call calc_mode_par_set_parallelization(P_STRATEGY_STATES, default = .false.)
 
-    call messages_write('Info: Testing the nonlocal part of the pseudopotential with SOC')
-    call messages_new_line()
-    call messages_new_line()
-    call messages_info()
+    call message%write('Info: Testing the nonlocal part of the pseudopotential with SOC')
+    call message%new_line()
+    call message%new_line()
+    call message%info()
 
     call system_init(sys, namespace)
 
@@ -261,7 +261,7 @@ contains
     
     do itime = 1, epsib%nst
       write(message%lines(1),'(a,i1,3x, f12.6)') "Norm state  ", itime, zmf_nrm2(sys%gr%mesh, 2, epsib%states(itime)%zpsi)
-      call messages_info(1)
+      call message%info(1)
     end do
 
     call batch_end(epsib)
@@ -288,10 +288,10 @@ contains
 
     call calc_mode_par_set_parallelization(P_STRATEGY_STATES, default = .false.)
 
-    call messages_write('Info: Testing some DFT+U routines')
-    call messages_new_line()
-    call messages_new_line()
-    call messages_info()
+    call message%write('Info: Testing some DFT+U routines')
+    call message%new_line()
+    call message%new_line()
+    call message%info()
 
     call system_init(sys, namespace)
 
@@ -346,7 +346,7 @@ contains
         write(message%lines(1),'(a,i1,3x, f12.6)') "Norm state  ", itime, &
           zmf_nrm2(sys%gr%mesh, sys%st%d%dim, epsib%states(itime)%zpsi)
       end if
-      call messages_info(1)
+      call message%info(1)
     end do
 
     SAFE_DEALLOCATE_A(dweight)
@@ -396,10 +396,10 @@ contains
 
     call calc_mode_par_set_parallelization(P_STRATEGY_STATES, default = .false.)
 
-    call messages_write('Info: Testing the application of the Hamiltonian')
-    call messages_new_line()
-    call messages_new_line()
-    call messages_info()
+    call message%write('Info: Testing the application of the Hamiltonian')
+    call message%new_line()
+    call message%new_line()
+    call message%info()
 
     call system_init(sys, namespace)
 
@@ -445,7 +445,7 @@ contains
         write(message%lines(1),'(a,i1,3x, f12.6)') "Norm state  ", itime, &
           zmf_nrm2(sys%gr%mesh, sys%st%d%dim, hpsib%states(itime)%zpsi)
       end if
-      call messages_info(1)
+      call message%info(1)
     end do
 
     call batch_end(hpsib, copy = .false.)
@@ -470,10 +470,10 @@ contains
 
     call calc_mode_par_set_parallelization(P_STRATEGY_STATES, default = .false.)
 
-    call messages_write('Info: Testing density calculation')
-    call messages_new_line()
-    call messages_new_line()
-    call messages_info()
+    call message%write('Info: Testing density calculation')
+    call message%new_line()
+    call message%new_line()
+    call message%info()
 
     call system_init(sys, namespace)
 
@@ -486,7 +486,7 @@ contains
     end do
 
     write(message%lines(1),'(a,3x, f12.6)') "Norm density  ", dmf_nrm2(sys%gr%mesh, sys%st%rho(:,1))
-    call messages_info(1)
+    call message%info(1)
 
     call states_elec_deallocate_wfns(sys%st)
     call system_end(sys)
@@ -509,7 +509,7 @@ contains
 
     message%lines(1) = 'Info: Testing the finite-differences derivatives.'
     message%lines(2) = ''
-    call messages_info(2)
+    call message%info(2)
 
     if(param%type == OPTION__TESTTYPE__ALL .or. param%type == OPTION__TESTTYPE__REAL) then
       call dderivatives_test(sys%gr%der, sys%namespace, param%repetitions, param%min_blocksize, param%max_blocksize)
@@ -549,17 +549,17 @@ contains
 
     message%lines(1) = 'Info: Testing orthogonalization.'
     message%lines(2) = ''
-    call messages_info(2)
+    call message%info(2)
 
     if(param%type == OPTION__TESTTYPE__ALL .or. param%type == OPTION__TESTTYPE__REAL) then
       message%lines(1) = 'Info: Real wave-functions.'
-      call messages_info(1)
+      call message%info(1)
       call dstates_elec_calc_orth_test(sys%st, sys%gr%mesh, sys%gr%sb)
     end if
 
     if(param%type == OPTION__TESTTYPE__ALL .or. param%type == OPTION__TESTTYPE__COMPLEX) then
       message%lines(1) = 'Info: Complex wave-functions.'
-      call messages_info(1)
+      call message%info(1)
       call zstates_elec_calc_orth_test(sys%st, sys%gr%mesh, sys%gr%sb)
     end if
 
@@ -581,20 +581,20 @@ contains
     call system_init(sys, namespace)
 
     if(param%type == OPTION__TESTTYPE__ALL .or. param%type == OPTION__TESTTYPE__REAL) then
-      call messages_write('Info: Testing real interpolation routines')
-      call messages_new_line()
-      call messages_new_line()
-      call messages_info()
+      call message%write('Info: Testing real interpolation routines')
+      call message%new_line()
+      call message%new_line()
+      call message%info()
 
       call dmesh_interpolation_test(sys%gr%mesh)
     end if
 
     if(param%type == OPTION__TESTTYPE__ALL .or. param%type == OPTION__TESTTYPE__COMPLEX) then
-      call messages_new_line()
-      call messages_write('Info: Testing complex interpolation routines')
-      call messages_new_line()
-      call messages_new_line()
-      call messages_info()
+      call message%new_line()
+      call message%write('Info: Testing complex interpolation routines')
+      call message%new_line()
+      call message%new_line()
+      call message%info()
 
       call zmesh_interpolation_test(sys%gr%mesh)
     end if

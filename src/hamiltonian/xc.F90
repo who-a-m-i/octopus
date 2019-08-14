@@ -103,7 +103,7 @@ contains
     PUSH_SUB(xc_write_info)
 
     write(message%lines(1), '(a)') "Exchange-correlation:"
-    call messages_info(1, iunit)
+    call message%info(1, iunit)
 
     do ifunc = FUNC_X, FUNC_C
       call xc_functl_write_info(xcs%functional(ifunc, 1), iunit)
@@ -112,7 +112,7 @@ contains
     if(xcs%exx_coef /= M_ZERO) then
       write(message%lines(1), '(1x)')
       write(message%lines(2), '(a,f8.5)') "Exact exchange mixing = ", xcs%exx_coef
-      call messages_info(2, iunit)
+      call message%info(2, iunit)
     end if
 
     POP_SUB(xc_write_info)
@@ -174,11 +174,11 @@ contains
       if((xcs%functional(FUNC_X,1)%id /= 0).and.(xcs%functional(FUNC_X,1)%id /= XC_OEP_X)) then
         message%lines(1) = "You cannot use an exchange functional when performing"
         message%lines(2) = "a Hartree-Fock calculation or using a hybrid functional."
-        call messages_fatal(2)
+        call message%fatal(2)
       end if
 
       if(periodic_dim == ndim) &
-        call messages_experimental("Fock operator (Hartree-Fock, OEP, hybrids) in fully periodic systems")
+        call message%experimental("Fock operator (Hartree-Fock, OEP, hybrids) in fully periodic systems")
 
       ! get the mixing coefficient for hybrids
       if(bitand(xcs%functional(FUNC_C,1)%family, XC_FAMILY_HYB_GGA) /= 0 .or. &
@@ -196,10 +196,10 @@ contains
     end if
 
     if (bitand(xcs%family, XC_FAMILY_LCA) /= 0) &
-      call messages_not_implemented("LCA current functionals") ! not even in libxc!
+      call message%not_implemented("LCA current functionals") ! not even in libxc!
 
-    call messages_obsolete_variable(namespace, 'MGGAimplementation')
-    call messages_obsolete_variable(namespace, 'CurrentInTau', 'XCUseGaugeIndependentKED')
+    call message%obsolete_variable(namespace, 'MGGAimplementation')
+    call message%obsolete_variable(namespace, 'CurrentInTau', 'XCUseGaugeIndependentKED')
 
     if(family_is_mgga(xcs%family)) then
       !%Variable XCUseGaugeIndependentKED
@@ -242,7 +242,7 @@ contains
 
       call parse_variable(namespace, 'XCKernelLRCAlpha', M_ZERO, xcs%kernel_lrc_alpha)
       if(abs(xcs%kernel_lrc_alpha) > M_EPSILON) &
-        call messages_experimental("Long-range correction to kernel")
+        call message%experimental("Long-range correction to kernel")
 
       !%Variable XCDensityCorrection
       !%Type integer
@@ -259,7 +259,7 @@ contains
       call parse_variable(namespace, 'XCDensityCorrection', LR_NONE, xcs%xc_density_correction)
 
       if(xcs%xc_density_correction /= LR_NONE) then 
-        call messages_experimental('XC density correction')
+        call message%experimental('XC density correction')
 
         !%Variable XCDensityCorrectionOptimize
         !%Type logical
@@ -317,7 +317,7 @@ contains
       !% When enabled, additional parallelization
       !% will be used for the calculation of the XC functional.
       !%End
-      call messages_obsolete_variable(namespace, 'XCParallel', 'ParallelXC')
+      call message%obsolete_variable(namespace, 'XCParallel', 'ParallelXC')
       call parse_variable(namespace, 'ParallelXC', .true., xcs%parallel)
       
       POP_SUB(xc_init.parse)

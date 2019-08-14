@@ -252,7 +252,7 @@ contains
     
     ! This is a writing to avoid an optimization of gfortran with -O3
     write(message%lines(1),'(a,i8)') "Info: number of points in the partition (in root process) =", size(partition%part)
-    call messages_info(1)
+    call message%info(1)
     
     ! Check if the file exists and has the proper size (only world root)
     if (mpi_world%rank == 0) then
@@ -339,7 +339,7 @@ contains
       write(message%lines(4),*) 'sdispls = ', sdispls(:)
       write(message%lines(5),*) 'partition%remainder = ', partition%remainder
       write(message%lines(6),*) 'partition%np_local = ', partition%np_local
-      call messages_fatal(6)
+      call message%fatal(6)
     endif
 
     SAFE_DEALLOCATE_A(scounts)

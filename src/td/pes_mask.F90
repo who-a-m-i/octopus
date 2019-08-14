@@ -202,23 +202,23 @@ contains
     mask%mesh => mesh  
     
     if(simul_box_is_periodic(sb)) &
-      call messages_experimental("PES_mask with periodic dimensions")
+      call message%experimental("PES_mask with periodic dimensions")
     
     
     write(message%lines(1),'(a,i1,a)') 'Info: Calculating PES using mask technique.'
-    call messages_info(1)
+    call message%info(1)
     
     
     if(sb%box_shape /= SPHERE .and. .not. simul_box_is_periodic(sb)) then
       message%lines(1) = 'PhotoElectronSpectrum = pes_mask usually requires BoxShape = sphere.'
       message%lines(2) = 'Unless you know what you are doing modify this parameter and rerun.'
-      call messages_warning(2)
+      call message%warning(2)
     end if
 
     if(hm%bc%abtype /= NOT_ABSORBING) then
       message%lines(1) = 'PhotoElectronSpectrum = pes_mask already contains absorbing boundaries.'
       message%lines(2) = 'Set AbsorbingBoundaries = no and rerun.'
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
 
 
@@ -242,8 +242,8 @@ contains
     !% wavefunctions on the region <i>r</i> > <i>R1</i>. This mode employs a step masking function by default.
     !%End
     call parse_variable(namespace, 'PESMaskMode', PES_MASK_MODE_MASK, mask%mode)
-    if(.not.varinfo_valid_option('PESMaskMode', mask%mode)) call messages_input_error('PESMaskMode')
-    call messages_print_var_option(stdout, "PESMaskMode", mask%mode)
+    if(.not.varinfo_valid_option('PESMaskMode', mask%mode)) call message%input_error('PESMaskMode')
+    call message%print_var_option(stdout, "PESMaskMode", mask%mode)
     
     select case(mask%mode)
     case(PES_MASK_MODE_PASSIVE)
@@ -300,43 +300,43 @@ contains
     call parse_variable(namespace, 'PESMaskPlaneWaveProjection', PW_MAP_FFT, mask%pw_map_how)
     
     if(.not.varinfo_valid_option('PESMaskPlaneWaveProjection', mask%pw_map_how)) then
-      call messages_input_error('PESMaskPlaneWaveProjection')
+      call message%input_error('PESMaskPlaneWaveProjection')
     end if
     
-    call messages_print_var_option(stdout, "PESMaskPlaneWaveProjection", mask%pw_map_how)
+    call message%print_var_option(stdout, "PESMaskPlaneWaveProjection", mask%pw_map_how)
 
     if (mask%pw_map_how ==  PW_MAP_PFFT .and. (.not. mask%mesh%parallel_in_domains)) then
       message%lines(1)= "Trying to use PESMaskPlaneWaveProjection = pfft_map with no domain parallelization."
       message%lines(2)= "Projection method changed to more efficient fft_map."
-      call messages_warning(2)
+      call message%warning(2)
       mask%pw_map_how = PW_MAP_FFT
     end if
 
     if (mask%pw_map_how ==  PW_MAP_PNFFT .and. (.not. mask%mesh%parallel_in_domains)) then
       message%lines(1)= "Trying to use PESMaskPlaneWaveProjection = pnfft_map with no domain parallelization."
       message%lines(2)= "Projection method changed to more efficient nfft_map."
-      call messages_warning(2)
+      call message%warning(2)
       mask%pw_map_how = PW_MAP_NFFT
     end if
     
 #if !defined(HAVE_NFFT) 
     if (mask%pw_map_how ==  PW_MAP_NFFT) then
       message%lines(1) = "PESMaskPlaneWaveProjection = nfft_map requires NFFT but that library was not linked."
-      call messages_fatal(1) 
+      call message%fatal(1) 
     end if
 #endif
     
 #if !defined(HAVE_PFFT) 
     if (mask%pw_map_how ==  PW_MAP_PFFT) then
       message%lines(1) = "PESMaskPlaneWaveProjection = pfft_map requires PFFT but that library was not linked."
-      call messages_fatal(1) 
+      call message%fatal(1) 
     end if
 #endif
 
 #if !defined(HAVE_PNFFT) 
     if (mask%pw_map_how ==  PW_MAP_PNFFT) then
       message%lines(1) = "PESMaskPlaneWaveProjection = pnfft_map requires PNFFT but that library was not linked."
-      call messages_fatal(1) 
+      call message%fatal(1) 
     end if
 #endif
     
@@ -359,18 +359,18 @@ contains
       mask%enlarge(1:sb%periodic_dim) = M_ONE
       
       if(sb%periodic_dim > 0) then
-        call messages_print_var_value(stdout, "PESMaskEnlargeFactor", mask%enlarge(1:sb%dim))
+        call message%print_var_value(stdout, "PESMaskEnlargeFactor", mask%enlarge(1:sb%dim))
       else
-        call messages_print_var_value(stdout, "PESMaskEnlargeFactor", mask%enlarge(1))
+        call message%print_var_value(stdout, "PESMaskEnlargeFactor", mask%enlarge(1))
       end if
       
     end if
     if( mask%enlarge(1) < M_ONE ) then
       message%lines(1) = "PESMaskEnlargeFactor must be bigger than one."
-      call messages_fatal(1) 
+      call message%fatal(1) 
     end if
  
-    call messages_obsolete_variable(namespace, 'PESMaskEnlargeLev', 'PESMaskEnlargeFactor')
+    call message%obsolete_variable(namespace, 'PESMaskEnlargeLev', 'PESMaskEnlargeFactor')
     
     !%Variable PESMask2PEnlargeFactor
     !%Type float
@@ -397,24 +397,24 @@ contains
       mask%enlarge_2p(1:sb%periodic_dim) = M_ONE
 
       if(sb%periodic_dim > 0) then
-        call messages_print_var_value(stdout, "PESMask2PEnlargeFactor", mask%enlarge_2p(1:sb%dim))
+        call message%print_var_value(stdout, "PESMask2PEnlargeFactor", mask%enlarge_2p(1:sb%dim))
       else
-        call messages_print_var_value(stdout, "PESMask2PEnlargeFactor", mask%enlarge_2p(1))
+        call message%print_var_value(stdout, "PESMask2PEnlargeFactor", mask%enlarge_2p(1))
       end if
                           
       if (mask%pw_map_how /=  PW_MAP_NFFT .and. mask%pw_map_how /=  PW_MAP_PNFFT) then
         message%lines(1) = "PESMask2PEnlargeFactor requires PESMaskPlaneWaveProjection = nfft_map"
         message%lines(2) = "or pnfft_map in order to run properly." 
-        call messages_warning(2) 
+        call message%warning(2) 
       end if        
     end if
     
     if( mask%enlarge_2p(1) < M_ONE ) then
       message%lines(1) = "PESMask2PEnlargeFactor must be bigger than one."
-      call messages_fatal(1) 
+      call message%fatal(1) 
     end if
     
-    call messages_obsolete_variable(namespace, 'PESMaskNFFTEnlargeLev', 'PESMask2PEnlargeFactor')
+    call message%obsolete_variable(namespace, 'PESMaskNFFTEnlargeLev', 'PESMask2PEnlargeFactor')
     
     
     mask%ll = 1
@@ -502,7 +502,7 @@ contains
     case default 
       !Program should die before coming here
       write(message%lines(1),'(a)') "PESMaskPlaneWaveProjection unrecognized option." 
-      call messages_fatal(1)
+      call message%fatal(1)
       
     end select
     
@@ -569,8 +569,8 @@ contains
     !%Error function. Not Implemented.
     !%End
     call parse_variable(namespace, 'PESMaskShape', defaultMask, mask%shape)
-    if(.not.varinfo_valid_option('PESMaskShape', mask%shape)) call messages_input_error('PESMaskShape')
-    call messages_print_var_option(stdout, "PESMaskShape", mask%shape)
+    if(.not.varinfo_valid_option('PESMaskShape', mask%shape)) call message%input_error('PESMaskShape')
+    call message%print_var_option(stdout, "PESMaskShape", mask%shape)
     
     !%Variable PESMaskSize
     !%Type block
@@ -608,7 +608,7 @@ contains
         mask%mask_R(2)=mesh%sb%lsize(1)        
         message%lines(1) = "Input: PESMaskSize R(1) and R(2) not specified. Using default values for cubic mask."
       end if    
-      call messages_info(1)
+      call message%info(1)
     case(1)
       call parse_block_float(blk, 0, 0, mask%mask_R(1), units_inp%length)
       if (sb%box_shape == SPHERE) then
@@ -618,7 +618,7 @@ contains
         mask%mask_R(2)=mesh%sb%lsize(1)
         message%lines(1) = "Input: PESMaskSize R(2) not specified. Using default value for cubic mask."
       end if    
-      call messages_info(1)
+      call message%info(1)
     case(2)
       call parse_block_float(blk, 0, 0, mask%mask_R(1), units_inp%length)
       call parse_block_float(blk, 0, 1, mask%mask_R(2), units_inp%length)
@@ -630,7 +630,7 @@ contains
         if(mask%mask_R(2) > mesh%sb%lsize(1))  mask%mask_R(2) = mesh%sb%lsize(1) 
         message%lines(1) = "Info: using cubic mask."
       end if    
-      call messages_info(1)
+      call message%info(1)
 
     case(3)
       mask%user_def = .true.
@@ -649,7 +649,7 @@ contains
       end do
       message%lines(1) = "Input: using user-defined mask function from expression:"
       write(message%lines(2),'(a,a)') '   R = ', trim(user_def_expr) 
-      call messages_info(2)
+      call message%info(2)
     end select
 
     call parse_block_end(blk)
@@ -660,7 +660,7 @@ contains
     write(message%lines(2),'(a,es10.3,3a)') & 
       "  R2 = ", units_from_atomic(units_inp%length, mask%mask_R(2) ),&
       ' [', trim(units_abbrev(units_inp%length)), ']'
-    call messages_info(2)
+    call message%info(2)
     
     
     call pes_mask_generate_mask(mask,mesh)
@@ -681,7 +681,7 @@ contains
     mask%filter_k = .false.
     
     if(pCutOff > M_ZERO) then       
-      call messages_print_var_value(stdout, "PESMaskFilterCutOff", pCutOff, unit = units_out%energy)
+      call message%print_var_value(stdout, "PESMaskFilterCutOff", pCutOff, unit = units_out%energy)
       mask%filter_k = .true.
       
       SAFE_ALLOCATE(mask%Mk(1:mask%ll(1),1:mask%ll(2),1:mask%ll(3)))
@@ -708,7 +708,7 @@ contains
     call parse_variable(namespace, 'PESMaskIncludePsiA', .false., mask%add_psia)
     if(mask%add_psia) then
       message%lines(1)= "Input: Include contribution from Psi_A."
-      call messages_info(1)
+      call message%info(1)
     end if
     
     
@@ -725,7 +725,7 @@ contains
       if (tmp > MaxE) MaxE = tmp
     end do
     call parse_variable(namespace, 'PESMaskSpectEnergyMax', MaxE, mask%energyMax, unit = units_inp%energy)
-    call messages_print_var_value(stdout, "PESMaskSpectEnergyMax", mask%energyMax, unit = units_out%energy)
+    call message%print_var_value(stdout, "PESMaskSpectEnergyMax", mask%energyMax, unit = units_out%energy)
 
     !%Variable PESMaskSpectEnergyStep 
     !%Type float
@@ -735,7 +735,7 @@ contains
     !%End
     DeltaE = minval(mask%Lk(2,1:mesh%sb%dim)-mask%Lk(1,1:mesh%sb%dim))**M_TWO/M_TWO
     call parse_variable(namespace, 'PESMaskSpectEnergyStep', DeltaE, mask%energyStep, unit = units_inp%energy)
-    call messages_print_var_value(stdout, "PESMaskSpectEnergyStep", mask%energyStep, unit = units_out%energy)
+    call message%print_var_value(stdout, "PESMaskSpectEnergyStep", mask%energyStep, unit = units_out%energy)
     
 
 !!  Set external fields 
@@ -757,7 +757,7 @@ contains
       case default 
         write(message%lines(1),'(a)') 'PESMask should work only with TDExternalFields = vector_potential.'
         write(message%lines(2),'(a)') 'Unless PESMaskMode = passive_mode the results are likely to be wrong. '
-        call messages_warning(2)
+        call message%warning(2)
         
       end select
     end do
@@ -992,7 +992,7 @@ contains
       
     case default
       message%lines(1)="PhotoElectronSpectrum = pes_mask. Unrecognized mask type."
-      call messages_fatal(1) 
+      call message%fatal(1) 
     end select
 
 
@@ -1407,7 +1407,7 @@ contains
             case default
               !Program should die before coming here
               write(message%lines(1),'(a)') "PhotoElectroSpectrum = pes_mask. Unrecognized calculation mode." 
-              call messages_fatal(1)
+              call message%fatal(1)
               
             end select
             

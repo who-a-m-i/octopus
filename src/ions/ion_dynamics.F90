@@ -143,10 +143,10 @@ contains
     !% conditions. They will not be affected by any forces.
     !%End
     call parse_variable(namespace, 'IonsConstantVelocity', .false., this%constant_velocity)
-    call messages_print_var_value(stdout, 'IonsConstantVelocity', this%constant_velocity)
+    call message%print_var_value(stdout, 'IonsConstantVelocity', this%constant_velocity)
 
     if(this%constant_velocity) then
-      call messages_experimental('IonsConstantVelocity')
+      call message%experimental('IonsConstantVelocity')
       have_velocities = .true.
       this%drive_ions = .true.
     end if
@@ -173,7 +173,7 @@ contains
     
     ndisp = 0
     if(parse_block(namespace, 'IonsTimeDependentDisplacements', blk) == 0) then
-      call messages_experimental("IonsTimeDependentDisplacements")
+      call message%experimental("IonsTimeDependentDisplacements")
       ndisp= parse_block_n(blk)
       SAFE_ALLOCATE(this%td_displacements(1:geo%natoms))
       this%td_displacements(1:geo%natoms)%move = .false.
@@ -187,7 +187,7 @@ contains
         call tdf_read(this%td_displacements(iatom)%fx, namespace, trim(expression), ierr)
         if (ierr /= 0) then            
           write(message%lines(1),'(3A)') 'Could not find "', trim(expression), '" in the TDFunctions block:'
-          call messages_warning(1)
+          call message%warning(1)
         end if
         
         
@@ -195,14 +195,14 @@ contains
         call tdf_read(this%td_displacements(iatom)%fy, namespace, trim(expression), ierr)
         if (ierr /= 0) then            
           write(message%lines(1),'(3A)') 'Could not find "', trim(expression), '" in the TDFunctions block:'
-          call messages_warning(1)
+          call message%warning(1)
         end if
         
         call parse_block_string(blk, i-1, 3, expression)
         call tdf_read(this%td_displacements(iatom)%fz, namespace, trim(expression), ierr)
         if (ierr /= 0) then            
           write(message%lines(1),'(3A)') 'Could not find "', trim(expression), '" in the TDFunctions block:'
-          call messages_warning(1)
+          call message%warning(1)
         end if
         
       end do
@@ -231,20 +231,20 @@ contains
     !%End
     
     call parse_variable(namespace, 'Thermostat', THERMO_NONE, this%thermostat)
-    if(.not.varinfo_valid_option('Thermostat', this%thermostat)) call messages_input_error('Thermostat')
-    call messages_print_var_option(stdout, 'Thermostat', this%thermostat)
+    if(.not.varinfo_valid_option('Thermostat', this%thermostat)) call message%input_error('Thermostat')
+    call message%print_var_option(stdout, 'Thermostat', this%thermostat)
     
     if(this%thermostat /= THERMO_NONE) then
       
       have_velocities = .true.
 
       if(this%drive_ions) then
-        call messages_write('You cannot use a Thermostat and IonsConstantVelocity or IonsTimeDependentDisplacements')
-        call messages_write('at the same time.')
-        call messages_fatal()
+        call message%write('You cannot use a Thermostat and IonsConstantVelocity or IonsTimeDependentDisplacements')
+        call message%write('at the same time.')
+        call message%fatal()
       end if
 
-      call messages_experimental('Thermostat')
+      call message%experimental('Thermostat')
 
       !%Variable TemperatureFunction
       !%Type integer
@@ -263,7 +263,7 @@ contains
       if(ierr /= 0) then
         message%lines(1) = "You have enabled a thermostat but Octopus could not find"
         message%lines(2) = "the '"//trim(temp_function_name)//"' function in the TDFunctions block."
-        call messages_fatal(2)
+        call message%fatal(2)
       end if
 
       if(this%thermostat == THERMO_NH) then
@@ -275,7 +275,7 @@ contains
         !% This variable sets the fictitious mass for the Nose-Hoover
         !% thermostat.
         !%End
-        call messages_obsolete_variable(namespace, 'NHMass', 'ThermostatMass')
+        call message%obsolete_variable(namespace, 'NHMass', 'ThermostatMass')
 
         call parse_variable(namespace, 'ThermostatMass', CNST(1.0), this%nh(1)%mass)
         this%nh(2)%mass = this%nh(1)%mass
@@ -353,7 +353,7 @@ contains
       write(message%lines(3),'(2x,a,f8.4,1x,a)') '3/2 k_B T =', &
         units_from_atomic(units_out%energy, (M_THREE/M_TWO)*temperature), &
         units_abbrev(units_out%energy)
-      call messages_info(3)
+      call message%info(3)
 
     else
       !%Variable XYZVelocities
@@ -413,7 +413,7 @@ contains
 
         if(geo%natoms /= xyz%n) then
           write(message%lines(1), '(a,i4,a,i4)') 'I need exactly ', geo%natoms, ' velocities, but I found ', xyz%n
-          call messages_fatal(1)
+          call message%fatal(1)
         end if
 
         ! copy information and adjust units
@@ -441,7 +441,7 @@ contains
     !% set explicitly or implicitly, otherwise is no.
     !%End
     call parse_variable(namespace, 'MoveIons', have_velocities, this%move_ions)
-    call messages_print_var_value(stdout, 'MoveIons', this%move_ions)
+    call message%print_var_value(stdout, 'MoveIons', this%move_ions)
 
     if(ion_dynamics_ions_move(this)) then 
       SAFE_ALLOCATE(this%oldforce(1:geo%space%dim, 1:geo%natoms))
@@ -507,7 +507,7 @@ contains
           units_from_atomic(unit_kelvin, this%current_temperature), " ", units_abbrev(unit_kelvin), &
           ") at time ", &
           units_from_atomic(units_out%time, time), " ", trim(units_abbrev(units_out%time)), "."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
     else
       this%current_temperature = CNST(0.0)

@@ -32,7 +32,7 @@
 
 
     message%lines(1) =  'Info: Using a spin target'
-    call messages_info(1)
+    call message%info(1)
 
     !%Variable OCTTargetSpin
     !%Type block
@@ -57,13 +57,13 @@
         
       else
         message%lines(1) = '"OCTTargetSpin" has to be specified as block.'
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
 
     else
       message%lines(1) = 'If "OCTTargetOperator = oct_tg_spin", then you must'
       message%lines(2) = 'supply a "OCTTargetSpin" block.'
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
 
 

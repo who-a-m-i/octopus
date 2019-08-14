@@ -66,7 +66,7 @@ subroutine X(io_function_input)(filename, namespace, mesh, ff, ierr, map)
       SAFE_ALLOCATE(ff_global(1:mesh%np_global))
       call X(io_function_input_global)(filename, namespace, mesh, ff_global, ierr, map)
     end if
-    if(debug%info) call messages_debug_newlines(2)
+    if(debug%info) call message%debug_newlines(2)
 
     ! Only root knows if the file was successfully read.
     ! Now, it tells everybody else.
@@ -189,7 +189,7 @@ subroutine X(io_function_input_global)(filename, namespace, mesh, ff, ierr, map)
   case("csv")
     if (mesh%sb%box_shape /= PARALLELEPIPED .and. mesh%sb%box_shape /= HYPERCUBE) then
       message%lines(1) = "Box shape must be parallelepiped or hypercube when a .csv file is used."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if 
 
     call cube_init(cube, mesh%idx%ll, mesh%sb, namespace)
@@ -200,19 +200,19 @@ subroutine X(io_function_input_global)(filename, namespace, mesh, ff, ierr, map)
     
     if (ierr /= 0) then
       message%lines(1) = "Could not read file "//trim(io_workpath(filename, namespace))//""
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
     
     SAFE_ALLOCATE(read_ff(1:dims(1)*dims(2)*dims(3)))
 #ifdef R_TREAL
     call dread_csv(io_workpath(filename, namespace), dims(1)*dims(2)*dims(3), read_ff, ierr)
 #else
-    call messages_not_implemented("Reading complex CSV file")
+    call message%not_implemented("Reading complex CSV file")
 #endif
 
     if (ierr /= 0) then
       message%lines(1) = "Could not read file "//trim(io_workpath(filename, namespace))//""
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     if(mesh%sb%dim == 1) then
@@ -493,7 +493,7 @@ subroutine X(io_function_output_vector)(how, dir, fname, namespace, mesh, ff, ve
 
     if (.not. is_global_) then
       if(bitand(how, OPTION__OUTPUTFORMAT__BOUNDARY_POINTS) /= 0) then
-        call messages_not_implemented("OutputFormat = boundary_points with domain parallelization")
+        call message%not_implemented("OutputFormat = boundary_points with domain parallelization")
         SAFE_ALLOCATE(ff_global(1:mesh%np_part_global, 1:vector_dim))
         ! FIXME: needs version of vec_gather that includes boundary points. See ticket #127
       else
@@ -745,7 +745,7 @@ subroutine X(io_function_output) (how, dir, fname, namespace, mesh, ff, unit, ie
     i_am_root = (mesh%vp%rank == root_)
     if (.not. is_global_) then
       if(bitand(how, OPTION__OUTPUTFORMAT__BOUNDARY_POINTS) /= 0) then
-        call messages_not_implemented("OutputFormat = boundary_points with domain parallelization")
+        call message%not_implemented("OutputFormat = boundary_points with domain parallelization")
         SAFE_ALLOCATE(ff_global(1:mesh%np_part_global))
         ! FIXME: needs version of vec_gather that includes boundary points. See ticket #127
       else
@@ -833,7 +833,7 @@ subroutine X(io_function_output_global) (how, dir, fname, namespace, mesh, ff, u
       np_max = mesh%np_part_global
     else
       write(message%lines(1),'(2a)') trim(fname), ': not outputting boundary points; they are not available'
-      call messages_warning(1)
+      call message%warning(1)
       ! FIXME: in this case, one could allocate an array of the larger size and apply boundary conditions
     endif
   endif
@@ -1344,7 +1344,7 @@ contains
 
     if(mesh%sb%dim /= 3 .and. mesh%sb%dim /= 2) then
       write(message%lines(1), '(a)') 'Cannot output function '//trim(fname_ext)//' in XCrySDen format except in 2D or 3D.'
-      call messages_warning(1)
+      call message%warning(1)
       return
     end if
 
@@ -1543,23 +1543,23 @@ subroutine X(io_function_output_global_BZ) (how, dir, fname, namespace, mesh, ff
 
   np_max = mesh%sb%kpoints%reduced%npoints
 
-  if(bitand(how, OPTION__OUTPUTFORMAT__BINARY)     /= 0) call messages_not_implemented("Outpur_KPT with format binary") 
-  if(bitand(how, OPTION__OUTPUTFORMAT__AXIS_X)     /= 0) call messages_not_implemented("Outpur_KPT with format axis x")
-  if(bitand(how, OPTION__OUTPUTFORMAT__AXIS_Y)     /= 0) call messages_not_implemented("Outpur_KPT with format axis y")
-  if(bitand(how, OPTION__OUTPUTFORMAT__AXIS_Z)     /= 0) call messages_not_implemented("Outpur_KPT with format axis z")
+  if(bitand(how, OPTION__OUTPUTFORMAT__BINARY)     /= 0) call message%not_implemented("Outpur_KPT with format binary") 
+  if(bitand(how, OPTION__OUTPUTFORMAT__AXIS_X)     /= 0) call message%not_implemented("Outpur_KPT with format axis x")
+  if(bitand(how, OPTION__OUTPUTFORMAT__AXIS_Y)     /= 0) call message%not_implemented("Outpur_KPT with format axis y")
+  if(bitand(how, OPTION__OUTPUTFORMAT__AXIS_Z)     /= 0) call message%not_implemented("Outpur_KPT with format axis z")
   if(bitand(how, OPTION__OUTPUTFORMAT__PLANE_X)    /= 0) call out_plane(1, 2, 3) ! x=0; y; z;
   if(bitand(how, OPTION__OUTPUTFORMAT__PLANE_Y)    /= 0) call out_plane(2, 1, 3) ! y=0; x; z;
   if(bitand(how, OPTION__OUTPUTFORMAT__PLANE_Z)    /= 0) call out_plane(3, 1, 2) ! z=0; x; y;
-  if(bitand(how, OPTION__OUTPUTFORMAT__DX)         /= 0) call messages_not_implemented("Outpur_KPT with format dx")
-  if(bitand(how, OPTION__OUTPUTFORMAT__XCRYSDEN)   /= 0) call messages_not_implemented("Outpur_KPT with format xcrysden")
-  if(bitand(how, OPTION__OUTPUTFORMAT__CUBE)       /= 0) call messages_not_implemented("Outpur_KPT with format cube")
+  if(bitand(how, OPTION__OUTPUTFORMAT__DX)         /= 0) call message%not_implemented("Outpur_KPT with format dx")
+  if(bitand(how, OPTION__OUTPUTFORMAT__XCRYSDEN)   /= 0) call message%not_implemented("Outpur_KPT with format xcrysden")
+  if(bitand(how, OPTION__OUTPUTFORMAT__CUBE)       /= 0) call message%not_implemented("Outpur_KPT with format cube")
 
-  if(bitand(how, OPTION__OUTPUTFORMAT__MATLAB) /= 0) call messages_not_implemented("Outpur_KPT with format matlab")
+  if(bitand(how, OPTION__OUTPUTFORMAT__MATLAB) /= 0) call message%not_implemented("Outpur_KPT with format matlab")
 
 #if defined(HAVE_NETCDF)
-  if(bitand(how, OPTION__OUTPUTFORMAT__NETCDF)     /= 0) call messages_not_implemented("Outpur_KPT with format netcdf")
+  if(bitand(how, OPTION__OUTPUTFORMAT__NETCDF)     /= 0) call message%not_implemented("Outpur_KPT with format netcdf")
 #endif
-  if(bitand(how, OPTION__OUTPUTFORMAT__VTK) /= 0) call messages_not_implemented("Outpur_KPT with format vtk")
+  if(bitand(how, OPTION__OUTPUTFORMAT__VTK) /= 0) call message%not_implemented("Outpur_KPT with format vtk")
 
   POP_SUB(X(io_function_output_global_BZ))
   call profiling_out(write_prof)

@@ -81,7 +81,7 @@ contains
 
         if(n_divisors > max_d - 1) then
           message%lines(1) = "Internal error in get_divisors. Please increase n_divisors"
-          call messages_fatal(1)
+          call message%fatal(1)
         end if
 
         divisors(n_divisors) = ii
@@ -206,7 +206,7 @@ contains
     message%lines(1) = ""
     message%lines(2) = str_center("Running octopus", 70)
     message%lines(3) = ""
-    call messages_info(3)
+    call message%info(3)
 
     message%lines(1) = &
          "Version                : " // trim(conf%version)
@@ -214,13 +214,13 @@ contains
          "Commit                 : "// trim(conf%git_commit)
     message%lines(3) = &
          "Build time             : "// trim(conf%build_time)
-    call messages_info(3)
+    call message%info(3)
 
     message%lines(1) = 'Configuration options  : ' // trim(get_config_opts())
     message%lines(2) = 'Optional libraries     :'  // trim(get_optional_libraries())
 
     message%lines(3) = 'Architecture           : ' + TOSTRING(OCT_ARCH)
-    call messages_info(3)
+    call message%info(3)
 
     message%lines(1) = &
          "C compiler             : "//trim(conf%cc)
@@ -233,16 +233,16 @@ contains
 #endif
     message%lines(4) = &
          "Fortran compiler flags : "//trim(conf%fcflags)
-    call messages_info(4)
+    call message%info(4)
 
     message%lines(1) = ""
-    call messages_info(1)
+    call message%info(1)
 
     ! Let us print where we are running
     call loct_sysname(sys_name)
     write(message%lines(1), '(a)') str_center("The octopus is swimming in " // trim(sys_name), 70)
     message%lines(2) = ""
-    call messages_info(2)
+    call message%info(2)
 
 #if defined(HAVE_MPI)
     call MPI_Barrier(mpi_world%comm, mpi_err)

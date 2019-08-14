@@ -173,7 +173,7 @@ contains
     call parse_variable(namespace, "LinearSolverMaxIter", 1000, this%max_iter)
 
     write(message%lines(1),'(a)') 'Linear Solver'
-    call messages_print_stress(stdout, trim(message%lines(1)))
+    call message%print_stress(stdout, trim(message%lines(1)))
     
     ! solver 
     select case(this%solver)
@@ -205,14 +205,14 @@ contains
         message%lines(1)='Linear Solver: Sum-over-States'
     end select
 
-    call messages_info(1)
+    call message%info(1)
     
-    call messages_print_stress(stdout)
+    call message%print_stress(stdout)
 
     if(this%solver == OPTION__LINEARSOLVER__MULTIGRID) &
-      call messages_experimental("Multigrid linear solver")
+      call message%experimental("Multigrid linear solver")
     if(this%solver == OPTION__LINEARSOLVER__QMR_DOTP)  &
-      call messages_experimental("QMR solver (symmetric with conjugated dot product)")
+      call message%experimental("QMR solver (symmetric with conjugated dot product)")
 
     POP_SUB(linear_solver_init)
 
@@ -248,8 +248,8 @@ contains
     character(len=*),    intent(in)    :: old_prefix
     character(len=*),    intent(in)    :: new_prefix
     
-    call messages_obsolete_variable(namespace, trim(old_prefix)//"LinearSolver", trim(new_prefix)//"LinearSolver")
-    call messages_obsolete_variable(namespace, trim(old_prefix)//"LinearSolverMaxIter", trim(new_prefix)//"LinearSolverMaxIter")
+    call message%obsolete_variable(namespace, trim(old_prefix)//"LinearSolver", trim(new_prefix)//"LinearSolver")
+    call message%obsolete_variable(namespace, trim(old_prefix)//"LinearSolverMaxIter", trim(new_prefix)//"LinearSolverMaxIter")
 
     call preconditioner_obsolete_variables(namespace, old_prefix, new_prefix)
 

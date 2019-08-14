@@ -115,8 +115,8 @@ subroutine X(fft_forward)(fft, in, out, norm)
       call accel_release_buffer(fsbuffer)
 #endif
     case default
-      call messages_write('Invalid FFT library.')
-      call messages_fatal()
+      call message%write('Invalid FFT library.')
+      call message%fatal()
     end select
 
     call fft_operation_count(fft)
@@ -284,8 +284,8 @@ subroutine X(fft_forward)(fft, in, out, norm)
       scale = .false. ! scaling is done by the library
 #endif
     case default
-      call messages_write('Invalid FFT library.')
-      call messages_fatal()
+      call message%write('Invalid FFT library.')
+      call message%fatal()
     end select
 
     if(scale) then

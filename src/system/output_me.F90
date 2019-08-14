@@ -124,14 +124,14 @@ contains
 
     call parse_variable(namespace, 'OutputMatrixElements', 0, this%what)
     if(.not.varinfo_valid_option('OutputMatrixElements', this%what, is_flag=.true.)) then
-      call messages_input_error('OutputMatrixElements')
+      call message%input_error('OutputMatrixElements')
     end if
 
     if(st%parallel_in_states) then
       if(bitand(this%what, OUTPUT_ME_TWO_BODY) /= 0) &
-        call messages_not_implemented("OutputMatrixElements=two_body is not implemented in states parallelization.")
+        call message%not_implemented("OutputMatrixElements=two_body is not implemented in states parallelization.")
       if(bitand(this%what, OUTPUT_ME_DIPOLE) /= 0) &
-        call messages_not_implemented("OutputMatrixElements=dipole is not implemented in states parallelization.")
+        call message%not_implemented("OutputMatrixElements=dipole is not implemented in states parallelization.")
     end if
 
     if(sb%dim /= 2 .and. sb%dim /= 3) this%what = bitand(this%what, not(OUTPUT_ME_ANG_MOMENTUM))
@@ -282,12 +282,12 @@ contains
 
     if(bitand(this%what, output_me_one_body) /= 0) then
       message%lines(1) = "Computing one-body matrix elements"
-      call messages_info(1)
+      call message%info(1)
 
-      if(st%parallel_in_states)  call messages_not_implemented("OutputMatrixElements=one_body with states parallelization")
-      if(st%d%kpt%parallel) call messages_not_implemented("OutputMatrixElements=one_body with k-points parallelization")
+      if(st%parallel_in_states)  call message%not_implemented("OutputMatrixElements=one_body with states parallelization")
+      if(st%d%kpt%parallel) call message%not_implemented("OutputMatrixElements=one_body with k-points parallelization")
       if(hm%family_is_mgga_with_exc) &
-      call messages_not_implemented("OutputMatrixElements=one_body with MGGA") 
+      call message%not_implemented("OutputMatrixElements=one_body with MGGA") 
       ! how to do this properly? states_elec_matrix
       iunit = io_open(trim(dir)//'/output_me_one_body', namespace, action='write')
 
@@ -320,11 +320,11 @@ contains
 
     if(bitand(this%what, output_me_two_body) /= 0) then
       message%lines(1) = "Computing two-body matrix elements"
-      call messages_info(1)
+      call message%info(1)
 
       ASSERT(.not. st%parallel_in_states)
-      if(st%parallel_in_states)  call messages_not_implemented("OutputMatrixElements=two_body with states parallelization")
-      if(st%d%kpt%parallel) call messages_not_implemented("OutputMatrixElements=two_body with k-points parallelization")
+      if(st%parallel_in_states)  call message%not_implemented("OutputMatrixElements=two_body with states parallelization")
+      if(st%d%kpt%parallel) call message%not_implemented("OutputMatrixElements=two_body with k-points parallelization")
       ! how to do this properly? states_elec_matrix
       iunit = io_open(trim(dir)//'/output_me_two_body', namespace, action='write')
       write(iunit, '(a)') '#(n1,k1) (n2,k2) (n3,k3) (n4,k4) (n1-k1, n2-k2|n3-k3, n4-k4)'
@@ -396,10 +396,10 @@ contains
     if(st%d%nspin == 2) ns = 2
 
     write(message%lines(1),'(a)') 'Momentum of the KS states [a.u.]:'
-    call messages_info(1, iunit)      
+    call message%info(1, iunit)      
     if (st%d%nik > ns) then
       message%lines(1) = 'k-points [' // trim(units_abbrev(unit_one/units_out%length)) // ']'
-      call messages_info(1, iunit)
+      call message%info(1, iunit)
     end if
 
     do ik = 1, st%d%nik, ns
@@ -417,7 +417,7 @@ contains
             message%lines(1) = trim(message%lines(1)) // ","
           end if
         end do
-        call messages_info(1, iunit)
+        call message%info(1, iunit)
       end if
 
       write(message%lines(1), '(a4,1x,a5)') '#st',' Spin'
@@ -427,7 +427,7 @@ contains
       end do
       write(str_tmp, '(4x,a12,1x)') 'Occupation '
       message%lines(1) = trim(message%lines(1)) // trim(str_tmp)
-      call messages_info(1, iunit)
+      call message%info(1, iunit)
       
       do ist = 1, st%nst
         do is = 0, ns-1
@@ -443,13 +443,13 @@ contains
           end do
           write(str_tmp, '(3x,f12.6)') st%occ(ist, ik+is)
           message%lines(1) = trim(message%lines(1)) // trim(str_tmp)
-          call messages_info(1, iunit)
+          call message%info(1, iunit)
           
         end do
       end do
       
       write(message%lines(1),'(a)') ''
-      call messages_info(1, iunit)      
+      call message%info(1, iunit)      
       
     end do
     
@@ -493,7 +493,7 @@ contains
       ! r x k is dimensionless. we do not include hbar.
       if (st%d%nik > ns) then
         message%lines(1) = 'k-points [' // trim(units_abbrev(unit_one/units_out%length)) // ']'
-        call messages_info(1, iunit)
+        call message%info(1, iunit)
       end if
     end if
 
@@ -555,7 +555,7 @@ contains
             message%lines(1) = trim(message%lines(1)) // ","
           end if
         end do
-        call messages_info(1, iunit)
+        call message%info(1, iunit)
       end if
       
       ! Exchange ang and ang2.
@@ -575,7 +575,7 @@ contains
 #endif
       write(message%lines(1), '(a4,1x,a5,4a12,4x,a12,1x)')       &
         '#st',' Spin','        <Lx>', '        <Ly>', '        <Lz>', '        <L2>', 'Occupation '
-      call messages_info(1, iunit)
+      call message%info(1, iunit)
 
       if(mpi_grp_is_root(mpi_world)) then
         do ist = 1, st%nst
@@ -589,18 +589,18 @@ contains
             write(tmp_str(2), '(1x,4f12.6,3x,f12.6)') &
               (ang(ist, ik+is, idir), idir = 1, 3), ang2(ist, ik+is), st%occ(ist, ik+is)
             message%lines(1) = trim(tmp_str(1))//trim(tmp_str(2))
-            call messages_info(1, iunit)
+            call message%info(1, iunit)
           end do
         end do
       end if
       write(message%lines(1),'(a)') ''
-      call messages_info(1, iunit)
+      call message%info(1, iunit)
       
     end do
 
     write(message%lines(1),'(a)') 'Total Angular Momentum L [dimensionless]'
     write(message%lines(2),'(10x,4f12.6)') angular(1:3), lsquare
-    call messages_info(2, iunit)
+    call message%info(2, iunit)
 
     call io_close(iunit)
 

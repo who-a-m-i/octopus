@@ -74,8 +74,8 @@ contains
 
     PUSH_SUB(oct_read_inp)
 
-    call messages_print_stress(stdout, "OCT run mode")
-    call messages_obsolete_variable(namespace, 'OCTControlRepresentation')
+    call message%print_stress(stdout, "OCT run mode")
+    call message%obsolete_variable(namespace, 'OCTControlRepresentation')
 
     !%Variable OCTScheme
     !%Type integer
@@ -145,12 +145,12 @@ contains
     !% be compiled with it in order to be able to use this option.
     !%End
     call parse_variable(namespace, 'OCTScheme', OPTION__OCTSCHEME__OCT_ZR98, oct%algorithm)
-    if(.not.varinfo_valid_option('OCTScheme', oct%algorithm)) call messages_input_error('OCTScheme')
+    if(.not.varinfo_valid_option('OCTScheme', oct%algorithm)) call message%input_error('OCTScheme')
     ! We must check that the algorithm is consistent with OCTControlRepresentation, i.e.
     ! some algorithms only make sense if the control functions are handled directly in real
     ! time, some others make only sense if the control functions are parameterized.
     ! This check cannot be here any more, and it should be placed somewhere else.
-    call messages_print_var_option(stdout, "OCTScheme", oct%algorithm)
+    call message%print_var_option(stdout, "OCTScheme", oct%algorithm)
     select case(oct%algorithm)
     case(OPTION__OCTSCHEME__OCT_MT03)
       oct%delta = M_TWO; oct%eta = M_ZERO
@@ -197,7 +197,7 @@ contains
 #else
       write(message%lines(1), '(a)') '"OCTScheme = oct_nlopt_bobyqa" or "OCTScheme = oct_nlopt_lbfgs" are'
       write(message%lines(2), '(a)') ' only possible if the nlopt library has been compiled.'
-      call messages_fatal(2)
+      call message%fatal(2)
 #endif
     case default
       oct%delta = M_ONE; oct%eta = M_ONE
@@ -212,7 +212,7 @@ contains
     !% may run a normal propagation after the optimization using the optimized field.
     !%End
     call parse_variable(namespace, 'OCTDoubleCheck', .true., oct%oct_double_check)
-    call messages_print_var_value(stdout, "OCTDoubleCheck", oct%oct_double_check)
+    call message%print_var_value(stdout, "OCTDoubleCheck", oct%oct_double_check)
 
 
     !%Variable OCTCheckGradient
@@ -230,7 +230,7 @@ contains
     !% which will be the finite difference used to numerically compute the gradient.
     !%End
     call parse_variable(namespace, 'OCTCheckGradient', CNST(0.0), oct%check_gradient)
-    call messages_print_var_value(stdout, "OCTCheckGradient", oct%check_gradient)
+    call message%print_var_value(stdout, "OCTCheckGradient", oct%check_gradient)
 
 
     !%Variable OCTDirectStep
@@ -243,7 +243,7 @@ contains
     !% optimal value. The precise meaning of this "step" differs.
     !%End
     call parse_variable(namespace, 'OCTDirectStep', CNST(0.25), oct%direct_step)
-    call messages_print_var_value(stdout, "OCTDirectStep", oct%direct_step)
+    call message%print_var_value(stdout, "OCTDirectStep", oct%direct_step)
 
     !%Variable OCTNumberCheckPoints
     !%Type integer
@@ -261,7 +261,7 @@ contains
     !% forward (or backward) propagation, the code will write a warning.
     !%End
     call parse_variable(namespace, 'OCTNumberCheckPoints', 0, oct%number_checkpoints)
-    call messages_print_var_value(stdout, "OCTNumberCheckPoints", oct%number_checkpoints)
+    call message%print_var_value(stdout, "OCTNumberCheckPoints", oct%number_checkpoints)
 
     !%Variable OCTRandomInitialGuess
     !%Type logical
@@ -276,9 +276,9 @@ contains
     !% you still need to provide a <tt>TDExternalFields</tt> block.
     !%End
     call parse_variable(namespace, 'OCTRandomInitialGuess', .false., oct%random_initial_guess)
-    call messages_print_var_value(stdout, "OCTRandomInitialGuess", oct%random_initial_guess)
+    call message%print_var_value(stdout, "OCTRandomInitialGuess", oct%random_initial_guess)
 
-    call messages_print_stress(stdout)
+    call message%print_stress(stdout)
     POP_SUB(oct_read_inp)
   end subroutine oct_read_inp
   ! ---------------------------------------------------------

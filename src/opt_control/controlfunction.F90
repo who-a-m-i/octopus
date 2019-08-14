@@ -203,7 +203,7 @@ contains
       cf_common_initialized=.true.
     else
       message%lines(1) = "Internal error: Cannot call controlfunction_mod_init twice."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     if(.not. associated(cf_common)) then
@@ -211,7 +211,7 @@ contains
       call controlfunction_common_nullify(cf_common)
     end if
 
-    call messages_print_stress(stdout, "OCT: Info about control functions")
+    call message%print_stress(stdout, "OCT: Info about control functions")
 
     !%Variable OCTControlFunctionRepresentation
     !%Type integer
@@ -249,36 +249,36 @@ contains
     !%End
     call parse_variable(namespace, 'OCTControlFunctionRepresentation', ctr_rt, cf_common%representation)
       if(.not.varinfo_valid_option('OCTControlFunctionRepresentation', cf_common%representation)) &
-        call messages_input_error('OCTControlFunctionRepresentation')
+        call message%input_error('OCTControlFunctionRepresentation')
       select case(cf_common%representation)
       case(ctr_fourier_series_h)
         write(message%lines(1), '(a)') 'Info: The OCT control functions will be represented as a Fourier series,'
         write(message%lines(2), '(a)') '      and then a transformation to hyperspherical coordinates will be made.'
-        call messages_info(2)
+        call message%info(2)
       case(ctr_zero_fourier_series_h)
         write(message%lines(1), '(a)') 'Info: The OCT control functions will be represented as a Fourier series,'
         write(message%lines(2), '(a)') '      in which (i) the zero-frequency component is assumed to be zero,'
         write(message%lines(3), '(a)') '      and  (ii) the sum of all the cosine coefficients are zero, so that'
         write(message%lines(4), '(a)') '      the control function starts and ends at zero.'
         write(message%lines(5), '(a)') '      Then, a transformation to hyperspherical coordinates will be made.'
-        call messages_info(5)
+        call message%info(5)
       case(ctr_fourier_series)
         write(message%lines(1), '(a)') 'Info: The OCT control functions will be represented as a Fourier series.'
-        call messages_info(1)
+        call message%info(1)
       case(ctr_zero_fourier_series)
         write(message%lines(1), '(a)') 'Info: The OCT control functions will be represented as a Fourier series,'
         write(message%lines(2), '(a)') '      in which the zero-frequency component is assumed to be zero,'
         write(message%lines(3), '(a)') '      and  (ii) the sum of all the cosine coefficients are zero, so that'
         write(message%lines(4), '(a)') '      the control function starts and ends at zero.'
-        call messages_info(4)
+        call message%info(4)
       case(ctr_rt)
         write(message%lines(1), '(a)') 'Info: The OCT control functions will be represented in real time.'
-        call messages_info(1)
-        call messages_experimental('"OCTControlFunctionRepresentation = ctr_rt"')
+        call message%info(1)
+        call message%experimental('"OCTControlFunctionRepresentation = ctr_rt"')
       case default
         write(message%lines(1), '(a)') 'Info: The OCT control functions will be represented in real time.'
-        call messages_info(1)
-        call messages_experimental('"OCTControlFunctionRepresentation = ctr_rt"')
+        call message%info(1)
+        call message%experimental('"OCTControlFunctionRepresentation = ctr_rt"')
       end select
 
     !%Variable OCTControlFunctionOmegaMax
@@ -294,7 +294,7 @@ contains
       write(message%lines(1), '(a)')         'Info: The representation of the OCT control parameters will be restricted'
       write(message%lines(2), '(a,f10.5,a)') '      with an energy cut-off of ', &
         units_from_atomic(units_out%energy, cf_common%omegamax), ' ['//trim(units_abbrev(units_out%energy)) // ']'
-      call messages_info(2)
+      call message%info(2)
     end if
 
     !%Variable OCTFixFluenceTo
@@ -352,10 +352,10 @@ contains
     !%End
     call parse_variable(namespace, 'OCTControlFunctionType', controlfunction_mode_epsilon, cf_common%mode)
     if(.not.varinfo_valid_option('OCTControlFunctionType', cf_common%mode)) &
-      call messages_input_error('OCTControlFunctionType')
+      call message%input_error('OCTControlFunctionType')
     if(cf_common%representation == ctr_rt .and. (cf_common%mode /= controlfunction_mode_epsilon) ) &
-      call messages_input_error('OCTControlFunctionType')
-    call messages_print_var_option(stdout, 'OCTControlFunctionType', cf_common%mode)
+      call message%input_error('OCTControlFunctionType')
+    call message%print_var_option(stdout, 'OCTControlFunctionType', cf_common%mode)
 
 
     ! Check that there are no complex polarization vectors.
@@ -370,7 +370,7 @@ contains
           write(message%lines(5), '(a)') 'would not make sense to speak of a fixed phase difference). So in'
           write(message%lines(6), '(a)') 'QOCT runs it would only make sense for envelope-only optimizations.'
           write(message%lines(7), '(a)') 'This possibility should be implemented in the future.'
-          call messages_fatal(7)
+          call message%fatal(7)
         end if
       end do
     end do
@@ -391,7 +391,7 @@ contains
     end do
 
     ! Fix the carrier frequency
-    call messages_obsolete_variable(namespace, 'OCTCarrierFrequency')
+    call message%obsolete_variable(namespace, 'OCTCarrierFrequency')
     cf_common%w0 = laser_carrier_frequency(ep%lasers(1))
 
     ! Fix the number of control functions: if we have "traditional" QOCT (i.e. the control functions
@@ -401,7 +401,7 @@ contains
     ! control function. If there is more than one laser field in the input file, the program stops.
     if(ep%no_lasers > 1) then
       write(message%lines(1), '(a)') 'Currently octopus only accepts one control field.'
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
     cf_common%no_controlfunctions = 1
 
@@ -412,14 +412,14 @@ contains
         write(message%lines(1), '(a)') 'If you set "OCTControlFunctionRepresentation" to either'
         write(message%lines(2), '(a)') '"control_fourier_series_h", or "control_zero_fourier_series_h", then the run'
         write(message%lines(3), '(a)') 'must be done in fixed fluence mode.'
-        call messages_fatal(3)
+        call message%fatal(3)
       end if
       mode_fixed_fluence = .true.
     case(ctr_fourier_series, ctr_zero_fourier_series)
       if(cf_common%targetfluence /= M_ZERO) then
         write(message%lines(1), '(a)') 'If you set "OCTControlFunctionRepresentation" to "control_fourier_series",'
         write(message%lines(2), '(a)') 'then you cannot run in fixed fluence mode.'
-        call messages_fatal(2)
+        call message%fatal(2)
       end if
       mode_fixed_fluence = .false.
     case default
@@ -453,11 +453,11 @@ contains
       ! We have a block
       ncols = parse_block_cols(blk, 0)
       if(ncols /= cf_common%no_controlfunctions) then
-        call messages_input_error('OCTPenalty')
+        call message%input_error('OCTPenalty')
       else
         do ipar = 1, ncols
           call parse_block_float(blk, 0, ipar - 1, cf_common%alpha(ipar))
-          if(cf_common%alpha(ipar) <= M_ZERO) call messages_input_error('OCTPenalty')
+          if(cf_common%alpha(ipar) <= M_ZERO) call message%input_error('OCTPenalty')
         end do
       end if
     else
@@ -489,11 +489,11 @@ contains
       if(cf_common%mode /= controlfunction_mode_epsilon) then
         write(message%lines(1),'(a)') 'The block "OCTLaserEnvelope" is only compatible with the option'
         write(message%lines(2),'(a)') '"OCTControlFunctionType = controlfunction_mode_epsilon".'
-        call messages_fatal(2)
+        call message%fatal(2)
       end if
 
       no_lines = parse_block_n(blk)
-      if(no_lines /= cf_common%no_controlfunctions) call messages_input_error('OCTLaserEnvelope')
+      if(no_lines /= cf_common%no_controlfunctions) call message%input_error('OCTLaserEnvelope')
 
       do irow = 1, no_lines
         call parse_block_string(blk, irow - 1, 0, expression)
@@ -501,7 +501,7 @@ contains
         call tdf_read(cf_common%td_penalty(irow), namespace, trim(expression), ierr)
         if(ierr.ne.0) then
           message%lines(1) = 'Time-dependent function "'//trim(expression)//'" could not be read from inp file.'
-          call messages_fatal(1)
+          call message%fatal(1)
         end if
         call tdf_to_numerical(cf_common%td_penalty(irow), steps, dt, cf_common%omegamax)
         ierr = parse_block(namespace, 'OCTLaserEnvelope', blk)
@@ -514,7 +514,7 @@ contains
       end do
     end if
 
-    call messages_print_stress(stdout)
+    call message%print_stress(stdout)
     POP_SUB(controlfunction_mod_init)
   end subroutine controlfunction_mod_init
   ! ---------------------------------------------------------
@@ -586,7 +586,7 @@ contains
       cp%dim = ntiter + 1
     case default
       message%lines(1) = "Internal error: invalid representation."
-      call messages_fatal(1)
+      call message%fatal(1)
     end select
 
     ! The "degrees of freedom" cp%dof is the number of parameters that define the control function.
@@ -622,12 +622,12 @@ contains
     if(cp%dof <= 0) then
       write(message%lines(1),'(a)') 'The number of degrees of freedom used to describe the control function'
       write(message%lines(2),'(a)') 'is less than or equal to zero. This should not happen. Please review your input file.'
-      call messages_fatal(2)
+      call message%fatal(2)
     else
       if(cf_common%representation /= ctr_internal) then
         write(message%lines(1), '(a,i6,a)') 'The parametrization of the control functions makes use of ', cp%dim, ' basis'
         write(message%lines(2), '(a,i6,a)') 'functions and ', cp%dof, ' degrees of freedom.'
-        call messages_info(2)
+        call message%info(2)
         SAFE_ALLOCATE(cp%theta(1:cp%dof))
         cp%theta = M_ZERO
       end if
@@ -700,7 +700,7 @@ contains
         write(message%lines(1), '(a)')         'Info: The QOCT run will attempt to find a solution with a predefined'
         write(message%lines(2), '(a,f10.5,a)') '      fluence: F = ', cf_common%targetfluence, ' a.u.'
       end if
-      call messages_info(2)
+      call message%info(2)
       if(cf_common%fix_initial_fluence) call controlfunction_set_fluence(par)
     end if
 
@@ -1420,7 +1420,7 @@ contains
 
     if(.not. cf_common_initialized) then
       message%lines(1) = "Internal error: Cannot call controlfunction_mod_close when not initialized."
-      call messages_fatal(1)
+      call message%fatal(1)
       end if
 
     cf_common_initialized=.false.

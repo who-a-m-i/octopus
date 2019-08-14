@@ -325,7 +325,7 @@ subroutine X(submesh_batch_add_matrix)(this, factor, ss, mm)
             end forall
 #else
             message%lines(1) = "Internal error: cannot call dsubmesh_batch_add_matrix with complex batch ss"
-            call messages_fatal(1)
+            call message%fatal(1)
 #endif
             
           end if
@@ -355,7 +355,7 @@ subroutine X(submesh_batch_add_matrix)(this, factor, ss, mm)
             end forall
 #else
             message%lines(1) = "Internal error: cannot call dsubmesh_batch_add_matrix with complex batch ss"
-            call messages_fatal(1)
+            call message%fatal(1)
 #endif
             
           end if
@@ -414,7 +414,7 @@ subroutine X(submesh_batch_add)(this, ss, mm)
         end forall
 #else
         message%lines(1) = "Internal error: cannot call dsubmesh_batch_add with complex batch ss"
-        call messages_fatal(1)
+        call message%fatal(1)
 #endif
         
       end if
@@ -468,7 +468,7 @@ subroutine X(submesh_batch_dotp_matrix)(this, mm, ss, dot, reduce)
             end do
 #else
             message%lines(1) = "Internal error: cannot call dsubmesh_batch_dotp_matrix with complex batch ss"
-            call messages_fatal(1)
+            call message%fatal(1)
 #endif
 
           end if
@@ -504,7 +504,7 @@ subroutine X(submesh_batch_dotp_matrix)(this, mm, ss, dot, reduce)
             end do
 #else
             message%lines(1) = "Internal error: cannot call dsubmesh_batch_dotp_matrix with complex batch ss"
-            call messages_fatal(1)
+            call message%fatal(1)
 #endif
 
           end if

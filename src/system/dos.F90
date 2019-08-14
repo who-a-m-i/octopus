@@ -205,7 +205,7 @@ contains
           do is = 0, ns-1
             write(message%lines(1), '(2f12.6)') units_from_atomic(units_out%energy, energy), &
                                           units_from_atomic(unit_one / units_out%energy, dos(ie, ist, is))
-            call messages_info(1, iunit(is))
+            call message%info(1, iunit(is))
           end do
         end do
 
@@ -230,7 +230,7 @@ contains
             end do
             write(message%lines(1), '(2f12.6)') units_from_atomic(units_out%energy, energy), &
                                           units_from_atomic(unit_one / units_out%energy, tdos)
-            call messages_info(1, iunit(is))
+            call message%info(1, iunit(is))
           end do
 
           call io_close(iunit(is))
@@ -252,7 +252,7 @@ contains
         end do
         write(message%lines(1), '(2f12.6)') units_from_atomic(units_out%energy, energy), &
                                       units_from_atomic(unit_one / units_out%energy, tdos)
-        call messages_info(1, iunit(0))
+        call message%info(1, iunit(0))
       end do
 
       call io_close(iunit(0))
@@ -269,7 +269,7 @@ contains
       write(message%lines(2), '(2f12.6)') units_from_atomic(units_out%energy, st%smear%e_fermi), M_ZERO
       write(message%lines(3), '(f12.6,i6)') units_from_atomic(units_out%energy, st%smear%e_fermi), maxdos
 
-      call messages_info(3, iunit(0))
+      call message%info(3, iunit(0))
       call io_close(iunit(0))
 
     end if
@@ -426,7 +426,7 @@ contains
               end do
               write(message%lines(1), '(2f12.6)') units_from_atomic(units_out%energy, energy), &
                                       units_from_atomic(unit_one / units_out%energy, tdos)
-              call messages_info(1, iunit(0))
+              call message%info(1, iunit(0))
             end do
             call io_close(iunit(0))
           end if

@@ -177,15 +177,15 @@ contains
     if(st%parallel_in_states .and. .not. eigensolver_parallel_in_states(eigens)) then
       message%lines(1) = "The selected eigensolver is not parallel in states."
       message%lines(2) = "Please use the lobpcg, psd, or rmmdiis eigensolvers."
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
 
     if(eigens%es_type == RS_LOBPCG .and. st%group%block_start /= st%group%block_end) then
-      call messages_experimental("lobpcg eigensolver with more than one block per node")
+      call message%experimental("lobpcg eigensolver with more than one block per node")
     end if
 
-    call messages_obsolete_variable(namespace, 'EigensolverVerbose')
-    call messages_obsolete_variable(namespace, 'EigensolverSubspaceDiag', 'SubspaceDiagonalization')
+    call message%obsolete_variable(namespace, 'EigensolverVerbose')
+    call message%obsolete_variable(namespace, 'EigensolverSubspaceDiag', 'SubspaceDiagonalization')
 
     default_iter = 25
     default_tol = CNST(1e-6)
@@ -236,7 +236,7 @@ contains
       !%End
       call parse_variable(namespace, 'CGAdditionalTerms', .false., eigens%additional_terms)
       if(eigens%additional_terms) then
-        call messages_experimental("The additional terms for the CG eigensolver are not tested for all cases.")
+        call message%experimental("The additional terms for the CG eigensolver are not tested for all cases.")
       end if
 
       !%Variable CGEnergyChangeThreshold
@@ -257,7 +257,7 @@ contains
 
     case(RS_PLAN)
     case(RS_EVO)
-      call messages_experimental("imaginary-time evolution eigensolver")
+      call message%experimental("imaginary-time evolution eigensolver")
 
       !%Variable EigensolverImaginaryTime
       !%Type float
@@ -269,7 +269,7 @@ contains
       !% It must satisfy <tt>EigensolverImaginaryTime > 0</tt>.
       !%End
       call parse_variable(namespace, 'EigensolverImaginaryTime', CNST(10.0), eigens%imag_time)
-      if(eigens%imag_time <= M_ZERO) call messages_input_error('EigensolverImaginaryTime')
+      if(eigens%imag_time <= M_ZERO) call message%input_error('EigensolverImaginaryTime')
       
       call exponential_init(eigens%exponential_operator, namespace)
       
@@ -290,23 +290,23 @@ contains
 
       call parse_variable(namespace, 'EigensolverMinimizationIter', 5, eigens%rmmdiis_minimization_iter)
 
-      if(gr%mesh%use_curvilinear) call messages_experimental("RMMDIIS eigensolver for curvilinear coordinates")
+      if(gr%mesh%use_curvilinear) call message%experimental("RMMDIIS eigensolver for curvilinear coordinates")
 
     case(RS_PSD)
       default_iter = 18
-      call messages_experimental("preconditioned steepest descent (PSD) eigensolver")
+      call message%experimental("preconditioned steepest descent (PSD) eigensolver")
 
     case default
-      call messages_input_error('Eigensolver')
+      call message%input_error('Eigensolver')
     end select
 
-    call messages_print_stress(stdout, 'Eigensolver')
+    call message%print_stress(stdout, 'Eigensolver')
 
-    call messages_print_var_option(stdout, "Eigensolver", eigens%es_type)
+    call message%print_var_option(stdout, "Eigensolver", eigens%es_type)
 
-    call messages_obsolete_variable(namespace, 'EigensolverInitTolerance', 'EigensolverTolerance')
-    call messages_obsolete_variable(namespace, 'EigensolverFinalTolerance', 'EigensolverTolerance')
-    call messages_obsolete_variable(namespace, 'EigensolverFinalToleranceIteration')
+    call message%obsolete_variable(namespace, 'EigensolverInitTolerance', 'EigensolverTolerance')
+    call message%obsolete_variable(namespace, 'EigensolverFinalTolerance', 'EigensolverTolerance')
+    call message%obsolete_variable(namespace, 'EigensolverFinalToleranceIteration')
 
     ! this is an internal option that makes the solver use the 
     ! folded operator (H-shift)^2 to converge first eigenvalues around
@@ -335,16 +335,16 @@ contains
     !% increase it if you know what you are doing).
     !%End
     call parse_variable(namespace, 'EigensolverMaxIter', default_iter, eigens%es_maxiter)
-    if(eigens%es_maxiter < 1) call messages_input_error('EigensolverMaxIter')
+    if(eigens%es_maxiter < 1) call message%input_error('EigensolverMaxIter')
 
     if(eigens%es_maxiter > default_iter) then
-      call messages_write('You have specified a large number of eigensolver iterations (')
-      call messages_write(eigens%es_maxiter)
-      call messages_write(').', new_line = .true.)
-      call messages_write('This is not a good idea as it might slow down convergence, even for', new_line = .true.)
-      call messages_write('independent particles, as subspace diagonalization will not be used', new_line = .true.)
-      call messages_write('often enough.')
-      call messages_warning()
+      call message%write('You have specified a large number of eigensolver iterations (')
+      call message%write(eigens%es_maxiter)
+      call message%write(').', new_line = .true.)
+      call message%write('This is not a good idea as it might slow down convergence, even for', new_line = .true.)
+      call message%write('independent particles, as subspace diagonalization will not be used', new_line = .true.)
+      call message%write('often enough.')
+      call message%warning()
     end if
 
     if (.not. optional_default(disable_preconditioner, .false.) .and. &
@@ -369,25 +369,25 @@ contains
     ! print memory requirements
     select case(eigens%es_type)
     case(RS_RMMDIIS)
-      call messages_write('Info: The rmmdiis eigensolver requires ')
+      call message%write('Info: The rmmdiis eigensolver requires ')
       mem = (2.0_8*eigens%es_maxiter - 1.0_8)*st%d%block_size*dble(gr%mesh%np_part)
       if(states_are_real(st)) then
         mem = mem*CNST(8.0)
       else
         mem = mem*CNST(16.0)
       end if
-      call messages_write(mem, units = unit_megabytes, fmt = '(f9.1)')
-      call messages_write(' of additional')
-      call messages_new_line()
-      call messages_write('      memory.  This amount can be reduced by decreasing the value')
-      call messages_new_line()
-      call messages_write('      of the variable StatesBlockSize (currently set to ')
-      call messages_write(st%d%block_size)
-      call messages_write(').')
-      call messages_info()
+      call message%write(mem, units = unit_megabytes, fmt = '(f9.1)')
+      call message%write(' of additional')
+      call message%new_line()
+      call message%write('      memory.  This amount can be reduced by decreasing the value')
+      call message%new_line()
+      call message%write('      of the variable StatesBlockSize (currently set to ')
+      call message%write(st%d%block_size)
+      call message%write(').')
+      call message%info()
     end select
 
-    call messages_print_stress(stdout)
+    call message%print_stress(stdout)
 
     !%Variable EigensolverSkipKpoints
     !%Type logical
@@ -396,7 +396,7 @@ contains
     !% Only solve Hamiltonian for k-points with zero weight
     !%End
     call parse_variable(namespace, 'EigensolverSkipKpoints', .false., eigens%skip_finite_weight_kpoints)
-    call messages_print_var_value(stdout,'EigensolverSkipKpoints',  eigens%skip_finite_weight_kpoints)
+    call message%print_var_value(stdout,'EigensolverSkipKpoints',  eigens%skip_finite_weight_kpoints)
 
     ! set KS object
     eigens%xc => xc

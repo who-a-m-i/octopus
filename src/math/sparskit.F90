@@ -120,7 +120,7 @@ contains
     !%End
     call parse_variable(namespace, 'SPARSKITSolver', SK_BCG, sk%solver_type)
     if ( sk%solver_type < SK_MINVAL.or.sk%solver_type > SK_MAXVAL ) then
-      call messages_input_error('SPARSKITSolver')
+      call message%input_error('SPARSKITSolver')
     end if
 
     !%Variable SPARSKITKrylovSubspaceSize
@@ -237,9 +237,9 @@ contains
       write(message%lines(1), '(a,i4,a)') "Input: '", sk%solver_type, &
         "' is not a valid SPARSKIT Solver"
       message%lines(2) = '( SPARSKIT Solver =  cg | cgnr | bcg | dbcg | bcgstab | tfqmr | fom | gmres | fgmres | dqgmres )'
-      call messages_fatal(2)
+      call message%fatal(2)
     end select
-    call messages_info(1)
+    call message%info(1)
 
     ! Now we initialize the arrays for the reverse communication protocol
     sk%ipar = 0

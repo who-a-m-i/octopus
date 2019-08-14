@@ -92,7 +92,7 @@ contains
       this%use_double_grid = .false.
     end if
 
-    if(this%use_double_grid) call messages_experimental('Double grid')
+    if(this%use_double_grid) call message%experimental('Double grid')
 
     !%Variable DoubleGridOrder
     !%Type integer 

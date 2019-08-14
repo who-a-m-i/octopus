@@ -651,50 +651,50 @@ contains
     call ion_interaction_calculate(ion_interaction, geo, sb, .false., energy, force, &
       energy_components = energy_components, force_components = force_components)
 
-    call messages_write('Ionic energy        =')
-    call messages_write(energy, fmt = '(f20.10)')
-    call messages_info()
+    call message%write('Ionic energy        =')
+    call message%write(energy, fmt = '(f20.10)')
+    call message%info()
 
-    call messages_write('Real space energy   =')
-    call messages_write(energy_components(ION_COMPONENT_REAL), fmt = '(f20.10)')
-    call messages_info()
+    call message%write('Real space energy   =')
+    call message%write(energy_components(ION_COMPONENT_REAL), fmt = '(f20.10)')
+    call message%info()
 
-    call messages_write('Self energy         =')
-    call messages_write(energy_components(ION_COMPONENT_SELF), fmt = '(f20.10)')
-    call messages_info()
+    call message%write('Self energy         =')
+    call message%write(energy_components(ION_COMPONENT_SELF), fmt = '(f20.10)')
+    call message%info()
 
-    call messages_write('Fourier energy      =')
-    call messages_write(energy_components(ION_COMPONENT_FOURIER), fmt = '(f20.10)')
-    call messages_info()
+    call message%write('Fourier energy      =')
+    call message%write(energy_components(ION_COMPONENT_FOURIER), fmt = '(f20.10)')
+    call message%info()
     
-    call messages_info()
+    call message%info()
 
     do iatom = 1, geo%natoms
-      call messages_write('Ionic force         atom')
-      call messages_write(iatom)
-      call messages_write(' =')
+      call message%write('Ionic force         atom')
+      call message%write(iatom)
+      call message%write(' =')
       do idir = 1, sb%dim
-        call messages_write(force(idir, iatom), fmt = '(f20.10)')
+        call message%write(force(idir, iatom), fmt = '(f20.10)')
       end do
-      call messages_info()
+      call message%info()
 
-      call messages_write('Real space force    atom')
-      call messages_write(iatom)
-      call messages_write(' =')
+      call message%write('Real space force    atom')
+      call message%write(iatom)
+      call message%write(' =')
       do idir = 1, sb%dim
-        call messages_write(force_components(idir, iatom, ION_COMPONENT_REAL), fmt = '(f20.10)')
+        call message%write(force_components(idir, iatom, ION_COMPONENT_REAL), fmt = '(f20.10)')
       end do
-      call messages_info()
+      call message%info()
 
-      call messages_write('Fourier space force atom')
-      call messages_write(iatom)
-      call messages_write(' =')
+      call message%write('Fourier space force atom')
+      call message%write(iatom)
+      call message%write(' =')
       do idir = 1, sb%dim
-        call messages_write(force_components(idir, iatom, ION_COMPONENT_FOURIER), fmt = '(f20.10)')
+        call message%write(force_components(idir, iatom, ION_COMPONENT_FOURIER), fmt = '(f20.10)')
       end do
-      call messages_info()
+      call message%info()
 
-      call messages_info()
+      call message%info()
     end do
 
     SAFE_DEALLOCATE_A(force)

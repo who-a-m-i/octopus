@@ -81,7 +81,7 @@ contains
 
     if(.not. found) then
       message%lines(1) = "Pseudopotential file '" // trim(fullpath) // " not found"
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
     
     if(ascii) then
@@ -159,7 +159,7 @@ contains
       case('f'); conf%l(l) = 3
       case default
         message%lines(1) = 'Error reading pseudopotential file.'
-        call messages_fatal(1)
+        call message%fatal(1)
       end select
     end do
 
@@ -340,7 +340,7 @@ contains
         write(message%lines(1),'(a)') 'The algorithm that calculates atomic wavefunctions could not'
         write(message%lines(2),'(a)') 'do its job. The program will terminate, since the wavefunctions'
         write(message%lines(3),'(a)') 'are needed. Change the pseudopotential or improve the code.'
-        call messages_fatal(3)
+        call message%fatal(3)
       end if
       eigen(l, 1) = e
 
@@ -384,7 +384,7 @@ contains
               write(message%lines(1),'(a)') 'The algorithm that calculates atomic wavefunctions could not'
               write(message%lines(2),'(a)') 'do its job. The program will terminate, since the wavefunctions'
               write(message%lines(3),'(a)') 'are needed. Change the pseudopotential or improve the code.'
-              call messages_fatal(3)
+              call message%fatal(3)
             end if
             eigen(l, 1 + is) = e
 
@@ -408,7 +408,7 @@ contains
         if(iter>1) rho = M_HALF*rho + M_HALF*prev
 
         !write(message%lines(1),'(a,i4,a,e10.2)') '      Iter =', iter, '; Diff =', diff
-        !call messages_info(1)
+        !call message%info(1)
 
         call atomhxc(functl, g, 2, rho, ve, psf_file%chcore)
       end do self_consistent
@@ -503,7 +503,7 @@ contains
 
       if(ighost >= 0) then
         write(message%lines(1), '(a,i2)') "Ghost state found for l = ", l
-        call messages_warning(1)
+        call message%warning(1)
       end if
     end do
 

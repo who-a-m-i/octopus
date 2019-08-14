@@ -78,12 +78,12 @@ contains
     call states_elec_look(restart, kpoints, dim, nst, ierr)
     if(ierr /= 0) then
       message%lines(1) = "Unable to read states information."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     if(st%parallel_in_states) then
       message%lines(1) = "Internal error: cannot use states_elec_look_and_load when parallel in states."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     ! Resize st%occ, retaining information there
@@ -129,7 +129,7 @@ contains
     call states_elec_load(restart, namespace, st, gr, ierr)
     if(ierr /= 0) then
       message%lines(1) = "Unable to read wavefunctions."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     POP_SUB(states_elec_look_and_load)
@@ -439,18 +439,18 @@ contains
       read(lines(3), *) str, ik
       if(idim == 2 .and. st%d%dim == 1) then
         write(message%lines(1),'(a)') 'Incompatible restart information: saved calculation is spinors, this one is not.'
-        call messages_warning(1)
+        call message%warning(1)
         ierr = ierr - 2**2
       end if
       if(idim == 1 .and. st%d%dim == 2) then
         write(message%lines(1),'(a)') 'Incompatible restart information: this calculation is spinors, saved one is not.'
-        call messages_warning(1)
+        call message%warning(1)
         ierr = ierr - 2**3
       end if
       if(ik < st%d%nik) then
         write(message%lines(1),'(a)') 'Incompatible restart information: not enough k-points.'
         write(message%lines(2),'(2(a,i6))') 'Expected ', st%d%nik, ' > Read ', ik
-        call messages_warning(2)
+        call message%warning(2)
       end if
       ! We will check that they are the right k-points later, so we do not need to put a specific error here.
     end if
@@ -467,11 +467,11 @@ contains
       read(lines(2), '(a)') str
       if (str(2:8) == 'Complex') then
         message%lines(1) = "Cannot read real states from complex wavefunctions."
-        call messages_warning(1)
+        call message%warning(1)
         ierr = ierr - 2**6
       else if (str(2:5) /= 'Real') then 
         message%lines(1) = "Restart file 'wfns' does not specify real/complex; cannot check compatibility."
-        call messages_warning(1)
+        call message%warning(1)
       end if
     end if
     ! complex can be restarted from real, so there is no problem.
@@ -550,7 +550,7 @@ contains
             write(message%lines(1),'(a,i6)') 'Incompatible restart information: k-point mismatch for ik ', ik
             write(message%lines(2),'(a,99f18.12)') '  Expected : ', kpoint(1:gr%sb%dim)
             write(message%lines(3),'(a,99f18.12)') '  Read     : ', read_kpoint(1:gr%sb%dim)
-            call messages_warning(3)
+            call message%warning(3)
           end if
           restart_file_present(idim, ist, ik) = .false.
         end if
@@ -651,7 +651,7 @@ contains
     SAFE_DEALLOCATE_A(restart_file_present)
 
     if(mpi_grp_is_root(mpi_world) .and. verbose_) then
-      call messages_new_line()
+      call message%new_line()
     end if
 
 #if defined(HAVE_MPI)
@@ -690,11 +690,11 @@ contains
       else
         write(str, '(a,i5)') 'Reading states information for linear response.'
       end if
-      call messages_print_stress(stdout, trim(str))
+      call message%print_stress(stdout, trim(str))
       write(message%lines(1),'(a,i6,a,i6,a)') 'Only ', iread,' files out of ', &
            st%nst * st%d%nik * st%d%dim, ' could be read.'
-      call messages_info(1)
-      call messages_print_stress(stdout)
+      call message%info(1)
+      call message%print_stress(stdout)
     end if
 
     message%lines(1) = 'Info: States reading done.'
@@ -765,7 +765,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Writing density restart."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     call restart_block_signals()
@@ -825,7 +825,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Writing density restart done."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     POP_SUB(states_elec_dump_rho)
@@ -855,7 +855,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Reading density restart."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     ! skip for now, since we know what the files are going to be called
@@ -896,7 +896,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Reading density restart done."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     POP_SUB(states_elec_load_rho)
@@ -925,7 +925,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Writing frozen densities restart."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     call restart_block_signals()
@@ -981,7 +981,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Writing frozen densities restart done."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     POP_SUB(states_elec_dump_frozen)
@@ -1012,7 +1012,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Reading densities restart."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     err2 = 0
@@ -1062,7 +1062,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Reading frozen densities restart done."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     POP_SUB(states_elec_load_frozen)
@@ -1141,7 +1141,7 @@ contains
     !%End
     if(parse_block(namespace, 'UserDefinedStates', blk) == 0) then
 
-      call messages_print_stress(stdout, trim('Substitution of orbitals'))
+      call message%print_stress(stdout, trim('Substitution of orbitals'))
 
       ! find out how many lines (i.e. states) the block has
       nstates = parse_block_n(blk)
@@ -1155,7 +1155,7 @@ contains
         if(ncols  <  5 .or. ncols > 6) then
           message%lines(1) = 'Each line in the UserDefinedStates block must have'
           message%lines(2) = 'five or six columns.'
-          call messages_fatal(2)
+          call message%fatal(2)
         end if
 
         call parse_block_integer(blk, ib - 1, 0, idim)
@@ -1185,7 +1185,7 @@ contains
                 write(message%lines(1), '(a,3i5)') 'Substituting state of orbital with k, ist, dim = ', ik, is, id
                 write(message%lines(2), '(2a)') '  with the expression:'
                 write(message%lines(3), '(2a)') '  ',trim(st%user_def_states(id, is, ik))
-                call messages_info(3)
+                call message%info(3)
 
                 ! convert to C string
                 call conv_to_C_string(st%user_def_states(id, is, ik))
@@ -1210,20 +1210,20 @@ contains
                 write(message%lines(1), '(a,3i5)') 'Substituting state of orbital with k, ist, dim = ', ik, is, id
                 write(message%lines(2), '(2a)') '  with data from file:'
                 write(message%lines(3), '(2a)') '  ',trim(filename)
-                call messages_info(3)
+                call message%info(3)
 
                 ! finally read the state
                 call zio_function_input(filename, namespace, mesh, zpsi(:, 1), ierr)
                 if (ierr > 0) then
                   message%lines(1) = 'Could not read the file!'
                   write(message%lines(2),'(a,i1)') 'Error code: ', ierr
-                  call messages_fatal(2)
+                  call message%fatal(2)
                 end if
 
               case default
                 message%lines(1) = 'Wrong entry in UserDefinedStates, column 4.'
                 message%lines(2) = 'You may state "formula" or "file" here.'
-                call messages_fatal(2)
+                call message%fatal(2)
               end select
 
               call states_elec_set_state(st, mesh, id, is, ik, zpsi(:, 1))
@@ -1243,7 +1243,7 @@ contains
               case default
                 message%lines(1) = 'The sixth column in UserDefinedStates may either be'
                 message%lines(2) = '"normalize_yes" or "normalize_no"'
-                call messages_fatal(2)
+                call message%fatal(2)
               end select
 
             end do
@@ -1255,11 +1255,11 @@ contains
       SAFE_DEALLOCATE_A(zpsi)
 
       call parse_block_end(blk)
-      call messages_print_stress(stdout)
+      call message%print_stress(stdout)
 
     else
       message%lines(1) = "'UserDefinedStates' has to be specified as block."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     POP_SUB(states_elec_read_user_def_orbitals)

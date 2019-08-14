@@ -79,7 +79,7 @@ subroutine X(restart_write_mesh_function)(restart, filename, mesh, ff, ierr, roo
 
     if (ierr /= 0) then
       message%lines(1) = "Unable to write restart function to '"//trim(restart%pwd)//"/"//trim(filename)//"'."
-      call messages_warning(1)
+      call message%warning(1)
     end if
   end if
   
@@ -197,7 +197,7 @@ subroutine X(restart_read_mesh_function)(restart, filename, mesh, ff, ierr)
   if (ierr /= 0) then
     message%lines(1) = "Unable to read mesh function from '"//&
       trim(io_workpath(full_filename, restart%namespace))//"'."
-    call messages_warning(1)
+    call message%warning(1)
   end if
 
   POP_SUB(X(restart_read_mesh_function))
@@ -247,7 +247,7 @@ subroutine X(restart_write_binary1)(restart, filename, np, ff, ierr, root)
 
   if (ierr /= 0) then
     message%lines(1) = "Unable to write restart information to '"//trim(full_filename)//"'."
-    call messages_warning(1)
+    call message%warning(1)
   end if
 
   POP_SUB(X(restart_write_binary1))
@@ -296,7 +296,7 @@ subroutine X(restart_write_binary2)(restart, filename, np, ff, ierr, root)
 
   if (ierr /= 0) then
     message%lines(1) = "Unable to write restart information to '"//trim(full_filename)//"'."
-    call messages_warning(1)
+    call message%warning(1)
   end if
 
   POP_SUB(X(restart_write_binary2))
@@ -345,7 +345,7 @@ subroutine X(restart_write_binary3)(restart, filename, np, ff, ierr, root)
 
   if (ierr /= 0) then
     message%lines(1) = "Unable to write restart information to '"//trim(full_filename)//"'."
-    call messages_warning(1)
+    call message%warning(1)
   end if
 
   POP_SUB(X(restart_write_binary3))
@@ -394,7 +394,7 @@ subroutine X(restart_write_binary5)(restart, filename, np, ff, ierr, root)
 
   if (ierr /= 0) then
     message%lines(1) = "Unable to write restart information to '"//trim(full_filename)//"'."
-    call messages_warning(1)
+    call message%warning(1)
   end if
 
   POP_SUB(X(restart_write_binary5))
@@ -421,7 +421,7 @@ subroutine X(restart_read_binary1)(restart, filename, np, ff, ierr)
 
   if (ierr /= 0) then
     message%lines(1) = "Unable to read restart information from '"//trim(full_filename)//"'."
-    call messages_warning(1)
+    call message%warning(1)
   end if
 
   POP_SUB(X(restart_read_binary1))
@@ -449,7 +449,7 @@ subroutine X(restart_read_binary2)(restart, filename, np, ff, ierr)
 
   if (ierr /= 0) then
     message%lines(1) = "Unable to read restart information from '"//trim(full_filename)//"'."
-    call messages_warning(1)
+    call message%warning(1)
   end if
 
   POP_SUB(X(restart_read_binary2))
@@ -477,7 +477,7 @@ subroutine X(restart_read_binary3)(restart, filename, np, ff, ierr)
 
   if (ierr /= 0) then
     message%lines(1) = "Unable to read restart information from '"//trim(full_filename)//"'."
-    call messages_warning(1)
+    call message%warning(1)
   end if
 
   POP_SUB(X(restart_read_binary3))
@@ -504,7 +504,7 @@ subroutine X(restart_read_binary5)(restart, filename, np, ff, ierr)
 
   if (ierr /= 0) then
     message%lines(1) = "Unable to read restart information from '"//trim(full_filename)//"'."
-    call messages_warning(1)
+    call message%warning(1)
   end if
 
   POP_SUB(X(restart_read_binary5))

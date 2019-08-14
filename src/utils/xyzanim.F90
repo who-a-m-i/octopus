@@ -52,7 +52,7 @@ program xyzanim
   call parser_init()
   default_namespace = namespace_t("")
   
-  call messages_init(default_namespace)
+  call message%init(default_namespace)
   call io_init(default_namespace)
   call unit_system_init(default_namespace)
 
@@ -70,7 +70,7 @@ program xyzanim
   call parse_variable(default_namespace, 'AnimationSampling', 100, sampling)
   if(sampling < 1) then
     message%lines(1) = 'Sampling rate (AnimationSampling) should be bigger than 0'
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
   !%Variable AnimationMultiFiles
@@ -123,7 +123,7 @@ program xyzanim
   call io_close(coords_unit)
 
   call io_end()
-  call messages_end()
+  call message%end()
 
   call parser_end()
   call global_end()

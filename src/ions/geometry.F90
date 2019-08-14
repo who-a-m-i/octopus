@@ -127,7 +127,7 @@ contains
 
     if(xyz%n < 1) then
       message%lines(1) = "Coordinates have not been defined."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     ! copy information from xyz to geo
@@ -157,11 +157,11 @@ contains
       if(.not. bitand(xyz%flags, XYZ_FLAGS_CHARGE) /= 0) then
         message%lines(1) = "Need to know charge for the classical atoms."
         message%lines(2) = "Please use a .pdb"
-        call messages_fatal(2)
+        call message%fatal(2)
       end if
       geo%ncatoms = xyz%n
       write(message%lines(1), '(a,i8)') 'Info: Number of classical atoms = ', geo%ncatoms
-      call messages_info(1)
+      call message%info(1)
       if(geo%ncatoms>0)then
         SAFE_ALLOCATE(geo%catom(1:geo%ncatoms))
         do ia = 1, geo%ncatoms
@@ -217,24 +217,24 @@ contains
       
       if(species_is_ps(geo%species(k)) .and. geo%space%dim /= 3) then
         message%lines(1) = "Pseudopotentials may only be used with Dimensions = 3."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
     end do atoms2
 
     ! Reads the spin components. This is read here, as well as in states_init,
     ! to be able to pass it to the pseudopotential initializations subroutine.
     call parse_variable(namespace, 'SpinComponents', 1, ispin)
-    if(.not.varinfo_valid_option('SpinComponents', ispin)) call messages_input_error('SpinComponents')
+    if(.not.varinfo_valid_option('SpinComponents', ispin)) call message%input_error('SpinComponents')
     ispin = min(2, ispin)
 
     if(print_info_) then
-      call messages_print_stress(stdout, "Species")
+      call message%print_stress(stdout, "Species")
     end if
     do i = 1, geo%nspecies
       call species_build(geo%species(i), namespace, ispin, geo%space%dim, print_info=print_info_)
     end do
     if(print_info_) then
-      call messages_print_stress(stdout)
+      call message%print_stress(stdout)
     end if
 
     !%Variable SpeciesTimeDependent
@@ -254,7 +254,7 @@ contains
       end if
     end do
     if (geo%species_time_dependent .and. .not. spec_user_defined) then
-      call messages_input_error('SpeciesTimeDependent')
+      call message%input_error('SpeciesTimeDependent')
     end if
 
     !  assign species
@@ -567,21 +567,21 @@ contains
     PUSH_SUB(geometry_grid_defaults_info)
 
     do ispec = 1, geo%nspecies
-      call messages_write("Species '"//trim(species_label(geo%species(ispec)))//"': spacing = ")
+      call message%write("Species '"//trim(species_label(geo%species(ispec)))//"': spacing = ")
       if(species_def_h(geo%species(ispec)) > CNST(0.0)) then
-        call messages_write(species_def_h(geo%species(ispec)), fmt = '(f7.3)')
-        call messages_write(" b")
+        call message%write(species_def_h(geo%species(ispec)), fmt = '(f7.3)')
+        call message%write(" b")
       else
-        call messages_write(" unknown")
+        call message%write(" unknown")
       end if
-      call messages_write(", radius = ")
+      call message%write(", radius = ")
       if(species_def_rsize(geo%species(ispec)) > CNST(0.0)) then
-        call messages_write(species_def_rsize(geo%species(ispec)), fmt = '(f5.1)')
-        call messages_write(" b.")
+        call message%write(species_def_rsize(geo%species(ispec)), fmt = '(f5.1)')
+        call message%write(" b.")
       else
-        call messages_write(" unknown.")
+        call message%write(" unknown.")
       end if
-      call messages_info()
+      call message%info()
     end do
 
     POP_SUB(geometry_grid_defaults_info)

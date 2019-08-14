@@ -159,17 +159,17 @@ contains
     mdim   = mesh%sb%dim
     pdim   = mesh%sb%periodic_dim
 
-    call messages_experimental("PhotoElectronSpectrum with t-surff")
+    call message%experimental("PhotoElectronSpectrum with t-surff")
 
     do il = 1, hm%ep%no_lasers
       if(laser_kind(hm%ep%lasers(il)) /= E_FIELD_VECTOR_POTENTIAL) then
         message%lines(1) = 't-surff only works in velocity gauge.'
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
     end do
 
     message%lines(1) = 'Info: Calculating PES using t-surff technique.'
-    call messages_info(1)
+    call message%info(1)
 
     ! -----------------------------------------------------------------
     ! Setting up r-mesh (the surface)
@@ -197,12 +197,12 @@ contains
     
     call parse_variable(namespace, 'PES_Flux_Shape', default_shape, this%shape)
     if(.not.varinfo_valid_option('PES_Flux_Shape', this%shape, is_flag = .true.)) &
-      call messages_input_error('PES_Flux_Shape')
+      call message%input_error('PES_Flux_Shape')
     if(this%shape == M_SPHERICAL .and. mdim /= 3) then
       message%lines(1) = 'Spherical grid works only in 3d.'
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
-    call messages_print_var_option(stdout, 'PES_Flux_Shape', this%shape)
+    call message%print_var_option(stdout, 'PES_Flux_Shape', this%shape)
 
     !%Variable PES_Flux_Offset
     !%Type block
@@ -233,8 +233,8 @@ contains
     !%End
     if(this%shape == M_SPHERICAL) then
       call parse_variable(namespace, 'PES_Flux_Lmax', 1, this%lmax)
-      if(this%lmax < 1) call messages_input_error('PES_Flux_Lmax', 'must be > 0')
-      call messages_print_var_value(stdout, 'PES_Flux_Lmax', this%lmax)
+      if(this%lmax < 1) call message%input_error('PES_Flux_Lmax', 'must be > 0')
+      call message%print_var_value(stdout, 'PES_Flux_Lmax', this%lmax)
     end if
 
     this%avoid_ab = .false.
@@ -249,7 +249,7 @@ contains
         !% absorbing zone and discards them if set to yes (default).
         !%End
         call parse_variable(namespace, 'PES_Flux_AvoidAB', .true., this%avoid_ab)
-        call messages_print_var_value(stdout, 'PES_Flux_AvoidAB', this%avoid_ab)
+        call message%print_var_value(stdout, 'PES_Flux_AvoidAB', this%avoid_ab)
       end if
 
       !%Variable PES_Flux_Lsize
@@ -283,7 +283,7 @@ contains
         call parse_variable(namespace, 'PES_Flux_Lsize', border(mdim), border(mdim))
         ! Snap the plane to the closest grid point
         border(mdim) = floor(border(mdim)/mesh%spacing(mdim))*mesh%spacing(mdim) 
-        call messages_print_var_value(stdout, 'PES_Flux_Lsize', border(mdim))
+        call message%print_var_value(stdout, 'PES_Flux_Lsize', border(mdim))
         
       else
         select case(mesh%sb%box_shape)
@@ -292,14 +292,14 @@ contains
         case(SPHERE)
           border(1:mdim) = mesh%sb%rsize/sqrt(M_TWO) * M_HALF
         case default
-          call messages_write('PES_Flux_Lsize not specified. No default values available for this box shape.')
-          call messages_new_line()
-          call messages_write('Specify the location of the parallelepiped with block PES_Flux_Lsize.')
-          call messages_fatal()
+          call message%write('PES_Flux_Lsize not specified. No default values available for this box shape.')
+          call message%new_line()
+          call message%write('Specify the location of the parallelepiped with block PES_Flux_Lsize.')
+          call message%fatal()
         end select
-        call messages_write('PES_Flux_Lsize not specified. Using default values.')
-        call messages_info()
-        call messages_print_var_value(stdout, 'PES_Flux_Lsize', border(1:mdim))
+        call message%write('PES_Flux_Lsize not specified. Using default values.')
+        call message%info()
+        call message%print_var_value(stdout, 'PES_Flux_Lsize', border(1:mdim))
       end if
 
     else
@@ -311,8 +311,8 @@ contains
       !%End
       if(parse_is_defined(namespace, 'PES_Flux_Radius')) then
         call parse_variable(namespace, 'PES_Flux_Radius', M_ZERO, this%radius)
-        if(this%radius <= M_ZERO) call messages_input_error('PES_Flux_Radius')
-        call messages_print_var_value(stdout, 'PES_Flux_Radius', this%radius)
+        if(this%radius <= M_ZERO) call message%input_error('PES_Flux_Radius')
+        call message%print_var_value(stdout, 'PES_Flux_Radius', this%radius)
       else
         select case(mesh%sb%box_shape)
         case(PARALLELEPIPED)
@@ -322,11 +322,11 @@ contains
         case default
           message%lines(1) = 'PES_Flux_Radius not specified. No default values available for this box shape.'
           message%lines(2) = 'Specify the radius of the sphere with variable PES_Flux_Radius.'
-          call messages_fatal(2)
+          call message%fatal(2)
         end select
         message%lines(1) = 'PES_Flux_Radius not specified. Using default values.'
-        call messages_info(1)
-        call messages_print_var_value(stdout, 'PES_Flux_Radius', this%radius)
+        call message%info(1)
+        call message%print_var_value(stdout, 'PES_Flux_Radius', this%radius)
       end if
 
     end if
@@ -340,8 +340,8 @@ contains
     !%End
     if(this%shape == M_SPHERICAL) then
       call parse_variable(namespace, 'PES_Flux_StepsThetaR', 2*this%lmax + 1, nstepsthetar)
-      if(nstepsthetar < 0) call messages_input_error('PES_Flux_StepsThetaR')
-      call messages_print_var_value(stdout, "PES_Flux_StepsThetaR", nstepsthetar)
+      if(nstepsthetar < 0) call message%input_error('PES_Flux_StepsThetaR')
+      call message%print_var_value(stdout, "PES_Flux_StepsThetaR", nstepsthetar)
     end if
 
     !%Variable PES_Flux_StepsPhiR
@@ -353,8 +353,8 @@ contains
     !%End
     if(this%shape == M_SPHERICAL) then
       call parse_variable(namespace, 'PES_Flux_StepsPhiR', 2*this%lmax + 1, nstepsphir)
-      if(nstepsphir < 0) call messages_input_error('PES_Flux_StepsPhiR')
-      call messages_print_var_value(stdout, "PES_Flux_StepsPhiR", nstepsphir)
+      if(nstepsphir < 0) call message%input_error('PES_Flux_StepsPhiR')
+      call message%print_var_value(stdout, "PES_Flux_StepsPhiR", nstepsphir)
     end if
 
     ! -----------------------------------------------------------------
@@ -444,7 +444,7 @@ contains
     !% By default true when <tt>PES_Flux_Shape = cub</tt>.
     !%End
     call parse_variable(namespace, 'PES_Flux_UseMemory', .true., this%usememory)
-    call messages_print_var_value(stdout, "PES_Flux_UseMemory", this%usememory)            
+    call message%print_var_value(stdout, "PES_Flux_UseMemory", this%usememory)            
 
     SAFE_ALLOCATE(this%wf(stst:stend, 1:sdim, kptst:kptend, 0:this%nsrfcpnts, 1:this%tdsteps))
     this%wf = M_z0
@@ -492,13 +492,13 @@ contains
       end if
     end if
 
-    call messages_write('Info: Total number of surface points = ')
-    call messages_write(this%nsrfcpnts)
-    call messages_info() 
+    call message%write('Info: Total number of surface points = ')
+    call message%write(this%nsrfcpnts)
+    call message%info() 
 
-    call messages_write('Info: Total number of momentum points =  ')
-    call messages_write(this%nkpnts)
-    call messages_info()
+    call message%write('Info: Total number of momentum points =  ')
+    call message%write(this%nkpnts)
+    call message%info()
 
     POP_SUB(pes_flux_init)
   end subroutine pes_flux_init
@@ -583,8 +583,8 @@ contains
       !% The maximum value of |k|.
       !%End
       call parse_variable(namespace, 'PES_Flux_Kmax', M_ONE, kmax)
-      call messages_print_var_value(stdout, "PES_Flux_Kmax", kmax)
-      if(kmax <= M_ZERO) call messages_input_error('PES_Flux_Kmax')
+      call message%print_var_value(stdout, "PES_Flux_Kmax", kmax)
+      if(kmax <= M_ZERO) call message%input_error('PES_Flux_Kmax')
 
       !%Variable PES_Flux_DeltaK
       !%Type float
@@ -594,8 +594,8 @@ contains
       !% Spacing of the k-mesh in |k| (equidistant).
       !%End
       call parse_variable(namespace, 'PES_Flux_DeltaK', CNST(0.002), this%dk)
-      if(this%dk <= M_ZERO) call messages_input_error('PES_Flux_DeltaK')
-      call messages_print_var_value(stdout, "PES_Flux_DeltaK", this%dk)
+      if(this%dk <= M_ZERO) call message%input_error('PES_Flux_DeltaK')
+      call message%print_var_value(stdout, "PES_Flux_DeltaK", this%dk)
 
       !%Variable PES_Flux_StepsThetaK
       !%Type integer
@@ -605,7 +605,7 @@ contains
       !% Number of steps in <math>\theta</math> (<math>0 \le \theta \le \pi</math>) for the spherical grid in k.
       !%End
       call parse_variable(namespace, 'PES_Flux_StepsThetaK', 45, this%nstepsthetak)
-      if(this%nstepsthetak < 0) call messages_input_error('PES_Flux_StepsThetaK')
+      if(this%nstepsthetak < 0) call message%input_error('PES_Flux_StepsThetaK')
 
       !%Variable PES_Flux_StepsPhiK
       !%Type integer
@@ -615,7 +615,7 @@ contains
       !% Number of steps in <math>\phi</math> (<math>0 \le \phi \le 2 \pi</math>) for the spherical grid in k.
       !%End
       call parse_variable(namespace, 'PES_Flux_StepsPhiK', 90, this%nstepsphik)
-      if(this%nstepsphik < 0) call messages_input_error('PES_Flux_StepsPhiK')
+      if(this%nstepsphik < 0) call message%input_error('PES_Flux_StepsPhiK')
       if(this%nstepsphik == 0) this%nstepsphik = 1
 
       select case(mdim)
@@ -637,8 +637,8 @@ contains
 
       end select
 
-      if(mdim == 3) call messages_print_var_value(stdout, "PES_Flux_StepsThetaK", this%nstepsthetak)
-      call messages_print_var_value(stdout, "PES_Flux_StepsPhiK", this%nstepsphik)
+      if(mdim == 3) call message%print_var_value(stdout, "PES_Flux_StepsThetaK", this%nstepsthetak)
+      call message%print_var_value(stdout, "PES_Flux_StepsPhiK", this%nstepsphik)
 
       this%nk     = nint(kmax/this%dk)
       this%nkpnts = this%nstepsomegak * this%nk
@@ -660,7 +660,7 @@ contains
       !% G is added to the momentum grid. 
       !%End
       call parse_variable(namespace, 'PES_Flux_Gpoint_Upsample', 1, this%ngpt)
-      call messages_print_var_value(stdout, "PES_Flux_Gpoint_Upsample", this%ngpt)
+      call message%print_var_value(stdout, "PES_Flux_Gpoint_Upsample", this%ngpt)
       
       SAFE_ALLOCATE(gpoints(1:mdim,1:this%ngpt))
       SAFE_ALLOCATE(gpoints_reduced(1:mdim,1:this%ngpt)) 
@@ -687,7 +687,7 @@ contains
       !% By default true when <tt>PES_Flux_Shape = pln</tt>.
       !%End
       call parse_variable(namespace, 'PES_Flux_ARPES_grid', .true., this%arpes_grid)
-      call messages_print_var_value(stdout, "PES_Flux_ARPES_grid", this%arpes_grid)       
+      call message%print_var_value(stdout, "PES_Flux_ARPES_grid", this%arpes_grid)       
       
       
       !%Variable PES_Flux_EnergyGrid
@@ -719,16 +719,16 @@ contains
         
       end if 
       
-      call messages_write("Energy grid (Emin, Emax, DE) [") 
-      call messages_write(trim(units_abbrev(units_out%energy)))
-      call messages_write("]:  (")
-      call messages_write(Emin,fmt = '(f8.3)')
-      call messages_write(", ")
-      call messages_write(Emax, fmt = '(f8.3)')
-      call messages_write(", ")
-      call messages_write(DE, fmt = '(e9.2)')
-      call messages_write(")")
-      call messages_info()
+      call message%write("Energy grid (Emin, Emax, DE) [") 
+      call message%write(trim(units_abbrev(units_out%energy)))
+      call message%write("]:  (")
+      call message%write(Emin,fmt = '(f8.3)')
+      call message%write(", ")
+      call message%write(Emax, fmt = '(f8.3)')
+      call message%write(", ")
+      call message%write(DE, fmt = '(e9.2)')
+      call message%write(")")
+      call message%info()
             
       
       if (this%arpes_grid) then
@@ -787,10 +787,10 @@ contains
       ! we do not need to replicate the BZ in directions 
       ! perpendicular to the path
       if (kpoints_have_zero_weight_path(sb%kpoints) .and. any(NBZ(:)> 1) ) then
-        call messages_write("Using a path in reciprocal space with PES_Flux_BZones > 1.")
-        call messages_new_line()
-        call messages_write("This may cause unphysical results if the path crosses the 1st BZ boundary.")
-        call messages_warning()
+        call message%write("Using a path in reciprocal space with PES_Flux_BZones > 1.")
+        call message%new_line()
+        call message%write("This may cause unphysical results if the path crosses the 1st BZ boundary.")
+        call message%warning()
 !         call get_kpath_perp_direction(sb%kpoints, idim)
 !         if (idim > 0 ) NBZ(idim) = 1
       end if 
@@ -801,12 +801,12 @@ contains
       this%ll(mdim)   = this%nk 
       
 
-      call messages_write("Number of Brillouin zones = ")
+      call message%write("Number of Brillouin zones = ")
       do idim = 1 , pdim
-        call messages_write( this%ll(idim) )
-        if (.not. idim == pdim) call messages_write(" x ")        
+        call message%write( this%ll(idim) )
+        if (.not. idim == pdim) call message%write(" x ")        
       end do 
-      call messages_info()
+      call message%info()
             
       ! Total number of points
       this%nkpnts = product(this%ll(1:mdim))*this%ngpt
@@ -989,12 +989,12 @@ contains
         flush(229)
       end if
 
-      call messages_write("Number of points with E<p//^2/2 = ")
-      call messages_write(nkp_out)
-      call messages_write(" [of ")
-      call messages_write(this%nkpnts*kpoints_number(sb%kpoints))
-      call messages_write("]")
-      call messages_info()
+      call message%write("Number of points with E<p//^2/2 = ")
+      call message%write(nkp_out)
+      call message%write(" [of ")
+      call message%write(this%nkpnts*kpoints_number(sb%kpoints))
+      call message%write("]")
+      call message%info()
       
       SAFE_DEALLOCATE_A(gpoints)
       SAFE_DEALLOCATE_A(gpoints_reduced)
@@ -1093,8 +1093,8 @@ contains
     if(iter > 0) then
 
       if (debug%info) then
-        call messages_write("Debug: Calculating pes_flux")
-        call messages_info()
+        call message%write("Debug: Calculating pes_flux")
+        call message%info()
       end if
       
       stst   = st%st_start
@@ -1218,8 +1218,8 @@ contains
     call profiling_in(prof_init, 'PES_FLUX_INTEGRATE_CUB') 
 
     if (debug%info) then
-      call messages_write("Debug: calculating pes_flux surface integral")
-      call messages_info()
+      call message%write("Debug: calculating pes_flux surface integral")
+      call message%info()
     end if
 
 

@@ -54,7 +54,7 @@ subroutine X(states_elec_orthogonalization_full)(st, mesh, ik)
   case default
     write(message%lines(1),'(a,i6)') "Internal error from states_elec_orthogonalization_full: orth_method has illegal value ", &
       st%d%orth_method
-    call messages_fatal(1)
+    call message%fatal(1)
   end select
 
   call profiling_out(prof)
@@ -83,7 +83,7 @@ contains
       write(message%lines(1),'(a,i6)') "The cholesky_serial orthogonalization failed with error code ", ierr
       message%lines(2) = "There may be a linear dependence, a zero vector, or maybe a library problem."
       message%lines(3) = "Using the Gram-Schimdt orthogonalization instead."
-      call messages_warning(3)
+      call message%warning(3)
     end if
   
     if(.not. bof) then
@@ -114,15 +114,15 @@ contains
 ! some checks
 #ifndef HAVE_MPI
     message%lines(1) = 'The cholesky_parallel orthogonalizer can only be used in parallel.'
-    call messages_fatal(1)
+    call message%fatal(1)
 #else
 #ifndef HAVE_SCALAPACK
     message%lines(1) = 'The cholesky_parallel orthogonalizer requires ScaLAPACK.'
-    call messages_fatal(1, only_root_writes = .true.)
+    call message%fatal(1, only_root_writes = .true.)
 #endif
     if(st%dom_st_mpi_grp%size == 1) then
       message%lines(1) = 'The cholesky_parallel orthogonalizer is designed to be used with domain or state parallelization.'
-      call messages_warning(1)
+      call message%warning(1)
     end if
 #endif
 
@@ -147,7 +147,7 @@ contains
     if(info /= 0) then
       write(message%lines(1),'(3a,i6)') "descinit for psi failed in ", TOSTRING(X(states_elec_orthogonalization_full)), &
         ".cholesky_parallel with error ", info
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     nbl = min(32, st%nst)
@@ -161,7 +161,7 @@ contains
     if(info /= 0) then
       write(message%lines(1),'(3a,i6)') "descinit for ss failed in ", TOSTRING(X(states_elec_orthogonalization_full)), &
         ".cholesky_parallel with error ", info
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     ss = M_ZERO
@@ -181,7 +181,7 @@ contains
     if(info /= 0) then
       write(message%lines(1),'(3a,i6)') "cholesky_parallel orthogonalization with ", TOSTRING(pX(potrf)), &
         " failed with error ", info
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     call profiling_in(prof_trsm, "SCALAPACK_TRSM")
@@ -211,7 +211,7 @@ contains
 
     if(st%parallel_in_states) then
       message%lines(1) = 'The mgs orthogonalization method cannot work with state-parallelization.'
-      call messages_fatal(1, only_root_writes = .true.)
+      call message%fatal(1, only_root_writes = .true.)
     end if
 
     SAFE_ALLOCATE(psii(1:mesh%np, 1:st%d%dim))
@@ -377,7 +377,7 @@ subroutine X(states_elec_trsm)(st, mesh, ik, ss)
 
   else
 
-    if(st%d%dim > 1) call messages_not_implemented('Opencl states_elec_trsm for spinors')
+    if(st%d%dim > 1) call message%not_implemented('Opencl states_elec_trsm for spinors')
 
     block_size = batch_points_block_size(st%group%psib(st%group%block_start, ik))
 
@@ -1055,7 +1055,7 @@ subroutine X(states_elec_matrix)(mesh, st1, st2, aa)
       end do
 #else
       write(message%lines(1), '(a)') 'Internal error at Xstates_elec_matrix'
-      call messages_fatal(1)
+      call message%fatal(1)
 #endif
 
     else
@@ -1107,7 +1107,7 @@ subroutine X(states_elec_calc_orth_test)(st, mesh, sb)
 
   message%lines(1) = 'Info: Orthogonalizing random wavefunctions.'
   message%lines(2) = ''
-  call messages_info(2)
+  call message%info(2)
 
   if(st%d%pack_states) call st%pack()
 
@@ -1145,7 +1145,7 @@ contains
 #endif
 
     message%lines(1) = 'Residuals:'
-    call messages_info(1)
+    call message%info(1)
     
     do ist = 1, st%nst
       do jst = ist, st%nst
@@ -1192,13 +1192,13 @@ contains
 #endif
         dd = X(mf_dotp)(mesh, st%d%dim, psi1, psi2)
         write (message%lines(1), '(2i7, e16.6)') ist, jst, abs(dd)
-        call messages_info(1)
+        call message%info(1)
 
       end do
     end do
     
     message%lines(1) = ''
-    call messages_info(1)
+    call message%info(1)
 
     SAFE_DEALLOCATE_A(psi1)
     SAFE_DEALLOCATE_A(psi2)
@@ -1274,7 +1274,7 @@ subroutine X(states_elec_rotate)(mesh, st, uu, ik)
 
   else
 
-    if(st%d%dim > 1) call messages_not_implemented('Opencl states_elec_rotate for spinors')
+    if(st%d%dim > 1) call message%not_implemented('Opencl states_elec_rotate for spinors')
 
     block_size = batch_points_block_size(st%group%psib(st%group%block_start, ik))
 
@@ -1494,7 +1494,7 @@ subroutine X(states_elec_calc_projections)(mesh, st, gs_st, ik, proj, gs_nst)
 
   if(st%are_packed() .and. accel_is_enabled()) then
    message%lines(1) = "states_elec_calc_projections is not implemented with packed states or accel."
-   call messages_fatal(1) 
+   call message%fatal(1) 
   else
 
 #ifdef R_TREAL  
@@ -1575,7 +1575,7 @@ subroutine X(states_elec_me_one_body)(dir, gr, geo, st, nspin, vhxc, nint, iinde
   SAFE_ALLOCATE(psij(1:gr%mesh%np_part, 1:st%d%dim))
 
   if (st%d%ispin == SPINORS) then
-    call messages_not_implemented("One-body integrals with spinors.")
+    call message%not_implemented("One-body integrals with spinors.")
   end if
 
   
@@ -1642,7 +1642,7 @@ subroutine X(states_elec_me_two_body) (gr, st, psolver, st_min, st_max, iindex, 
   SAFE_ALLOCATE(psil(1:gr%mesh%np, 1:st%d%dim))
 
   if (st%d%ispin == SPINORS) then
-    call messages_not_implemented("Two-body integrals with spinors.")
+    call message%not_implemented("Two-body integrals with spinors.")
   end if
 
   ijst = 0

@@ -272,15 +272,15 @@ contains
     !% directions at different points. This vector is always in 3D regardless of <tt>Dimensions</tt>.
     !%End
     call parse_variable(namespace, 'SpinComponents', UNPOLARIZED, st%d%ispin)
-    if(.not.varinfo_valid_option('SpinComponents', st%d%ispin)) call messages_input_error('SpinComponents')
-    call messages_print_var_option(stdout, 'SpinComponents', st%d%ispin)
+    if(.not.varinfo_valid_option('SpinComponents', st%d%ispin)) call message%input_error('SpinComponents')
+    call message%print_var_option(stdout, 'SpinComponents', st%d%ispin)
     ! Use of spinors requires complex wavefunctions.
     if (st%d%ispin == SPINORS) st%wfs_type = TYPE_CMPLX
 
     if(st%d%ispin /= UNPOLARIZED .and. gr%sb%kpoints%use_time_reversal) then
       message%lines(1) = "Time reversal symmetry is only implemented for unpolarized spins."
       message%lines(2) = "Use KPointsUseTimeReversal = no."
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
       
 
@@ -309,7 +309,7 @@ contains
     !% This mode cannot be used with unoccupied states.    
     !%End
     call parse_variable(namespace, 'CalcEigenvalues', .true., st%calc_eigenval)
-    if(.not. st%calc_eigenval) call messages_experimental('CalcEigenvalues = .false.')
+    if(.not. st%calc_eigenval) call message%experimental('CalcEigenvalues = .false.')
     
     !%Variable TotalStates
     !%Type integer
@@ -328,7 +328,7 @@ contains
     call parse_variable(namespace, 'TotalStates', 0, ntot)
     if (ntot < 0) then
       write(message%lines(1), '(a,i5,a)') "Input: '", ntot, "' is not a valid value for TotalStates."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     !%Variable ExtraStates
@@ -351,12 +351,12 @@ contains
     if (nempty < 0) then
       write(message%lines(1), '(a,i5,a)') "Input: '", nempty, "' is not a valid value for ExtraStates."
       message%lines(2) = '(0 <= ExtraStates)'
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
 
     if(ntot > 0 .and. nempty > 0) then
       message%lines(1) = 'You cannot set TotalStates and ExtraStates at the same time.'
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     !%Variable ExtraStatesToConverge
@@ -375,12 +375,12 @@ contains
     if (nempty < 0) then
       write(message%lines(1), '(a,i5,a)') "Input: '", nempty_conv, "' is not a valid value for ExtraStatesToConverge."
       message%lines(2) = '(0 <= ExtraStatesToConverge)'
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
 
     if(nempty_conv > nempty) then
       message%lines(1) = 'You cannot set ExtraStatesToConverge to an higer value than ExtraStates.'
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     ! For non-periodic systems this should just return the Gamma point
@@ -393,7 +393,7 @@ contains
     if(st%qtot < -M_EPSILON) then
       write(message%lines(1),'(a,f12.6,a)') 'Total charge = ', st%qtot, ' < 0'
       message%lines(2) = 'Check Species and ExcessCharge.'
-      call messages_fatal(2, only_root_writes = .true.)
+      call message%fatal(2, only_root_writes = .true.)
     endif
 
     select case(st%d%ispin)
@@ -420,7 +420,7 @@ contains
     if(ntot > 0) then
       if(ntot < st%nst) then
         message%lines(1) = 'TotalStates is smaller than the number of states required by the system.'
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
 
       st%nst = ntot
@@ -430,7 +430,7 @@ contains
     st%nst = st%nst + nempty
     if(st%nst == 0) then
       message%lines(1) = "Cannot run with number of states = zero."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     !%Variable StatesBlockSize
@@ -465,8 +465,8 @@ contains
 
     call parse_variable(namespace, 'StatesBlockSize', default, st%d%block_size)
     if(st%d%block_size < 1) then
-      call messages_write("The variable 'StatesBlockSize' must be greater than 0.")
-      call messages_fatal()
+      call message%write("The variable 'StatesBlockSize' must be greater than 0.")
+      call message%fatal()
     end if
 
     st%d%block_size = min(st%d%block_size, st%nst)
@@ -563,7 +563,7 @@ contains
     !% only be done for periodic systems. (Experimental.)
     !%End
     call parse_variable(namespace, 'SymmetrizeDensity', gr%sb%kpoints%use_symmetries, st%symmetrize_density)
-    call messages_print_var_value(stdout, 'SymmetrizeDensity', st%symmetrize_density)
+    call message%print_var_value(stdout, 'SymmetrizeDensity', st%symmetrize_density)
 
 #ifdef HAVE_SCALAPACK
     call blacs_proc_grid_nullify(st%dom_st_proc_grid)
@@ -733,22 +733,22 @@ contains
       ncols = parse_block_cols(blk, 0)
       if(ncols > st%nst) then
         message%lines(1) = "Too many columns in block Occupations."
-        call messages_warning(1)
-        call messages_input_error("Occupations")
+        call message%warning(1)
+        call message%input_error("Occupations")
       end if
 
       nrows = parse_block_n(blk)
       if(nrows /= st%d%nik) then
         message%lines(1) = "Wrong number of rows in block Occupations."
-        call messages_warning(1)
-        call messages_input_error("Occupations")
+        call message%warning(1)
+        call message%input_error("Occupations")
       end if
 
       do ik = 1, st%d%nik - 1
         if(parse_block_cols(blk, ik) /= ncols) then
           message%lines(1) = "All rows in block Occupations must have the same number of columns."
-          call messages_warning(1)
-          call messages_input_error("Occupations")
+          call message%warning(1)
+          call message%input_error("Occupations")
         end if
       end do
 
@@ -785,7 +785,7 @@ contains
         message%lines(1) = "To balance charge, the first column in block Occupations is taken to refer to state"
         write(message%lines(2),'(a,i6,a)') "number ", start_pos, " but there are too many columns for the number of states."
         write(message%lines(3),'(a,i6,a)') "Solution: set ExtraStates = ", start_pos + ncols - st%nst
-        call messages_fatal(3)
+        call message%fatal(3)
       end if
 
       do ik = 1, st%d%nik
@@ -862,8 +862,8 @@ contains
     
     if(.not. smear_is_semiconducting(st%smear) .and. .not. st%smear%method == SMEAR_FIXED_OCC) then
       if(.not. unoccupied_states) then
-        call messages_write('Smearing needs unoccupied states (via ExtraStates or TotalStates) to be useful.')
-        call messages_warning()
+        call message%write('Smearing needs unoccupied states (via ExtraStates or TotalStates) to be useful.')
+        call message%warning()
       end if
     end if
 
@@ -875,15 +875,15 @@ contains
     if(abs(charge - st%qtot) > CNST(1e-6)) then
       message%lines(1) = "Initial occupations do not integrate to total charge."
       write(message%lines(2), '(6x,f12.6,a,f12.6)') charge, ' != ', st%qtot
-      call messages_fatal(2, only_root_writes = .true.)
+      call message%fatal(2, only_root_writes = .true.)
     end if
 
     st%uniform_occ = smear_is_semiconducting(st%smear) .and. .not. unoccupied_states
 
     if(.not. st%calc_eigenval .and. .not. st%uniform_occ) then
-      call messages_write('Calculation of the eigenvalues is required with unoccupied states', new_line = .true.)
-      call messages_write('or smearing.')
-      call messages_fatal()
+      call message%write('Calculation of the eigenvalues is required with unoccupied states', new_line = .true.)
+      call message%write('or smearing.')
+      call message%fatal()
     end if
     
     POP_SUB(states_elec_read_initial_occs)
@@ -950,7 +950,7 @@ contains
         do j = 1, 3
           call parse_block_float(blk, i-1, j-1, st%spin(j, i, 1))
         end do
-        if( abs(sum(st%spin(1:3, i, 1)**2) - M_FOURTH) > CNST(1.0e-6)) call messages_input_error('InitialSpins')
+        if( abs(sum(st%spin(1:3, i, 1)**2) - M_FOURTH) > CNST(1.0e-6)) call message%input_error('InitialSpins')
       end do
       call parse_block_end(blk)
       st%fixed_spins = .true.
@@ -1089,21 +1089,21 @@ contains
     end do
     
     if(verbose_) then
-      call messages_write('Info: Blocks of states')
-      call messages_info()
+      call message%write('Info: Blocks of states')
+      call message%info()
       do ib = 1, st%group%nblocks
-        call messages_write('      Block ')
-        call messages_write(ib, fmt = 'i8')
-        call messages_write(' contains ')
-        call messages_write(st%group%block_size(ib), fmt = 'i8')
-        call messages_write(' states')
+        call message%write('      Block ')
+        call message%write(ib, fmt = 'i8')
+        call message%write(' contains ')
+        call message%write(st%group%block_size(ib), fmt = 'i8')
+        call message%write(' states')
         if(st%group%block_size(ib) > 0) then
-          call messages_write(':')
-          call messages_write(st%group%block_range(ib, 1), fmt = 'i8')
-          call messages_write(' - ')
-          call messages_write(st%group%block_range(ib, 2), fmt = 'i8')
+          call message%write(':')
+          call message%write(st%group%block_range(ib, 1), fmt = 'i8')
+          call message%write(' - ')
+          call message%write(st%group%block_range(ib, 2), fmt = 'i8')
         end if
-        call messages_info()
+        call message%info()
       end do
     end if
     
@@ -1166,9 +1166,9 @@ contains
 
     fsize = gr%mesh%np_part*CNST(8.0)*st%d%block_size
 
-    call messages_write('Info: states-block size = ')
-    call messages_write(fsize, fmt = '(f10.1)', align_left = .true., units = unit_megabytes, print_units = .true.)
-    call messages_info()
+    call message%write('Info: states-block size = ')
+    call message%write(fsize, fmt = '(f10.1)', align_left = .true., units = unit_megabytes, print_units = .true.)
+    call message%info()
 
     POP_SUB(states_elec_densities_init)
   end subroutine states_elec_densities_init
@@ -1232,7 +1232,7 @@ contains
     end if
     call parse_variable(namespace, 'StatesPack', defaultl, st%d%pack_states)
 
-    call messages_print_var_value(stdout, 'StatesPack', st%d%pack_states)
+    call message%print_var_value(stdout, 'StatesPack', st%d%pack_states)
 
     !%Variable StatesMirror
     !%Type logical
@@ -1253,7 +1253,7 @@ contains
     end if
     call parse_variable(namespace, 'StatesMirror', defaultl, st%d%mirror_states)
 
-    call messages_print_var_value(stdout, 'StatesMirror', st%d%mirror_states)
+    call message%print_var_value(stdout, 'StatesMirror', st%d%mirror_states)
 
     !%Variable StatesOrthogonalization
     !%Type integer
@@ -1293,8 +1293,8 @@ contains
     
     call parse_variable(namespace, 'StatesOrthogonalization', default, st%d%orth_method)
 
-    if(.not.varinfo_valid_option('StatesOrthogonalization', st%d%orth_method)) call messages_input_error('StatesOrthogonalization')
-    call messages_print_var_option(stdout, 'StatesOrthogonalization', st%d%orth_method)
+    if(.not.varinfo_valid_option('StatesOrthogonalization', st%d%orth_method)) call message%input_error('StatesOrthogonalization')
+    call message%print_var_option(stdout, 'StatesOrthogonalization', st%d%orth_method)
 
     !%Variable StatesCLDeviceMemory
     !%Type float
@@ -1631,10 +1631,10 @@ contains
     if(abs(charge-st%qtot) > CNST(1e-6)) then
       message%lines(1) = 'Occupations do not integrate to total charge.'
       write(message%lines(2), '(6x,f12.8,a,f12.8)') charge, ' != ', st%qtot
-      call messages_warning(2)
+      call message%warning(2)
       if(charge < M_EPSILON) then
         message%lines(1) = "There don't seem to be any electrons at all!"
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
     end if
 
@@ -1727,11 +1727,11 @@ contains
     call parse_variable(namespace, 'ScaLAPACKCompatible', &
       calc_mode_par_scalapack_compat() .and. .not. st%d%kpt%parallel, st%scalapack_compatible)
     if((calc_mode_par_scalapack_compat() .and. .not. st%d%kpt%parallel) .neqv. st%scalapack_compatible) &
-      call messages_experimental('Setting ScaLAPACKCompatible to other than default')
+      call message%experimental('Setting ScaLAPACKCompatible to other than default')
 
     if(st%scalapack_compatible) then
       if(multicomm_have_slaves(mc)) &
-        call messages_not_implemented("ScaLAPACK usage with task parallelization (slaves)")
+        call message%not_implemented("ScaLAPACK usage with task parallelization (slaves)")
       call blacs_proc_grid_init(st%dom_st_proc_grid, st%dom_st_mpi_grp)
     else
       call blacs_proc_grid_nullify(st%dom_st_proc_grid)
@@ -1749,7 +1749,7 @@ contains
       if(st%nst < st%mpi_grp%size) then
         message%lines(1) = "Have more processors than necessary"
         write(message%lines(2),'(i4,a,i4,a)') st%mpi_grp%size, " processors and ", st%nst, " states."
-        call messages_fatal(2)
+        call message%fatal(2)
       end if
 
       call distributed_init(st%dist, st%nst, st%mpi_grp%comm, "states", scalapack_compat = st%scalapack_compatible)
@@ -2233,13 +2233,13 @@ contains
         mem = mem + batch_pack_size(st%group%psib(ib, iqn))
 
         if(mem > max_mem) then
-          call messages_write('Not enough CL device memory to store all states simultaneously.', new_line = .true.)
-          call messages_write('Only ')
-          call messages_write(ib - st%group%block_start)
-          call messages_write(' of ')
-          call messages_write(st%group%block_end - st%group%block_start + 1)
-          call messages_write(' blocks will be stored in device memory.', new_line = .true.)
-          call messages_warning()
+          call message%write('Not enough CL device memory to store all states simultaneously.', new_line = .true.)
+          call message%write('Only ')
+          call message%write(ib - st%group%block_start)
+          call message%write(' of ')
+          call message%write(st%group%block_end - st%group%block_start + 1)
+          call message%write(' blocks will be stored in device memory.', new_line = .true.)
+          call message%warning()
           exit qnloop
         end if
         
@@ -2280,14 +2280,14 @@ contains
 
     PUSH_SUB(states_elec_write_info)
 
-    call messages_print_stress(stdout, "States")
+    call message%print_stress(stdout, "States")
 
     write(message%lines(1), '(a,f12.3)') 'Total electronic charge  = ', st%qtot
     write(message%lines(2), '(a,i8)')    'Number of states         = ', st%nst
     write(message%lines(3), '(a,i8)')    'States block-size        = ', st%d%block_size
-    call messages_info(3)
+    call message%info(3)
 
-    call messages_print_stress(stdout)
+    call message%print_stress(stdout)
 
     POP_SUB(states_elec_write_info)
   end subroutine states_elec_write_info
@@ -2404,7 +2404,7 @@ contains
       call parse_variable(namespace, 'CasidaKohnShamStates', default, wfn_list)
 
       write(message%lines(1),'(a,a)') "Info: States that form the basis: ", trim(wfn_list)
-      call messages_info(1)
+      call message%info(1)
 
       ! count pairs
       n_pairs = 0
@@ -2425,7 +2425,7 @@ contains
 
       write(message%lines(1),'(a,f12.6,a)') "Info: including transitions with energy < ", &
         units_from_atomic(units_out%energy, energy_window), trim(units_abbrev(units_out%energy))
-      call messages_info(1)
+      call message%info(1)
 
       ! count pairs
       n_pairs = 0
@@ -2492,7 +2492,7 @@ contains
           if(present(partially_filled)) partially_filled(n_partially_filled) = ist
         elseif(abs(st%occ(ist, ik)) > M_THRESHOLD ) then
           write(message%lines(1),*) 'Internal error in occupied_states: Illegal occupation value ', st%occ(ist, ik)
-          call messages_fatal(1)
+          call message%fatal(1)
          end if
       end do
     case(SPIN_POLARIZED, SPINORS)
@@ -2505,7 +2505,7 @@ contains
           if(present(partially_filled)) partially_filled(n_partially_filled) = ist
         elseif(abs(st%occ(ist, ik)) > M_THRESHOLD ) then
           write(message%lines(1),*) 'Internal error in occupied_states: Illegal occupation value ', st%occ(ist, ik)
-          call messages_fatal(1)
+          call message%fatal(1)
          end if
       end do
     end select

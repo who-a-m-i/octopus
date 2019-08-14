@@ -52,7 +52,7 @@ program octopus
   call parser_init()
   default_namespace = namespace_t("")
   
-  call messages_init(default_namespace)
+  call message%init(default_namespace)
 
   call walltimer_init(default_namespace)
   
@@ -113,13 +113,13 @@ program octopus
   !% Prints out a tasty recipe.
   !%End
   if(parse_block(default_namespace, 'CalculationMode', blk) == 0) then
-    call messages_write('The datasets mode has been deprecated,', new_line = .true.)
-    call messages_write('please use several Octopus runs.')
-    call messages_fatal()
+    call message%write('The datasets mode has been deprecated,', new_line = .true.)
+    call message%write('please use several Octopus runs.')
+    call message%fatal()
   end if
 
   call parse_variable(default_namespace, 'CalculationMode', CM_GS, inp_calc_mode)
-  if(.not.varinfo_valid_option('CalculationMode', inp_calc_mode)) call messages_input_error('CalculationMode')
+  if(.not.varinfo_valid_option('CalculationMode', inp_calc_mode)) call message%input_error('CalculationMode')
 
   ! Now we can initialize the I/O
   call io_init(default_namespace)
@@ -127,17 +127,17 @@ program octopus
   call calc_mode_par_init()
   
   ! now we declare octopus as running
-  call messages_switch_status('running')
+  call message%switch_status('running')
   
   call profiling_init(default_namespace)
   
   call print_header()
 
 #if !defined(HAVE_LIBXC3) && !defined(HAVE_LIBXC4)
-  call messages_write('You have compiled Octopus with version 2 of Libxc.', new_line = .true.)
-  call messages_write('Support for this version of Libxc has been deprecated and', new_line = .true.)
-  call messages_write('will be removed in the next major release of Octopus.', new_line = .true.)
-  call messages_warning()
+  call message%write('You have compiled Octopus with version 2 of Libxc.', new_line = .true.)
+  call message%write('Support for this version of Libxc has been deprecated and', new_line = .true.)
+  call message%write('will be removed in the next major release of Octopus.', new_line = .true.)
+  call message%warning()
 #endif
   
   ! now we really start
@@ -149,7 +149,7 @@ program octopus
 #endif
   
   ! run finished successfully
-  call messages_switch_status('finished')
+  call message%switch_status('finished')
   call io_end()
   
   call profiling_end(default_namespace)
@@ -161,7 +161,7 @@ program octopus
   call print_date("Calculation ended on ")
   call print_walltime()
 
-  call messages_end()
+  call message%end()
 
   call parser_end()
   
@@ -188,7 +188,7 @@ contains
       write(message%lines(2), '(a,1x,i2.2,a)') trim(message%lines(2)), min, 'm'
     write(message%lines(2), '(a,1x,i2.2,a,i3,a)') trim(message%lines(2)), sec, '.', usec/1000, 's'
     message%lines(1) = str_center('Walltime: ' // trim(message%lines(2)), 70)
-    call messages_info(1)
+    call message%info(1)
 
   end subroutine print_walltime
 

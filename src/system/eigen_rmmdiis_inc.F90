@@ -244,7 +244,7 @@ subroutine X(eigensolver_rmmdiis) (gr, st, hm, psolver, pre, tol, niter, converg
         do ist = minst, maxst
           write(message%lines(1), '(a,i4,a,i4,a,i4,a,es12.6)') &
             'Debug: RMMDIIS Eigensolver - ik', ik, ' ist ', ist, ' iter ', iter, ' res ', sqrt(abs(eigen(ist - minst + 1)))
-          call messages_info(1)
+          call message%info(1)
         end do
       end if
 
@@ -428,7 +428,7 @@ subroutine X(eigensolver_rmmdiis_min) (gr, st, hm, psolver, pre, niter, converge
         do ist = minst, maxst
           write(message%lines(1), '(a,i4,a,i4,a,i4,a,es12.6)') &
             'Debug: RMMDIIS MIN Eigensolver - ik', ik, ' ist ', ist, ' iter ', isd, ' res ', sqrt(abs(diff(ist - minst + 1)))
-          call messages_info(1)
+          call message%info(1)
         end do
       end if
 

@@ -57,7 +57,7 @@
     call parser_init()
     default_namespace = namespace_t("")
     
-    call messages_init(default_namespace)
+    call message%init(default_namespace)
 
     call io_init(default_namespace)
 
@@ -78,9 +78,9 @@
     !% time step used to calculate the vibrational spectrum.
     !%End
 
-    call messages_obsolete_variable(default_namespace, 'PropagationSpectrumTimeStepFactor', 'VibrationalSpectrumTimeStepFactor')
+    call message%obsolete_variable(default_namespace, 'PropagationSpectrumTimeStepFactor', 'VibrationalSpectrumTimeStepFactor')
     call parse_variable(default_namespace, 'VibrationalSpectrumTimeStepFactor', 10, skip)
-    if(skip <= 0) call messages_input_error('VibrationalSpectrumTimeStepFactor')
+    if(skip <= 0) call message%input_error('VibrationalSpectrumTimeStepFactor')
 
     max_freq = spectrum_nenergy_steps(spectrum)
 
@@ -113,13 +113,13 @@
       end if
 
       if(iter /= read_iter + 1) then
-        call messages_write("Error while reading file 'td.general/coordinates',", new_line = .true.)
-        call messages_write('expected iteration ')
-        call messages_write(iter - 1)
-        call messages_write(', got iteration ')
-        call messages_write(read_iter)
-        call messages_write('.')
-        call messages_fatal()
+        call message%write("Error while reading file 'td.general/coordinates',", new_line = .true.)
+        call message%write('expected iteration ')
+        call message%write(iter - 1)
+        call message%write(', got iteration ')
+        call message%write(read_iter)
+        call message%write('.')
+        call message%fatal()
       end if
       
       ! ntime counts how many steps are gonna be used
@@ -193,13 +193,13 @@
 
     SAFE_ALLOCATE(vaf(1:ntime))
 
-    call messages_write('Time step = ')
-    call messages_write(deltat, units = units_out%time)
-    call messages_info()
+    call message%write('Time step = ')
+    call message%write(deltat, units = units_out%time)
+    call message%info()
     
-    call messages_new_line()
-    call messages_write('Calculating the velocity autocorrelation function')
-    call messages_info()
+    call message%new_line()
+    call message%write('Calculating the velocity autocorrelation function')
+    call message%info()
 
     call calculate_vaf(vaf)
 
@@ -265,7 +265,7 @@
     SAFE_DEALLOCATE_A(time)
 
     call io_end()
-    call messages_end()
+    call message%end()
 
     call parser_end()
     call global_end()
@@ -280,7 +280,7 @@
 
       write (message%lines(1), '(a)') "Read velocities from '"// &
         trim(io_workpath('td.general/coordinates', default_namespace))//"'"
-      call messages_info(1)
+      call message%info(1)
 
       !calculating the vaf, formula from
       !

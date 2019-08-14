@@ -164,7 +164,7 @@ subroutine batch_get_points_cl(this, sp, ep, psi, ldpsi)
 
   select case(batch_status(this))
   case(BATCH_NOT_PACKED, BATCH_PACKED)
-    call messages_not_implemented('batch_get_points_cl for non-CL batches')
+    call message%not_implemented('batch_get_points_cl for non-CL batches')
 
   case(BATCH_DEVICE_PACKED)
 
@@ -208,7 +208,7 @@ subroutine batch_set_points_cl(this, sp, ep, psi, ldpsi)
 
   select case(batch_status(this))
   case(BATCH_NOT_PACKED, BATCH_PACKED)
-    call messages_not_implemented('batch_get_points_cl for non-CL batches')
+    call message%not_implemented('batch_get_points_cl for non-CL batches')
 
   case(BATCH_DEVICE_PACKED)
 

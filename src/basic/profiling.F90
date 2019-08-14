@@ -215,7 +215,7 @@ contains
 
     call parse_variable(namespace, 'ProfilingMode', 0, prof_vars%mode)
     if(.not.varinfo_valid_option('ProfilingMode', prof_vars%mode)) then
-      call messages_input_error('ProfilingMode')
+      call message%input_error('ProfilingMode')
     end if
 
     in_profiling_mode = (prof_vars%mode > 0)
@@ -334,33 +334,33 @@ contains
     end do
 
     if(bitand(prof_vars%mode, PROFILING_MEMORY) /= 0) then
-      call messages_print_stress(stdout, "Memory profiling information")
+      call message%print_stress(stdout, "Memory profiling information")
       write(message%lines(1), '(a,i10)') 'Number of   allocations = ', prof_vars%alloc_count
       write(message%lines(2), '(a,i10)') 'Number of deallocations = ', prof_vars%dealloc_count
       write(message%lines(3), '(a,f18.3,a)') 'Maximum total memory allocated = ', prof_vars%max_memory/megabyte, ' Mbytes'
       write(message%lines(4), '(2x,a,a)') 'at ', trim(prof_vars%max_memory_location)
-      call messages_info(4)
+      call message%info(4)
 
       message%lines(1) = ''
       message%lines(2) = 'Largest variables allocated:'
-      call messages_info(2)
+      call message%info(2)
       do ii = 1, MAX_MEMORY_VARS
         write(message%lines(1),'(i2,f18.3,2a)') ii, prof_vars%large_vars_size(ii)/megabyte, &
           ' Mbytes ', trim(prof_vars%large_vars(ii))
-        call messages_info(1)
+        call message%info(1)
       end do
 
-      call messages_print_stress(stdout)
+      call message%print_stress(stdout)
 
       if(prof_vars%alloc_count /= prof_vars%dealloc_count) then
         write(message%lines(1),'(a,i10,a,i10,a)') "Not all memory was deallocated: ", prof_vars%alloc_count, &
           ' allocations and ', prof_vars%dealloc_count, ' deallocations'
-        call messages_warning(1, all_nodes = .true.)
+        call message%warning(1, all_nodes = .true.)
       end if
       if(prof_vars%total_memory > 0) then
         write(message%lines(1),'(a,f18.3,a,f18.3,a)') "Remaining allocated memory: ", prof_vars%total_memory/megabyte, &
           ' Mbytes (out of maximum ', prof_vars%max_memory/megabyte, ' Mbytes)'
-        call messages_warning(1, all_nodes = .true.)
+        call message%warning(1, all_nodes = .true.)
       end if
     end if
 
@@ -842,7 +842,7 @@ contains
     iunit = io_open(trim(filename), namespace, action='write')
     if(iunit < 0) then
       message%lines(1) = 'Failed to open file ' // trim(filename) // ' to write profiling results.'
-      call messages_warning(1)
+      call message%warning(1)
       POP_SUB(profiling_output)
       return
     end if
@@ -876,12 +876,12 @@ contains
       prof =>  prof_vars%profile_list(position(ii))%p
       if(.not. prof%initialized) then
         write(message%lines(1),'(a,i6,a)') "Internal error: Profile number ", position(ii), " is not initialized."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
       if(prof%active) then
         write(message%lines(1),'(a)') "Internal error: Profile '" // trim(profile_label(prof)) // &
           "' is active, i.e. profiling_out was not called."
-        call messages_warning(1)
+        call message%warning(1)
       end if
       
       if(profile_num_calls(prof) == 0) cycle
@@ -934,7 +934,7 @@ contains
       end do
       if(jj == 0) then
         message%lines(1) = "Internal Error in profiling_memory_log"
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
     end if
     ii = 1
@@ -996,7 +996,7 @@ contains
     if(prof_vars%memory_limit > 0) then
       if(prof_vars%total_memory > prof_vars%memory_limit) then
         message%lines(1) = "Memory limit set in the input file was passed"
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
     end if
 

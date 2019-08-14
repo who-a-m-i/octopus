@@ -45,10 +45,10 @@ program harmonic_spectrum
 
   call getopt_init(ierr)
   if(ierr /= 0) then
-    call messages_write("Your Fortran compiler doesn't support command-line arguments;")
-    call messages_new_line()
-    call messages_write("the oct-harmonic-spectrum command is not available.")
-    call messages_fatal()
+    call message%write("Your Fortran compiler doesn't support command-line arguments;")
+    call message%new_line()
+    call message%write("the oct-harmonic-spectrum command is not available.")
+    call message%fatal()
   end if
   ! These are the default values.
   get_maxima = .true.
@@ -68,7 +68,7 @@ program harmonic_spectrum
   call parser_init()
   default_namespace = namespace_t("")
   
-  call messages_init(default_namespace)
+  call message%init(default_namespace)
 
   call io_init(default_namespace)
   call unit_system_init(default_namespace)
@@ -76,8 +76,8 @@ program harmonic_spectrum
 
   call spectrum_init(spectrum, default_namespace)
 
-  call messages_obsolete_variable(default_namespace, 'HarmonicSpectrumPolarization')
-  call messages_obsolete_variable(default_namespace, 'HarmonicSpectrumMode')
+  call message%obsolete_variable(default_namespace, 'HarmonicSpectrumPolarization')
+  call message%obsolete_variable(default_namespace, 'HarmonicSpectrumMode')
 
   if( (pol /= 'x') .and. &
       (pol /= 'y') .and. &
@@ -86,7 +86,7 @@ program harmonic_spectrum
       (pol /= '-') .and. &
       (pol /= 'v') ) then
     message%lines(1) = 'The polarization direction given in the command line is not valid.'
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
   select case(mode)
@@ -96,7 +96,7 @@ program harmonic_spectrum
     else
       if(ar  ==  1) then
          message%lines(1)= "Calculating angle-resolved hs from multipoles."
-        call messages_info(1)
+        call message%info(1)
         call spectrum_hs_ar_from_mult('hs-mult', default_namespace, spectrum, vec)
       else
         call spectrum_hs_from_mult('hs-mult', default_namespace, spectrum, pol, vec)
@@ -108,7 +108,7 @@ program harmonic_spectrum
     else
       if(ar  ==  1) then
          message%lines(1)= "Calculating angle-resolved hs from acceleration."
-        call messages_info(1)
+        call message%info(1)
         call spectrum_hs_ar_from_acc('hs-acc', default_namespace, spectrum, vec)
       else
        call spectrum_hs_from_acc('hs-acc', default_namespace, spectrum, pol, vec)
@@ -122,12 +122,12 @@ program harmonic_spectrum
     end if  
   case default
     message%lines(1) = 'The harmonic-spectrum mode given in the command line is not valid.'
-    call messages_fatal(1)  
+    call message%fatal(1)  
   end select
 
 
   call io_end()
-  call messages_end()
+  call message%end()
 
   call parser_end()
   

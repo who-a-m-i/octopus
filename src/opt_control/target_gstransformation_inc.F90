@@ -29,7 +29,7 @@
     PUSH_SUB(target_init_gstransformation)
 
     message%lines(1) =  'Info: Using Superposition of States for TargetOperator'
-    call messages_info(1)
+    call message%info(1)
 
     tg%move_ions = ion_dynamics_ions_move(td%ions)
     tg%dt = td%dt
@@ -51,7 +51,7 @@
     if(.not. parse_is_defined(namespace, 'OCTTargetTransformStates')) then
       message%lines(1) = 'If "OCTTargetOperator = oct_tg_superposition", then you must'
       message%lines(2) = 'supply an "OCTTargetTransformStates" block to create the superposition.'
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
     call density_calc(tg%st, gr, tg%st%rho)
     

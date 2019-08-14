@@ -48,7 +48,7 @@ subroutine X(cholesky)(n, a, bof, err_code)
       else
         write(message%lines(2), '(a,i5,a)') 'The leading minor of order ', info, ' is not positive definite.'
       end if
-      call messages_fatal(2)
+      call message%fatal(2)
     else
       if(present(bof)) then
         bof = .true.
@@ -142,7 +142,7 @@ subroutine X(geneigensolve)(n, a, b, e, bof, err_code)
       else
         write(message%lines(2), '(a,i5,a)') 'The leading minor of order ', info - n, ' of B is not positive definite.'
       end if
-      call messages_fatal(2)
+      call message%fatal(2)
     else
       if(present(bof)) then
         bof = .true.
@@ -207,7 +207,7 @@ subroutine X(eigensolve_nonh)(n, a, e, err_code, side, sort_eigenvectors)
   if(info /= 0) then
     write(message%lines(1),'(5a,i5)') 'In ', TOSTRING(X(eigensolve_nonh)), &
       ', LAPACK ', TOSTRING(X(geev)), ' workspace query returned error message ', info
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
   lwork = int(work(1))
@@ -251,7 +251,7 @@ subroutine X(eigensolve_nonh)(n, a, e, err_code, side, sort_eigenvectors)
     else
       write(message%lines(2), '(a,i5,a,i5,a)') 'Only eigenvalues ', info + 1, ' to ', n, ' could be computed.'
     end if
-    call messages_fatal(2)
+    call message%fatal(2)
   end if
   if(present(err_code)) then
     err_code = info
@@ -310,7 +310,7 @@ subroutine dlowest_geneigensolve(k, n, a, b, e, v, bof, err_code)
   if(info /= 0) then
     write(message%lines(1),'(3a,i5)') 'In dlowest_geneigensolve, LAPACK ', &
       TOSTRING(X(sygvx)), ' workspace query returned error message ', info
-    call messages_fatal(1)
+    call message%fatal(1)
   end if  
   lwork = int(work(1))
   SAFE_DEALLOCATE_A(work)
@@ -344,7 +344,7 @@ subroutine dlowest_geneigensolve(k, n, a, b, e, v, bof, err_code)
       else
         write(message%lines(2), '(a,i5,a)') 'The leading minor of order ', info - n, ' of B is not positive definite.'
       end if
-      call messages_fatal(2)
+      call message%fatal(2)
     else
       if(present(bof)) then
         bof = .true.
@@ -395,7 +395,7 @@ subroutine zlowest_geneigensolve(k, n, a, b, e, v, bof, err_code)
   if(info /= 0) then
     write(message%lines(1),'(3a,i5)') 'In zlowest_geneigensolve, LAPACK ', &
       TOSTRING(X(hegvx)), ' workspace query returned error message ', info
-    call messages_fatal(1)
+    call message%fatal(1)
   end if  
   lwork = int(real(work(1)))
   SAFE_DEALLOCATE_A(work)
@@ -427,7 +427,7 @@ subroutine zlowest_geneigensolve(k, n, a, b, e, v, bof, err_code)
       else
         write(message%lines(2), '(a,i5,a)') 'The leading minor of order ', info - n, ' of B is not positive definite.'
       end if
-      call messages_fatal(2)      
+      call message%fatal(2)      
     else
       if(present(bof)) then
         bof = .true.
@@ -483,7 +483,7 @@ subroutine deigensolve(n, a, e, bof, err_code)
       else
         write(message%lines(2), '(i5,a)') info, ' off-diagonal elements of an intermediate tridiagonal did not converge to zero.'
       end if
-      call messages_fatal(2)
+      call message%fatal(2)
     else
       if(present(bof)) then
         bof = .true.
@@ -543,7 +543,7 @@ subroutine zeigensolve(n, a, e, bof, err_code)
       else
         write(message%lines(2), '(i5,a)') info, ' off-diagonal elements of an intermediate tridiagonal did not converge to zero.'
       end if
-      call messages_fatal(2)
+      call message%fatal(2)
     else
       if(present(bof)) then
         bof = .true.
@@ -591,7 +591,7 @@ subroutine dlowest_eigensolve(k, n, a, e, v)
   if(info /= 0) then
     write(message%lines(1),'(3a,i5)') 'In dlowest_eigensolve, LAPACK ', &
       TOSTRING(X(syevx)), ' workspace query returned error message ', info
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
   lwork = int(work(1))
   SAFE_DEALLOCATE_A(work)
@@ -615,7 +615,7 @@ subroutine dlowest_eigensolve(k, n, a, e, v)
     else
       write(message%lines(2), *) info, ' eigenvectors failed to converge: ', ifail(1:info)
     end if
-    call messages_fatal(2)
+    call message%fatal(2)
   end if
 
   POP_SUB(dlowest_eigensolve)
@@ -650,7 +650,7 @@ subroutine zlowest_eigensolve(k, n, a, e, v)
   if(info /= 0) then
     write(message%lines(1),'(3a,i5)') 'In zlowest_eigensolve, LAPACK ', &
       TOSTRING(X(heevx)), ' workspace query returned error message ', info
-    call messages_fatal(1)
+    call message%fatal(1)
   end if  
   lwork = int(work(1))
   SAFE_DEALLOCATE_A(work)
@@ -674,7 +674,7 @@ subroutine zlowest_eigensolve(k, n, a, e, v)
     else
       write(message%lines(2), *) info, ' eigenvectors failed to converge: ', ifail(1:info)
     end if
-    call messages_fatal(2)
+    call message%fatal(2)
   end if
 
   POP_SUB(zlowest_eigensolve)
@@ -721,7 +721,7 @@ R_TYPE function X(determinant)(n, a, invert) result(d)
   call X(getrf)(n, n, a(1, 1), n, ipiv(1), info)
   if(info < 0) then
     write(message%lines(1), '(5a, i5)') 'In ', TOSTRING(X(determinant)), ', LAPACK ', TOSTRING(X(getrf)), ' returned info = ', info
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
   d = M_ONE
@@ -748,7 +748,7 @@ R_TYPE function X(determinant)(n, a, invert) result(d)
     else
       write(message%lines(2), '(a,i5,a)') 'Diagonal element ', info, ' of U is 0; matrix is singular.'
     end if
-    call messages_fatal(2)
+    call message%fatal(2)
     end if
   end if
 
@@ -801,7 +801,7 @@ subroutine X(sym_inverter)(uplo, n, a)
   call X(sytrf)(uplo, n, a(1, 1), lead_dim(a), ipiv(1), work(1), n, info)
   if(info < 0) then
     write(message%lines(1), '(5a, i5)') 'In ', TOSTRING(X(sym_inverter)), ', LAPACK ', TOSTRING(X(sytrf)), ' returned info = ', info
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
   call X(sytri)(uplo, n, a(1, 1), lead_dim(a), ipiv(1), work(1), info)
@@ -818,7 +818,7 @@ subroutine X(sym_inverter)(uplo, n, a)
     else
       write(message%lines(2), '(a,i5,a)') 'Diagonal element ', info, ' of D is 0; matrix is singular.'
     end if
-    call messages_fatal(2)
+    call message%fatal(2)
   end if
 
   SAFE_DEALLOCATE_A(work)
@@ -879,13 +879,13 @@ subroutine dlinsyssolve(n, nrhs, a, b, x)
 !*                       value of RCOND would suggest.
     if(info < 0) then
       write(message%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
-      call messages_fatal(2)      
+      call message%fatal(2)      
     else if(info == n+1) then
       message%lines(2) = '(reciprocal of the condition number is less than machine precision)'
-      call messages_warning(2)
+      call message%warning(2)
     else
       write(message%lines(2), '(a,i5,a)') 'Diagonal element ', info, ' of U is 0; matrix is singular.'
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
   end if
 
@@ -955,13 +955,13 @@ subroutine zlinsyssolve(n, nrhs, a, b, x)
 !*                       value of RCOND would suggest.
     if(info < 0) then
       write(message%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
-      call messages_fatal(2)      
+      call message%fatal(2)      
     else if(info == n+1) then
       message%lines(2) = '(reciprocal of the condition number is less than machine precision)'
-      call messages_warning(2)
+      call message%warning(2)
     else
       write(message%lines(2), '(a,i5,a)') 'Diagonal element ', info, ' of U is 0; matrix is singular.'
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
   end if
 
@@ -1033,7 +1033,7 @@ subroutine dsingular_value_decomp(m, n, a, u, vt, sg_values)
     else
       write(message%lines(2), '(i5,a)') info, ' superdiagonal elements of an intermediate bidiagonal did not converge to zero.'
     end if
-    call messages_fatal(2)
+    call message%fatal(2)
   end if
 
   SAFE_DEALLOCATE_A(work)
@@ -1076,7 +1076,7 @@ subroutine dsvd_inverse(m, n, a, threshold)
       do l = 1, minmn
         if (sg_values(l) < threshold_) then
           !write(message%lines(1), '(a)') 'In dsvd_inverse: singular value below threshold.'
-          !call messages_warning(1)
+          !call message%warning(1)
           sg_inverse = M_ZERO
         else
           sg_inverse = M_ONE/sg_values(l)
@@ -1150,7 +1150,7 @@ subroutine zsingular_value_decomp(m, n, a, u, vt, sg_values)
     else
       write(message%lines(2), '(i5,a)') info, ' superdiagonal elements of an intermediate bidiagonal did not converge to zero.'
     end if
-    call messages_fatal(2)
+    call message%fatal(2)
   end if
 
   SAFE_DEALLOCATE_A(rwork)
@@ -1194,7 +1194,7 @@ subroutine zsvd_inverse(m, n, a, threshold)
       do l = 1, minmn
         if (sg_values(l) < threshold_) then
           write(message%lines(1), '(a)') 'In zsvd_inverse: singular value below threshold.'
-          call messages_warning(1)
+          call message%warning(1)
           sg_inverse = M_ZERO
         else
           sg_inverse = M_ONE/sg_values(l)
@@ -1253,7 +1253,7 @@ subroutine X(invert_upper_triangular)(n, a)
     else
       write(message%lines(2), '(a,i5,a)') 'Diagonal element ', info, ' is 0; matrix is singular.'
     end if
-    call messages_fatal(2)
+    call message%fatal(2)
   end if
 
   POP_SUB(X(invert_upper_triangular))

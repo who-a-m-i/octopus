@@ -60,7 +60,7 @@ contains
 
     if (ndown > nup) then
       write (message%lines(1),'(a)') 'We only make 2-row Young diagrams with nup >= ndown'
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
 
     this%nup = nup
@@ -174,7 +174,7 @@ contains
 !
 !    if (all(this%young_up(:,this%iyoung) /= nn) .and. all(this%young_down(:,this%iyoung) /= nn)) then
 !      write (message%lines(1),'(a,I7,a)') 'nn = ', nn, ' was not attributed to any box- this should not happen!'
-!      call messages_fatal(1)
+!      call message%fatal(1)
 !    end if
 
     POP_SUB(young_fill)

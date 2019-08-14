@@ -133,17 +133,17 @@ contains
     !% <tt>OEPMixing</tt>. Note that default for <tt>LRMaximumIter</tt> is set to 10.
     !% Ref: S. Kuemmel and J. Perdew, <i>Phys. Rev. Lett.</i> <b>90</b>, 043004 (2003).
     !%End
-    call messages_obsolete_variable(namespace, 'OEP_Level', 'OEPLevel')
+    call message%obsolete_variable(namespace, 'OEP_Level', 'OEPLevel')
     call parse_variable(namespace, 'OEPLevel', XC_OEP_KLI, oep%level)
-    if(.not. varinfo_valid_option('OEPLevel', oep%level)) call messages_input_error('OEPLevel')
+    if(.not. varinfo_valid_option('OEPLevel', oep%level)) call message%input_error('OEPLevel')
 
     if(oep%level /= XC_OEP_NONE) then
       if(oep%level == XC_OEP_FULL) then
 
         if(st%d%nspin == SPINORS) &
-          call messages_not_implemented("Full OEP with spinors")
+          call message%not_implemented("Full OEP with spinors")
 
-        call messages_experimental("Full OEP")    
+        call message%experimental("Full OEP")    
         !%Variable OEPMixing
         !%Type float
         !%Default 1.0
@@ -152,7 +152,7 @@ contains
         !% The linear mixing factor used to solve the Sternheimer
         !% equation in the full OEP procedure.
         !%End
-        call messages_obsolete_variable(namespace, 'OEP_Mixing', 'OEPMixing')
+        call message%obsolete_variable(namespace, 'OEP_Mixing', 'OEPMixing')
         call parse_variable(namespace, 'OEPMixing', M_ONE, oep%mixing)
 
         !%Variable OEPMixingScheme
@@ -186,7 +186,7 @@ contains
 
      ! this routine is only prepared for finite systems. (Why not?)
       if(st%d%nik > st%d%ispin) &
-        call messages_not_implemented("OEP for periodic systems")
+        call message%not_implemented("OEP for periodic systems")
     
       ! obtain the spin factors
       call xc_oep_SpinFactor(oep, st%d%nspin)
@@ -210,10 +210,10 @@ contains
       !oep%lr%conv_abs_dens = oep%lr%conv_abs_dens / (oep%mixing)
 
       if(st%d%nspin == SPINORS) &
-        call messages_experimental("OEP with spinors")
+        call message%experimental("OEP with spinors")
 
       if(st%d%kpt%parallel) &
-        call messages_not_implemented("OEP parallel in spin/k-points")
+        call message%not_implemented("OEP parallel in spin/k-points")
 
     end if
 
@@ -252,7 +252,7 @@ contains
     if(oep%level == XC_OEP_NONE) return
 
     PUSH_SUB(xc_oep_write_info)
-    call messages_print_var_option(iunit, 'OEPLevel', oep%level)
+    call message%print_var_option(iunit, 'OEPLevel', oep%level)
 
     POP_SUB(xc_oep_write_info)
   end subroutine xc_oep_write_info

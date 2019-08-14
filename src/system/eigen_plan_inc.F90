@@ -281,7 +281,7 @@ subroutine X(eigensolver_plan) (gr, st, hm, psolver, pre, tol, niter, converged,
           ! there do not seem to be counted iterations here
           write(message%lines(1), '(a,i4,a,i4,a,es12.6)') &
             'Debug: PLAN Eigensolver - ik', ik, ' ist ', ist, ' res ', res(ist)
-          call messages_info(1)
+          call message%info(1)
         end do
       end if
 

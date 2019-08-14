@@ -744,8 +744,8 @@ contains
       
     case default
       
-      call messages_write('vdw ts: reference free atom parameters not available for species '//trim(atom))
-      call messages_fatal()
+      call message%write('vdw ts: reference free atom parameters not available for species '//trim(atom))
+      call message%fatal()
       
     end select
 

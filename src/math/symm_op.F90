@@ -143,7 +143,7 @@ contains
               -reshape((/1, 0, 0, 0, 1, 0, 0, 0, 1/), (/3, 3/))))>CNST(1.0e-6)) then
       message%lines(1) = "Internal error: This matrix is not a rotation matrix"
       write(message%lines(2),'(3(3f7.3,2x))') this%rot_cart
-      call messages_fatal(2) 
+      call message%fatal(2) 
     end if
     POP_SUB(symm_op_init)
   end subroutine symm_op_init

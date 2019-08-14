@@ -88,7 +88,7 @@ contains
 
     call accel_init(mpi_world, sys%namespace)
 
-    call messages_obsolete_variable(sys%namespace, 'SystemName')
+    call message%obsolete_variable(sys%namespace, 'SystemName')
 
     call space_init(sys%space, sys%namespace)
     
@@ -202,7 +202,7 @@ contains
 
     if(sys%st%restart_reorder_occs .and. .not. sys%st%fromScratch) then
       message%lines(1) = "Reordering occupations for restart."
-      call messages_info(1)
+      call message%info(1)
 
       SAFE_ALLOCATE(ind(1:sys%st%nst))
       SAFE_ALLOCATE(copy_occ(1:sys%st%nst))

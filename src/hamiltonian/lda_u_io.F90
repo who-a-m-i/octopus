@@ -517,7 +517,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Writing LDA+U restart."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     occsize = this%maxnorbs*this%maxnorbs*this%nspins*this%norbsets
@@ -551,7 +551,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Writing LDA+U restart done."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     POP_SUB(lda_u_dump)
@@ -583,7 +583,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Reading LDA+U restart."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     !We have to read the effective U first, as we call lda_u_uptade_potential latter
@@ -623,7 +623,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Reading LDA+U restart done."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     POP_SUB(lda_u_load)
@@ -657,7 +657,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Loading LDA+U basis from states."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     call restart_init(restart_gs, namespace, RESTART_PROJ, RESTART_TYPE_LOAD, mc, err, mesh=mesh)
@@ -671,10 +671,10 @@ contains
       read(lines(2), '(a)') str
       if (str(2:8) == 'Complex') then
         message%lines(1) = "Cannot read real states from complex wavefunctions."
-        call messages_fatal(1)
+        call message%fatal(1)
       else if (str(2:5) /= 'Real') then
         message%lines(1) = "Restart file 'wfns' does not specify real/complex; cannot check compatibility."
-        call messages_warning(1)
+        call message%warning(1)
       end if
     end if
     ! complex can be restarted from real, so there is no problem.
@@ -728,7 +728,7 @@ contains
 
         if (.not. restart_file_present(idim, ist)) then
           write(message%lines(1), '(a,i3,a)') "Cannot read states ", ist, "from the projection folder"
-          call messages_fatal(1)            
+          call message%fatal(1)            
         end if
 
         if (states_are_real(st)) then
@@ -755,7 +755,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Loading LDA+U basis from states done."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     POP_SUB(lda_u_loadbasis)

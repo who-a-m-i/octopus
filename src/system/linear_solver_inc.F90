@@ -100,7 +100,7 @@ subroutine X(linear_solver_solve_HXeY) (this, hm, psolver, gr, st, ist, ik, x, y
 
   case default 
     write(message%lines(1), '(a,i2)') "Unknown linear-response solver", this%solver
-    call messages_fatal(1)
+    call message%fatal(1)
 
   end select
 
@@ -217,7 +217,7 @@ subroutine X(linear_solver_cg) (ls, hm, psolver, gr, st, ist, ik, x, y, shift, t
 
   if(.not. conv) then 
     write(message%lines(1), '(a)') "CG solver not converged!"
-    call messages_warning(1)
+    call message%warning(1)
   end if
 
   SAFE_DEALLOCATE_A(r)
@@ -266,7 +266,7 @@ subroutine X(linear_solver_idrs) (ls, gr, st, x, y, tol, residue, iter_used)
   if(residue > tol .or. info .ne. 0) then
     write(message%lines(1), '(a)')     "IDRS solver failed."
     write(message%lines(2), '(a,i3)')  "Flag =,", info
-    call messages_warning(2)
+    call message%warning(2)
   end if
 
   SAFE_DEALLOCATE_A(x0)
@@ -405,7 +405,7 @@ subroutine X(linear_solver_bicgstab) (ls, hm, psolver, gr, st, ist, ik, x, y, sh
 
   if(.not. conv) then 
     write(message%lines(1), '(a)') "BiCGSTAB solver not converged!"
-    call messages_warning(1)
+    call message%warning(1)
   end if
 
   SAFE_DEALLOCATE_A(r)
@@ -468,7 +468,7 @@ subroutine X(linear_solver_multigrid) (ls, hm, psolver, gr, st, ist, ik, x, y, s
       
       call states_elec_get_state(st, gr%mesh, ist, ik, psi)
       write(message%lines(1), *)  "Multigrid: iter ", iter,  residue, abs(X(mf_dotp)(gr%mesh, st%d%dim, psi, x))
-      call messages_info(1)
+      call message%info(1)
 
       SAFE_DEALLOCATE_A(psi)
       
@@ -480,7 +480,7 @@ subroutine X(linear_solver_multigrid) (ls, hm, psolver, gr, st, ist, ik, x, y, s
 
   if(residue > tol) then 
     write(message%lines(1), '(a)') "Multigrid solver not converged!"
-    call messages_warning(1)
+    call message%warning(1)
   end if
 
   POP_SUB(X(linear_solver_multigrid))
@@ -1000,19 +1000,19 @@ subroutine X(linear_solver_qmr_dotp)(this, hm, psolver, gr, st, ik, xb, bb, shif
     case(QMR_NOT_CONVERGED)
       write(message%lines(1), '(a)') "QMR solver not converged!"
       write(message%lines(2), '(a)') "Try increasing the maximum number of iterations or the tolerance."
-      call messages_warning(2)
+      call message%warning(2)
     case(QMR_BREAKDOWN_PB)
       write(message%lines(1), '(a)') "QMR breakdown, cannot continue: b or P*b is the zero vector!"
-      call messages_warning(1)
+      call message%warning(1)
     case(QMR_BREAKDOWN_VZ)
       write(message%lines(1), '(a)') "QMR breakdown, cannot continue: v^T*z is zero!"
-      call messages_warning(1)
+      call message%warning(1)
     case(QMR_BREAKDOWN_QP)
       write(message%lines(1), '(a)') "QMR breakdown, cannot continue: q^T*p is zero!"
-      call messages_warning(1)
+      call message%warning(1)
     case(QMR_BREAKDOWN_GAMMA)
       write(message%lines(1), '(a)') "QMR breakdown, cannot continue: gamma is zero!"
-      call messages_warning(1)
+      call message%warning(1)
     end select
 
   end do

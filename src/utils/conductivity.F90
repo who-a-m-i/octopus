@@ -66,9 +66,9 @@
     call parser_init()
     default_namespace = namespace_t("")
 
-    call messages_init(default_namespace)
+    call message%init(default_namespace)
 
-    call messages_experimental('oct-conductivity')
+    call message%experimental('oct-conductivity')
 
     call io_init(default_namespace)
 
@@ -87,9 +87,9 @@
     !% time step used to calculate the conductivity.
     !%End
 
-    call messages_obsolete_variable(default_namespace, 'PropagationSpectrumTimeStepFactor', 'ConductivitySpectrumTimeStepFactor')
+    call message%obsolete_variable(default_namespace, 'PropagationSpectrumTimeStepFactor', 'ConductivitySpectrumTimeStepFactor')
     call parse_variable(default_namespace, 'ConductivitySpectrumTimeStepFactor', 1, skip)
-    if(skip <= 0) call messages_input_error('ConductivitySpectrumTimeStepFactor')
+    if(skip <= 0) call message%input_error('ConductivitySpectrumTimeStepFactor')
 
     !%Variable ConductivityFromForces
     !%Type logical
@@ -99,7 +99,7 @@
     !% (Experimental) If enabled, Octopus will attempt to calculate the conductivity from the forces instead of the current. 
     !%End
     call parse_variable(default_namespace, 'ConductivityFromForces', .false., from_forces)
-    if(from_forces) call messages_experimental('ConductivityFromForces')
+    if(from_forces) call message%experimental('ConductivityFromForces')
     
     max_freq = spectrum_nenergy_steps(spectrum)
     
@@ -114,8 +114,8 @@
     
     if(from_forces) then
 
-      call messages_write('Info: Reading coordinates from td.general/coordinates')
-      call messages_info()
+      call message%write('Info: Reading coordinates from td.general/coordinates')
+      call message%info()
 
       ! Opens the coordinates files.
       iunit = io_open('td.general/coordinates', default_namespace, action='read')
@@ -140,13 +140,13 @@
         end if
 
         if(iter /= read_iter + 1) then
-          call messages_write("Error while reading file 'td.general/coordinates',", new_line = .true.)
-          call messages_write('expected iteration ')
-          call messages_write(iter - 1)
-          call messages_write(', got iteration ')
-          call messages_write(read_iter)
-          call messages_write('.')
-          call messages_fatal()
+          call message%write("Error while reading file 'td.general/coordinates',", new_line = .true.)
+          call message%write('expected iteration ')
+          call message%write(iter - 1)
+          call message%write(', got iteration ')
+          call message%write(read_iter)
+          call message%write('.')
+          call message%fatal()
         end if
 
         ! ntime counts how many steps are gonna be used
@@ -204,13 +204,13 @@
 
       call io_close(iunit)
 
-      call messages_write('      done.')
-      call messages_info()
+      call message%write('      done.')
+      call message%info()
 
     else !from_forces
 
-      call messages_write('Info: Reading total current from td.general/total_current')
-      call messages_info()
+      call message%write('Info: Reading total current from td.general/total_current')
+      call message%info()
 
       ! Opens the coordinates files.
       iunit = io_open('td.general/total_current', default_namespace, action='read')
@@ -233,13 +233,13 @@
         end if
         
         if(iter /= read_iter + 1) then
-          call messages_write("Error while reading file 'td.general/total_current',", new_line = .true.)
-          call messages_write('expected iteration ')
-          call messages_write(iter - 1)
-          call messages_write(', got iteration ')
-          call messages_write(read_iter)
-          call messages_write('.')
-          call messages_fatal()
+          call message%write("Error while reading file 'td.general/total_current',", new_line = .true.)
+          call message%write('expected iteration ')
+          call message%write(iter - 1)
+          call message%write(', got iteration ')
+          call message%write(read_iter)
+          call message%write('.')
+          call message%fatal()
         end if
         
         ! ntime counts how many steps are gonna be used
@@ -269,9 +269,9 @@
         
       else
         
-        call messages_write("Cannot find the 'td.general/total_current' file.")
-        call messages_write(" Conductivity will only be calculated from the forces")
-        call messages_warning()
+        call message%write("Cannot find the 'td.general/total_current' file.")
+        call message%write(" Conductivity will only be calculated from the forces")
+        call message%warning()
         
         total_current(1:3, 1:ntime) = CNST(0.0)
         
@@ -293,9 +293,9 @@
        
       else
         
-        call messages_write("Cannot find the 'td.general/heat_current' file.")
-        call messages_write(" Conductivity will only be calculated from the forces")
-        call messages_warning()
+        call message%write("Cannot find the 'td.general/heat_current' file.")
+        call message%write(" Conductivity will only be calculated from the forces")
+        call message%warning()
         
         heat_current(1:3, 1:ntime) = CNST(0.0)
         
@@ -455,7 +455,7 @@
     SAFE_DEALLOCATE_A(time)
 
     call io_end()
-    call messages_end()
+    call message%end()
 
     call parser_end()
     call global_end()

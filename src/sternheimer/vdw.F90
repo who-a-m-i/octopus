@@ -71,7 +71,7 @@ contains
     PUSH_SUB(vdw_run)
 
     if(simul_box_is_periodic(sys%gr%sb)) then
-      call messages_not_implemented('Van der Waals calculation for periodic system')
+      call message%not_implemented('Van der Waals calculation for periodic system')
     end if
 
     call input()
@@ -142,7 +142,7 @@ contains
       !% How many points to use in the Gauss-Legendre integration to obtain the
       !% van der Waals coefficients.
       !%End
-      call messages_obsolete_variable(sys%namespace, 'vdW_npoints', 'vdWNPoints')
+      call message%obsolete_variable(sys%namespace, 'vdW_npoints', 'vdWNPoints')
       call parse_variable(sys%namespace, 'vdWNPoints', 6, gaus_leg_n)
 
       ! \todo symmetry stuff should be general
@@ -194,7 +194,7 @@ contains
           message%lines(1) = "Invalid restart of van der Waals calculation."
           message%lines(2) = "The number of points in the Gauss-Legendre integration changed."
           write(message%lines(3), '(i3,a,i3,a)') gaus_leg_n, " (input) != ", ii, "(restart)"
-          call messages_fatal(3)
+          call message%fatal(3)
         end if
         read(iunit,*) ! skip comment line
         do
@@ -215,12 +215,12 @@ contains
         call restart_end(gs_restart)
       else
         message%lines(1) = "Previous gs calculation required."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
 
       ! setup Hamiltonian
       message%lines(1) = 'Info: Setting up Hamiltonian for linear response.'
-      call messages_info(1)
+      call message%info(1)
       call system_h_setup(sys)
 
       do dir = 1, ndir
@@ -238,7 +238,7 @@ contains
           if (ierr == 0) call states_elec_load(restart_load, sys%namespace, sys%st, sys%gr, ierr, lr=lr(dir,1))          
           if(ierr /= 0) then
             message%lines(1) = "Unable to read response wavefunctions from '"//trim(dirname)//"'."
-            call messages_warning(1)
+            call message%warning(1)
           end if
           call restart_close_dir(restart_load)
         end do
@@ -287,7 +287,7 @@ contains
       do dir = 1, ndir
         write(message%lines(1), '(3a,f7.3)') 'Info: Calculating response for the ', index2axis(dir), &
           '-direction and imaginary frequency ', units_from_atomic(units_out%energy, aimag(omega))
-        call messages_info(1)   
+        call message%info(1)   
 
         call pert_setup_dir(perturbation, dir)
         call zsternheimer_solve(sh, sys, lr(dir, :), 1,  omega, perturbation, &

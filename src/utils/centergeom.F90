@@ -49,7 +49,7 @@ program centergeom
   call parser_init()
   default_namespace = namespace_t("")
 
-  call messages_init(default_namespace)
+  call message%init(default_namespace)
 
   call io_init(default_namespace)
   call unit_system_init(default_namespace)
@@ -66,7 +66,7 @@ program centergeom
   call space_end(space)
 
   call io_end()
-  call messages_end()
+  call message%end()
 
   call parser_end()
 

@@ -155,7 +155,7 @@ contains
 
     if(ierr < 0) then
       message%lines(1) = 'The Basis Pursuit Denoising process failed to converge.'
-      call messages_warning(1)
+      call message%warning(1)
     end if
 
     POP_SUB(compressed_sensing_spectral_analysis)    

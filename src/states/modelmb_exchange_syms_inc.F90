@@ -353,7 +353,7 @@ subroutine X(modelmb_sym_updown)(ndimmb, npptype, &
     end if
     write (message%lines(1), '(a,I7,a,E20.10)') 'norm of pair-symmetrized-state with ',&
             ndown, ' spins down is ', norm
-    call messages_info(1)
+    call message%info(1)
   end if
   SAFE_DEALLOCATE_A(forward_map_exchange)
   SAFE_DEALLOCATE_A(antisymwf_swap)
@@ -438,7 +438,7 @@ subroutine X(modelmb_antisym_1spin) (n1spin, perms_1spin, ndimmb, npptype, ofst,
     end if
     write (message%lines(1), '(a,I7,a,E20.10)') 'norm of 1spin-antisym+pairsym-state with ',&
             n1spin, ' spins of present type is ', norm
-    call messages_info(1)
+    call message%info(1)
   end if
   SAFE_DEALLOCATE_A(forward_map_exchange)
   SAFE_DEALLOCATE_A(antisymwf_swap)

@@ -147,7 +147,7 @@ contains
     if (iunit <= 0) then
       ierr = ierr + 1
       message%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
-      call messages_warning(1)
+      call message%warning(1)
     else
       !Only root writes to the file
       if (mpi_grp_is_root(mpi_grp)) then
@@ -199,7 +199,7 @@ contains
     if (iunit <= 0) then
       ierr = ierr + 1
       message%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
-      call messages_warning(1)
+      call message%warning(1)
     else
       ! Find the dump tag.
       call iopar_find_line(mpi_grp, iunit, dump_tag, err)
@@ -259,7 +259,7 @@ contains
         if (err /= 0) then
           ierr = ierr + 1
           message%lines(1) = "Unable to write index function to '"//trim(dir)//"/lxyz.obf'."
-          call messages_warning(1) 
+          call message%warning(1) 
         end if
       end if
 
@@ -298,7 +298,7 @@ contains
         if (err /= 0) then
           ierr = ierr + 1
           message%lines(1) = "Unable to read index function from '"//trim(dir)//"/lxyz.obf'."
-          call messages_warning(1)
+          call message%warning(1)
         end if
       end if
 

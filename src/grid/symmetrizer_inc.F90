@@ -162,7 +162,7 @@ subroutine X(symmetrizer_apply)(this, np, field, field_vector, symmfield, symmfi
       maxabsdiff = maxval(abs(field(1:np) - symmfield(1:np)))
       if(maxabsdiff / maxabs > CNST(1e-6)) then
         write(message%lines(1),'(a, es12.5)') 'Symmetrization discrepancy ratio (scalar) = ', maxabsdiff / maxabs
-        call messages_warning(1)
+        call message%warning(1)
       end if
     end if
     
@@ -171,7 +171,7 @@ subroutine X(symmetrizer_apply)(this, np, field, field_vector, symmfield, symmfi
       maxabsdiff = maxval(abs(field_vector(1:np, 1:3) - symmfield_vector(1:np, 1:3)))
       if(maxabsdiff / maxabs > CNST(1e-6)) then
         write(message%lines(1),'(a, es12.5)') 'Symmetrization discrepancy ratio (vector) = ', maxabsdiff / maxabs
-        call messages_warning(1)
+        call message%warning(1)
       end if
     end if
   end if

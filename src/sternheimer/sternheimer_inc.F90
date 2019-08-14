@@ -91,7 +91,7 @@ subroutine X(sternheimer_solve)(                           &
   if((.not. have_restart_rho_) .and. calculate_rho) call X(lr_build_dl_rho)(mesh, st, lr, nsigma)
 
   message%lines(1)="--------------------------------------------"
-  call messages_info(1)
+  call message%info(1)
 
   total_iter = 0
 
@@ -120,7 +120,7 @@ subroutine X(sternheimer_solve)(                           &
   iter_loop: do iter = 1, this%scf_tol%max_iter
     if (calculate_rho) then
       write(message%lines(1), '(a, i3)') "LR SCF Iteration: ", iter
-      call messages_info(1)
+      call message%info(1)
     end if
 
     write(message%lines(1), '(a, f20.6, a, f20.6, a, i1)') &
@@ -128,7 +128,7 @@ subroutine X(sternheimer_solve)(                           &
       " Eta : ",     units_from_atomic(units_out%energy, R_AIMAG(omega))
     write(message%lines(2), '(a)') &
       '   ik  ist                norm   iters            residual'
-    call messages_info(2)
+    call message%info(2)
 
     if (calculate_rho) then
       do ispin = 1, st%d%nspin
@@ -249,7 +249,7 @@ subroutine X(sternheimer_solve)(                           &
 
             write(message%lines(1), '(i5, i5, f20.6, i8, e20.6)') &
               ik, (3 - 2*sigma)*ist, dpsimod(sigma, ist), conv_iters(sigma, ist), residue(sigma, ist)
-            call messages_info(1)
+            call message%info(1)
           end do !sigma
         end do !ist
 
@@ -285,7 +285,7 @@ subroutine X(sternheimer_solve)(                           &
       end if
       if (ierr /= 0) then
         message%lines(1) = "Unable to write response density '"//trim(rho_tag)//"'."
-        call messages_warning(1)
+        call message%warning(1)
       end if
     end if
 
@@ -298,14 +298,14 @@ subroutine X(sternheimer_solve)(                           &
       if (err == 0) call states_elec_dump(restart, st, sys%gr, err, iter = iter, lr = lr(sigma))
       if (err /= 0) then
         message%lines(1) = "Unable to write response wavefunctions."
-        call messages_warning(1)
+        call message%warning(1)
       end if
       call restart_close_dir(restart)
     end do
 
     if (.not. states_conv) then
       message%lines(1) = "Linear solver failed to converge all states."
-      call messages_warning(1)
+      call message%warning(1)
     end if
 
     if (.not. calculate_rho) then
@@ -317,7 +317,7 @@ subroutine X(sternheimer_solve)(                           &
       message%lines(1)="--------------------------------------------"
       write(message%lines(2), '(a, i8)') &
         'Info: Total Hamiltonian applications:', total_iter_reduced * linear_solver_ops_per_iter(this%solver)
-      call messages_info(2)
+      call message%info(2)
       exit
     end if
 
@@ -326,7 +326,7 @@ subroutine X(sternheimer_solve)(                           &
     if(this%scf_tol%max_iter == iter) then 
       message%lines(1) = "Self-consistent iteration for response did not converge."
       this%ok = .false.
-      call messages_warning(1)
+      call message%warning(1)
     end if
 
     do ispin = 1, st%d%nspin
@@ -346,7 +346,7 @@ subroutine X(sternheimer_solve)(                           &
     write(message%lines(1), '(a,e16.6,a,e16.6,a)') "SCF Residual: ", abs_dens, " (abs), ", rel_dens, " (rel)"
 
     message%lines(2)="--------------------------------------------"
-    call messages_info(2)
+    call message%info(2)
 
     if( (abs_dens <= this%scf_tol%conv_abs_dens .or. this%scf_tol%conv_abs_dens <= M_ZERO) .and. &
       (rel_dens <= this%scf_tol%conv_rel_dens .or. this%scf_tol%conv_rel_dens <= M_ZERO)) then 
@@ -365,14 +365,14 @@ subroutine X(sternheimer_solve)(                           &
         'Info: SCF for response converged in ', iter, ' iterations.'
       write(message%lines(2), '(a, i8)') &
         '      Total Hamiltonian applications:', total_iter_reduced * linear_solver_ops_per_iter(this%solver)
-      call messages_info(2)
+      call message%info(2)
       exit
     else
       ! not quitting if converged allows results to be calculated if possible
       ! before dying on the next direction or frequency
       if(clean_stop(sys%mc%master_comm)) then
         message%lines(1) = "Exiting cleanly."
-        call messages_fatal(1, only_root_writes = .true.)
+        call message%fatal(1, only_root_writes = .true.)
       end if
 
       do ispin = 1, st%d%nspin
@@ -433,7 +433,7 @@ subroutine X(sternheimer_add_occ)(sys, lr_psi, rhs, sst, est, ik, omega_sigma, d
   PUSH_SUB(X(sternheimer_add_occ))
 
   if(sys%st%parallel_in_states) then
-    call messages_not_implemented("sternheimer_add_occ parallel in states")
+    call message%not_implemented("sternheimer_add_occ parallel in states")
   end if
 
   SAFE_ALLOCATE(psi(1:sys%gr%mesh%np, 1:sys%st%d%dim))
@@ -703,7 +703,7 @@ subroutine X(sternheimer_solve_order2)( &
 
 !        write(message%lines(1),*) 'dl_eig1 ist ', ist, 'ik ', ik, dl_eig1
 !        write(message%lines(2),*) 'dl_eig2 ist ', ist, 'ik ', ik, dl_eig2
-!        call messages_info(2)
+!        call message%info(2)
 
         ! FIXME: sort out proper isigma`s when not just freq = 0 for second perturbation?
 

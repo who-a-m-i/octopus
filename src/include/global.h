@@ -174,7 +174,7 @@
 ! Whenever a procedure is not called too many times, one should start it
 ! and finish it with the PUSH_SUB and POP_SUB macros, which are these
 ! pieces of code that call the push_sub and pop_sub routines defined
-! in the messages_m module.
+! in the message%m module.
 #define PUSH_SUB(routine) \
   if(debug%trace) then; if(not_in_openmp()) then; CARDINAL \
       call push_sub(__FILE__+"." ACARDINAL +TOSTRING(routine)); CARDINAL \

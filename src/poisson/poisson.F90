@@ -167,7 +167,7 @@ contains
 
     str = "Hartree"
     if(present(label)) str = trim(str) // trim(label)
-    call messages_print_stress(stdout, trim(str))
+    call message%print_stress(stdout, trim(str))
 
     this%nslaves = 0
     this%der => der
@@ -267,7 +267,7 @@ contains
     else
       this%method = solver
     end if
-    if(.not.varinfo_valid_option('PoissonSolver', this%method)) call messages_input_error('PoissonSolver')
+    if(.not.varinfo_valid_option('PoissonSolver', this%method)) call message%input_error('PoissonSolver')
    
     select case(this%method)
     case (POISSON_DIRECT_SUM)
@@ -292,7 +292,7 @@ contains
       str = "Poke library"
     end select
     write(message%lines(1),'(a,a,a)') "The chosen Poisson solver is '", trim(str), "'"
-    call messages_info(1)
+    call message%info(1)
 
     if(this%method /= POISSON_FFT) then
       this%kernel = POISSON_FFT_KERNEL_NONE
@@ -348,9 +348,9 @@ contains
       end select
 
       call parse_variable(namespace, 'PoissonFFTKernel', default_kernel, this%kernel)
-      if(.not.varinfo_valid_option('PoissonFFTKernel', this%kernel)) call messages_input_error('PoissonFFTKernel')
+      if(.not.varinfo_valid_option('PoissonFFTKernel', this%kernel)) call message%input_error('PoissonFFTKernel')
 
-      call messages_print_var_option(stdout, "PoissonFFTKernel", this%kernel)
+      call message%print_var_option(stdout, "PoissonFFTKernel", this%kernel)
 
     end if
 
@@ -358,22 +358,22 @@ contains
     if(.not. present(solver)) then 
       if(der%mesh%sb%periodic_dim > 0 .and. this%method == POISSON_DIRECT_SUM) then
         message%lines(1) = 'A periodic system may not use the direct_sum Poisson solver.'
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
 
       if(der%mesh%sb%periodic_dim > 0 .and. this%method == POISSON_CG_CORRECTED) then
         message%lines(1) = 'A periodic system may not use the cg_corrected Poisson solver.'
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
 
       if(der%mesh%sb%periodic_dim > 0 .and. this%method == POISSON_CG) then
         message%lines(1) = 'A periodic system may not use the cg Poisson solver.'
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
 
       if(der%mesh%sb%periodic_dim > 0 .and. this%method == POISSON_MULTIGRID) then
         message%lines(1) = 'A periodic system may not use the multigrid Poisson solver.'
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
 
       select case(der%mesh%sb%dim)
@@ -383,66 +383,66 @@ contains
         case(0)
           if( (this%method /= POISSON_FFT) .and. (this%method /= POISSON_DIRECT_SUM)) then
             message%lines(1) = 'A finite 1D system may only use fft or direct_sum Poisson solvers.'
-            call messages_fatal(1)
+            call message%fatal(1)
           end if
         case(1)
           if(this%method /= POISSON_FFT) then
             message%lines(1) = 'A periodic 1D system may only use the fft Poisson solver.'
-            call messages_fatal(1)
+            call message%fatal(1)
           end if
         end select
 
         if(abs(this%theta) > M_EPSILON .and. this%method /= POISSON_DIRECT_SUM) then
-          call messages_not_implemented('Complex scaled 1D soft Coulomb with Poisson solver other than direct_sum')
+          call message%not_implemented('Complex scaled 1D soft Coulomb with Poisson solver other than direct_sum')
         end if
 
         if(der%mesh%use_curvilinear .and. this%method /= POISSON_DIRECT_SUM) then
           message%lines(1) = 'If curvilinear coordinates are used in 1D, then the only working'
           message%lines(2) = 'Poisson solver is direct_sum.'
-          call messages_fatal(2)
+          call message%fatal(2)
         end if
 
       case(2)
 
         if( (this%method /= POISSON_FFT) .and. (this%method /= POISSON_DIRECT_SUM) ) then
           message%lines(1) = 'A 2D system may only use fft or direct_sum Poisson solvers.'
-          call messages_fatal(1)
+          call message%fatal(1)
         end if
 
         if(der%mesh%use_curvilinear .and. (this%method /= POISSON_DIRECT_SUM) ) then
           message%lines(1) = 'If curvilinear coordinates are used in 2D, then the only working'
           message%lines(2) = 'Poisson solver is direct_sum.'
-          call messages_fatal(2)
+          call message%fatal(2)
         end if
 
       case(3)
       
         if(der%mesh%sb%periodic_dim > 0 .and. this%method == POISSON_FMM) then
-          call messages_not_implemented('FMM for periodic systems')
+          call message%not_implemented('FMM for periodic systems')
         end if
 
         if(der%mesh%sb%periodic_dim > 0 .and. this%method == POISSON_ISF) then
-          call messages_write('The ISF solver can only be used for finite systems.')
-          call messages_fatal()
+          call message%write('The ISF solver can only be used for finite systems.')
+          call message%fatal()
         end if
 
         if(der%mesh%sb%periodic_dim > 0 .and. this%method == POISSON_FFT .and. &
           this%kernel /= der%mesh%sb%periodic_dim .and. this%kernel >=0 .and. this%kernel <=3) then
           write(message%lines(1), '(a,i1,a)')'The system is periodic in ', der%mesh%sb%periodic_dim ,' dimension(s),'
           write(message%lines(2), '(a,i1,a)')'but Poisson solver is set for ', this%kernel, ' dimensions.'
-          call messages_warning(2)
+          call message%warning(2)
         end if
 
         if(der%mesh%sb%periodic_dim > 0 .and. this%method == POISSON_FFT .and. &
           this%kernel == POISSON_FFT_KERNEL_CORRECTED) then
           write(message%lines(1), '(a,i1,a)')'PoissonFFTKernel = multipole_correction cannot be used for periodic systems.'
-          call messages_fatal(1)
+          call message%fatal(1)
         end if
 
         if(der%mesh%use_curvilinear .and. (this%method/=POISSON_CG_CORRECTED)) then
           message%lines(1) = 'If curvilinear coordinates are used, then the only working'
           message%lines(2) = 'Poisson solver is cg_corrected.'
-          call messages_fatal(2)
+          call message%fatal(2)
         end if
 
         if( (der%mesh%sb%box_shape == MINIMUM) .and. (this%method == POISSON_CG_CORRECTED) ) then
@@ -450,11 +450,11 @@ contains
           message%lines(2) = 'Poisson solver, we have observed "sometimes" some non-'
           message%lines(3) = 'negligible error. You may want to check that the "fft" or "cg"'
           message%lines(4) = 'solver are providing, in your case, the same results.'
-          call messages_warning(4)
+          call message%warning(4)
         end if
 
         if (this%method == POISSON_FMM) then
-          call messages_experimental('FMM Poisson solver')
+          call message%experimental('FMM Poisson solver')
         end if
       end select
     end if
@@ -462,11 +462,11 @@ contains
     if (this%method == POISSON_LIBISF) then
 #ifndef HAVE_LIBISF
       message%lines(1)="LIBISF Poisson solver cannot be used since the code was not compiled with LIBISF."
-      call messages_fatal(1)
+      call message%fatal(1)
 #endif
     end if
 
-    call messages_print_stress(stdout)
+    call message%print_stress(stdout)
 
     ! Now that we know the method, we check if we need a cube and its dimentions
     need_cube = .false.
@@ -479,17 +479,17 @@ contains
     end if
 
     if (this%method == POISSON_LIBISF .and. multicomm_have_slaves(mc)) then
-      call messages_not_implemented('Task parallelization with LibISF Poisson solver')
+      call message%not_implemented('Task parallelization with LibISF Poisson solver')
     end if
 
     if ( multicomm_strategy_is_parallel(mc, P_STRATEGY_KPOINTS) ) then
       ! Documentation in poisson_libisf.F90
       call parse_variable(namespace, 'PoissonSolverISFParallelData', .true., isf_data_is_parallel)
       if ( this%method == POISSON_LIBISF .and. isf_data_is_parallel ) then
-        call messages_not_implemented("k-point parallelization with LibISF Poisson solver and PoissonSolverISFParallelData = yes")
+        call message%not_implemented("k-point parallelization with LibISF Poisson solver and PoissonSolverISFParallelData = yes")
       end if
       if ( this%method == POISSON_FFT .and. fft_library == FFTLIB_PFFT ) then
-        call messages_not_implemented("k-point parallelization with PFFT library for Poisson solver")
+        call message%not_implemented("k-point parallelization with PFFT library for Poisson solver")
       end if
     end if
     
@@ -513,14 +513,14 @@ contains
         write(message%lines(1), '(a,f12.5,a)') "Input: '", fft_alpha, &
           "' is not a valid DoubleFFTParameter"
         message%lines(2) = '1.0 <= DoubleFFTParameter <= 3.0'
-        call messages_fatal(2)
+        call message%fatal(2)
       end if
 
       if (der%mesh%sb%dim /= 3 .and. fft_library == FFTLIB_PFFT) then
-        call messages_not_implemented('PFFT support for dimensionality other than 3')
+        call message%not_implemented('PFFT support for dimensionality other than 3')
       end if
       if (der%mesh%sb%periodic_dim /= 0 .and. fft_library == FFTLIB_PFFT) then
-        call messages_not_implemented('PFFT support for periodic systems')
+        call message%not_implemented('PFFT support for periodic systems')
       end if
 
       select case (der%mesh%sb%dim)
@@ -565,12 +565,12 @@ contains
 
     if(this%method == POISSON_POKE) then
 #ifndef HAVE_POKE
-      call messages_write('Octopus was compiled without Poke support, you cannot use', new_line = .true.)
-      call messages_write("  'PoissonSolver = poke'. ")
-      call messages_fatal()
+      call message%write('Octopus was compiled without Poke support, you cannot use', new_line = .true.)
+      call message%write("  'PoissonSolver = poke'. ")
+      call message%fatal()
 #endif
 
-      call messages_experimental('Poke library')
+      call message%experimental('Poke library')
       ASSERT(der%mesh%sb%dim == 3)
       box(1:der%mesh%sb%dim) = der%mesh%idx%ll(1:der%mesh%sb%dim)
       need_cube = .true.
@@ -812,7 +812,7 @@ contains
         call poisson_solve_direct(this, pot, rho)
       case default
         message%lines(1) = "Direct sum Poisson solver only available for 1, 2, or 3 dimensions."
-        call messages_fatal(1)
+        call message%fatal(1)
       end select
 
     case(POISSON_FMM)
@@ -917,7 +917,7 @@ contains
     this%method = default_solver
 
     if(der%mesh%use_curvilinear) then
-      call messages_not_implemented("lda+u with curvilinear mesh")    
+      call message%not_implemented("lda+u with curvilinear mesh")    
     end if
 
     this%kernel = POISSON_FFT_KERNEL_NONE
@@ -948,7 +948,7 @@ contains
     PUSH_SUB(poisson_test)
 
     if(mesh%sb%dim == 1) then
-      call messages_not_implemented('Poisson test for 1D case')
+      call message%not_implemented('Poisson test for 1D case')
     end if
 
     n_gaussians = 1 
@@ -964,11 +964,11 @@ contains
     alpha = CNST(4.0)*mesh%spacing(1)
     write(message%lines(1),'(a,f14.6)')  "Info: The alpha value is ", alpha
     write(message%lines(2),'(a)')        "      Higher values of alpha lead to more physical densities and more reliable results."
-    call messages_info(2)
+    call message%info(2)
     beta = M_ONE / ( alpha**mesh%sb%dim * sqrt(M_PI)**mesh%sb%dim )
 
     write(message%lines(1), '(a)') 'Building the Gaussian distribution of charge...'
-    call messages_info(1)
+    call message%info(1)
 
     rho = M_ZERO
     do nn = 1, n_gaussians
@@ -991,7 +991,7 @@ contains
     total_charge = dmf_integrate(mesh, rho)
 
     write(message%lines(1), '(a,f14.6)') 'Total charge of the Gaussian distribution', total_charge
-    call messages_info(1)
+    call message%info(1)
 
     ! This builds analytically its potential
     vh_exact = M_ZERO
@@ -1041,7 +1041,7 @@ contains
          MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD, mpi_err)
     if(mpi_err /= 0) then
       write(message%lines(1),'(a)') "MPI error in MPI_Reduce; subroutine poisson_test of file poisson.F90"
-      call messages_warning(1)
+      call message%warning(1)
     end if
 #else
     hartree_nrg_num = lcl_hartree_nrg
@@ -1058,7 +1058,7 @@ contains
          MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD, mpi_err)
     if(mpi_err /= 0) then
       write(message%lines(1),'(a)') "MPI error in MPI_Reduce; subroutine poisson_test of file poisson.F90"
-      call messages_warning(1)
+      call message%warning(1)
     end if
 #else
     hartree_nrg_analyt = lcl_hartree_nrg

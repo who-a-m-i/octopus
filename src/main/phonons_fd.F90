@@ -66,7 +66,7 @@ contains
     if(sys%st%symmetrize_density .or. sys%gr%sb%kpoints%use_symmetries) then
       message%lines(1) = "Cannot compute vibrational modes by finite differences when symmetry is being used."
       message%lines(2) = "Set KPointsUseSymmetries = no and SymmetrizeDensity = no, for gs run and this run."
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
     
     call init_()
@@ -76,13 +76,13 @@ contains
     if(ierr == 0) call states_elec_load(gs_restart, sys%namespace, sys%st, sys%gr, ierr)
     if (ierr /= 0) then
       message%lines(1) = "Unable to read wavefunctions."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
     call restart_end(gs_restart)
 
     ! setup Hamiltonian
     message%lines(1) = 'Info: Setting up Hamiltonian.'
-    call messages_info(1)
+    call message%info(1)
     call system_h_setup(sys)
 
     call vibrations_init(vib, sys%geo, sys%gr%sb, "fd", sys%namespace)
@@ -167,7 +167,7 @@ contains
         imat = vibrations_get_index(vib, iatom, alpha)
 
         write(message%lines(1), '(a,i3,3a)') 'Info: Moving atom ', iatom, ' in the +', index2axis(alpha), '-direction.'
-        call messages_info(1)
+        call message%info(1)
 
         ! move atom iatom in direction alpha by dist
         geo%atom(iatom)%x(alpha) = geo%atom(iatom)%x(alpha) + vib%disp
@@ -184,7 +184,7 @@ contains
         end do
 
         write(message%lines(1), '(a,i3,3a)') 'Info: Moving atom ', iatom, ' in the -', index2axis(alpha), '-direction.'
-        call messages_info(1)
+        call message%info(1)
 
         geo%atom(iatom)%x(alpha) = geo%atom(iatom)%x(alpha) - M_TWO*vib%disp
 

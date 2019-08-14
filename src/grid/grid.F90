@@ -118,7 +118,7 @@ contains
       gr%have_fine_mesh = .false.
     end if
 
-    if(gr%have_fine_mesh) call messages_experimental("UseFineMesh")
+    if(gr%have_fine_mesh) call message%experimental("UseFineMesh")
 
     call geometry_grid_defaults(geo, def_h, def_rsize)
     
@@ -152,16 +152,16 @@ contains
     !%End
 
     if(parse_block(namespace, 'Spacing', blk) == 0) then
-      if(parse_block_cols(blk,0) < gr%sb%dim) call messages_input_error('Spacing')
+      if(parse_block_cols(blk,0) < gr%sb%dim) call message%input_error('Spacing')
       do idir = 1, gr%sb%dim
         call parse_block_float(blk, 0, idir - 1, grid_spacing(idir), units_inp%length)
-        if(def_h > M_ZERO) call messages_check_def(grid_spacing(idir), .true., def_h, 'Spacing', units_out%length)
+        if(def_h > M_ZERO) call message%check_def(grid_spacing(idir), .true., def_h, 'Spacing', units_out%length)
       end do
       call parse_block_end(blk)
     else
       call parse_variable(namespace, 'Spacing', -M_ONE, grid_spacing(1), units_inp%length)
       grid_spacing(1:gr%sb%dim) = grid_spacing(1)
-      if(def_h > M_ZERO) call messages_check_def(grid_spacing(1), .true., def_h, 'Spacing', units_out%length)
+      if(def_h > M_ZERO) call message%check_def(grid_spacing(1), .true., def_h, 'Spacing', units_out%length)
     end if
 
 #if defined(HAVE_GDLIB)
@@ -183,15 +183,15 @@ contains
           write(message%lines(1), '(a,i1,3a,f6.3)') "Info: Using default spacing(", idir, &
             ") [", trim(units_abbrev(units_out%length)), "] = ",                        &
             units_from_atomic(units_out%length, grid_spacing(idir))
-          call messages_info(1)
+          call message%info(1)
         end do
-        ! Note: the default automatically matches the 'recommended' value compared by messages_check_def above.
+        ! Note: the default automatically matches the 'recommended' value compared by message%check_def above.
       else
         message%lines(1) = 'Either:'
         message%lines(2) = "   *) variable 'Spacing' is not defined and"
         message%lines(3) = "      I can't find a suitable default"
         message%lines(4) = "   *) your input for 'Spacing' is negative or zero"
-        call messages_fatal(4)
+        call message%fatal(4)
       end if
     end if
 
@@ -238,7 +238,7 @@ contains
     call nl_operator_global_init(namespace)
     if(gr%have_fine_mesh) then
       message%lines(1) = "Info: coarse mesh"
-      call messages_info(1)
+      call message%info(1)
     end if
     call derivatives_build(gr%der, gr%mesh)
 
@@ -249,7 +249,7 @@ contains
 
       if(gr%mesh%parallel_in_domains) then
         message%lines(1) = 'UseFineMesh does not work with domain parallelization.'
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
 
       SAFE_ALLOCATE(gr%fine%mesh)
@@ -264,7 +264,7 @@ contains
       call multigrid_get_transfer_tables(gr%fine%tt, gr%fine%mesh, gr%mesh)
       
       message%lines(1) = "Info: fine mesh"
-      call messages_info(1)
+      call message%info(1)
       call derivatives_build(gr%fine%der, gr%fine%mesh)
 
       gr%fine%der%coarser => gr%der
@@ -334,30 +334,30 @@ contains
     PUSH_SUB(grid_write_info)
 
     if(.not.mpi_grp_is_root(mpi_world)) then
-      if(debug%info) call messages_debug_newlines(6)
+      if(debug%info) call message%debug_newlines(6)
       POP_SUB(grid_write_info)
       return
     end if
 
-    call messages_print_stress(iunit, "Grid")
+    call message%print_stress(iunit, "Grid")
     call simul_box_write_info(gr%sb, geo, iunit)
 
     if(gr%have_fine_mesh) then
       message%lines(1) = "Wave-functions mesh:"
-      call messages_info(1, iunit)
+      call message%info(1, iunit)
       call mesh_write_info(gr%mesh, iunit)
       message%lines(1) = "Density mesh:"
     else
       message%lines(1) = "Main mesh:"
     end if
-    call messages_info(1, iunit)
+    call message%info(1, iunit)
     call mesh_write_info(gr%fine%mesh, iunit)
 
     if (gr%mesh%use_curvilinear) then
       call curvilinear_write_info(gr%cv, iunit)
     end if
     
-    call messages_print_stress(iunit)
+    call message%print_stress(iunit)
 
     POP_SUB(grid_write_info)
   end subroutine grid_write_info

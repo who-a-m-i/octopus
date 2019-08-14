@@ -153,19 +153,19 @@ contains
     !%End
 
     if(parse_is_defined(namespace, 'Units') .or. parse_is_defined(namespace, 'Units')) then
-      call messages_write("The 'Units' variable is obsolete. Now Octopus always works in atomic", new_line = .true.)
-      call messages_write("units. For different units you can use values like 'angstrom', 'eV' ", new_line = .true.)
-      call messages_write("and others in the input file.")
-      call messages_fatal()
+      call message%write("The 'Units' variable is obsolete. Now Octopus always works in atomic", new_line = .true.)
+      call message%write("units. For different units you can use values like 'angstrom', 'eV' ", new_line = .true.)
+      call message%write("and others in the input file.")
+      call message%fatal()
     end if
 
-    call messages_obsolete_variable(namespace, 'Units')
-    call messages_obsolete_variable(namespace, 'UnitsInput')
+    call message%obsolete_variable(namespace, 'Units')
+    call message%obsolete_variable(namespace, 'UnitsInput')
 
     cinp = UNITS_ATOMIC
     
     call parse_variable(namespace, 'UnitsOutput', UNITS_ATOMIC, cc)
-    if(.not.varinfo_valid_option('Units', cc, is_flag = .true.)) call messages_input_error('UnitsOutput')
+    if(.not.varinfo_valid_option('Units', cc, is_flag = .true.)) call message%input_error('UnitsOutput')
     cout = cc
 
     unit_one%factor = M_ONE
@@ -239,7 +239,7 @@ contains
 
     call parse_variable(namespace, 'UnitsXYZFiles', OPTION__UNITSXYZFILES__ANGSTROM_UNITS, xyz_units)
 
-    if(.not.varinfo_valid_option('UnitsXYZFiles', xyz_units)) call messages_input_error('UnitsXYZFiles', 'Invalid option')
+    if(.not.varinfo_valid_option('UnitsXYZFiles', xyz_units)) call message%input_error('UnitsXYZFiles', 'Invalid option')
 
     select case(xyz_units)
 
@@ -273,7 +273,7 @@ contains
     case (UNITS_EVA)
       call unit_system_init_eV_Ang(uu)
     case default
-      call messages_input_error('Units')
+      call message%input_error('Units')
     end select
 
     POP_SUB(unit_system_get)

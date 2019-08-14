@@ -275,28 +275,28 @@ subroutine td_calc_ionch(gr, st, ch, Nch)
     end if 
 !     print *,"size(idx0,1)=",size(idx0,1)
     if(debug%info) then
-      call messages_write("P(")
-      call messages_write(ii)
-      call messages_write(") = 0")
-      call messages_new_line()
+      call message%write("P(")
+      call message%write(ii)
+      call message%write(") = 0")
+      call message%new_line()
     end if
     ! Loop over combinations   
     do
       prod  = M_ONE
       prod0 = M_ONE
       if(debug%info) then
-        call messages_write("P(")
-        call messages_write(ii)
-        call messages_write(") += ")
+        call message%write("P(")
+        call message%write(ii)
+        call message%write(") += ")
       end if               
       call loct_get_combination(c, idx0)
       idx(:) = idxref(:)
       do jj = 0, ii-1
         idx(idx0(jj))= -1
         if(debug%info) then
-          call messages_write(" No(")
-          call messages_write(idx0(jj)+1)
-          call messages_write(") ")
+          call message%write(" No(")
+          call message%write(idx0(jj)+1)
+          call message%write(") ")
         end if
         prod0 = prod0 * Nnot(idx0(jj)+1)
       end do
@@ -304,15 +304,15 @@ subroutine td_calc_ionch(gr, st, ch, Nch)
       do jj = 0, Nid
         if(idx(jj)>=0) then
           if(debug%info) then
-            call messages_write(" N(")
-            call messages_write(idx(jj)+1)
-            call messages_write(") ")
+            call message%write(" N(")
+            call message%write(idx(jj)+1)
+            call message%write(") ")
           end if
           prod = prod * N(idx(jj)+1)
         end if
       end do
       
-      if(debug%info) call messages_new_line()
+      if(debug%info) call message%new_line()
 
       ch(ii) = ch(ii) + prod*prod0
 
@@ -322,7 +322,7 @@ subroutine td_calc_ionch(gr, st, ch, Nch)
     SAFE_DEALLOCATE_A(idx0)
     call loct_combination_end(c)
 
-    if(debug%info) call messages_info()
+    if(debug%info) call message%info()
   end do 
 
   SAFE_DEALLOCATE_A(idx)

@@ -42,7 +42,7 @@ subroutine X(orbitalbasis_build)(this, geo, mesh, kpt, ndim, skip_s_orb, use_all
 
   if(verbose_) then
     write(message%lines(1),'(a)')    'Building the LDA+U localized orbital basis.'
-    call messages_info(1)
+    call message%info(1)
   end if
 
   !We first count the number of orbital sets we have to treat
@@ -67,7 +67,7 @@ subroutine X(orbitalbasis_build)(this, geo, mesh, kpt, ndim, skip_s_orb, use_all
       if( hubbardj /= 0 .and. .not. hasjdependence) then
         write(message%lines(1),'(a,i1,a)') 'Atom ', ia, ' has no j-dependent atomic wavefunctions.'
         write(message%lines(2),'(a)') 'This is not compatible with the hubbard_j option.'
-        call messages_fatal(2)
+        call message%fatal(2)
       end if
     end do
   else
@@ -86,7 +86,7 @@ subroutine X(orbitalbasis_build)(this, geo, mesh, kpt, ndim, skip_s_orb, use_all
         if( hubbardj /= 0 .and. abs(jj) > M_EPSILON ) then
           write(message%lines(1),'(a,i1,a)') 'Atom ', ia, ' has no j-dependent atomic wavefunction.'
           write(message%lines(2),'(a)') 'This is not compatible with the hubbard_j option.'
-          call messages_fatal(2)  
+          call message%fatal(2)  
         end if
       end do
       if(skip_s_orb) work = work-n_s_orb
@@ -96,13 +96,13 @@ subroutine X(orbitalbasis_build)(this, geo, mesh, kpt, ndim, skip_s_orb, use_all
 
   if(norb == 0) then
     write(message%lines(1),'(a)')  'No orbital set found. Please check your input file.'
-    call messages_fatal(1)
+    call message%fatal(1)
   end if
 
 
   if(verbose_) then
     write(message%lines(1),'(a, i3, a)')    'Found ', norb, ' orbital sets.'
-    call messages_info(1)
+    call message%info(1)
   end if
 
   this%norbsets = norb
@@ -123,7 +123,7 @@ subroutine X(orbitalbasis_build)(this, geo, mesh, kpt, ndim, skip_s_orb, use_all
     if(abs(jj) >  M_EPSILON) hasjdependence = .true.
     if (debug%info .and. hasjdependence .and. verbose_) then
       write(message%lines(1),'(a,i3,a)')  'Debug: Atom ', ia, ' has j-dependent pseudo-wavefunctions.'
-      call messages_info(1)
+      call message%info(1)
     end if 
 
     if(.not. use_all_orb) then
@@ -275,7 +275,7 @@ subroutine X(orbitalbasis_build)(this, geo, mesh, kpt, ndim, skip_s_orb, use_all
         if(verbose_) then
           write(message%lines(1),'(a,i3,a,i3,a,f8.5)') 'Info: Orbset ', iorbset, ' Orbital ', iorb, &
                            ' norm= ',  norm
-          call messages_info(1)
+          call message%info(1)
         end if
       end if
     end do
@@ -312,7 +312,7 @@ subroutine X(orbitalbasis_build)(this, geo, mesh, kpt, ndim, skip_s_orb, use_all
        write(message%lines(1),'(a,a4,i1,a1,a)')    'Internal error: the orbital ',trim(species_label(this%orbsets(ios)%spec)), &
                       this%orbsets(ios)%nn, l_notation(this%orbsets(ios)%ll), ' has no grid point.'
        write(message%lines(2),'(a)') 'Change the input file or use a pseudopotential that contains these orbitals.'
-       call messages_fatal(2)
+       call message%fatal(2)
     end if
     if(verbose_) then
       write(message%lines(1),'(a,i2,a,f8.5,a)')    'Orbital set ', ios, ' has a value of U of ',&
@@ -320,7 +320,7 @@ subroutine X(orbitalbasis_build)(this, geo, mesh, kpt, ndim, skip_s_orb, use_all
       write(message%lines(2),'(a,i2,a)')    'It contains ', this%orbsets(ios)%norbs, ' orbitals.'
       write(message%lines(3),'(a,f8.5,a,i6,a)') 'The radius is ', this%orbsets(ios)%sphere%radius, &
                         ' Bohr,  with ', this%orbsets(ios)%sphere%np, ' grid points.'
-       call messages_info(3)
+       call message%info(3)
     end if
   end do 
 
@@ -368,7 +368,7 @@ subroutine X(orbitalbasis_build_empty)(this, geo, mesh, kpt, ndim, nstates, verb
 
   if(verbose_) then
     write(message%lines(1),'(a)')    'Building an empty LDA+U orbital basis.'
-    call messages_info(1)
+    call message%info(1)
   end if
 
   ASSERT(nstates > 0)

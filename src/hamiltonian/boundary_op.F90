@@ -103,15 +103,15 @@ contains
     !%End
     call parse_variable(namespace, 'AbsorbingBoundaries', NOT_ABSORBING, this%abtype)
     if(.not.varinfo_valid_option('AbsorbingBoundaries', this%abtype, is_flag = .true.)) then
-      call messages_input_error('AbsorbingBoundaries')
+      call message%input_error('AbsorbingBoundaries')
     end if
 
     if(this%abtype == EXTERIOR) &
-      call messages_not_implemented('Exterior complex scaling')
+      call message%not_implemented('Exterior complex scaling')
 
     if(this%abtype /= NOT_ABSORBING) then
       write(str, '(a,i5)') 'Absorbing Boundaries'
-      call messages_print_stress(stdout, trim(str))
+      call message%print_stress(stdout, trim(str))
 
       !%Variable ABCapHeight
       !%Type float
@@ -148,7 +148,7 @@ contains
       cols_abshape_block = 0
       if(parse_block(namespace, 'ABShape', blk) < 0) then
         message%lines(1) = "Input: ABShape not specified. Using default values for absorbing boundaries."
-        call messages_info(1)
+        call message%info(1)
       
         if (mesh%sb%box_shape == SPHERE) then
           bounds(1)=mesh%sb%rsize/M_TWO
@@ -174,7 +174,7 @@ contains
             if(bounds(2) > mesh%sb%lsize(1))  bounds(2) = mesh%sb%lsize(1) 
             message%lines(1) = "Info: using cubic absorbing boundaries."
           end if    
-          call messages_info(1)
+          call message%info(1)
         case(3)
           this%ab_user_def = .true.
           SAFE_ALLOCATE(this%ab_ufn(1:mesh%np))
@@ -192,10 +192,10 @@ contains
           end do
           message%lines(1) = "Input: using user-defined function from expression:"
           write(message%lines(2),'(a,a)') '   F(x,y,z) = ', trim(user_def_expr) 
-          call messages_info(2)
+          call message%info(2)
         case default
           message%lines(1) = "Input: ABShape block must have at least 2 columns."
-          call messages_fatal(1)
+          call message%fatal(1)
         end select
 
         call parse_block_end(blk)
@@ -208,7 +208,7 @@ contains
       !% Specifies the boundary width. For a finer control over the absorbing boundary 
       !% shape use ABShape. 
       !%End
-!       call messages_obsolete_variable('ABWidth', 'ABShape')
+!       call message%obsolete_variable('ABWidth', 'ABShape')
       abwidth = bounds(2)-bounds(1)
       call parse_variable(namespace, 'ABWidth', abwidth, abwidth, units_inp%length)
       bounds(1) = bounds(2) - abwidth
@@ -219,7 +219,7 @@ contains
       write(message%lines(2),'(a,es10.3,3a)') & 
         "  Upper bound = ", units_from_atomic(units_inp%length, bounds(2) ),&
         ' [', trim(units_abbrev(units_inp%length)), ']'
-      call messages_info(2)
+      call message%info(2)
       
       ! generate boundary function
       SAFE_ALLOCATE(mf(1:mesh%np))

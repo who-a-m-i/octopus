@@ -110,9 +110,9 @@ contains
     !%End
     call parse_variable(namespace, 'CurvGygiBeta', M_FOUR, cv%beta, units_inp%length)
 
-    if(cv%a<=M_ZERO)     call messages_input_error('CurvGygiA')
-    if(cv%alpha<=M_ZERO) call messages_input_error('CurvGygiAlpha')
-    if(cv%beta<=M_ZERO)  call messages_input_error('CurvGygiBeta')
+    if(cv%a<=M_ZERO)     call message%input_error('CurvGygiA')
+    if(cv%alpha<=M_ZERO) call message%input_error('CurvGygiAlpha')
+    if(cv%beta<=M_ZERO)  call message%input_error('CurvGygiBeta')
 
     cv%npos = geo%natoms
     SAFE_ALLOCATE(cv%pos(1:cv%npos, 1:sb%dim))
@@ -199,7 +199,7 @@ contains
       write(message%lines(3),'(9f14.6)') x(1:sb%dim)
       message%lines(4) = "Try varying the Gygi parameters -- usually reducing CurvGygiA or"
       message%lines(5) = "CurvGygiAlpha (or both) solves the problem."
-      call messages_fatal(5)
+      call message%fatal(5)
     end if
 
   end subroutine curv_gygi_chi2x

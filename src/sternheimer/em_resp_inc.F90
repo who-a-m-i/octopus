@@ -59,7 +59,7 @@ subroutine X(run_sternheimer)(namespace)
               if(ierr /= 0) then
                 message%lines(1) = "Unable to read response wavefunctions from '"//trim(wfs_tag_sigma(str_tmp, sigma))//&
                    "': Initializing to zero."
-                call messages_warning(1)
+                call message%warning(1)
               end if
             end if
           
@@ -74,7 +74,7 @@ subroutine X(run_sternheimer)(namespace)
                 if(ierr /= 0) then
                   message%lines(1) = "Unable to read second-order response wavefunctions from '"//&
                     trim(wfs_tag_sigma(str_tmp, sigma))//"': Initializing to zero."
-                  call messages_warning(1)
+                  call message%warning(1)
                 end if
               end do
             end if
@@ -106,7 +106,7 @@ subroutine X(run_sternheimer)(namespace)
                           message%lines(1) = "Unable to read magneto-optics response wavefunctions (KB) from '"&
                             //trim(wfs_tag_sigma(str_tmp, sigma))// "': Initializing to zero."
                       end select 
-                      call messages_warning(1)
+                      call message%warning(1)
                     end if
                   end do
                 end do
@@ -122,7 +122,7 @@ subroutine X(run_sternheimer)(namespace)
                 if(ierr /= 0) then
                   message%lines(1) = "Unable to read magneto-optics response wavefunctions (B) from '"&
                     //trim(wfs_tag_sigma(str_tmp, sigma))//"': Initializing to zero."
-                  call messages_warning(1)
+                  call message%warning(1)
                 end if
               end if
               if(use_kdotp) then
@@ -138,7 +138,7 @@ subroutine X(run_sternheimer)(namespace)
                   if(ierr /= 0) then
                     message%lines(1) = "Unable to read magneto-optics response wavefunctions (KE) from '"&
                       //trim(wfs_tag_sigma(str_tmp, sigma))// "': Initializing to zero."
-                    call messages_warning(1)
+                    call message%warning(1)
                   end if
                 end do
                 end if
@@ -174,7 +174,7 @@ subroutine X(run_sternheimer)(namespace)
           else
             message%lines(1) = "Unable to read response density '"//trim(em_rho_tag(closest_omega, idir))//"'."
           end if
-          call messages_info(1)
+          call message%info(1)
 
           if (ierr_e(idir) == 0 .and. &
             abs(abs(closest_omega) - abs(frequency)) <= CNST(1e-4)) then
@@ -200,7 +200,7 @@ subroutine X(run_sternheimer)(namespace)
             else
               message%lines(1) = "Unable to read response density '"//trim(em_rho_tag(closest_omega, idir, ipert = PE))//"'."
             end if
-            call messages_info(1)
+            call message%info(1)
 
             if (ierr_e2(idir) == 0 .and. em_vars%nsigma == 2) then       
               em_vars%lr(idir, sigma_alt, 2)%X(dl_rho) = R_CONJ(em_vars%lr(idir, swap_sigma(sigma_alt), 2)%X(dl_rho))
@@ -236,7 +236,7 @@ subroutine X(run_sternheimer)(namespace)
   if((pert_type(em_vars%perturbation) == PERTURBATION_MAGNETIC) .and. use_kdotp) then
     do idir = 1, sys%gr%sb%dim 
       message%lines(1)="Info: Calculating response for B-perturbation"
-      call messages_info(1)
+      call message%info(1)
       call X(inhomog_B)(sh, sys, magn_dir(idir,1), magn_dir(idir,2), &
         kdotp_lr(magn_dir(idir, 1), 1:1), kdotp_lr(magn_dir(idir, 2), 1:1),inhomog) 
       call X(sternheimer_set_inhomog)(sh, inhomog)   
@@ -251,7 +251,7 @@ subroutine X(run_sternheimer)(namespace)
     do idir = 1, sys%gr%sb%dim
       do idir2 = 1, idir
         message%lines(1)="Info: Calculating response for K2-perturbation"
-        call messages_info(1)
+        call message%info(1)
         call X(inhomog_k2_tot)(sh_kmo, sys, idir, idir2,& 
           kdotp_lr(idir, 1:1), kdotp_lr(idir2, 1:1), inhomog)
         call X(sternheimer_set_inhomog)(sh_kmo, inhomog)
@@ -266,7 +266,7 @@ subroutine X(run_sternheimer)(namespace)
     do idir = 1, sys%gr%sb%dim
       do idir2 = 1, sys%gr%sb%dim    
         message%lines(1)="Info: Calculating response for KB-perturbation"
-        call messages_info(1)
+        call message%info(1)
         call X(inhomog_kB_tot)(sh, sys, idir, magn_dir(idir2, 1), magn_dir(idir2, 2), & 
           kdotp_lr(idir, 1:1), em_vars%lr(idir2, 1:1, ifactor), kdotp_lr(magn_dir(idir2, 1), 1:1), &
           kdotp_lr(magn_dir(idir2, 2), 1:1), & 
@@ -299,7 +299,7 @@ subroutine X(run_sternheimer)(namespace)
         str_tmp = freq2str(units_from_atomic(units_out%energy, frequency))
         write(message%lines(1), '(5a)') 'Info: Calculating response for the ', index2axis(idir), &
           '-direction and frequency ', trim(str_tmp), '.'
-        call messages_info(1)
+        call message%info(1)
   
         if((.not. em_vars%calc_magnetooptics) .or. ifactor==1) then
           call X(sternheimer_solve)(sh, sys, em_vars%lr(idir, 1:nsigma_eff, ifactor), nsigma_eff, &
@@ -332,11 +332,11 @@ subroutine X(run_sternheimer)(namespace)
 
         do idir2 = 1, gr%sb%periodic_dim
           write(message%lines(1), '(a,a,a)') 'Info: Calculating kdotp response in ', index2axis(idir2), '-direction.'
-          call messages_info(1)
+          call message%info(1)
           call pert_setup_dir(pert_kdotp, idir2)
       
           message%lines(1) = "Reading 2nd-order kdotp wavefunction."
-          call messages_info(1)
+          call message%info(1)
 
           ! load wavefunctions
           str_tmp = kdotp_wfs_tag(min(idir, idir2), max(idir, idir2))
@@ -347,7 +347,7 @@ subroutine X(run_sternheimer)(namespace)
           if(ierr /= 0) then
             message%lines(1) = "Unable to read second-order kdotp wavefunctions from '"//trim(wfs_tag_sigma(str_tmp, 1))//"'."
             message%lines(2) = "Previous kdotp calculation (with KdotPCalcSecondOrder) required."
-            call messages_fatal(2)
+            call message%fatal(2)
           end if
           
           call X(sternheimer_solve_order2)(sh, sh_kdotp, sh2, sys, em_vars%lr(idir, 1:nsigma_eff, ifactor), &
@@ -365,7 +365,7 @@ subroutine X(run_sternheimer)(namespace)
           em_vars%ok(ifactor) = em_vars%ok(ifactor) .and. sternheimer_has_converged(sh)
         end do
         write(message%lines(1), '(a)') ''
-        call messages_info(1)
+        call message%info(1)
 
         call restart_end(kdotp_restart)
       end if
@@ -377,7 +377,7 @@ subroutine X(run_sternheimer)(namespace)
       if(iomega == 1 .and. ifactor == 1) then
         do idir = 1, gr%sb%dim
           message%lines(1) = "Info: Calculating response for B-perturbation"
-          call messages_info(1)  
+          call message%info(1)  
           call X(inhomog_B)(sh_mo, sys, magn_dir(idir, 1), magn_dir(idir, 2),&
             kdotp_lr(magn_dir(idir, 1), 1:1), kdotp_lr(magn_dir(idir, 2), 1:1), inhomog)
           call X(sternheimer_set_inhomog)(sh_mo, inhomog)   
@@ -397,7 +397,7 @@ subroutine X(run_sternheimer)(namespace)
                 if(iomega == 1 .and. ifactor == 1) then 
                   if(idir2 <= idir) then
                     message%lines(1) = "Info: Calculating response for K2-perturbation"
-                    call messages_info(1)
+                    call message%info(1)
                     call X(inhomog_k2_tot)(sh_kmo, sys, idir, idir2, & 
                       kdotp_lr(idir, 1:1), kdotp_lr(idir2, 1:1),inhomog)
                     call X(sternheimer_set_inhomog)(sh_kmo, inhomog)
@@ -412,7 +412,7 @@ subroutine X(run_sternheimer)(namespace)
               case(PKB)
                 if(iomega == 1 .and. ifactor == 1) then
                   message%lines(1) = "Info: Calculating response for KB-perturbation"
-                  call messages_info(1) 
+                  call message%info(1) 
                   call X(inhomog_kB_tot)(sh_mo, sys, idir, magn_dir(idir2, 1), magn_dir(idir2, 2), &
                     kdotp_lr(idir, 1:1), b_lr(idir2, 1:1), &
                     kdotp_lr(magn_dir(idir2, 1), 1:1), kdotp_lr(magn_dir(idir2, 2), 1:1), &
@@ -429,7 +429,7 @@ subroutine X(run_sternheimer)(namespace)
               case(PKE)
                 if(ifactor .le. nfactor_ke) then
                   message%lines(1) = "Info: Calculating response for KE-perturbation"
-                  call messages_info(1) 
+                  call message%info(1) 
                   call X(inhomog_kE_tot)(sh, sys, idir, nsigma_eff, kdotp_lr(idir, 1:1), &
                     em_vars%lr(idir2, :, ifactor),k2_lr(max(idir2, idir), min(idir2,idir), 1:1), inhomog)
                   call X(sternheimer_set_inhomog)(sh_kmo, inhomog)   
@@ -450,7 +450,7 @@ subroutine X(run_sternheimer)(namespace)
       if(iomega == 1 .and. ifactor == 1) then
         do idir = 1, sys%gr%sb%dim
           message%lines(1)="Info: Calculating response for B-perturbation"
-          call messages_info(1)  
+          call message%info(1)  
           call pert_setup_dir(pert_b, idir)
           call X(sternheimer_solve)(sh_mo, sys, b_lr(idir, 1:1), 1, &
             R_TOPREC(frequency_zero), pert_b, restart_dump, "null", &
@@ -477,7 +477,7 @@ subroutine X(calc_properties_linear)()
     if((.not. em_vars%calc_magnetooptics) .or. ifactor == 1) then 
       ! calculate polarizability
       message%lines(1) = "Info: Calculating polarizabilities."
-      call messages_info(1)
+      call message%info(1)
     
       if(use_kdotp) then
         if(.not. em_vars%kpt_output) then
@@ -509,7 +509,7 @@ subroutine X(calc_properties_linear)()
       if(em_vars%calc_Born) then
         ! calculate Born effective charges
         message%lines(1) = "Info: Calculating (frequency-dependent) Born effective charges."
-        call messages_info(1)
+        call message%info(1)
       
         call X(forces_born_charges)(sys%gr, sys%namespace, sys%geo, sys%hm%ep, sys%st, &
           lr = em_vars%lr(:, 1, ifactor), lr2 = em_vars%lr(:, em_vars%nsigma, ifactor), &
@@ -519,7 +519,7 @@ subroutine X(calc_properties_linear)()
     else
     
       write(message%lines(1), '(a)') 'Info: Calculating magneto-optical response.'
-      call messages_info(1)
+      call message%info(1)
       em_vars%alpha_be(:, :, :) = M_ZERO
       em_vars%chi_para(:, :) = M_ZERO
       em_vars%chi_dia(:, :) = M_ZERO
@@ -549,7 +549,7 @@ subroutine X(calc_properties_linear)()
         end if
         if(iomega == 1) then
           message%lines(1) = "Info: Calculating magnetic susceptibilities."
-          call messages_info(1)
+          call message%info(1)
           call X(lr_calc_susceptibility_periodic)(sys, em_vars%nsigma, kdotp_lr(:, 1), b_lr(:, 1),&
             k2_lr(:, :, 1), kb_lr(:, :, 1), em_vars%chi_dia(:, :))
           em_vars%chi_para(:, :) = M_ZERO  
@@ -565,7 +565,7 @@ subroutine X(calc_properties_linear)()
     
   else if(pert_type(em_vars%perturbation) == PERTURBATION_MAGNETIC) then
     message%lines(1) = "Info: Calculating magnetic susceptibilities."
-    call messages_info(1)
+    call message%info(1)
   
     if(use_kdotp) then
       call X(lr_calc_susceptibility_periodic)(sys, em_vars%nsigma, kdotp_lr(:, 1), em_vars%lr(:, 1, ifactor),&
@@ -592,7 +592,7 @@ subroutine X(calc_properties_nonlinear)(namespace)
   ! calculate hyperpolarizability
   if(em_vars%calc_hyperpol) then
     write(message%lines(1), '(a)') 'Info: Calculating hyperpolarizabilities.'
-    call messages_info(1)
+    call message%info(1)
     
     if(use_kdotp) then
       call X(post_orthogonalize)(sys, em_vars%nfactor, em_vars%nsigma, em_vars%freq_factor(:), &

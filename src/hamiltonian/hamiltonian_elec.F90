@@ -249,9 +249,9 @@ contains
     if(parse_is_defined(namespace, 'RashbaSpinOrbitCoupling')) then
       if(gr%sb%dim .ne. 2) then
         write(message%lines(1),'(a)') 'Rashba spin-orbit coupling can only be used for two-dimensional systems.'
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
-      call messages_experimental('RashbaSpinOrbitCoupling')
+      call message%experimental('RashbaSpinOrbitCoupling')
     end if
 
     call hamiltonian_elec_base_init(hm%hm_base, hm%d%nspin, hm%mass, rashba_coupling)
@@ -366,7 +366,7 @@ contains
     if(parse_block(namespace, 'MassScaling', blk) == 0) then
         ncols = parse_block_cols(blk, 0)
         if(ncols > gr%sb%dim) then
-          call messages_input_error("MassScaling")
+          call message%input_error("MassScaling")
         end if
         iline = 1 ! just deal with 1 line - should be generalized
         do icol = 1, ncols
@@ -399,10 +399,10 @@ contains
     !% ACBN0 functional as defined in PRX 5, 011006 (2015)
     !%End
     call parse_variable(namespace, 'DFTULevel', DFT_U_NONE, hm%lda_u_level)
-    call messages_print_var_option(stdout,  'DFTULevel', hm%lda_u_level)
+    call message%print_var_option(stdout,  'DFTULevel', hm%lda_u_level)
     call lda_u_nullify(hm%lda_u)
     if(hm%lda_u_level /= DFT_U_NONE) then
-      call messages_experimental('DFT+U')
+      call message%experimental('DFT+U')
       call lda_u_init(hm%lda_u, namespace, hm%lda_u_level, gr, geo, st, psolver)
     end if
  
@@ -431,7 +431,7 @@ contains
     kick_present = epot_have_kick(hm%ep)
 
     call pcm_init(hm%pcm, namespace, geo, gr, st%qtot, st%val_charge, external_potentials_present, kick_present )  !< initializes PCM  
-    if(hm%pcm%run_pcm .and. hm%theory_level /= KOHN_SHAM_DFT) call messages_not_implemented("PCM for TheoryLevel /= DFT")
+    if(hm%pcm%run_pcm .and. hm%theory_level /= KOHN_SHAM_DFT) call message%not_implemented("PCM for TheoryLevel /= DFT")
     
     !%Variable SCDM_EXX
     !%Type logical
@@ -443,22 +443,22 @@ contains
     !%End
     call parse_variable(namespace, 'scdm_EXX', .false., hm%scdm_EXX)
     if(hm%scdm_EXX) then
-      call messages_experimental("SCDM method for exact exchange")
+      call message%experimental("SCDM method for exact exchange")
       if(hm%theory_level /= HARTREE_FOCK) then
-        call messages_not_implemented("SCDM for exact exchange in OEP (TheoryLevel = dft)")
+        call message%not_implemented("SCDM for exact exchange in OEP (TheoryLevel = dft)")
       end if
       message%lines(1) = "Info: Using SCDM for exact exchange"
-      call messages_info(1)
+      call message%info(1)
 
       call scdm_init(hm%hf_st, namespace, gr%der, psolver%cube, hm%scdm)
     end if
 
     if(hm%theory_level == HARTREE_FOCK .and. st%parallel_in_states) then
 #ifdef HAVE_MPI2
-      call messages_experimental('Hartree-Fock parallel in states')
+      call message%experimental('Hartree-Fock parallel in states')
 #else
-      call messages_write('Hartree-Fock parallel in states required MPI 2')
-      call messages_fatal()
+      call message%write('Hartree-Fock parallel in states required MPI 2')
+      call message%fatal()
 #endif
     end if
 
@@ -473,7 +473,7 @@ contains
     !% included.
     !%End
     call parse_variable(namespace, 'TimeZero', .false., hm%time_zero)
-    if(hm%time_zero) call messages_experimental('TimeZero')
+    if(hm%time_zero) call message%experimental('TimeZero')
 
     call scissor_nullify(hm%scissor)
 
@@ -1005,47 +1005,47 @@ contains
     ! keep these checks; currently no tests for these in the test suite
 
     if(this%ep%non_local .and. .not. this%hm_base%apply_projector_matrices .and. accel_is_enabled()) then
-      call messages_write('Cannot use CUDA or OpenCL as relativistic pseudopotentials are used.')
-      call messages_warning()
+      call message%write('Cannot use CUDA or OpenCL as relativistic pseudopotentials are used.')
+      call message%warning()
       apply = .false.
     end if
     
     if(this%scissor%apply) then
       if(.not. warning_shown) then
-        call messages_write('Cannot use CUDA or OpenCL as the scissor operator is enabled.')
-        call messages_warning()
+        call message%write('Cannot use CUDA or OpenCL as the scissor operator is enabled.')
+        call message%warning()
       end if
       apply = .false.
     end if
 
     if(this%bc%abtype == IMAGINARY_ABSORBING .and. accel_is_enabled()) then
       if(.not. warning_shown) then
-        call messages_write('Cannot use CUDA or OpenCL as imaginary absorbing boundaries are enabled.')
-        call messages_warning()
+        call message%write('Cannot use CUDA or OpenCL as imaginary absorbing boundaries are enabled.')
+        call message%warning()
       end if
       apply = .false.
     end if
 
     if(associated(this%hm_base%phase) .and. .not. simul_box_is_periodic(mesh%sb) .and. accel_is_enabled()) then
       if(.not. warning_shown) then
-        call messages_write('Cannot use CUDA or OpenCL as a phase is applied to the states.')
-        call messages_warning()
+        call message%write('Cannot use CUDA or OpenCL as a phase is applied to the states.')
+        call message%warning()
       end if
       apply = .false.
     end if
     
     if(mesh%use_curvilinear .and. accel_is_enabled()) then
       if(.not. warning_shown) then
-        call messages_write('Cannot use CUDA or OpenCL as curvilinear coordinates are used.')
-        call messages_warning()
+        call message%write('Cannot use CUDA or OpenCL as curvilinear coordinates are used.')
+        call message%warning()
       end if
       apply = .false.
     end if
     
     if(hamiltonian_elec_base_projector_self_overlap(this%hm_base) .and. accel_is_enabled()) then
       if(.not. warning_shown) then
-        call messages_write('Cannot use CUDA or OpenCL as some pseudopotentials overlap with themselves.')
-        call messages_warning()
+        call message%write('Cannot use CUDA or OpenCL as some pseudopotentials overlap with themselves.')
+        call message%warning()
       end if
       apply = .false.
     end if
@@ -1105,7 +1105,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Writing Vhxc restart."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     !write the different components of the Hartree+XC potential
@@ -1171,7 +1171,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Writing Vhxc restart done."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     POP_SUB(hamiltonian_elec_dump_vhxc)
@@ -1200,7 +1200,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Reading Vhxc restart."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     err2 = 0
@@ -1237,7 +1237,7 @@ contains
 
     if (debug%info) then
       message%lines(1) = "Debug: Reading Vhxc restart done."
-      call messages_info(1)
+      call message%info(1)
     end if
 
     POP_SUB(hamiltonian_elec_load_vhxc)

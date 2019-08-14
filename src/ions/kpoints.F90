@@ -317,7 +317,7 @@ contains
 
       if(this%use_symmetries) then
         write(message%lines(1), '(a)') "User-defined k-points are not compatible with KPointsUseSymmetries=yes."
-        call messages_warning(1)
+        call message%warning(1)
       end if
 
       call read_user_kpoints()
@@ -329,7 +329,7 @@ contains
        
       if(this%use_symmetries) then
         write(message%lines(1), '(a)') "KPointsPath is not compatible with KPointsUseSymmetries=yes."
-        call messages_warning(1)
+        call message%warning(1)
       end if
       call read_path() 
     end if
@@ -338,7 +338,7 @@ contains
     if(this%method == 0) then
       write(message%lines(1), '(a)') "Unable to determine the method for defining k-points."
       write(message%lines(2), '(a)') "Octopus will continue assuming a Monkhorst Pack grid."
-      call messages_warning(2)
+      call message%warning(2)
       this%method = KPOINTS_MONKH_PACK
       call read_MP(gamma_only = .false.)
     end if
@@ -354,7 +354,7 @@ contains
         write(str_tmp,'(i5)') this%nik_axis(idir)
         message%lines(4) = trim(message%lines(4)) // trim(str_tmp)
       end do
-      call messages_info(4)
+      call message%info(4)
         
       do is = 1, this%reduced%nshifts
         write(message%lines(1),'(a)') ' '
@@ -363,13 +363,13 @@ contains
           write(str_tmp,'(f6.2)') this%reduced%shifts(idir,is)
           message%lines(2) = trim(message%lines(2)) // trim(str_tmp)
         end do
-        call messages_info(2)
+        call message%info(2)
       enddo
     end if
 
     write(message%lines(1),'(a)') ' '
     write(message%lines(2),'(a)') ' index |    weight    |             coordinates              |'
-    call messages_info(2)
+    call message%info(2)
 
     do ik = 1, this%reduced%npoints
       write(str_tmp,'(i6,a,f12.6,a)') ik, " | ", this%reduced%weight(ik), " |"
@@ -380,11 +380,11 @@ contains
       end do
       write(str_tmp,'(a)') "  |"
       message%lines(1) = trim(message%lines(1)) // trim(str_tmp)
-      call messages_info(1)
+      call message%info(1)
     end do
 
     write(message%lines(1),'(a)') ' '
-    call messages_info(1)
+    call message%info(1)
 
     POP_SUB(kpoints_init)
 
@@ -403,7 +403,7 @@ contains
 
       PUSH_SUB(kpoints_init.read_MP)
 
-      call messages_obsolete_variable(namespace, 'KPointsMonkhorstPack', 'KPointsGrid')
+      call message%obsolete_variable(namespace, 'KPointsMonkhorstPack', 'KPointsGrid')
 
       !%Variable KPointsGrid
       !%Type block
@@ -454,7 +454,7 @@ contains
         ncols = parse_block_cols(blk, 0)
         if(ncols /= dim) then
           write(message%lines(1),'(a,i3,a,i3)') 'KPointsGrid first row has ', ncols, ' columns but must have ', dim
-          call messages_fatal(1)
+          call message%fatal(1)
         end if
         do ii = 1, dim
           call parse_block_integer(blk, 0, ii - 1, this%nik_axis(ii))
@@ -462,14 +462,14 @@ contains
 
         if (any(this%nik_axis(1:dim) < 1)) then
           message%lines(1) = 'Input: KPointsGrid is not valid.'
-          call messages_fatal(1)
+          call message%fatal(1)
         end if
 
         if(parse_block_n(blk) > 1) then ! we have a shift, or even more
           ncols = parse_block_cols(blk, 1)
           if(ncols /= dim) then
             write(message%lines(1),'(a,i3,a,i3)') 'KPointsGrid shift has ', ncols, ' columns but must have ', dim
-            call messages_fatal(1)
+            call message%fatal(1)
           end if
           do is = 1, nshifts
             do ii = 1, dim
@@ -511,7 +511,7 @@ contains
 
       if(this%use_symmetries) then
         message%lines(1) = "Checking if the generated full k-point grid is symmetric";
-        call messages_info(1)
+        call message%info(1)
         call kpoints_check_symmetries(this%full, symm, dim, klattice, this%use_time_reversal)
       end if
 
@@ -612,7 +612,7 @@ contains
 
       if(parse_block(namespace, 'KPointsPath', blk) /= 0) then
         write(message%lines(1),'(a)') 'Internal error while reading KPointsPath.'
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
 
       ! There is one high symmetry k-point per line
@@ -621,7 +621,7 @@ contains
       if( nhighsympoints /= nsegments +1) then
         write(message%lines(1),'(a,i3,a,i3)') 'The first row of KPointsPath is not compatible '//&
           'with the number of specified k-points.'
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
 
       SAFE_ALLOCATE(resolution(1:nsegments))
@@ -637,7 +637,7 @@ contains
         ncols = parse_block_cols(blk, ik)
         if(ncols /= dim) then
           write(message%lines(1),'(a,i3,a,i3)') 'KPointsPath row ', ik, ' has ', ncols, ' columns but must have ', dim
-          call messages_fatal(1)
+          call message%fatal(1)
         end if
 
         do idir = 1, dim
@@ -738,7 +738,7 @@ contains
         else
           ! This case should really never happen. But why not dying otherwise?!
           write(message%lines(1),'(a)') 'Internal error loading user-defined k-point list.'
-          call messages_fatal(1)
+          call message%fatal(1)
         end if
       end if
 
@@ -776,9 +776,9 @@ contains
 
       this%nik_skip = 0
       if(any(user_kpoints_grid%weight(:) < M_EPSILON)) then
-        call messages_experimental('K-points with zero weight')
+        call message%experimental('K-points with zero weight')
         message%lines(1) = "Found k-points with zero weight. They are excluded from density calculation"
-        call messages_warning(1)
+        call message%warning(1)
         ! count k-points with zero weight and  make sure the points are given in
         ! a block after all regular k-points. This is for convenience, so they can be skipped
         ! easily and not a big restraint for the user who has to provide the k-points
@@ -789,7 +789,7 @@ contains
             if(ik < user_kpoints_grid%npoints) then
               if(user_kpoints_grid%weight(ik+1) > M_EPSILON) then
                 message%lines(1) = "K-points with zero weight must follow all regular k-points in a block"
-                call messages_fatal(1)
+                call message%fatal(1)
               endif
             end if
             this%nik_skip = this%nik_skip + 1
@@ -802,7 +802,7 @@ contains
       weight_sum = sum(user_kpoints_grid%weight(1:user_kpoints_grid%npoints))
       if(weight_sum < M_EPSILON) then
         message%lines(1) = "k-point weights must sum to a positive number."
-        call messages_fatal(1)
+        call message%fatal(1)
       end if
       user_kpoints_grid%weight = user_kpoints_grid%weight / weight_sum
 
@@ -816,7 +816,7 @@ contains
 
 
       write(message%lines(1), '(a,i4,a)') 'Input: ', user_kpoints_grid%npoints, ' k-points were read from the input file'
-      call messages_info(1)
+      call message%info(1)
 
       call kpoints_grid_end(user_kpoints_grid)
       
@@ -1306,37 +1306,37 @@ contains
     
     PUSH_SUB(kpoints_write_info)
     
-    call messages_print_stress(iunit, 'Brillouin zone sampling')
+    call message%print_stress(iunit, 'Brillouin zone sampling')
 
     if(this%method == KPOINTS_MONKH_PACK) then
 
-      call messages_write('Dimensions of the k-point grid      =')
+      call message%write('Dimensions of the k-point grid      =')
       do idir = 1, this%full%dim
-        call messages_write(this%nik_axis(idir), fmt = '(i3,1x)')
+        call message%write(this%nik_axis(idir), fmt = '(i3,1x)')
       end do
-      call messages_new_line()
+      call message%new_line()
       
-      call messages_write('Total number of k-points            =')
-      call messages_write(this%full%npoints)
-      call messages_new_line()
+      call message%write('Total number of k-points            =')
+      call message%write(this%full%npoints)
+      call message%new_line()
 
-      call messages_write('Number of symmetry-reduced k-points =')
-      call messages_write(this%reduced%npoints)
+      call message%write('Number of symmetry-reduced k-points =')
+      call message%write(this%reduced%npoints)
 
-      call messages_info(iunit = iunit)
+      call message%info(iunit = iunit)
       
     else
 
-      call messages_write('Total number of k-points            =')
-      call messages_write(this%full%npoints)
-      call messages_new_line()
-      call messages_info(iunit = iunit)
+      call message%write('Total number of k-points            =')
+      call message%write(this%full%npoints)
+      call message%new_line()
+      call message%info(iunit = iunit)
 
     end if
 
-    call messages_new_line()
-    call messages_write('List of k-points:')
-    call messages_info(iunit = iunit)
+    call message%new_line()
+    call message%write('List of k-points:')
+    call message%info(iunit = iunit)
 
     write(message%lines(1), '(6x,a)') 'ik'
     do idir = 1, this%full%dim
@@ -1347,7 +1347,7 @@ contains
     write(str_tmp, '(6x,a)') 'Weight'
     message%lines(1) = trim(message%lines(1)) // trim(str_tmp)
     message%lines(2) = '---------------------------------------------------------'
-    call messages_info(2, iunit)
+    call message%info(2, iunit)
     
     do ik = 1, kpoints_number(this)
       write(message%lines(1),'(i8,1x)') ik
@@ -1361,12 +1361,12 @@ contains
       end do
       write(str_tmp,'(f12.4)') kpoints_get_weight(this, ik)
       message%lines(1) = trim(message%lines(1)) // trim(str_tmp)
-      call messages_info(1, iunit)
+      call message%info(1, iunit)
     end do
 
-    call messages_info(iunit = iunit)
+    call message%info(iunit = iunit)
 
-    call messages_print_stress(iunit)
+    call message%print_stress(iunit)
 
     POP_SUB(kpoints_write_info)
   end subroutine kpoints_write_info
@@ -1542,7 +1542,7 @@ contains
            ") ", "has no symmetric in the k-point grid for the following symmetry"
           write(message%lines(2),'(i5,1x,a,2x,3(3i4,2x))') iop, ':', transpose(symm_op_rotation_matrix_red(symm%ops(iop)))
           message%lines(3) = "Change your k-point grid or use KPointsUseSymmetries=no."
-          call messages_fatal(3)    
+          call message%fatal(3)    
         end if
       end do
     end do

@@ -305,7 +305,7 @@ subroutine X(lobpcg)(gr, st, hm, psolver, st_start, st_end, psi, constr_start, c
 
   if(no_bof) then
     message%lines(1) = 'Problem: orthonormalization of initial vectors failed.'
-    call messages_warning(1)
+    call message%warning(1)
   end if
 
   ! Get initial Ritz-values and -vectors.
@@ -327,7 +327,7 @@ subroutine X(lobpcg)(gr, st, hm, psolver, st_start, st_end, psi, constr_start, c
 
   if(no_bof) then
     message%lines(1) = 'Problem: Rayleigh-Ritz procedure for initial vectors failed.'
-    call messages_warning(1)
+    call message%warning(1)
   end if
   call X(block_matr_mul)(psi, ritz_vec, tmp, xpsi = all_ev, xres = all_ev)
   call lalg_copy(gr%mesh%np_part, st%d%dim, lnst, tmp(:, :, st_start:), psi(:, :, st_start:))
@@ -387,7 +387,7 @@ subroutine X(lobpcg)(gr, st, hm, psolver, st_start, st_end, psi, constr_start, c
       message%lines(1) = 'Big problem: orthonormalization of residuals failed.'
       message%lines(2) = 'Quitting eigensolver iteration.'
       write(message%lines(3), '(a,i6)') 'in iteration #', iter
-      call messages_warning(3)
+      call message%warning(3)
       exit iteration
     end if
 
@@ -426,7 +426,7 @@ subroutine X(lobpcg)(gr, st, hm, psolver, st_start, st_end, psi, constr_start, c
       if(no_bof) then
         message%lines(1) = 'Problem: orthonormalization of conjugate directions failed'
         write(message%lines(2), '(a,i6)') 'in iteration #', iter
-        call messages_warning(2)
+        call message%warning(2)
         ! Set directions to zero.
         ! FIXME: they should not be included in the subspace at all in this case.
         ! (the code has to be cleaned up anyway, so this can be done then).
@@ -519,7 +519,7 @@ subroutine X(lobpcg)(gr, st, hm, psolver, st_start, st_end, psi, constr_start, c
     if(no_bof) then
       message%lines(1) = 'Problem: Rayleigh-Ritz procedure failed'
       write(message%lines(2), '(a,i6)') 'in iteration #', iter
-      call messages_warning(2)
+      call message%warning(2)
       exit iteration
     end if
 
@@ -641,7 +641,7 @@ contains
       if(debug%info) then
         write(message%lines(1), '(a,i4,a,i4,a,i4,a,es12.6)') &
           'Debug: LOBPCG Eigensolver - ik', ik, ' ist ', ist, ' iter ', iter, ' res ', diff(ist)
-        call messages_info(1)
+        call message%info(1)
       end if
 
       if(diff(ist) >= tol) then

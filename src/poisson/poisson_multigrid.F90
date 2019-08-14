@@ -126,8 +126,8 @@ contains
     !%End
     call parse_variable(namespace, 'PoissonSolverMGRestrictionMethod', 2, this%restriction_method)
     if(.not.varinfo_valid_option('PoissonSolverMGRestrictionMethod', this%restriction_method)) &
-       call messages_input_error('PoissonSolverMGRestrictionMethod')
-    call messages_print_var_option(stdout, "PoissonSolverMGRestrictionMethod", this%restriction_method)
+       call message%input_error('PoissonSolverMGRestrictionMethod')
+    call message%print_var_option(stdout, "PoissonSolverMGRestrictionMethod", this%restriction_method)
 
     !%Variable PoissonSolverMGRelaxationMethod
     !%Type integer
@@ -150,8 +150,8 @@ contains
     end if
 
     if(.not.varinfo_valid_option('PoissonSolverMGRelaxationMethod', this%relaxation_method)) &
-      call messages_input_error('PoissonSolverMGRelaxationMethod')
-    call messages_print_var_option(stdout, "PoissonSolverMGRelaxationMethod", this%relaxation_method)
+      call message%input_error('PoissonSolverMGRelaxationMethod')
+    call message%print_var_option(stdout, "PoissonSolverMGRelaxationMethod", this%relaxation_method)
 
     !%Variable PoissonSolverMGRelaxationFactor
     !%Type float
@@ -219,7 +219,7 @@ contains
 
       if(debug%info) then
         write(message%lines(1), '(a,i5,a,e13.6)') "Multigrid: base level: iter ", iter, " res ", resnorm
-        call messages_info(1)
+        call message%info(1)
       end if
 
     end do
@@ -227,7 +227,7 @@ contains
     if(resnorm >= this%threshold) then
       message%lines(1) = 'Multigrid Poisson solver did not converge.'
       write(message%lines(2), '(a,e14.6)') '  Res = ', resnorm
-      call messages_warning(2)
+      call message%warning(2)
     end if
 
     forall (ip = 1:der%mesh%np) pot(ip) = cor(ip) + vh_correction(ip)

@@ -209,7 +209,7 @@ contains
     cutoff = mesh_gcutoff(this)**2 / M_TWO
     write(message%lines(4),'(3a,f12.6,a,f12.6)') '  Grid Cutoff [', trim(units_abbrev(units_out%energy)),'] = ', &
       units_from_atomic(units_out%energy, cutoff), '    Grid Cutoff [Ry] = ', cutoff * M_TWO
-    call messages_info(4, unit)
+    call message%info(4, unit)
     
     POP_SUB(mesh_write_info)
   end subroutine mesh_write_info
@@ -423,7 +423,7 @@ contains
     if (iunit <= 0) then
       ierr = ierr + 1
       message%lines(1) = "Unable to open file '"//io_workpath(trim(dir)//"/"//trim(filename), namespace)//"'."
-      call messages_warning(1)
+      call message%warning(1)
     else
       if (mpi_grp_is_root(mpi_grp)) then
         write(iunit, '(a)') dump_tag
@@ -465,7 +465,7 @@ contains
     if (iunit <= 0) then
       ierr = ierr + 1
       message%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
-      call messages_warning(1)
+      call message%warning(1)
     else
       ! Find the dump tag.
       call iopar_find_line(mpi_grp, iunit, dump_tag, err)
@@ -511,7 +511,7 @@ contains
       die=.false., grp=mpi_grp)
     if (iunit <= 0) then
       message%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
-      call messages_warning(1)
+      call message%warning(1)
       ierr = ierr + 1
     else
       if (mpi_grp_is_root(mpi_grp)) then
@@ -562,7 +562,7 @@ contains
     if (iunit <= 0) then
       ierr = ierr + 1
       message%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
-      call messages_warning(1)
+      call message%warning(1)
     else
       box_shape = 0
       call iopar_read(mpi_grp, iunit, lines, 1, err)
@@ -575,7 +575,7 @@ contains
       if (box_shape == HYPERCUBE) then
         ! We have a hypercube: we will assume everything is OK...
         message%lines(1) = "Simulation box is a hypercube: unable to check mesh compatibility."
-        call messages_warning(1)
+        call message%warning(1)
 
       else
         call iopar_read(mpi_grp, iunit, lines, 4, err)
@@ -634,7 +634,7 @@ contains
     if (err /= 0) then
       ierr = ierr + 1
       message%lines(1) = "Unable to read mesh fingerprint from '"//trim(dir)//"/"//trim(filename)//"'."
-      call messages_warning(1)
+      call message%warning(1)
 
     else if (read_np > 0) then
       if (.not. associated(mesh%sb)) then
@@ -657,7 +657,7 @@ contains
         if (err /= 0) then
           ierr = ierr + 4
           message%lines(1) = "Unable to read index map from '"//trim(dir)//"'."
-          call messages_warning(1)
+          call message%warning(1)
         else
           ! generate the map
           SAFE_ALLOCATE(map(1:read_np))
@@ -835,7 +835,7 @@ contains
     PUSH_SUB(mesh_check_symmetries)
 
     message%lines(1) = "Checking if the real-space grid is symmetric";
-    call messages_info(1)
+    call message%info(1)
 
     lsize(1:3) = real(mesh%idx%ll(1:3), REAL_PRECISION)
     offset(1:3) = real(mesh%idx%nr(1, 1:3) + mesh%idx%enlarge(1:3), REAL_PRECISION)
@@ -886,7 +886,7 @@ contains
         if(any(srcpoint-anint(srcpoint)> SYMPREC*M_TWO)) then
           message%lines(1) = "The real-space grid breaks at least one of the symmetries of the system."
           message%lines(2) = "Change your spacing or use SymmetrizeDensity=no."
-          call messages_fatal(2)
+          call message%fatal(2)
         end if
       end do
     end do

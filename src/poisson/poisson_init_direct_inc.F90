@@ -35,7 +35,7 @@ subroutine poisson_kernel_init(this, namespace, all_nodes_comm)
   case(POISSON_NO)
     write(message%lines(1),'(a)')'Info: you have elected to not use a Poisson solver.'
     write(message%lines(2),'(a)')' Hartree potential and energy will be 0'
-    call messages_info(2)
+    call message%info(2)
     valid_solver = .true.
   case default
     valid_solver = .false.
@@ -128,7 +128,7 @@ subroutine poisson_kernel_init(this, namespace, all_nodes_comm)
   case(POISSON_CG)
     call parse_variable(namespace, 'PoissonSolverMaxMultipole', 4, maxl)
     write(message%lines(1),'(a,i2)')'Info: Boundary conditions fixed up to L =',  maxl
-    call messages_info(1)
+    call message%info(1)
     call parse_variable(namespace, 'PoissonSolverMaxIter', 400, iter)
     call parse_variable(namespace, 'PoissonSolverThreshold', CNST(1.0e-6), threshold)
     call poisson_corrections_init(this%corrector, namespace, maxl, this%der%mesh)
@@ -139,7 +139,7 @@ subroutine poisson_kernel_init(this, namespace, all_nodes_comm)
     call parse_variable(namespace, 'PoissonSolverMaxIter', 400, iter)
     call parse_variable(namespace, 'PoissonSolverThreshold', CNST(1.0e-6), threshold)
     write(message%lines(1),'(a,i2)')'Info: Multipoles corrected up to L =',  maxl
-    call messages_info(1)
+    call message%info(1)
     call poisson_corrections_init(this%corrector, namespace, maxl, this%der%mesh)
     call poisson_cg_init(threshold, iter)
 
@@ -147,7 +147,7 @@ subroutine poisson_kernel_init(this, namespace, all_nodes_comm)
     call parse_variable(namespace, 'PoissonSolverMaxMultipole', 4, maxl)
     call parse_variable(namespace, 'PoissonSolverThreshold', CNST(1.0e-6), threshold)
     write(message%lines(1),'(a,i2)')'Info: Multipoles corrected up to L =',  maxl
-    call messages_info(1)
+    call message%info(1)
 
     call poisson_multigrid_init(this%mg, namespace, this%der%mesh, maxl, threshold)
      
@@ -174,7 +174,7 @@ subroutine poisson_kernel_init(this, namespace, all_nodes_comm)
     if (this%kernel == POISSON_FFT_KERNEL_CORRECTED) then
       call parse_variable(namespace, 'PoissonSolverMaxMultipole', 2, maxl)
       write(message%lines(1),'(a,i2)')'Info: Multipoles corrected up to L =',  maxl
-      call messages_info(1)
+      call message%info(1)
       call poisson_corrections_init(this%corrector, namespace, maxl, this%der%mesh)
     end if
 
@@ -203,7 +203,7 @@ subroutine poisson_kernel_reinit(this, namespace, qq)
         soft_coulb_param = this%poisson_soft_coulomb_param, qq = this%qq)
     end if
   case default
-    call messages_not_implemented("poisson_kernel_reinit with other methods than FFT")
+    call message%not_implemented("poisson_kernel_reinit with other methods than FFT")
   end select
 
   POP_SUB(poisson_kernel_reinit)
@@ -239,7 +239,7 @@ subroutine poisson_solve_direct(this, pot, rho)
   case default
     message%lines(1) = "Internal error: poisson_solve_direct can only be called for 2D or 3D."
     ! why not? all that is needed is the appropriate prefactors to be defined above, actually. then 1D, 4D etc. can be done
-    call messages_fatal(1)
+    call message%fatal(1)
   end select
 
   if(.not. this%der%mesh%use_curvilinear) then

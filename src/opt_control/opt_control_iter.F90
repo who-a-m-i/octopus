@@ -108,7 +108,7 @@ contains
 
     if( iterator%ctr_iter_max < 0 .and. iterator%eps < M_ZERO ) then
       message%lines(1) = "OCTMaxIter and OCTEps cannot be both < 0."
-      call messages_fatal(1)
+      call message%fatal(1)
     end if
     if(iterator%ctr_iter_max < 0) iterator%ctr_iter_max = huge(iterator%ctr_iter_max)
 
@@ -121,7 +121,7 @@ contains
     !% These are files called <tt>opt_control/laser.xxxx</tt>, where <tt>xxxx</tt> is the iteration number.
     !%End
     call parse_variable(namespace, 'OCTDumpIntermediate', .false., iterator%dump_intermediate)
-    call messages_print_var_value(stdout, "OCTDumpIntermediate", iterator%dump_intermediate)
+    call message%print_var_value(stdout, "OCTDumpIntermediate", iterator%dump_intermediate)
 
     iterator%ctr_iter = 0
     iterator%ctr_iter_main = 0
@@ -198,7 +198,7 @@ contains
     
     if(iterator%ctr_iter  ==  iterator%ctr_iter_max) then
       message%lines(1) = "Info: Maximum number of iterations reached."
-      call messages_info(1)
+      call message%info(1)
       stoploop = .true.
     end if
 
@@ -206,12 +206,12 @@ contains
         (delta < iterator%eps) .and. &
         (iterator%ctr_iter > 0 ) ) then
       message%lines(1) = "Info: Convergence threshold reached."
-      call messages_info(1)
+      call message%info(1)
       stoploop = .true.
     end if
 
     write(message%lines(1), '(a,i5)') 'Optimal control iteration #', iterator%ctr_iter
-    call messages_print_stress(stdout, trim(message%lines(1)))
+    call message%print_stress(stdout, trim(message%lines(1)))
 
     write(message%lines(1), '(6x,a,f12.5)')  " => J1       = ", j1
     write(message%lines(2), '(6x,a,f12.5)')  " => J        = ", jfunctional
@@ -220,11 +220,11 @@ contains
     write(message%lines(5), '(6x,a,f12.5)')  " => Penalty  = ", controlfunction_alpha(par, 1)
     write(message%lines(6), '(6x,a,es12.2)') " => D[e,e']  = ", delta
     if(iterator%ctr_iter /= 0) then
-      call messages_info(6)
+      call message%info(6)
     else
-      call messages_info(5)
+      call message%info(5)
     end if
-    call messages_print_stress(stdout)
+    call message%print_stress(stdout)
 
     bestj1 = (j1 > iterator%bestj1)
     ! store field with best J1
@@ -274,22 +274,22 @@ contains
 
     if(iterator%ctr_iter  ==  0) then
       write(message%lines(1), '(a)') 'Initial-guess field'
-      call messages_print_stress(stdout, trim(message%lines(1)))
+      call message%print_stress(stdout, trim(message%lines(1)))
     else
       write(message%lines(1), '(a,i5)') 'Function evaluation #', iterator%ctr_iter
-      call messages_print_stress(stdout, trim(message%lines(1)))
+      call message%print_stress(stdout, trim(message%lines(1)))
     end if
 
     write(message%lines(1), '(6x,a,f12.5)')    " => J1       = ", j1
     write(message%lines(2), '(6x,a,f12.5)')    " => J        = ", j
     write(message%lines(3), '(6x,a,f12.5)')    " => J2       = ", j2
     write(message%lines(4), '(6x,a,f12.5)')    " => Fluence  = ", fluence
-    call messages_info(4)
+    call message%info(4)
     if(present(dx)) then
       write(message%lines(1), '(6x,a,f12.5)')  " => Delta    = ", dx
-      call messages_info(1)
+      call message%info(1)
     end if
-    call messages_print_stress(stdout)
+    call message%print_stress(stdout)
 
     ! store field with best J1
     if(j1 > iterator%bestJ1) then

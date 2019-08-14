@@ -130,13 +130,13 @@ contains
     PUSH_SUB(sternheimer_init)
 
     if(sys%st%smear%method  ==  SMEAR_FIXED_OCC) then
-      call messages_experimental("Sternheimer equation for arbitrary occupations")
+      call message%experimental("Sternheimer equation for arbitrary occupations")
     end if
     if(sys%st%smear%method  ==  SMEAR_SEMICONDUCTOR .and. &
       (abs(sys%st%smear%ef_occ) > M_EPSILON) .and. abs(sys%st%smear%ef_occ - M_ONE) > M_EPSILON) then
       write(message%lines(1),'(a,f12.6)') 'Partial occupation at the Fermi level: ', sys%st%smear%ef_occ
       message%lines(2) = 'Semiconducting smearing cannot be used for Sternheimer in this situation.'
-      call messages_fatal(2)
+      call message%fatal(2)
     end if
 
     if(wfs_are_cplx) then
@@ -230,7 +230,7 @@ contains
     else
        write(message%lines(3), '(2a)') trim(message%lines(3)), ' no'
     end if
-    call messages_info(3) 
+    call message%info(3) 
 
     call linear_solver_init(this%solver, sys%namespace, sys%gr, states_are_real(sys%st), set_default_solver)
 
@@ -422,7 +422,7 @@ contains
       sigma_char = '-'
     case default 
       write(message%lines(1),'(a,i2)') "Illegal integer isigma passed to wfs_tag_sigma: ", isigma
-      call messages_fatal(1)
+      call message%fatal(1)
     end select
 
     str = trim(base_name) // sigma_char
@@ -440,8 +440,8 @@ contains
     
     PUSH_SUB(sternheimer_obsolete_variables)
 
-    call messages_obsolete_variable(namespace, trim(old_prefix)//'Preorthogonalization', trim(new_prefix)//'Preorthogonalization')
-    call messages_obsolete_variable(namespace, trim(old_prefix)//'HamiltonianVariation', trim(new_prefix)//'HamiltonianVariation')
+    call message%obsolete_variable(namespace, trim(old_prefix)//'Preorthogonalization', trim(new_prefix)//'Preorthogonalization')
+    call message%obsolete_variable(namespace, trim(old_prefix)//'HamiltonianVariation', trim(new_prefix)//'HamiltonianVariation')
 
     call linear_solver_obsolete_variables(namespace, old_prefix, new_prefix)
     call scf_tol_obsolete_variables(namespace, old_prefix, new_prefix)

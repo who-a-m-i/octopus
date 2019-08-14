@@ -31,7 +31,7 @@ subroutine X(calculate_eigenvalues)(hm, der, psolver, st)
   
   if(debug%info) then
     write(message%lines(1), '(a)') 'Debug: Calculating eigenvalues.'
-    call messages_info(1)
+    call message%info(1)
   end if
 
   st%eigenval = M_ZERO

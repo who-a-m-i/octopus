@@ -72,7 +72,7 @@ contains
 #ifdef HAVE_LIBVDWXC
     call vdwxc_new(functional, libvdwxc%libvdwxc_ptr)
 #else
-    message(1) = "Octopus not compiled with libvdwxc"
+    messages_lines(1) = "Octopus not compiled with libvdwxc"
     call messages_fatal(1)
 #endif
     ASSERT(associated(libvdwxc%libvdwxc_ptr))
@@ -111,15 +111,15 @@ contains
     type(libvdwxc_t), intent(in) :: this
     integer,          intent(in) :: iunit
     PUSH_SUB(libvdwxc_write_info)
-    write(message(1), '(2x,a)') 'Correlation'
+    write(messages_lines(1), '(2x,a)') 'Correlation'
     if(this%functional == 1) then
-      write(message(2), '(4x,a)') 'vdW-DF from libvdwxc'
+      write(messages_lines(2), '(4x,a)') 'vdW-DF from libvdwxc'
     else if(this%functional == 2) then
-      write(message(2), '(4x,a)') 'vdW-DF2 from libvdwxc'
+      write(messages_lines(2), '(4x,a)') 'vdW-DF2 from libvdwxc'
     else if(this%functional == 3) then
-      write(message(2), '(4x,a)') 'vdW-DF-cx from libvdwxc'
+      write(messages_lines(2), '(4x,a)') 'vdW-DF-cx from libvdwxc'
     else
-      write(message(2), '(4x,a)') 'unknown libvdwxc functional'
+      write(messages_lines(2), '(4x,a)') 'unknown libvdwxc functional'
     end if
     call messages_info(2, iunit)
     POP_SUB(libvdwxc_write_info)
@@ -211,8 +211,8 @@ contains
 #ifdef HAVE_LIBVDWXC_MPI
       call vdwxc_init_mpi(this%libvdwxc_ptr, mesh%mpi_grp%comm)
 #else
-      message(1) = "libvdwxc was not compiled with MPI"
-      message(2) = "Recompile libvdwxc with MPI for vdW with domain decomposition"
+      messages_lines(1) = "libvdwxc was not compiled with MPI"
+      messages_lines(2) = "Recompile libvdwxc with MPI for vdW with domain decomposition"
       call messages_fatal(2)
 #endif
     end if
@@ -323,9 +323,9 @@ contains
     call MPI_Allreduce(MPI_IN_PLACE, energy_and_integrals_buffer, 3, MPI_DOUBLE_PRECISION, MPI_SUM, this%mesh%mpi_grp%comm, ierr)
     this%energy = energy_and_integrals_buffer(1)
 #endif
-    write(message(1), '(a,f18.10,a)') 'libvdwxc non-local correlation energy: ', energy_and_integrals_buffer(1), ' Ha'
-    write(message(2), '(a,f18.10)')   '                      n-dedn integral: ', energy_and_integrals_buffer(2)
-    write(message(3), '(a,f18.10)')   '              gradn-dedgradn integral: ', energy_and_integrals_buffer(3)
+    write(messages_lines(1), '(a,f18.10,a)') 'libvdwxc non-local correlation energy: ', energy_and_integrals_buffer(1), ' Ha'
+    write(messages_lines(2), '(a,f18.10)')   '                      n-dedn integral: ', energy_and_integrals_buffer(2)
+    write(messages_lines(3), '(a,f18.10)')   '              gradn-dedgradn integral: ', energy_and_integrals_buffer(3)
     call messages_info(3)
 
     SAFE_DEALLOCATE_A(workbuffer)

@@ -112,10 +112,10 @@ contains
 
     if(.not.debug%info) return
 
-    message(1) = ''
-    message(2) = hyphens
-    message(3) = ''
-    write(message(4), '(23x,a,4x,a,8x,a)') 'total time', 'calls', 'usec/call'
+    messages_lines(1) = ''
+    messages_lines(2) = hyphens
+    messages_lines(3) = ''
+    write(messages_lines(4), '(23x,a,4x,a,8x,a)') 'total time', 'calls', 'usec/call'
     do j = 1, C_NUM_MPI_ROUTINES
       if (call_counter(j) <= 0) then
         usec_call(j) = 0
@@ -123,12 +123,12 @@ contains
         usec_call(j) = (sec_accum(j)*1000000)/call_counter(j)
       end if
 
-      write(message(j+4),'(a,f13.6,6x,i4,6x,f13.0)') &
+      write(messages_lines(j+4),'(a,f13.6,6x,i4,6x,f13.0)') &
         mpi_rlabel(j)//' : ', sec_accum(j),          &
         call_counter(j), usec_call(j)
     end do
-    message(C_NUM_MPI_ROUTINES+5) = ''
-    message(C_NUM_MPI_ROUTINES+6) = hyphens
+    messages_lines(C_NUM_MPI_ROUTINES+5) = ''
+    messages_lines(C_NUM_MPI_ROUTINES+6) = hyphens
     call messages_debug(C_NUM_MPI_ROUTINES+6)
   end subroutine mpi_debug_statistics
 
@@ -141,7 +141,7 @@ contains
 
     call_counter(index) = call_counter(index) + 1
     sec_in              = MPI_Wtime()
-    write(message(1),'(a,f18.6,a,z8.8,a,i6.6,a,f13.6)') '* MPI_I ', &
+    write(messages_lines(1),'(a,f18.6,a,z8.8,a,i6.6,a,f13.6)') '* MPI_I ', &
       sec_in, ' '//mpi_rlabel(index)//' : 0x', comm, ' | ',  &
       call_counter(index), ' - ', sec_accum(index)
     call messages_debug(1)
@@ -158,7 +158,7 @@ contains
 
     sec_out = MPI_Wtime()
     call mpi_time_accum(index, sec_out, sec_diff)
-    write(message(1),'(a,f18.6,a,z8.8,a,i6.6,a,f13.6,a,f13.6)')         &
+    write(messages_lines(1),'(a,f18.6,a,z8.8,a,i6.6,a,f13.6,a,f13.6)')         &
       '* MPI_O ', sec_out, ' '//mpi_rlabel(index)//' : 0x', comm, ' | ', &
       call_counter(index), ' - ', sec_accum(index), ' - ', sec_diff
     call messages_debug(1)

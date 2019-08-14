@@ -49,12 +49,12 @@
     j2 = controlfunction_j2(par)
     jfunctional = j1 + j2
 
-    write(message(1), '(a)') 'Final propagation with the best field'
-    call messages_print_stress(stdout, trim(message(1)))
-    write(message(1), '(6x,a,f12.5)') " => J1       = ", j1
-    write(message(2), '(6x,a,f12.5)') " => J        = ", jfunctional
-    write(message(3), '(6x,a,f12.5)') " => J2       = ", j2
-    write(message(4), '(6x,a,f12.5)') " => Fluence  = ", fluence
+    write(messages_lines(1), '(a)') 'Final propagation with the best field'
+    call messages_print_stress(stdout, trim(messages_lines(1)))
+    write(messages_lines(1), '(6x,a,f12.5)') " => J1       = ", j1
+    write(messages_lines(2), '(6x,a,f12.5)') " => J        = ", jfunctional
+    write(messages_lines(3), '(6x,a,f12.5)') " => J2       = ", j2
+    write(messages_lines(4), '(6x,a,f12.5)') " => Fluence  = ", fluence
     call messages_info(4)
     call messages_print_stress(stdout)
 

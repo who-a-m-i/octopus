@@ -30,12 +30,12 @@
 
     PUSH_SUB(target_init_groundstate)
 
-    message(1) =  'Info: Using Ground State for TargetOperator'
+    messages_lines(1) =  'Info: Using Ground State for TargetOperator'
     call messages_info(1)
 
     call states_elec_load(restart, namespace, tg%st, gr, ierr)
     if (ierr /= 0) then
-      message(1) = "Unable to read wavefunctions."
+      messages_lines(1) = "Unable to read wavefunctions."
       call messages_fatal(1)
     end if
 

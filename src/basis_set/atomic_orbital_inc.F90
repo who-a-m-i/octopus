@@ -46,47 +46,47 @@ subroutine X(get_atomic_orbital) (geo, mesh, sm, iatom, ii, ll, jj, os, orbind, 
   if(sm%np == -1) then
     
     if(mesh%sb%box_shape == MINIMUM .and. radius > mesh%sb%rsize) then
-      message(1) = "The radius of an orbital set is bigger than the radius of the simulatio box."
-      message(2) = "Increase the value of Radius or decrease the value of OrbitalsThreshold_LDAU."
-      write(message(3),'(a,f8.5,a,i5,a)') 'The value of the radius is ', radius, ' Bohr.'
+      messages_lines(1) = "The radius of an orbital set is bigger than the radius of the simulatio box."
+      messages_lines(2) = "Increase the value of Radius or decrease the value of OrbitalsThreshold_LDAU."
+      write(messages_lines(3),'(a,f8.5,a,i5,a)') 'The value of the radius is ', radius, ' Bohr.'
       call messages_fatal(3)
     end if
  
     if(mesh%sb%box_shape == SPHERE .or. mesh%sb%box_shape == CYLINDER) then
       if(radius > mesh%sb%rsize) then
-       message(1) = "The radius of an orbital set is bigger than the radius of the simulatio box."
-       message(2) = "Increase the value of Radius or decrease the value of OrbitalsThreshold_LDAU."
-       write(message(3),'(a,f8.5,a,i5,a)') 'The value of the radius is ', radius, ' Bohr.'
+       messages_lines(1) = "The radius of an orbital set is bigger than the radius of the simulatio box."
+       messages_lines(2) = "Increase the value of Radius or decrease the value of OrbitalsThreshold_LDAU."
+       write(messages_lines(3),'(a,f8.5,a,i5,a)') 'The value of the radius is ', radius, ' Bohr.'
        call messages_fatal(3) 
       end if
       if(mesh%sb%box_shape == CYLINDER .and. radius > mesh%sb%xsize) then
-       message(1) = "The radius of an orbital set is bigger than the length of the cylinder box."
-       message(2) = "Increase the value of XLength or decrease the value of OrbitalsThreshold_LDAU."
-       write(message(3),'(a,f8.5,a,i5,a)') 'The value of the radius is ', radius, ' Bohr.'
+       messages_lines(1) = "The radius of an orbital set is bigger than the length of the cylinder box."
+       messages_lines(2) = "Increase the value of XLength or decrease the value of OrbitalsThreshold_LDAU."
+       write(messages_lines(3),'(a,f8.5,a,i5,a)') 'The value of the radius is ', radius, ' Bohr.'
        call messages_fatal(3) 
       end if
     end if 
 
     if(mesh%sb%box_shape == SPHERE ) then
       if(sqrt(sum(geo%atom(iatom)%x(1:mesh%sb%dim)**2)) + radius > mesh%sb%rsize) then
-       message(1) = "An orbital set has points outside of the simulatio box."
-       message(2) = "Increase the value of Radius or decrease the value of OrbitalsThreshold_LDAU."
-       write(message(3),'(a,f8.5,a,i5,a)') 'The value of the radius is ', radius, ' Bohr.'
+       messages_lines(1) = "An orbital set has points outside of the simulatio box."
+       messages_lines(2) = "Increase the value of Radius or decrease the value of OrbitalsThreshold_LDAU."
+       write(messages_lines(3),'(a,f8.5,a,i5,a)') 'The value of the radius is ', radius, ' Bohr.'
        call messages_fatal(3)
       end if
     end if
 
     if(mesh%sb%box_shape == CYLINDER ) then
       if(sqrt(sum(geo%atom(iatom)%x(2:mesh%sb%dim)**2)) + radius > mesh%sb%rsize) then
-       message(1) = "An orbital set has points outside of the simulatio box."
-       message(2) = "Increase the value of Radius or decrease the value of OrbitalsThreshold_LDAU."
-       write(message(3),'(a,f8.5,a,i5,a)') 'The value of the radius is ', radius, ' Bohr.'
+       messages_lines(1) = "An orbital set has points outside of the simulatio box."
+       messages_lines(2) = "Increase the value of Radius or decrease the value of OrbitalsThreshold_LDAU."
+       write(messages_lines(3),'(a,f8.5,a,i5,a)') 'The value of the radius is ', radius, ' Bohr.'
        call messages_fatal(3)
       end if
       if(abs(geo%atom(iatom)%x(1)) + radius > mesh%sb%xsize) then
-       message(1) = "An orbital set has points outside of the simulatio box."
-       message(2) = "Increase the value of Xlength or decrease the value of OrbitalsThreshold_LDAU."
-       write(message(3),'(a,f8.5,a,i5,a)') 'The value of the radius is ', radius, ' Bohr.'
+       messages_lines(1) = "An orbital set has points outside of the simulatio box."
+       messages_lines(2) = "Increase the value of Xlength or decrease the value of OrbitalsThreshold_LDAU."
+       write(messages_lines(3),'(a,f8.5,a,i5,a)') 'The value of the radius is ', radius, ' Bohr.'
        call messages_fatal(3)
       end if
     end if

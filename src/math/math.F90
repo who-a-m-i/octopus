@@ -824,7 +824,7 @@ contains
     PUSH_SUB(is_prime)
 
     if (n < 1) then
-      message(1) = "Internal error: is_prime does not take negative numbers."
+      messages_lines(1) = "Internal error: is_prime does not take negative numbers."
       call messages_fatal(1)
     end if
     if (n == 1) then
@@ -1015,7 +1015,7 @@ contains
     PUSH_SUB(numder_ridders)
     
     if(abs(h) <= M_EPSILON) then
-      message(1) = "h must be nonzero in numder_ridders"
+      messages_lines(1) = "h must be nonzero in numder_ridders"
       call messages_fatal(1)
     end if
 

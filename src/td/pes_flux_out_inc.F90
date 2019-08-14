@@ -1148,7 +1148,7 @@ subroutine pes_flux_dump(restart, this, mesh, st, ierr)
 
 
   if(debug%info) then
-    message(1) = "Debug: Writing pes_flux restart."
+    messages_lines(1) = "Debug: Writing pes_flux restart."
     call messages_info(1)
   end if
 
@@ -1212,7 +1212,7 @@ subroutine pes_flux_dump(restart, this, mesh, st, ierr)
   if(err /= 0) ierr = ierr + 2
 
   if(debug%info) then
-    message(1) = "Debug: Writing pes_flux restart done."
+    messages_lines(1) = "Debug: Writing pes_flux restart done."
     call messages_info(1)
   end if
 
@@ -1250,7 +1250,7 @@ subroutine pes_flux_load(restart, this, mesh, st, ierr)
   end if
 
   if(debug%info) then
-    message(1) = "Debug: Reading pes_flux restart."
+    messages_lines(1) = "Debug: Reading pes_flux restart."
     call messages_info(1)
   end if
 
@@ -1301,7 +1301,7 @@ subroutine pes_flux_load(restart, this, mesh, st, ierr)
   if(err /= 0) ierr = ierr + 2
  
   if(debug%info) then
-    message(1) = "Debug: Reading pes_flux restart done."
+    messages_lines(1) = "Debug: Reading pes_flux restart done."
     call messages_info(1)
   end if
 

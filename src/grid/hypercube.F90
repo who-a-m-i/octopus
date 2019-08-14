@@ -159,7 +159,7 @@ contains
       end do
       icoord = icoord+1
       if(icoord > this%boxdim(1) .or. icoord < 1) then
-        message(1) = "hypercube box point outside box"
+        messages_lines(1) = "hypercube box point outside box"
         call messages_fatal(1)
       end if
     else
@@ -174,7 +174,7 @@ contains
       end do
       icoord = icoord + 1    
       if(icoord > this%boxdim(boxnumb) .or. icoord < 1) then
-        message(1) = "hypercube box point outside box"
+        messages_lines(1) = "hypercube box point outside box"
         call messages_fatal(1)
       else
         do jj = 1, boxnumb - 1

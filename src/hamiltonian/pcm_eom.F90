@@ -152,8 +152,8 @@ contains
     which_eom = this_eom
     if (which_eom /= PCM_ELECTRONS .and. which_eom /= PCM_EXTERNAL_POTENTIAL .and. &
         which_eom /= PCM_EXTERNAL_PLUS_KICK .and. which_eom /= PCM_KICK) then
-      message(1) = "pcm_charges_propagation: EOM evolution of PCM charges can only be due to solute electrons"
-      message(2) = "or external potential (including the kick)."
+      messages_lines(1) = "pcm_charges_propagation: EOM evolution of PCM charges can only be due to solute electrons"
+      messages_lines(2) = "or external potential (including the kick)."
       call messages_fatal(2)
     end if
 
@@ -161,7 +161,7 @@ contains
       dt = this_dt
       nts_act = size(this_cts_act)
       if (size(q_t) /= nts_act) then
-        message(1) = "pcm_charges_propagation: Number of tesserae do not coincide with size of PCM charges array."
+        messages_lines(1) = "pcm_charges_propagation: Number of tesserae do not coincide with size of PCM charges array."
         call messages_fatal(1)     
       end if
 
@@ -174,23 +174,23 @@ contains
         if (present(this_deb)) then
           deb = this_deb
         else
-          message(1) = "pcm_charges_propagation: EOM-PCM error. Debye dielectric function requires three parameters."
+          messages_lines(1) = "pcm_charges_propagation: EOM-PCM error. Debye dielectric function requires three parameters."
           call messages_fatal(1)
         end if
       case (PCM_DRUDE_MODEL)
         if (present(this_drl)) then
           drl = this_drl
         else
-          message(1) = "pcm_charges_propagation: EOM-PCM error. Drude-Lorentz dielectric function requires three parameters."
+          messages_lines(1) = "pcm_charges_propagation: EOM-PCM error. Drude-Lorentz dielectric function requires three parameters."
           call messages_fatal(1)
         end if
       case default
-        message(1) = "pcm_charges_propagation: EOM-PCM error. Only Debye or Drude-Lorent dielectric models are allowed."
+        messages_lines(1) = "pcm_charges_propagation: EOM-PCM error. Only Debye or Drude-Lorent dielectric models are allowed."
         call messages_fatal(1)
       end select
 
       if( abs(deb%tau) <= M_EPSILON ) then
-        message(1) = "pcm_charges_propagation: EOM-PCM error. Debye EOM-PCM require a non-null Debye relaxation time."
+        messages_lines(1) = "pcm_charges_propagation: EOM-PCM error. Debye EOM-PCM require a non-null Debye relaxation time."
         call messages_fatal(1)
       end if
       firsttime = .false.
@@ -206,7 +206,7 @@ contains
         POP_SUB(pcm_charges_propagation)
         return
       case default
-        message(1) = "pcm_charges_propagation: EOM-PCM error. Only Debye EOM-PCM can startup from input charges."
+        messages_lines(1) = "pcm_charges_propagation: EOM-PCM error. Only Debye EOM-PCM can startup from input charges."
         call messages_fatal(1)
       end select
     end if
@@ -298,7 +298,7 @@ contains
       !< Here we consider the potential at any earlier time equal to the initial potential.
       !< Therefore, we can suppose that the solvent is already in equilibrium with the initial solute potential.
       !< The latter is valid when starting the propagation from the ground state but does not hold in general.
-      message(1) = 'EOM-PCM for solvent polarization due to solute electrons considers that you start from a ground state run.'
+      messages_lines(1) = 'EOM-PCM for solvent polarization due to solute electrons considers that you start from a ground state run.'
       call messages_warning(1)
   
       SAFE_ALLOCATE(pot_tp(1:nts_act))
@@ -788,8 +788,8 @@ contains
     call dsyevd(jobz, uplo, nts_act, eigt, nts_act, eigv, work, lwork, iwork, liwork, info)
     do i = 1, nts_act
       if (eigv(i) < M_ZERO) then
-        write(message(1),*) "Eigenvalue ", i, " of S when constructing the TS matrix is negative!"
-        write(message(2),*) "I put it to 1e-8"
+        write(messages_lines(1),*) "Eigenvalue ", i, " of S when constructing the TS matrix is negative!"
+        write(messages_lines(2),*) "I put it to 1e-8"
         call messages_warning(2)
         eigv(i) = CNST(1.0e-8)
       end if

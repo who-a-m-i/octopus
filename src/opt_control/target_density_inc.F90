@@ -36,7 +36,7 @@
 
     PUSH_SUB(target_init_density)
 
-    message(1) =  'Info: Target is a combination of a density and/or a current functional.'
+    messages_lines(1) =  'Info: Target is a combination of a density and/or a current functional.'
     call messages_info(1)
 
     tg%move_ions = ion_dynamics_ions_move(td%ions)
@@ -121,7 +121,7 @@
           end do
           call parse_block_end(blk)
         else
-          message(1) = '"OCTTargetDensityState" has to be specified as block.'
+          messages_lines(1) = '"OCTTargetDensityState" has to be specified as block.'
           call messages_info(1)
           call messages_input_error('OCTTargetDensity')
         end if
@@ -235,21 +235,21 @@
     end select
 
     call parse_variable(namespace, 'OCTCurrentWeight', M_ZERO, tg%curr_weight)
-    write(message(1), '(a,i3)')   'Info: OCTCurrentFunctional = ', tg%curr_functional
-    write(message(2), '(a,f8.3)') 'Info: OCTCurrentWeight = ',  tg%curr_weight
+    write(messages_lines(1), '(a,i3)')   'Info: OCTCurrentFunctional = ', tg%curr_functional
+    write(messages_lines(2), '(a,f8.3)') 'Info: OCTCurrentWeight = ',  tg%curr_weight
     call messages_info(2)
 
     if (target_mode(tg)  ==  oct_targetmode_td) then
       call parse_variable(namespace, 'OCTStartIterCurrTg', 0, tg%strt_iter_curr_tg)
       if (tg%strt_iter_curr_tg  <  0) then
-        message(1) = 'OCTStartIterCurrTg must be positive.'
+        messages_lines(1) = 'OCTStartIterCurrTg must be positive.'
         call messages_fatal(1)
       elseif (tg%strt_iter_curr_tg >= td%max_iter) then
-        message(1) = 'OCTStartIterCurrTg has to be  <  TDMaximumIter.'
+        messages_lines(1) = 'OCTStartIterCurrTg has to be  <  TDMaximumIter.'
         call messages_fatal(1)
       end if
-      write(message(1), '(a,i3)')   'Info: TargetMode = ', target_mode(tg)
-      write(message(2), '(a,i8)') 'Info: OCTStartIterCurrTg = ',  tg%strt_iter_curr_tg
+      write(messages_lines(1), '(a,i3)')   'Info: TargetMode = ', target_mode(tg)
+      write(messages_lines(2), '(a,i8)') 'Info: OCTStartIterCurrTg = ',  tg%strt_iter_curr_tg
       call messages_info(2)
       tg%dt = td%dt
       SAFE_ALLOCATE(tg%td_fitness(0:td%max_iter))
@@ -270,9 +270,9 @@
         do ib = 1, no_constraint
           call parse_block_integer(blk, ib - 1, 0, idim)
           if( idim  <=  0 .or. idim > gr%mesh%sb%dim) then
-            write(message(1), '(a,i3)') 'Error in "OCTSpatialCurrWeight" block, line:', ib
-            write(message(2), '(a)'   ) '"dimension" has to be positive'
-            write(message(3), '(a)'   ) 'and must not exceed dimensions of the system.'
+            write(messages_lines(1), '(a,i3)') 'Error in "OCTSpatialCurrWeight" block, line:', ib
+            write(messages_lines(2), '(a)'   ) '"dimension" has to be positive'
+            write(messages_lines(3), '(a)'   ) 'and must not exceed dimensions of the system.'
             call messages_fatal(3)
           end if
           cstr_dim(idim) = 1
@@ -282,8 +282,8 @@
 
           no_ptpair = parse_block_cols(blk, ib-1) - 2
           if (mod(no_ptpair,2) /= 0) then
-            write(message(1), '(a,i3)') 'Error in "OCTSpatialCurrWeight" block, line:', ib
-            write(message(2), '(a)'   ) 'Each interval needs start and end point!'
+            write(messages_lines(1), '(a,i3)') 'Error in "OCTSpatialCurrWeight" block, line:', ib
+            write(messages_lines(2), '(a)'   ) 'Each interval needs start and end point!'
             call messages_fatal(2)
           end if
               
@@ -292,8 +292,8 @@
             call parse_block_float(blk, ib - 1, jj+1, xend)
                            
             if (xstart >= xend) then
-              write(message(1), '(a,i3)') 'Error in "OCTSpatialCurrWeight" block, line:', ib
-              write(message(2), '(a)'   ) 'Set "startpoint"  <  "endpoint" ' 
+              write(messages_lines(1), '(a,i3)') 'Error in "OCTSpatialCurrWeight" block, line:', ib
+              write(messages_lines(2), '(a)'   ) 'Set "startpoint"  <  "endpoint" ' 
               call messages_fatal(2)
             end if
 
@@ -314,7 +314,7 @@
                              
         call parse_block_end(blk)     
       else
-        message(1) = '"OCTSpatialCurrWeight" has to be specified as a block.'
+        messages_lines(1) = '"OCTSpatialCurrWeight" has to be specified as a block.'
         call messages_info(1)
         call messages_input_error('OCTEvalBoxCurrTg')
       end if
@@ -399,8 +399,8 @@
                        tg%dt * sum(tg%td_fitness(tg%strt_iter_curr_tg+1:maxiter-1))  
       end select
       if(conf%devel_version) then
-        write(message(1), '(6x,a,f12.5)')    " => Other functional   = ", j1
-        write(message(2), '(6x,a,f12.5)')    " => Current functional = ", currfunc_tmp
+        write(messages_lines(1), '(6x,a,f12.5)')    " => Other functional   = ", j1
+        write(messages_lines(2), '(6x,a,f12.5)')    " => Current functional = ", currfunc_tmp
         call messages_info(2)
       end if
       ! accumulating functional values
@@ -469,10 +469,10 @@
       end if
 
     case(SPIN_POLARIZED)
-       message(1) = 'Error in target.target_chi_density: spin_polarized.'
+       messages_lines(1) = 'Error in target.target_chi_density: spin_polarized.'
        call messages_fatal(1)
     case(SPINORS)
-       message(1) = 'Error in target.target_chi_density: spinors.'
+       messages_lines(1) = 'Error in target.target_chi_density: spinors.'
        call messages_fatal(1)
     end select
 
@@ -550,7 +550,7 @@
                                     psi%current(ip, 1, 1) * gr%mesh%x(ip,2)
       end do
     case default
-      message(1) = 'Error in target.jcurr_functional: chosen target does not exist'
+      messages_lines(1) = 'Error in target.jcurr_functional: chosen target does not exist'
       call messages_fatal(1)
     end select
 
@@ -673,7 +673,7 @@
       SAFE_DEALLOCATE_A(zchi)
       
     case default
-      message(1) = 'Error in target.chi_current: chosen target does not exist'
+      messages_lines(1) = 'Error in target.chi_current: chosen target does not exist'
       call messages_fatal(1)
     end select  
 

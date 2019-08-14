@@ -178,11 +178,11 @@ contains
           select case (calc_mode_id)
           case (CM_GS)
             if (sys%hm%pcm%epsilon_infty /= sys%hm%pcm%epsilon_0 .and. sys%hm%pcm%tdlevel /= PCM_TD_EQ) then
-              message(1) = 'Non-equilbrium PCM is not active in a time-independent run.'
-              message(2) = 'You set epsilon_infty /= epsilon_0, but epsilon_infty is not relevant for CalculationMode = gs.'
-              message(3) = 'By definition, the ground state is in equilibrium with the solvent.'
-              message(4) = 'Therefore, the only relevant dielectric constant is the static one.'
-              message(5) = 'Nevertheless, the dynamical PCM response matrix is evaluated for benchamarking purposes.'
+              messages_lines(1) = 'Non-equilbrium PCM is not active in a time-independent run.'
+              messages_lines(2) = 'You set epsilon_infty /= epsilon_0, but epsilon_infty is not relevant for CalculationMode = gs.'
+              messages_lines(3) = 'By definition, the ground state is in equilibrium with the solvent.'
+              messages_lines(4) = 'Therefore, the only relevant dielectric constant is the static one.'
+              messages_lines(5) = 'Nevertheless, the dynamical PCM response matrix is evaluated for benchamarking purposes.'
               call messages_warning(5)
             end if
           case (CM_TD)
@@ -201,10 +201,10 @@ contains
         call messages_print_stress(stdout)
 
         if(calc_mode_id /= CM_DUMMY) then
-          message(1) = "Info: Generating external potential"
+          messages_lines(1) = "Info: Generating external potential"
           call messages_info(1)
           call hamiltonian_elec_epot_generate(sys%hm, sys%namespace, sys%gr, sys%geo, sys%st, sys%psolver)
-          message(1) = "      done."
+          messages_lines(1) = "      done."
           call messages_info(1)
         end if
 
@@ -280,7 +280,7 @@ contains
               call messages_experimental("KPoints symmetries with CalculationMode = casida")
             call casida_run(sys, fromScratch)
           case(CM_ONE_SHOT)
-            message(1) = "CalculationMode = one_shot is obsolete. Please use gs with MaximumIter = 0."
+            messages_lines(1) = "CalculationMode = one_shot is obsolete. Please use gs with MaximumIter = 0."
             call messages_fatal(1)
           case(CM_KDOTP)
             if(sys%gr%sb%kpoints%use_symmetries) &
@@ -301,7 +301,7 @@ contains
         if(sys%ks%theory_level /= INDEPENDENT_PARTICLES) call poisson_async_end(sys%ks%psolver, sys%mc)
 
       class default
-        message(1) = "Unknow system type."
+        messages_lines(1) = "Unknow system type."
         call messages_fatal(1)
       end select
       call systems%next()

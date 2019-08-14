@@ -162,47 +162,47 @@ contains
     ! mode switcher; here is where the real run is made.
     select case(oct%algorithm)
       case(OPTION__OCTSCHEME__OCT_ZBR98)
-        message(1) = "Info: Starting OCT iteration using scheme: ZBR98"
+        messages_lines(1) = "Info: Starting OCT iteration using scheme: ZBR98"
         call messages_info(1)
         call scheme_zbr98()
       case(OPTION__OCTSCHEME__OCT_WG05)
-        message(1) = "Info: Starting OCT iteration using scheme: WG05"
+        messages_lines(1) = "Info: Starting OCT iteration using scheme: WG05"
         call messages_info(1)
         call scheme_wg05()
       case(OPTION__OCTSCHEME__OCT_ZR98)
-        message(1) = "Info: Starting OCT iteration using scheme: ZR98"
+        messages_lines(1) = "Info: Starting OCT iteration using scheme: ZR98"
         call messages_info(1)
         call scheme_mt03()
       case(OPTION__OCTSCHEME__OCT_MT03)
-        message(1) = "Info: Starting OCT iteration using scheme: MT03"
+        messages_lines(1) = "Info: Starting OCT iteration using scheme: MT03"
         call messages_info(1)
         call scheme_mt03()
       case(OPTION__OCTSCHEME__OCT_KROTOV)
-        message(1) = "Info: Starting OCT iteration using scheme: KROTOV"
+        messages_lines(1) = "Info: Starting OCT iteration using scheme: KROTOV"
         call messages_info(1)
         call scheme_mt03()
       case(OPTION__OCTSCHEME__OCT_STRAIGHT_ITERATION)
-        message(1) = "Info: Starting OCT iterations using scheme: STRAIGHT ITERATION"
+        messages_lines(1) = "Info: Starting OCT iterations using scheme: STRAIGHT ITERATION"
         call messages_info(1)
         call scheme_straight_iteration()
       case(OPTION__OCTSCHEME__OCT_CG)
-        message(1) = "Info: Starting OCT iterations using scheme: CONJUGATE GRADIENTS"
+        messages_lines(1) = "Info: Starting OCT iterations using scheme: CONJUGATE GRADIENTS"
         call messages_info(1)
         call scheme_cg()
       case(OPTION__OCTSCHEME__OCT_BFGS)
-        message(1) = "Info: Starting OCT iterations using scheme: BFGS"
+        messages_lines(1) = "Info: Starting OCT iterations using scheme: BFGS"
         call messages_info(1)
         call scheme_cg()
       case(OPTION__OCTSCHEME__OCT_DIRECT)
-        message(1) = "Info: Starting OCT iterations using scheme: DIRECT OPTIMIZATION (NELDER-MEAD)"
+        messages_lines(1) = "Info: Starting OCT iterations using scheme: DIRECT OPTIMIZATION (NELDER-MEAD)"
         call messages_info(1)
         call scheme_direct()
       case(OPTION__OCTSCHEME__OCT_NLOPT_BOBYQA)
-        message(1) = "Info: Starting OCT iterations using scheme: DIRECT OPTIMIZATION (NLOPT - BOBYQA)"
+        messages_lines(1) = "Info: Starting OCT iterations using scheme: DIRECT OPTIMIZATION (NLOPT - BOBYQA)"
         call messages_info(1)
         call scheme_nlopt()
       case(OPTION__OCTSCHEME__OCT_NLOPT_LBFGS)
-        message(1) = "Info: Starting OCT iterations using scheme: DIRECT OPTIMIZATION (NLOPT - LBFGS)"
+        messages_lines(1) = "Info: Starting OCT iterations using scheme: DIRECT OPTIMIZATION (NLOPT - LBFGS)"
         call messages_info(1)
         call scheme_nlopt()
     case default
@@ -402,11 +402,11 @@ contains
 
       if(ierr /= 0) then
         if(ierr <= 1024) then
-          message(1) = "Error occurred during the GSL minimization procedure:"
-          call loct_strerror(ierr, message(2))
+          messages_lines(1) = "Error occurred during the GSL minimization procedure:"
+          call loct_strerror(ierr, messages_lines(2))
           call messages_fatal(2)
         else
-          message(1) = "The optimization did not meet the convergence criterion."
+          messages_lines(1) = "The optimization did not meet the convergence criterion."
           call messages_info(1)
         end if
       end if
@@ -471,11 +471,11 @@ contains
 
       if(ierr /= 0) then
         if(ierr <= 1024) then
-          message(1) = "Error occurred during the GSL minimization procedure:"
-          call loct_strerror(ierr, message(2))
+          messages_lines(1) = "Error occurred during the GSL minimization procedure:"
+          call loct_strerror(ierr, messages_lines(2))
           call messages_fatal(2)
         else
-          message(1) = "The OCT direct optimization did not meet the convergence criterion."
+          messages_lines(1) = "The OCT direct optimization did not meet the convergence criterion."
           call messages_info(1)
         end if
       end if
@@ -541,8 +541,8 @@ contains
       call minimize_multidim_nlopt(ierr, method, dim, x, step, toldr, maxiter, opt_control_nlopt_func, minimum, &
         xl, xu)
       if(ierr < 1 .or. ierr > 4) then
-         message(1) = "The nlopt minimization procedure did not find convergence, or found an error"
-         write(message(2),'(a,i5)') "Error code =", ierr
+         messages_lines(1) = "The nlopt minimization procedure did not find convergence, or found an error"
+         write(messages_lines(2),'(a,i5)') "Error code =", ierr
          call messages_info(2)
       end if
 

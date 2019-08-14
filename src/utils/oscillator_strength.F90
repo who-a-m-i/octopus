@@ -167,22 +167,22 @@ contains
     PUSH_SUB(read_resonances_file)
 
     if(order /= 2) then
-      write(message(1),'(a)') 'The run mode #3 is only compatible with the analysis of the'
-      write(message(2),'(a)') 'second-order response.'
+      write(messages_lines(1),'(a)') 'The run mode #3 is only compatible with the analysis of the'
+      write(messages_lines(2),'(a)') 'second-order response.'
       call messages_fatal(2)
     end if
   
     ! First, let us check that the file "ot" exists.
     inquire(file="ot", exist  = file_exists)
     if(.not.file_exists) then
-      write(message(1),'(a)') "Could not find 'ot' file."
+      write(messages_lines(1),'(a)') "Could not find 'ot' file."
       call messages_fatal(1)
     end if
   
     ! Now, we should find out which units the file "ot" has.
     call unit_system_from_file(units, "ot", namespace, ierr)
     if(ierr /= 0) then
-      write(message(1),'(a)') "Could not retrieve units in the 'ot' file."
+      write(messages_lines(1),'(a)') "Could not retrieve units in the 'ot' file."
       call messages_fatal(1)
     end if
   
@@ -190,7 +190,7 @@ contains
   
     iunit = io_open(trim(ffile), namespace, action='read', status='old', die=.false.)
     if(iunit == 0) then
-      write(message(1),'(a)') 'Could not open '//trim(ffile)//' file.'
+      write(messages_lines(1),'(a)') 'Could not open '//trim(ffile)//' file.'
       call messages_fatal(1)
     end if
   
@@ -231,7 +231,7 @@ contains
     call read_ot(namespace, nspin, order_in_file, nw_subtracted)
   
     if(order_in_file /= order) then
-      write(message(1), '(a)') 'The ot file should contain the second-order response in this run mode.'
+      write(messages_lines(1), '(a)') 'The ot file should contain the second-order response in this run mode.'
       call messages_fatal(1)
     end if
   
@@ -239,8 +239,8 @@ contains
       total_time = units_to_atomic(units%time, final_time)
       if(total_time > dt*time_steps) then
         total_time = dt*time_steps
-        write(message(1), '(a)')        'The requested total time to process is larger than the time available in the input file.'
-        write(message(2), '(a,f8.4,a)') 'The time has been adjusted to ', &
+        write(messages_lines(1), '(a)')        'The requested total time to process is larger than the time available in the input file.'
+        write(messages_lines(2), '(a,f8.4,a)') 'The time has been adjusted to ', &
           units_from_atomic(units%time, total_time), units_abbrev(units%time)
         call messages_warning(2)
       end if
@@ -304,14 +304,14 @@ contains
     ! First, let us check that the file "ot" exists.
     inquire(file="ot", exist  = file_exists)
     if(.not.file_exists) then
-      write(message(1),'(a)') "Could not find 'ot' file."
+      write(messages_lines(1),'(a)') "Could not find 'ot' file."
       call messages_fatal(1)
     end if
   
     ! Now, we should find out which units the file "ot" has.
     call unit_system_from_file(units, "ot", namespace, ierr)
     if(ierr /= 0) then
-      write(message(1),'(a)') "Could not retrieve units in the 'ot' file."
+      write(messages_lines(1),'(a)') "Could not retrieve units in the 'ot' file."
       call messages_fatal(1)
     end if
   
@@ -333,7 +333,7 @@ contains
     call read_ot(namespace, nspin, order_in_file, nw_subtracted)
   
     if(order_in_file /= order) then
-      write(message(1), '(a)') 'Internal error in analyze_signal'
+      write(messages_lines(1), '(a)') 'Internal error in analyze_signal'
       call messages_fatal(1)
     end if
   
@@ -347,8 +347,8 @@ contains
       total_time = units_to_atomic(units%time, final_time)
       if(total_time > dt*time_steps) then
         total_time = dt*time_steps
-        write(message(1), '(a)')        'The requested total time to process is larger than the time available in the input file.'
-        write(message(2), '(a,f8.4,a)') 'The time has been adjusted to ', &
+        write(messages_lines(1), '(a)')        'The requested total time to process is larger than the time available in the input file.'
+        write(messages_lines(2), '(a,f8.4,a)') 'The time has been adjusted to ', &
           units_from_atomic(units%time, total_time), units_abbrev(units%time)
         call messages_warning(2)
       end if
@@ -491,11 +491,11 @@ contains
     call loct_1dminimize(min_w1, min_w2, omega, ft2, ierr)
 
     if(ierr /= 0) then
-      write(message(1),'(a)') 'Could not find a maximum.'
-      write(message(2),'(a)')
-      write(message(3), '(a,f12.8,a,f12.8,a)') '   Search interval = [', &
+      write(messages_lines(1),'(a)') 'Could not find a maximum.'
+      write(messages_lines(2),'(a)')
+      write(messages_lines(3), '(a,f12.8,a,f12.8,a)') '   Search interval = [', &
         units_from_atomic(units%energy, leftbound), ',', units_from_atomic(units%energy, rightbound), ']'
-      write(message(4), '(a,f12.4,a)')         '   Search discretization = ', &
+      write(messages_lines(4), '(a,f12.4,a)')         '   Search discretization = ', &
         units_from_atomic(units%energy, dw), ' '//trim(units_abbrev(units%energy))
       call messages_fatal(4)
     end if
@@ -526,22 +526,22 @@ contains
       call messages_not_implemented("resonance first order cosine transform")
     end select
   
-    write(message(1), '(a)')                 '******************************************************************'
-    write(message(2), '(a,i3)')              'Resonance #', nw_subtracted + 1
-    write(message(3), '(a,f12.8,a,f12.8,a)') 'omega    = ', units_from_atomic(units_out%energy, omega), &
+    write(messages_lines(1), '(a)')                 '******************************************************************'
+    write(messages_lines(2), '(a,i3)')              'Resonance #', nw_subtracted + 1
+    write(messages_lines(3), '(a,f12.8,a,f12.8,a)') 'omega    = ', units_from_atomic(units_out%energy, omega), &
                                              ' '//trim(units_abbrev(units_out%energy))//' = ',  omega, ' Ha'
-    write(message(4), '(a,f12.8,a,f12.8,a)') 'C(omega) = ', units_from_atomic(units_out%length**2, power), &
+    write(messages_lines(4), '(a,f12.8,a,f12.8,a)') 'C(omega) = ', units_from_atomic(units_out%length**2, power), &
                                              ' '//trim(units_abbrev(units_out%length**2))//' =', power, ' b^2'
-    write(message(5), '(a,f12.8,a,f12.8,a)') '<0|P|I>  = ', units_from_atomic(units_out%length, sqrt(abs(power))), &
+    write(messages_lines(5), '(a,f12.8,a,f12.8,a)') '<0|P|I>  = ', units_from_atomic(units_out%length, sqrt(abs(power))), &
                                              ' '//trim(units_abbrev(units_out%length))//' = ', sqrt(abs(power)),' b'
-    write(message(6), '(a,f12.8)')           'f[O->I]  = ', M_TWO*omega*power
-    write(message(7), '(a)')
-    write(message(8), '(a,f12.8,a,f12.8,a)') '   Search interval = [', units_from_atomic(units_out%energy, leftbound), ',', &
+    write(messages_lines(6), '(a,f12.8)')           'f[O->I]  = ', M_TWO*omega*power
+    write(messages_lines(7), '(a)')
+    write(messages_lines(8), '(a,f12.8,a,f12.8,a)') '   Search interval = [', units_from_atomic(units_out%energy, leftbound), ',', &
                                              units_from_atomic(units_out%energy, rightbound), ']'
-    write(message(9), '(a,f12.4,a)')         '   Search discretization = ', units_from_atomic(units_out%energy, dw), &
+    write(messages_lines(9), '(a,f12.4,a)')         '   Search discretization = ', units_from_atomic(units_out%energy, dw), &
                                              ' '//trim(units_abbrev(units_out%energy))
-    write(message(10), '(a)')                '******************************************************************'
-    write(message(11), '(a)')
+    write(messages_lines(10), '(a)')                '******************************************************************'
+    write(messages_lines(11), '(a)')
     call messages_info(11)
   
     POP_SUB(resonance_first_order)
@@ -573,24 +573,24 @@ contains
       end if
     end select
   
-    write(message(1), '(a)')                 '******************************************************************'
-    write(message(2), '(a,i3)')              'Resonance #', nw_subtracted + 1
-    write(message(3), '(a,f12.8,a,f12.8,a)') 'omega    = ', units_from_atomic(units_out%energy, omega), &
+    write(messages_lines(1), '(a)')                 '******************************************************************'
+    write(messages_lines(2), '(a,i3)')              'Resonance #', nw_subtracted + 1
+    write(messages_lines(3), '(a,f12.8,a,f12.8,a)') 'omega    = ', units_from_atomic(units_out%energy, omega), &
                                              ' '//trim(units_abbrev(units_out%energy))//' = ', omega, ' Ha'
-    write(message(4), '(a,f12.8,a,f12.8,a)') 'C(omega) = ', units_from_atomic(units_out%length**3, power), &
+    write(messages_lines(4), '(a,f12.8,a,f12.8,a)') 'C(omega) = ', units_from_atomic(units_out%length**3, power), &
                                              ' '//trim(units_abbrev(units_out%length**3))//' = ', power, ' b^3'
     call messages_info(4)
 
     if(c01*c02 /= M_ZERO) then
-      write(message(1), '(a,f12.8)')         '    C(omega)/(C0i*C0j) = ', power / (c01 * c02)
+      write(messages_lines(1), '(a,f12.8)')         '    C(omega)/(C0i*C0j) = ', power / (c01 * c02)
       call messages_info(1)
    end if
   
-    write(message(1), '(a)')
-    write(message(2), '(a,f12.8,a,f12.8,a)') '   Search interval = [', units_from_atomic(units_out%energy, leftbound), ',', &
+    write(messages_lines(1), '(a)')
+    write(messages_lines(2), '(a,f12.8,a,f12.8,a)') '   Search interval = [', units_from_atomic(units_out%energy, leftbound), ',', &
                                              units_from_atomic(units_out%energy, rightbound), ']'
-    write(message(3), '(a)')                 '******************************************************************'
-    write(message(4), '(a)')
+    write(messages_lines(3), '(a)')                 '******************************************************************'
+    write(messages_lines(4), '(a)')
     call messages_info(4)
   
     POP_SUB(resonance_second_order)
@@ -630,12 +630,12 @@ contains
   
     ! WARNING: Check that order is smaller or equal to nfiles
     if(nfiles == 0) then
-      write(message(1),'(a)') 'No multipoles.x file was found'
+      write(messages_lines(1),'(a)') 'No multipoles.x file was found'
       call messages_fatal(1)
     end if
     if(order > nfiles) then
-      write(message(1),'(a)') 'The order that you ask for is higher than the number'
-      write(message(2),'(a)') 'of multipoles.x file that you supply.'
+      write(messages_lines(1),'(a)') 'The order that you ask for is higher than the number'
+      write(messages_lines(2),'(a)') 'of multipoles.x file that you supply.'
       call messages_fatal(2)
     end if
   
@@ -935,7 +935,7 @@ contains
 
     iunit = io_open('ot', namespace, action='read', status='old')
     if(iunit == 0) then
-      write(message(1),'(a)') 'A file called ot should be present and was not found.'
+      write(messages_lines(1),'(a)') 'A file called ot should be present and was not found.'
       call messages_fatal(1)
     end if
   
@@ -959,8 +959,8 @@ contains
     elseif(index(line, '# (l, m) = ') /= 0) then
       read(line,'(a12,i1,a1,i2,a1)') dummychar(1:12), observable(1), dummychar(1:1), observable(2), dummychar(1:1)
     else
-      write(message(1),'(a)') 'Problem reading "ot" file: could not figure out the shape'
-      write(message(2),'(a)') 'of the observation operator.'
+      write(messages_lines(1),'(a)') 'Problem reading "ot" file: could not figure out the shape'
+      write(messages_lines(2),'(a)') 'of the observation operator.'
       call messages_fatal(2)
     end if
   
@@ -972,7 +972,7 @@ contains
     ! Figure out about the units of the file
     call unit_system_from_file(units, "ot", namespace, ierr)
     if(ierr /= 0) then
-      write(message(1), '(a)') 'Could not figure out the units in file "ot".'
+      write(messages_lines(1), '(a)') 'Could not figure out the units in file "ot".'
       call messages_fatal(1)
     end if
   
@@ -1032,14 +1032,14 @@ contains
     ! First, let us check that the file "ot" exists.
     inquire(file="ot", exist  = file_exists)
     if(.not.file_exists) then
-      write(message(1),'(a)') "Could not find 'ot' file."
+      write(messages_lines(1),'(a)') "Could not find 'ot' file."
       call messages_fatal(1)
     end if
   
     ! Now, we should find out which units the file "ot" has.
     call unit_system_from_file(units, "ot", namespace, ierr)
     if(ierr /= 0) then
-      write(message(1),'(a)') "Could not retrieve units in the 'ot' file."
+      write(messages_lines(1),'(a)') "Could not retrieve units in the 'ot' file."
       call messages_fatal(1)
     end if
   
@@ -1073,8 +1073,8 @@ contains
       total_time = units_to_atomic(units%time, final_time)
       if(total_time > dt*time_steps) then
         total_time = dt*time_steps
-        write(message(1), '(a)')        'The requested total time to process is larger than the time available in the input file.'
-        write(message(2), '(a,f8.4,a)') 'The time has been adjusted to ', &
+        write(messages_lines(1), '(a)')        'The requested total time to process is larger than the time available in the input file.'
+        write(messages_lines(2), '(a,f8.4,a)') 'The time has been adjusted to ', &
           units_from_atomic(units_out%time, total_time), trim(units_abbrev(units_out%time))
         call messages_warning(2)
       end if
@@ -1142,8 +1142,8 @@ program oscillator_strength
   ! Reads the information passed through the command line options (if available).
   call getopt_init(ierr)
   if(ierr /= 0) then
-    message(1) = "Your Fortran compiler doesn't support command-line arguments;"
-    message(2) = "the oct-oscillator-strength command is not available."
+    messages_lines(1) = "Your Fortran compiler doesn't support command-line arguments;"
+    messages_lines(2) = "the oct-oscillator-strength command is not available."
     call messages_fatal(2)
   end if
 

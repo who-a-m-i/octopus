@@ -357,7 +357,7 @@ contains
       end if
       
       if(bsize < fi%pack%size_real(1)) then
-        message(1) = "The value of StatesBlockSize is too large for this OpenCL implementation."
+        messages_lines(1) = "The value of StatesBlockSize is too large for this OpenCL implementation."
         call messages_fatal(1)
       end if
 

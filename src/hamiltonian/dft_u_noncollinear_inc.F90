@@ -240,8 +240,8 @@ subroutine compute_ACBNO_U_noncollinear(this, ios)
     if(abs(denomU)> CNST(1.0e-3)) then
       this%orbsets(ios)%Ubar = (real(numU,REAL_PRECISION)/real(denomU,REAL_PRECISION))
     else
-      write(message(1),'(a,a)')' Small denominator value for the s orbital ', this%orbsets(ios)%Ubar
-      write(message(2),'(a)')' U is set to zero '
+      write(messages_lines(1),'(a,a)')' Small denominator value for the s orbital ', this%orbsets(ios)%Ubar
+      write(messages_lines(2),'(a)')' U is set to zero '
       call messages_warning(2)
       this%orbsets(ios)%Ubar = M_ZERO
     end if

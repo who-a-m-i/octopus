@@ -663,7 +663,7 @@ contains
           if(err /= 0) exit
 
           if(ii < 1 .or. aa < 1 .or. ik < 1) then
-            message(1) = "Illegal indices in '" // trim(restart_file) // "': working from scratch."
+            messages_lines(1) = "Illegal indices in '" // trim(restart_file) // "': working from scratch."
             call messages_warning(1)
             call restart_rm(cas%restart_load, trim(restart_file))
             ! if file is corrupt, do not trust anything that was read
@@ -685,7 +685,7 @@ contains
 
         write(6,'(a,i8,a,a)') 'Read ', num_saved, ' saved elements from ', trim(restart_file)
       else if(.not. cas%fromScratch) then
-        message(1) = "Could not find restart file '" // trim(restart_file) // "'. Starting from scratch."
+        messages_lines(1) = "Could not find restart file '" // trim(restart_file) // "'. Starting from scratch."
         call messages_warning(1)
       end if
     end if
@@ -739,7 +739,7 @@ subroutine X(casida_forces)(cas, sys, mesh, st)
   PUSH_SUB(X(casida_forces))
   
   if(cas%type == CASIDA_CASIDA) then
-    message(1) = "Forces for Casida theory level not implemented"
+    messages_lines(1) = "Forces for Casida theory level not implemented"
     call messages_warning(1)
     POP_SUB(X(casida_forces))
     return
@@ -752,7 +752,7 @@ subroutine X(casida_forces)(cas, sys, mesh, st)
     call xc_get_kxc(sys%ks%xc, mesh, cas%rho, st%d%ispin, kxc(:, :, :, :))
   end if
   
-  message(1) = "Reading vib_modes density for calculating excited-state forces."
+  messages_lines(1) = "Reading vib_modes density for calculating excited-state forces."
   call messages_info(1)
   
   ! vib_modes for complex wavefunctions will write complex rho, however it is actually real
@@ -786,13 +786,13 @@ subroutine X(casida_forces)(cas, sys, mesh, st)
       if(ierr == 0) &
         call X(lr_load_rho)(X(dl_rho), sys%gr%mesh, st%d%nspin, restart_vib, phn_rho_tag(iatom, idir), ierr)      
       if(ierr /= 0) then
-        message(1) = "Could not read vib_modes density; previous vib_modes calculation required."
+        messages_lines(1) = "Could not read vib_modes density; previous vib_modes calculation required."
         call messages_fatal(1)
       end if
 
       if(allocated(zdl_rho)) then
         if(any(abs(aimag(zdl_rho)) > M_EPSILON)) then
-          message(1) = "Vib_modes density has an imaginary part."
+          messages_lines(1) = "Vib_modes density has an imaginary part."
           call messages_warning(1)
         end if
         ddl_rho = TOFLOAT(zdl_rho)
@@ -892,7 +892,7 @@ subroutine X(casida_get_lr_hmat1)(cas, sys, iatom, idir, dl_rho, lr_hmat1)
         if(err /= 0) exit
 
         if(ii < 1 .or. aa < 1 .or. ik < 1) then
-          message(1) = "Illegal indices in '" // trim(restart_filename) // "': working from scratch."
+          messages_lines(1) = "Illegal indices in '" // trim(restart_filename) // "': working from scratch."
           call messages_warning(1)
           call restart_rm(cas%restart_load, trim(restart_filename))
           ! if file is corrupt, do not trust anything that was read
@@ -912,7 +912,7 @@ subroutine X(casida_get_lr_hmat1)(cas, sys, iatom, idir, dl_rho, lr_hmat1)
       write(6,'(a,i8,a,a)') 'Read ', num_saved, ' saved elements from ', trim(restart_filename)
 
     else if(.not. cas%fromScratch) then
-      message(1) = "Could not find restart file '" // trim(restart_filename) // "'. Starting from scratch."
+      messages_lines(1) = "Could not find restart file '" // trim(restart_filename) // "'. Starting from scratch."
       call messages_warning(1)
     end if
   end if
@@ -1005,7 +1005,7 @@ subroutine X(casida_solve)(cas, st)
 
   ! Note: this is not just a matter of implementation. CASIDA_CASIDA assumes real wfns in the derivation.
   if(states_are_complex(st) .and. (cas%type == CASIDA_VARIATIONAL .or. cas%type == CASIDA_CASIDA)) then
-    message(1) = "Variational and full Casida theory levels cannot be used with complex wavefunctions."
+    messages_lines(1) = "Variational and full Casida theory levels cannot be used with complex wavefunctions."
     call messages_fatal(1, only_root_writes = .true.)
     ! see section II.D of CV(2) paper regarding this assumption. Would be Eq. 30 with complex wfns.
   end if
@@ -1054,7 +1054,7 @@ subroutine X(casida_solve)(cas, st)
       SAFE_DEALLOCATE_A(occ_diffs)
     end if
     
-    message(1) = "Info: Diagonalizing matrix for resonance energies."
+    messages_lines(1) = "Info: Diagonalizing matrix for resonance energies."
     call messages_info(1)
     ! now we diagonalize the matrix
     ! for huge matrices, perhaps we should consider ScaLAPACK here...
@@ -1067,7 +1067,7 @@ subroutine X(casida_solve)(cas, st)
       
       if(cas%type == CASIDA_CASIDA) then
         if(cas%w(ia) < -M_EPSILON) then       
-          write(message(1),'(a,i4,a)') 'Casida excitation energy', ia, ' is imaginary.'
+          write(messages_lines(1),'(a,i4,a)') 'Casida excitation energy', ia, ' is imaginary.'
           call messages_warning(1)
           cas%w(ia) = -sqrt(-cas%w(ia))
         else
@@ -1075,8 +1075,8 @@ subroutine X(casida_solve)(cas, st)
         end if
       else
         if(cas%w(ia) < -M_EPSILON) then
-          write(message(1),'(a,i4,a)') 'For whatever reason, excitation energy', ia, ' is negative.'
-          write(message(2),'(a)')      'This should not happen.'
+          write(messages_lines(1),'(a,i4,a)') 'For whatever reason, excitation energy', ia, ' is negative.'
+          write(messages_lines(2),'(a)')      'This should not happen.'
           call messages_warning(2)
         end if
       end if

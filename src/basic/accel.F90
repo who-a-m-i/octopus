@@ -298,7 +298,7 @@ contains
     
 #ifndef HAVE_ACCEL
     if(accel%enabled) then
-      message(1) = 'Octopus was compiled without OpenCL or Cuda support.'
+      messages_lines(1) = 'Octopus was compiled without OpenCL or Cuda support.'
       call messages_fatal(1)
     end if
 #endif
@@ -368,7 +368,7 @@ contains
     if(idevice<0) idevice = 0
     call cuda_init(accel%context%cuda_context, accel%device%cuda_device, idevice, base_grp%rank)
 #ifdef HAVE_MPI
-    write(message(1), '(A, I5.5, A, I5.5)') "Rank ", base_grp%rank, " uses device number ", idevice
+    write(messages_lines(1), '(A, I5.5, A, I5.5)') "Rank ", base_grp%rank, " uses device number ", idevice
     call messages_info(1, all_nodes = .true.)
 #endif
 
@@ -1088,11 +1088,11 @@ contains
     size_in_bytes = int(size, 8)*types_get_size(type)
 
     if(size_in_bytes > accel%local_memory_size) then
-      write(message(1), '(a,f12.6,a)') "CL Error: requested local memory: ", dble(size_in_bytes)/1024.0, " Kb"
-      write(message(2), '(a,f12.6,a)') "          available local memory: ", dble(accel%local_memory_size)/1024.0, " Kb"
+      write(messages_lines(1), '(a,f12.6,a)') "CL Error: requested local memory: ", dble(size_in_bytes)/1024.0, " Kb"
+      write(messages_lines(2), '(a,f12.6,a)') "          available local memory: ", dble(accel%local_memory_size)/1024.0, " Kb"
       call messages_fatal(2)
     else if(size_in_bytes <= 0) then
-      write(message(1), '(a,i10)') "CL Error: invalid local memory size: ", size_in_bytes
+      write(messages_lines(1), '(a,i10)') "CL Error: invalid local memory size: ", size_in_bytes
       call messages_fatal(1)
     end if
 
@@ -1391,7 +1391,7 @@ contains
     end select
 #endif
     
-    message(1) = 'OpenCL '//trim(name)//' '//trim(errcode)
+    messages_lines(1) = 'OpenCL '//trim(name)//' '//trim(errcode)
     call messages_fatal(1)
 
     POP_SUB(opencl_print_error)
@@ -1444,7 +1444,7 @@ contains
     end select
 #endif
 
-    message(1) = 'clblas '//trim(name)//' '//trim(errcode)
+    messages_lines(1) = 'clblas '//trim(name)//' '//trim(errcode)
     call messages_fatal(1)
 
     POP_SUB(clblas_print_error)
@@ -1521,7 +1521,7 @@ contains
     end select
 #endif
 
-    message(1) = 'clfft '//trim(name)//' '//trim(errcode)
+    messages_lines(1) = 'clfft '//trim(name)//' '//trim(errcode)
     call messages_fatal(1)
 
     POP_SUB(clfft_print_error)

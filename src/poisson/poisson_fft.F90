@@ -85,11 +85,11 @@ contains
 
     if(kernel == POISSON_FFT_KERNEL_HOCKNEY) then
       if (.not. present(fullcube)) then
-        message(1) = "Hockney's FFT-kernel needs cube of full unit cell "
+        messages_lines(1) = "Hockney's FFT-kernel needs cube of full unit cell "
         call messages_fatal(1)
       else
         if (.not.associated(fullcube%fft)) then
-          message(1) = "Hockney's FFT-kernel needs PoissonSolver=fft"
+          messages_lines(1) = "Hockney's FFT-kernel needs PoissonSolver=fft"
           call messages_fatal(1)
         end if
       end if
@@ -104,7 +104,7 @@ contains
       case(POISSON_FFT_KERNEL_NOCUT)
         call poisson_fft_build_1d_1d(this, namespace, mesh, cube, soft_coulb_param)
       case default
-        message(1) = "Invalid Poisson FFT kernel for 1D."
+        messages_lines(1) = "Invalid Poisson FFT kernel for 1D."
         call messages_fatal(1)
       end select
 
@@ -117,7 +117,7 @@ contains
       case(POISSON_FFT_KERNEL_NOCUT)
         call poisson_fft_build_2d_2d(this, mesh, cube)
       case default
-        message(1) = "Invalid Poisson FFT kernel for 2D."
+        messages_lines(1) = "Invalid Poisson FFT kernel for 2D."
         call messages_fatal(1)
       end select
 
@@ -139,7 +139,7 @@ contains
         call poisson_fft_build_3d_3d_hockney(this, namespace, mesh, cube, fullcube)
 
       case default
-        message(1) = "Invalid Poisson FFT kernel for 3D."
+        messages_lines(1) = "Invalid Poisson FFT kernel for 3D."
         call messages_fatal(1)
       end select
     end select

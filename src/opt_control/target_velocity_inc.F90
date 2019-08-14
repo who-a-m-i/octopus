@@ -94,16 +94,16 @@
       end do
       call parse_block_end(blk)
     else
-      message(1) = 'If OCTTargetOperator = oct_tg_velocity, then you must give the shape'
-      message(2) = 'of this target in the block "OCTVelocityTarget".'
+      messages_lines(1) = 'If OCTTargetOperator = oct_tg_velocity, then you must give the shape'
+      messages_lines(2) = 'of this target in the block "OCTVelocityTarget".'
       call messages_fatal(2)
     end if
        
     tg%move_ions = ion_dynamics_ions_move(td%ions)
     if(tg%move_ions) then
-      message(1) = 'If OCTTargetOperator = oct_tg_velocity, then you must not allow the ions'
-      message(2) = 'to move. If you want to move the ions, then you can get the same functionality'
-      message(3) = 'with OCTTargetOperator = oct_tg_classical.'
+      messages_lines(1) = 'If OCTTargetOperator = oct_tg_velocity, then you must not allow the ions'
+      messages_lines(2) = 'to move. If you want to move the ions, then you can get the same functionality'
+      messages_lines(3) = 'with OCTTargetOperator = oct_tg_classical.'
       call messages_fatal(3)
     end if
        
@@ -117,9 +117,9 @@
         end do
         call parse_block_end(blk)
       else
-        message(1) = 'If OCTTargetOperator = oct_tg_velocity, and'
-        message(2) = 'OCTScheme = oct_cg, or OCTScheme = oct_bfgs then you must define the'
-        message(3) = 'blocks "OCTVelocityTarget" AND "OCTVelocityDerivatives"'
+        messages_lines(1) = 'If OCTTargetOperator = oct_tg_velocity, and'
+        messages_lines(2) = 'OCTScheme = oct_cg, or OCTScheme = oct_bfgs then you must define the'
+        messages_lines(3) = 'blocks "OCTVelocityTarget" AND "OCTVelocityDerivatives"'
         call messages_fatal(3)
       end if
     end if

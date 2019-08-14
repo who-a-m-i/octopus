@@ -172,37 +172,37 @@ contains
     !%End
     call parse_variable(namespace, "LinearSolverMaxIter", 1000, this%max_iter)
 
-    write(message(1),'(a)') 'Linear Solver'
-    call messages_print_stress(stdout, trim(message(1)))
+    write(messages_lines(1),'(a)') 'Linear Solver'
+    call messages_print_stress(stdout, trim(messages_lines(1)))
     
     ! solver 
     select case(this%solver)
       case(OPTION__LINEARSOLVER__CG)
-        message(1)='Linear Solver: Conjugate Gradients'
+        messages_lines(1)='Linear Solver: Conjugate Gradients'
 
       case(OPTION__LINEARSOLVER__BICGSTAB)
-        message(1)='Linear Solver: Biconjugate Gradients Stabilized'
+        messages_lines(1)='Linear Solver: Biconjugate Gradients Stabilized'
 
       case(OPTION__LINEARSOLVER__IDRS)
-        message(1)='Linear Solver: IDRS'
+        messages_lines(1)='Linear Solver: IDRS'
 
       case(OPTION__LINEARSOLVER__MULTIGRID)
-        message(1)='Multigrid (currently only Gauss-Jacobi - EXPERIMENTAL)'
+        messages_lines(1)='Multigrid (currently only Gauss-Jacobi - EXPERIMENTAL)'
 
       case(OPTION__LINEARSOLVER__QMR_SYMMETRIC)
-        message(1)='Linear Solver: Quasi-Minimal Residual, for symmetric matrix'
+        messages_lines(1)='Linear Solver: Quasi-Minimal Residual, for symmetric matrix'
 
       case(OPTION__LINEARSOLVER__QMR_SYMMETRIZED)
-        message(1)='Linear Solver: Quasi-Minimal Residual, for symmetrized matrix'
+        messages_lines(1)='Linear Solver: Quasi-Minimal Residual, for symmetrized matrix'
 
       case(OPTION__LINEARSOLVER__QMR_DOTP)
-        message(1)='Linear Solver: Quasi-Minimal Residual, symmetric with conjugated dot product'
+        messages_lines(1)='Linear Solver: Quasi-Minimal Residual, symmetric with conjugated dot product'
 
       case(OPTION__LINEARSOLVER__QMR_GENERAL)
-        message(1)='Linear Solver: Quasi-Minimal Residual, general algorithm'
+        messages_lines(1)='Linear Solver: Quasi-Minimal Residual, general algorithm'
 
       case(OPTION__LINEARSOLVER__SOS)
-        message(1)='Linear Solver: Sum-over-States'
+        messages_lines(1)='Linear Solver: Sum-over-States'
     end select
 
     call messages_info(1)

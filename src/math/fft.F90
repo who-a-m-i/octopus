@@ -340,7 +340,7 @@ contains
     end do
 
     if(fft_dim  ==  0) then
-      message(1) = "Internal error in fft_init: apparently, a 1x1x1 FFT is required."
+      messages_lines(1) = "Internal error in fft_init: apparently, a 1x1x1 FFT is required."
       call messages_fatal(1)
     end if
 
@@ -398,7 +398,7 @@ contains
 
       ! FFT optimization
       if(any(optimize_parity(1:fft_dim) > 1)) then
-        message(1) = "Internal error in fft_init: optimize_parity must be negative, 0, or 1."
+        messages_lines(1) = "Internal error in fft_init: optimize_parity must be negative, 0, or 1."
         call messages_fatal(1)
       end if
       
@@ -430,8 +430,8 @@ contains
     end do
 
     if(jj == 0) then
-      message(1) = "Not enough slots for FFTs."
-      message(2) = "Please increase FFT_MAX in fft.F90 and recompile."
+      messages_lines(1) = "Not enough slots for FFTs."
+      messages_lines(2) = "Please increase FFT_MAX in fft.F90 and recompile."
       call messages_fatal(2)
     end if
 
@@ -457,9 +457,9 @@ contains
       ierror = pfft_create_procmesh_2d(mpi_grp_%comm, column_size, row_size, fft_array(jj)%comm)        
    
       if (ierror /= 0) then
-        message(1) = "The number of rows and columns in PFFT processor grid is not equal to "
-        message(2) = "the number of processor in the MPI communicator."
-        message(3) = "Please check it."
+        messages_lines(1) = "The number of rows and columns in PFFT processor grid is not equal to "
+        messages_lines(2) = "the number of processor in the MPI communicator."
+        messages_lines(3) = "Please check it."
         call messages_fatal(3)
       end if
 #endif
@@ -756,12 +756,12 @@ contains
     
     select case (library_)
     case (FFTLIB_PFFT)
-      write(message(1),'(a)') "Info: FFT library = PFFT"
-      write(message(2),'(a)') "Info: PFFT processor grid"
-      write(message(3),'(a, i9)') " No. of processors                = ", mpi_grp_%size
-      write(message(4),'(a, i9)') " No. of columns in the proc. grid = ", column_size
-      write(message(5),'(a, i9)') " No. of rows    in the proc. grid = ", row_size
-      write(message(6),'(a, i9)') " The size of integer is = ", C_INTPTR_T
+      write(messages_lines(1),'(a)') "Info: FFT library = PFFT"
+      write(messages_lines(2),'(a)') "Info: PFFT processor grid"
+      write(messages_lines(3),'(a, i9)') " No. of processors                = ", mpi_grp_%size
+      write(messages_lines(4),'(a, i9)') " No. of columns in the proc. grid = ", column_size
+      write(messages_lines(5),'(a, i9)') " No. of rows    in the proc. grid = ", row_size
+      write(messages_lines(6),'(a, i9)') " The size of integer is = ", C_INTPTR_T
       call messages_info(6)
 
     case (FFTLIB_PNFFT)
@@ -835,7 +835,7 @@ contains
 
     ii = this%slot
     if(fft_refs(ii) == FFT_NULL) then
-      message(1) = "Trying to deallocate FFT that has not been allocated."
+      messages_lines(1) = "Trying to deallocate FFT that has not been allocated."
       call messages_warning(1)
     else
       if(fft_refs(ii) > 1) then

@@ -277,11 +277,11 @@ contains
         case(EXP_TAYLOR, EXP_LANCZOS)
           timestep = M_zI*deltat
         case default
-          write(message(1), '(a)') &
+          write(messages_lines(1), '(a)') &
             'Imaginary  time evolution can only be performed with the Lanczos'
-          write(message(2), '(a)') &
+          write(messages_lines(2), '(a)') &
             'exponentiation scheme ("TDExponentialMethod = lanczos") or with the'
-          write(message(3), '(a)') &
+          write(messages_lines(3), '(a)') &
             'Taylor expansion ("TDExponentialMethod = taylor") method.'
           call messages_fatal(3)
         end select
@@ -511,7 +511,7 @@ contains
         end do
 
         if(res > tol) then ! Here one should consider the possibility of the happy breakdown.
-          write(message(1),'(a,es9.2)') 'Lanczos exponential expansion did not converge: ', res
+          write(messages_lines(1),'(a,es9.2)') 'Lanczos exponential expansion did not converge: ', res
           call messages_warning(1)
         end if
 
@@ -566,7 +566,7 @@ contains
           end do
 
           if(res > tol) then ! Here one should consider the possibility of the happy breakdown.
-            write(message(1),'(a,es9.2)') 'Lanczos exponential expansion did not converge: ', res
+            write(messages_lines(1),'(a,es9.2)') 'Lanczos exponential expansion did not converge: ', res
             call messages_warning(1)
           end if
 
@@ -845,7 +845,7 @@ contains
       end do !iter 
 
       if(any(res > te%lanczos_tol)) then ! Here one should consider the possibility of the happy breakdown.
-        write(message(1),'(a,es9.2)') 'Lanczos exponential expansion did not converge: ', maxval(res)
+        write(messages_lines(1),'(a,es9.2)') 'Lanczos exponential expansion did not converge: ', maxval(res)
         call messages_warning(1)
       end if
 

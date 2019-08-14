@@ -154,7 +154,7 @@ contains
 
     else if(l_loc == -1) then
       if(ps%g%flavor /= LOGRID_PSF) then
-        message(1) = "For the moment, Vanderbilt local potentials are only possible with tm grids."
+        messages_lines(1) = "For the moment, Vanderbilt local potentials are only possible with tm grids."
         call messages_fatal(1)
       end if
 
@@ -323,8 +323,8 @@ contains
       nrm = sqrt(sum(ps%g%drdi(:)*ps%rphi(:, l, 1)**2))
       nrm = abs(nrm - M_ONE)
       if (nrm > CNST(1.0e-5)) then
-        write(message(1), '(a,i2,a)') "Eigenstate for l = ", l-1, ' is not normalized.'
-        write(message(2), '(a, f12.6,a)') '(abs(1 - norm) = ', nrm, ')'
+        write(messages_lines(1), '(a,i2,a)') "Eigenstate for l = ", l-1, ' is not normalized.'
+        write(messages_lines(2), '(a, f12.6,a)') '(abs(1 - norm) = ', nrm, ')'
         call messages_warning(2)
       end if
     end do

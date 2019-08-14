@@ -217,7 +217,7 @@ subroutine output_etsf_error(error_data)
   PUSH_SUB(output_etsf_error)
   
   call output_etsf_io_low_error_handle(error_data)
-  message(1) = "ETSF_IO returned a fatal error. See message above."
+  messages_lines(1) = "ETSF_IO returned a fatal error. See message above."
   call messages_fatal(1, only_root_writes = .true.)
 
   POP_SUB(output_etsf_error)
@@ -650,8 +650,8 @@ subroutine output_etsf_basisdata_write(mesh, shell, ncid)
   PUSH_SUB(output_etsf_basisdata_write)
 
   if((maxval(mesh%spacing(1:3)) - minval(mesh%spacing(1:3))) > CNST(1e-10)) then
-    message(1) = 'Cannot generate a ETSF plane-wave wave-functions file,'
-    message(2) = 'spacing is not the same for each direction.'
+    messages_lines(1) = 'Cannot generate a ETSF plane-wave wave-functions file,'
+    messages_lines(2) = 'spacing is not the same for each direction.'
     call messages_fatal(2)
   end if
 

@@ -46,7 +46,7 @@
       SAFE_ALLOCATE(tg%rho(1:gr%mesh%np))
       call parse_block_end(blk)
     else
-      message(1) = 'If OCTTargetOperator = oct_tg_td_local, you must supply a OCTTdTarget block.'
+      messages_lines(1) = 'If OCTTargetOperator = oct_tg_td_local, you must supply a OCTTdTarget block.'
       call messages_fatal(1)
     end if
     SAFE_ALLOCATE(tg%td_fitness(0:td%max_iter))
@@ -165,10 +165,10 @@
       end do
       SAFE_DEALLOCATE_A(opsi)
     case(SPIN_POLARIZED)
-      message(1) = 'Error in target.target_tdcalc: spin_polarized.'
+      messages_lines(1) = 'Error in target.target_tdcalc: spin_polarized.'
       call messages_fatal(1)
     case(SPINORS)
-      message(1) = 'Error in target.target_tdcalc: spinors.'
+      messages_lines(1) = 'Error in target.target_tdcalc: spinors.'
       call messages_fatal(1)
     end select
 

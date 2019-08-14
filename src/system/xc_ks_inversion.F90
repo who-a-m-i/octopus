@@ -237,7 +237,7 @@ contains
     smalldensity = 5d-6
 
     if(any(target_rho(:,:) < -M_EPSILON)) then
-      write(message(1),*) "Target density has negative points. min value = ", minval(target_rho(:,:))
+      write(messages_lines(1),*) "Target density has negative points. min value = ", minval(target_rho(:,:))
       call messages_warning(1)
     end if
     
@@ -488,7 +488,7 @@ contains
   
         ! proposition to increase convergence speed progressively
         alpha = max(CNST(0.05), CNST(0.5) - diffdensity*CNST(100.0)*CNST(0.45))
-        write(message(1),'(a,2E15.4,3I8, 2E15.4)') &
+        write(messages_lines(1),'(a,2E15.4,3I8, 2E15.4)') &
           ' KSinversion: diffdensity, convdensity, imax, counter, max_iter, alpha, beta ', &
           diffdensity, convdensity, imax, counter, max_iter, alpha, beta
         call messages_info(1)
@@ -505,7 +505,7 @@ contains
 !        if (diffdensity < CNST(0.001)) then
 !          npower = min(npower_in, diffdensity*CNST(50.0))
 !        end if
-        write(message(1),'(a,2E15.4,3I8, 2E15.4)') &
+        write(messages_lines(1),'(a,2E15.4,3I8, 2E15.4)') &
           ' KSinversion: diffdensity, convdensity, imax, counter, max_iter, power, mu ', &
           diffdensity, convdensity, imax, counter, max_iter, npower, mu
         call messages_info(1)
@@ -597,7 +597,7 @@ contains
     call eigensolver_run(eigensolver, gr, st, aux_hm, psolver, 1)
     call density_calc(st, gr, st%rho)
     
-    write(message(1),'(a,I8)') "Iterative KS inversion, iterations needed:", counter
+    write(messages_lines(1),'(a,I8)') "Iterative KS inversion, iterations needed:", counter
     call messages_info(1)
     
     call io_close(iunit)      
@@ -631,7 +631,7 @@ contains
     call density_calc(st, gr, st%rho)
     
     if(present(time)) then
-      write(message(1),'(A,F18.12)') 'xc_ks_inversion_calc - time:', time
+      write(messages_lines(1),'(A,F18.12)') 'xc_ks_inversion_calc - time:', time
       call messages_info(1)
     end if
 

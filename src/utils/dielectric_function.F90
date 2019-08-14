@@ -89,16 +89,16 @@ program dielectric_function
   else
     
     if(in_file < 0) then 
-      message(1) = "Cannot find the GaugeVectorField in the input file"
+      messages_lines(1) = "Cannot find the GaugeVectorField in the input file"
       call messages_fatal(1)
     end if
 
   end if
 
-  message(1) = "This program assumes that the gauge field is in the 'x'"
-  message(2) = "direction, and that the 'y' and 'z' directions are equivalent."
-  message(3) = "If this is not the case the dielectric function and the"
-  message(4) = "susceptibility will be wrong."
+  messages_lines(1) = "This program assumes that the gauge field is in the 'x'"
+  messages_lines(2) = "direction, and that the 'y' and 'z' directions are equivalent."
+  messages_lines(3) = "If this is not the case the dielectric function and the"
+  messages_lines(4) = "susceptibility will be wrong."
   call messages_warning(4)
 
   start_time = spectrum%start_time
@@ -106,7 +106,7 @@ program dielectric_function
 
   in_file = io_open('td.general/gauge_field', default_namespace, action='read', status='old', die=.false.)
   if(in_file < 0) then 
-    message(1) = "Cannot open file '"//trim(io_workpath('td.general/gauge_field', default_namespace))//"'"
+    messages_lines(1) = "Cannot open file '"//trim(io_workpath('td.general/gauge_field', default_namespace))//"'"
     call messages_fatal(1)
   end if
   call io_skip_header(in_file)
@@ -129,19 +129,19 @@ program dielectric_function
     call parse_variable(default_namespace, 'TransientAbsorptionReference', '.', ref_filename)
     ref_file = io_open(trim(ref_filename)//'/gauge_field', default_namespace, action='read', status='old', die=.false.)
     if(ref_file < 0) then
-      message(1) = "Cannot open reference file '"// &
+      messages_lines(1) = "Cannot open reference file '"// &
         trim(io_workpath(trim(ref_filename)//'/gauge_field', default_namespace))//"'"
       call messages_fatal(1)
     end if
     call io_skip_header(ref_file)
     call spectrum_count_time_steps(ref_file, time_steps_ref, dt_ref)
     if(time_steps_ref < time_steps) then
-      message(1) = "The reference calculation does not contain enought time steps"
+      messages_lines(1) = "The reference calculation does not contain enought time steps"
       call messages_fatal(1)
     end if
  
     if(dt_ref /= dt) then
-      message(1) = "The time step of the reference calculation is different from the current calculation"
+      messages_lines(1) = "The time step of the reference calculation is different from the current calculation"
       call messages_fatal(1)
     end if
 
@@ -175,7 +175,7 @@ program dielectric_function
     end do
   end if
 
-  write(message(1), '(a, i7, a)') "Info: Read ", time_steps, " steps from file '"// &
+  write(messages_lines(1), '(a, i7, a)') "Info: Read ", time_steps, " steps from file '"// &
     trim(io_workpath('td.general/gauge_field', default_namespace))//"'"
   call messages_info(1)
 

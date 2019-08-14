@@ -163,12 +163,12 @@ contains
 
     do il = 1, hm%ep%no_lasers
       if(laser_kind(hm%ep%lasers(il)) /= E_FIELD_VECTOR_POTENTIAL) then
-        message(1) = 't-surff only works in velocity gauge.'
+        messages_lines(1) = 't-surff only works in velocity gauge.'
         call messages_fatal(1)
       end if
     end do
 
-    message(1) = 'Info: Calculating PES using t-surff technique.'
+    messages_lines(1) = 'Info: Calculating PES using t-surff technique.'
     call messages_info(1)
 
     ! -----------------------------------------------------------------
@@ -199,7 +199,7 @@ contains
     if(.not.varinfo_valid_option('PES_Flux_Shape', this%shape, is_flag = .true.)) &
       call messages_input_error('PES_Flux_Shape')
     if(this%shape == M_SPHERICAL .and. mdim /= 3) then
-      message(1) = 'Spherical grid works only in 3d.'
+      messages_lines(1) = 'Spherical grid works only in 3d.'
       call messages_fatal(1)
     end if
     call messages_print_var_option(stdout, 'PES_Flux_Shape', this%shape)
@@ -320,11 +320,11 @@ contains
         case(SPHERE)
           this%radius = mesh%sb%rsize
         case default
-          message(1) = 'PES_Flux_Radius not specified. No default values available for this box shape.'
-          message(2) = 'Specify the radius of the sphere with variable PES_Flux_Radius.'
+          messages_lines(1) = 'PES_Flux_Radius not specified. No default values available for this box shape.'
+          messages_lines(2) = 'Specify the radius of the sphere with variable PES_Flux_Radius.'
           call messages_fatal(2)
         end select
-        message(1) = 'PES_Flux_Radius not specified. Using default values.'
+        messages_lines(1) = 'PES_Flux_Radius not specified. Using default values.'
         call messages_info(1)
         call messages_print_var_value(stdout, 'PES_Flux_Radius', this%radius)
       end if

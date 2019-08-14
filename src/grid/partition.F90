@@ -251,7 +251,7 @@ contains
     full_filename = trim(dir)//'/'//trim(filename)
     
     ! This is a writing to avoid an optimization of gfortran with -O3
-    write(message(1),'(a,i8)') "Info: number of points in the partition (in root process) =", size(partition%part)
+    write(messages_lines(1),'(a,i8)') "Info: number of points in the partition (in root process) =", size(partition%part)
     call messages_info(1)
     
     ! Check if the file exists and has the proper size (only world root)
@@ -333,12 +333,12 @@ contains
 #endif /* HAVE_MPI2 */
 
     if(any(partition%part(:) <= 0)) then
-      write(message(1),'(a)') 'Internal error: some elements of partition are <= 0.'
-      write(message(2),*) 'filename = ', full_filename
-      write(message(3),*) 'scounts = ', scounts(:)
-      write(message(4),*) 'sdispls = ', sdispls(:)
-      write(message(5),*) 'partition%remainder = ', partition%remainder
-      write(message(6),*) 'partition%np_local = ', partition%np_local
+      write(messages_lines(1),'(a)') 'Internal error: some elements of partition are <= 0.'
+      write(messages_lines(2),*) 'filename = ', full_filename
+      write(messages_lines(3),*) 'scounts = ', scounts(:)
+      write(messages_lines(4),*) 'sdispls = ', sdispls(:)
+      write(messages_lines(5),*) 'partition%remainder = ', partition%remainder
+      write(messages_lines(6),*) 'partition%np_local = ', partition%np_local
       call messages_fatal(6)
     endif
 

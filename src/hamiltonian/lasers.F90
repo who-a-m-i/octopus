@@ -383,8 +383,8 @@ contains
           call parse_block_string(blk, il-1, jj+3, phase_expression)
           call tdf_read(lasers(il)%phi, namespace, trim(phase_expression), ierr)
           if (ierr /= 0) then            
-            write(message(1),'(3A)') 'Error in the "', trim(envelope_expression), '" field defined in the TDExternalFields block:'
-            write(message(2),'(3A)') 'Time-dependent phase function "', trim(phase_expression), '" not found.'
+            write(messages_lines(1),'(3A)') 'Error in the "', trim(envelope_expression), '" field defined in the TDExternalFields block:'
+            write(messages_lines(2),'(3A)') 'Time-dependent phase function "', trim(phase_expression), '" not found.'
             call messages_warning(2)
           end if
         else
@@ -433,8 +433,8 @@ contains
         if(iop == symmetries_identity_index(mesh%sb%symm)) cycle
         do il = 1, no_l
           if(.not. symm_op_invariant_cart(mesh%sb%symm%ops(iop), lasers(il)%pol(:), SYMPREC)) then
-            message(1) = "The lasers break (at least) one of the symmetries used to reduce the k-points."
-            message(2) = "Set SymmetryBreakDir accordingly to your laser fields."
+            messages_lines(1) = "The lasers break (at least) one of the symmetries used to reduce the k-points."
+            messages_lines(2) = "Set SymmetryBreakDir accordingly to your laser fields."
             call messages_fatal(2)
           end if
         end do

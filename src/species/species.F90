@@ -642,7 +642,7 @@ contains
     call read_from_set(spec, read_data)
 
    if(read_data == 0) then
-      message(1) = 'Species '//trim(spec%label)//' not found.'
+      messages_lines(1) = 'Species '//trim(spec%label)//' not found.'
       call messages_fatal(1)
     end if
 
@@ -751,7 +751,7 @@ contains
     select case(spec%type)
     case(SPECIES_SOFT_COULOMB)
       if(print_info_) then
-        write(message(1),'(a,a,a)')    'Species "',trim(spec%label),'" is a soft-Coulomb potential.'
+        write(messages_lines(1),'(a,a,a)')    'Species "',trim(spec%label),'" is a soft-Coulomb potential.'
         call messages_info(1)
       end if
       spec%niwfs = species_closed_shell_size(2*nint(spec%z_val+M_HALF))
@@ -776,11 +776,11 @@ contains
 
     case(SPECIES_USDEF)
       if(print_info_) then
-        write(message(1),'(a,a,a)')    'Species "',trim(spec%label),'" is a user-defined potential.'
+        write(messages_lines(1),'(a,a,a)')    'Species "',trim(spec%label),'" is a user-defined potential.'
         i = min(237, len_trim(spec%potential_formula)-1) ! I subtract 1 to avoid the non-printable C "end-of-string" character.
-        write(message(2),'(a,a)')      '   Potential = ', trim(spec%potential_formula(1:i))
+        write(messages_lines(2),'(a,a)')      '   Potential = ', trim(spec%potential_formula(1:i))
         if(len(trim(spec%potential_formula)) > 237) then
-          message(2) = trim(message(2))//'...'
+          messages_lines(2) = trim(messages_lines(2))//'...'
         end if
         call messages_info(2)
       end if
@@ -796,7 +796,7 @@ contains
 
     case(SPECIES_FROM_FILE)
       if(print_info_) then
-        write(message(1),'(a)') 'Species read from file "'//trim(spec%filename)//'".'
+        write(messages_lines(1),'(a)') 'Species read from file "'//trim(spec%filename)//'".'
         call messages_info(1)
       end if
       spec%niwfs = 2*nint(spec%z_val+M_HALF)
@@ -804,11 +804,11 @@ contains
 
     case(SPECIES_JELLIUM)
       if(print_info_) then
-        write(message(1),'(a,a,a)')    'Species "', trim(spec%label), &
+        write(messages_lines(1),'(a,a,a)')    'Species "', trim(spec%label), &
                                        '" is a jellium sphere / approximated point particle.'
-        write(message(2),'(a,f11.6)')  '   Valence charge = ', spec%z_val
-        write(message(3),'(a,f11.6)')  '   Radius [a.u]   = ', spec%jradius
-        write(message(4),'(a,f11.6)')  '   Rs [a.u]       = ', spec%jradius * spec%z_val ** (-M_ONE/M_THREE)
+        write(messages_lines(2),'(a,f11.6)')  '   Valence charge = ', spec%z_val
+        write(messages_lines(3),'(a,f11.6)')  '   Radius [a.u]   = ', spec%jradius
+        write(messages_lines(4),'(a,f11.6)')  '   Rs [a.u]       = ', spec%jradius * spec%z_val ** (-M_ONE/M_THREE)
         call messages_info(4)
       end if
       spec%niwfs = species_closed_shell_size(2*nint(spec%z_val+M_HALF))
@@ -816,10 +816,10 @@ contains
 
     case(SPECIES_JELLIUM_SLAB)
       if(print_info_) then
-        write(message(1),'(a,a,a)')    'Species "',trim(spec%label),'" is a jellium slab.'
-        write(message(2),'(a,f11.6)')  '   Valence charge  = ', spec%z_val
-        write(message(3),'(a,f11.6)')  '   Thickness [a.u] = ', spec%jthick
-        !write(message(4),'(a,f11.6)')  '   Rs [a.u]       = ', ( M_THREE /( M_FOUR *M_PI ) &
+        write(messages_lines(1),'(a,a,a)')    'Species "',trim(spec%label),'" is a jellium slab.'
+        write(messages_lines(2),'(a,f11.6)')  '   Valence charge  = ', spec%z_val
+        write(messages_lines(3),'(a,f11.6)')  '   Thickness [a.u] = ', spec%jthick
+        !write(messages_lines(4),'(a,f11.6)')  '   Rs [a.u]       = ', ( M_THREE /( M_FOUR *M_PI ) &
         !& *spec%z_val /( *sb%lsize(1) *sb%lsize(2) ) )**(1.0/3.0) 
         call messages_info(3)
       end if
@@ -829,10 +829,10 @@ contains
     case(SPECIES_FULL_DELTA, SPECIES_FULL_GAUSSIAN)
       spec%has_density = .true.
       if(print_info_) then
-        write(message(1),'(a,a,a)')    'Species "',trim(spec%label),'" is an all-electron atom.'
-        write(message(2),'(a,f11.6)')  '   Z = ', spec%z_val
-        write(message(3),'(a)')  '   Potential will be calculated solving the Poisson equation'
-        write(message(4),'(a)')  '   for a delta density distribution.'
+        write(messages_lines(1),'(a,a,a)')    'Species "',trim(spec%label),'" is an all-electron atom.'
+        write(messages_lines(2),'(a,f11.6)')  '   Z = ', spec%z_val
+        write(messages_lines(3),'(a)')  '   Potential will be calculated solving the Poisson equation'
+        write(messages_lines(4),'(a)')  '   for a delta density distribution.'
         call messages_info(4)
       end if
       spec%niwfs = species_closed_shell_size(2*nint(spec%z_val+M_HALF))
@@ -843,14 +843,14 @@ contains
       spec%omega = spec%z_val
       spec%has_density = .true.
       if(print_info_) then
-        write(message(1),'(a,a,a)')    'Species "', trim(spec%label), '" is a distribution of charge:'
+        write(messages_lines(1),'(a,a,a)')    'Species "', trim(spec%label), '" is a distribution of charge:'
         if(spec%type == SPECIES_CHARGE_DENSITY) then
-          write(message(2),'(a,a)')   '   rho = ', trim(spec%density_formula)
+          write(messages_lines(2),'(a,a)')   '   rho = ', trim(spec%density_formula)
         else
-          write(message(2),'(a,a,a)') '   rho is enclosed in volume defined by the "', &
+          write(messages_lines(2),'(a,a,a)') '   rho is enclosed in volume defined by the "', &
                                       trim(spec%density_formula), '" block'
         end if
-        write(message(3),'(a,f11.6)')  '   Z = ', spec%z_val
+        write(messages_lines(3),'(a,f11.6)')  '   Z = ', spec%z_val
         call messages_info(3)
       end if
     case default
@@ -871,7 +871,7 @@ contains
     call species_iwf_fix_qn(spec, ispin, dim)
 
     if(.not. species_is_ps(spec)) then
-      write(message(1),'(a,i6,a,i6)') 'Number of orbitals: ', spec%niwfs
+      write(messages_lines(1),'(a,i6,a,i6)') 'Number of orbitals: ', spec%niwfs
       if(print_info_) call messages_info(1)
       nullify(spec%ps)
     end if

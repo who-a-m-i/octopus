@@ -378,7 +378,7 @@ contains
 
        call messages_info(1)
        if(.not. complex_coulomb_integrals) then 
-         write(message(1),'(a)')    'Computing the Coulomb integrals of the localized basis.'
+         write(messages_lines(1),'(a)')    'Computing the Coulomb integrals of the localized basis.'
          if (states_are_real(st)) then
            call dcompute_coulomb_integrals(this, gr%mesh, gr%der, psolver)
          else
@@ -386,7 +386,7 @@ contains
          end if
        else
          ASSERT(.not.states_are_real(st))
-         write(message(1),'(a)')    'Computing complex Coulomb integrals of the localized basis.'
+         write(messages_lines(1),'(a)')    'Computing complex Coulomb integrals of the localized basis.'
          call compute_complex_coulomb_integrals(this, gr%mesh, gr%der, st, psolver)
        end if
      end if
@@ -405,7 +405,7 @@ contains
        this%norbsets = 1
        this%maxnorbs = parse_block_n(blk) 
        if(this%maxnorbs <1) then
-         write(message(1),'(a,i3,a,i3)') 'DFTUBasisStates must contains at least one state.'
+         write(messages_lines(1),'(a,i3,a,i3)') 'DFTUBasisStates must contains at least one state.'
          call messages_fatal(1)
        end if
        SAFE_ALLOCATE(this%basisstates(1:this%maxnorbs))
@@ -414,7 +414,7 @@ contains
        end do
        call parse_block_end(blk)
      else
-       write(message(1),'(a,i3,a,i3)') 'DFTUBasisStates must be specified if DFTUBasisFromStates=yes'
+       write(messages_lines(1),'(a,i3,a,i3)') 'DFTUBasisStates must be specified if DFTUBasisFromStates=yes'
        call messages_fatal(1)
      end if
 
@@ -728,20 +728,20 @@ contains
 
     PUSH_SUB(lda_u_write_info)
 
-    write(message(1), '(1x)')
+    write(messages_lines(1), '(1x)')
     call messages_info(1, iunit)
     if(this%level == DFT_U_EMPIRICAL) then
-      write(message(1), '(a)') "Method:"
-      write(message(2), '(a)') "  [1] Dudarev et al., Phys. Rev. B 57, 1505 (1998)"
+      write(messages_lines(1), '(a)') "Method:"
+      write(messages_lines(2), '(a)') "  [1] Dudarev et al., Phys. Rev. B 57, 1505 (1998)"
       call messages_info(2, iunit)
     else
-      write(message(1), '(a)') "Method:"
-      write(message(2), '(a)') "  [1] Agapito et al., Phys. Rev. X 5, 011006 (2015)"
+      write(messages_lines(1), '(a)') "Method:"
+      write(messages_lines(2), '(a)') "  [1] Agapito et al., Phys. Rev. X 5, 011006 (2015)"
       call messages_info(2, iunit)
     end if
-    write(message(1), '(a)') "Implementation:"
-    write(message(2), '(a)') "  [1] Tancogne-Dejean, Oliveira, and Rubio, Phys. Rev. B 69, 245133 (2017)"
-    write(message(3), '(1x)')
+    write(messages_lines(1), '(a)') "Implementation:"
+    write(messages_lines(2), '(a)') "  [1] Tancogne-Dejean, Oliveira, and Rubio, Phys. Rev. B 69, 245133 (2017)"
+    write(messages_lines(3), '(1x)')
     call messages_info(3, iunit)
 
     POP_SUB(lda_u_write_info)

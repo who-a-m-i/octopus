@@ -711,7 +711,7 @@ contains
     ks%calc%geo => geo
     
     if(debug%info) then
-      write(message(1), '(a)') 'Debug: Calculating Kohn-Sham potential.'
+      write(messages_lines(1), '(a)') 'Debug: Calculating Kohn-Sham potential.'
       call messages_info(1)
     end if
 

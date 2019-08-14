@@ -60,7 +60,7 @@ contains
     call parse_variable(namespace, 'CurvBriggsBeta', M_HALF, cv%beta)
 
     if(cv%beta<M_ZERO.or.cv%beta>M_ONE) then
-      message(1) = 'The parameter "CurvBriggsBeta" must lie between 0 and 1.'
+      messages_lines(1) = 'The parameter "CurvBriggsBeta" must lie between 0 and 1.'
       call messages_fatal(1)
     end if
 

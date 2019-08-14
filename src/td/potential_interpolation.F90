@@ -324,7 +324,7 @@ contains
           potential_interpolation%v_old(1:gr%mesh%np, is, ii), err)
         if (err /= 0) then
           err2 = err2 + 1
-          message(1) = "Unable to read VKS restart file '" // trim(filename) // "'"
+          messages_lines(1) = "Unable to read VKS restart file '" // trim(filename) // "'"
           call messages_warning(1)
         end if
       end do
@@ -339,7 +339,7 @@ contains
             potential_interpolation%vtau_old(1:gr%mesh%np, is, ii), err)
           if (err /= 0) then
             err2 = err2 + 1
-            message(1) = "Unable to read VKS restart file '" // trim(filename) // "'"
+            messages_lines(1) = "Unable to read VKS restart file '" // trim(filename) // "'"
             call messages_warning(1)
           end if
         end do

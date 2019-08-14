@@ -155,7 +155,7 @@ contains
 
 #ifndef HAVE_PFFT
       if (fft_library_ == FFTLIB_PFFT) then
-        write(message(1),'(a)')'You have selected the PFFT for FFT, but it was not linked.'
+        write(messages_lines(1),'(a)')'You have selected the PFFT for FFT, but it was not linked.'
         call messages_fatal(1)
       end if
 #endif

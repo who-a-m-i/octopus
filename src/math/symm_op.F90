@@ -141,8 +141,8 @@ contains
     !We check that the rotation matrix in cartesian space is indeed a rotation matrix
     if(sum(abs(matmul(this%rot_cart,transpose(this%rot_cart)) &
               -reshape((/1, 0, 0, 0, 1, 0, 0, 0, 1/), (/3, 3/))))>CNST(1.0e-6)) then
-      message(1) = "Internal error: This matrix is not a rotation matrix"
-      write(message(2),'(3(3f7.3,2x))') this%rot_cart
+      messages_lines(1) = "Internal error: This matrix is not a rotation matrix"
+      write(messages_lines(2),'(3(3f7.3,2x))') this%rot_cart
       call messages_fatal(2) 
     end if
     POP_SUB(symm_op_init)

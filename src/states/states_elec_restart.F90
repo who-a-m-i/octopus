@@ -77,12 +77,12 @@ contains
     !check how many wfs we have
     call states_elec_look(restart, kpoints, dim, nst, ierr)
     if(ierr /= 0) then
-      message(1) = "Unable to read states information."
+      messages_lines(1) = "Unable to read states information."
       call messages_fatal(1)
     end if
 
     if(st%parallel_in_states) then
-      message(1) = "Internal error: cannot use states_elec_look_and_load when parallel in states."
+      messages_lines(1) = "Internal error: cannot use states_elec_look_and_load when parallel in states."
       call messages_fatal(1)
     end if
 
@@ -128,7 +128,7 @@ contains
     ! load wavefunctions
     call states_elec_load(restart, namespace, st, gr, ierr)
     if(ierr /= 0) then
-      message(1) = "Unable to read wavefunctions."
+      messages_lines(1) = "Unable to read wavefunctions."
       call messages_fatal(1)
     end if
 
@@ -170,8 +170,8 @@ contains
     end if
 
     if(verbose_) then
-      message(1) = "Info: Writing states."
-      call print_date(trim(message(1))//' ')
+      messages_lines(1) = "Info: Writing states."
+      call print_date(trim(messages_lines(1))//' ')
     end if
 
     call profiling_in(prof_write, "RESTART_WRITE")
@@ -308,8 +308,8 @@ contains
     call restart_close(restart, iunit_occs)
 
     if(verbose_) then
-      message(1) = "Info: Finished writing states."
-      call print_date(trim(message(1))//' ')
+      messages_lines(1) = "Info: Finished writing states."
+      call print_date(trim(messages_lines(1))//' ')
     end if
 
     call restart_unblock_signals()
@@ -387,12 +387,12 @@ contains
       end if
     end if
 
-    message(1) = 'Info: Reading states'
+    messages_lines(1) = 'Info: Reading states'
     if (len(trim(label_)) > 0) then
-      message(1) = trim(message(1)) // trim(label_)
+      messages_lines(1) = trim(messages_lines(1)) // trim(label_)
     end if
-    message(1) = trim(message(1)) // "."
-    if(verbose_) call print_date(trim(message(1))//' ')
+    messages_lines(1) = trim(messages_lines(1)) // "."
+    if(verbose_) call print_date(trim(messages_lines(1))//' ')
 
     if(.not. present(lr)) then
       st%fromScratch = .false. ! obviously, we are using restart info
@@ -438,18 +438,18 @@ contains
       read(lines(2), *) str, idim
       read(lines(3), *) str, ik
       if(idim == 2 .and. st%d%dim == 1) then
-        write(message(1),'(a)') 'Incompatible restart information: saved calculation is spinors, this one is not.'
+        write(messages_lines(1),'(a)') 'Incompatible restart information: saved calculation is spinors, this one is not.'
         call messages_warning(1)
         ierr = ierr - 2**2
       end if
       if(idim == 1 .and. st%d%dim == 2) then
-        write(message(1),'(a)') 'Incompatible restart information: this calculation is spinors, saved one is not.'
+        write(messages_lines(1),'(a)') 'Incompatible restart information: this calculation is spinors, saved one is not.'
         call messages_warning(1)
         ierr = ierr - 2**3
       end if
       if(ik < st%d%nik) then
-        write(message(1),'(a)') 'Incompatible restart information: not enough k-points.'
-        write(message(2),'(2(a,i6))') 'Expected ', st%d%nik, ' > Read ', ik
+        write(messages_lines(1),'(a)') 'Incompatible restart information: not enough k-points.'
+        write(messages_lines(2),'(2(a,i6))') 'Expected ', st%d%nik, ' > Read ', ik
         call messages_warning(2)
       end if
       ! We will check that they are the right k-points later, so we do not need to put a specific error here.
@@ -466,11 +466,11 @@ contains
     else if (states_are_real(st)) then
       read(lines(2), '(a)') str
       if (str(2:8) == 'Complex') then
-        message(1) = "Cannot read real states from complex wavefunctions."
+        messages_lines(1) = "Cannot read real states from complex wavefunctions."
         call messages_warning(1)
         ierr = ierr - 2**6
       else if (str(2:5) /= 'Real') then 
-        message(1) = "Restart file 'wfns' does not specify real/complex; cannot check compatibility."
+        messages_lines(1) = "Restart file 'wfns' does not specify real/complex; cannot check compatibility."
         call messages_warning(1)
       end if
     end if
@@ -547,9 +547,9 @@ contains
         if (any(abs(kpoint(1:gr%sb%dim) - read_kpoint(1:gr%sb%dim)) > CNST(1e-12))) then
           ! write only once for each k-point so as not to be too verbose
           if (ist == 1) then
-            write(message(1),'(a,i6)') 'Incompatible restart information: k-point mismatch for ik ', ik
-            write(message(2),'(a,99f18.12)') '  Expected : ', kpoint(1:gr%sb%dim)
-            write(message(3),'(a,99f18.12)') '  Read     : ', read_kpoint(1:gr%sb%dim)
+            write(messages_lines(1),'(a,i6)') 'Incompatible restart information: k-point mismatch for ik ', ik
+            write(messages_lines(2),'(a,99f18.12)') '  Expected : ', kpoint(1:gr%sb%dim)
+            write(messages_lines(3),'(a,99f18.12)') '  Read     : ', read_kpoint(1:gr%sb%dim)
             call messages_warning(3)
           end if
           restart_file_present(idim, ist, ik) = .false.
@@ -691,14 +691,14 @@ contains
         write(str, '(a,i5)') 'Reading states information for linear response.'
       end if
       call messages_print_stress(stdout, trim(str))
-      write(message(1),'(a,i6,a,i6,a)') 'Only ', iread,' files out of ', &
+      write(messages_lines(1),'(a,i6,a,i6,a)') 'Only ', iread,' files out of ', &
            st%nst * st%d%nik * st%d%dim, ' could be read.'
       call messages_info(1)
       call messages_print_stress(stdout)
     end if
 
-    message(1) = 'Info: States reading done.'
-    if(verbose_) call print_date(trim(message(1))//' ')
+    messages_lines(1) = 'Info: States reading done.'
+    if(verbose_) call print_date(trim(messages_lines(1))//' ')
 
     call profiling_out(prof_read)
     POP_SUB(states_elec_load)
@@ -764,7 +764,7 @@ contains
     end if
 
     if (debug%info) then
-      message(1) = "Debug: Writing density restart."
+      messages_lines(1) = "Debug: Writing density restart."
       call messages_info(1)
     end if
 
@@ -824,7 +824,7 @@ contains
     call restart_unblock_signals()
 
     if (debug%info) then
-      message(1) = "Debug: Writing density restart done."
+      messages_lines(1) = "Debug: Writing density restart done."
       call messages_info(1)
     end if
 
@@ -854,7 +854,7 @@ contains
     end if
 
     if (debug%info) then
-      message(1) = "Debug: Reading density restart."
+      messages_lines(1) = "Debug: Reading density restart."
       call messages_info(1)
     end if
 
@@ -895,7 +895,7 @@ contains
     end if
 
     if (debug%info) then
-      message(1) = "Debug: Reading density restart done."
+      messages_lines(1) = "Debug: Reading density restart done."
       call messages_info(1)
     end if
 
@@ -924,7 +924,7 @@ contains
     end if
 
     if (debug%info) then
-      message(1) = "Debug: Writing frozen densities restart."
+      messages_lines(1) = "Debug: Writing frozen densities restart."
       call messages_info(1)
     end if
 
@@ -980,7 +980,7 @@ contains
     call restart_unblock_signals()
 
     if (debug%info) then
-      message(1) = "Debug: Writing frozen densities restart done."
+      messages_lines(1) = "Debug: Writing frozen densities restart done."
       call messages_info(1)
     end if
 
@@ -1011,7 +1011,7 @@ contains
     end if
 
     if (debug%info) then
-      message(1) = "Debug: Reading densities restart."
+      messages_lines(1) = "Debug: Reading densities restart."
       call messages_info(1)
     end if
 
@@ -1061,7 +1061,7 @@ contains
     if (err2 /= 0) ierr = ierr + 1
 
     if (debug%info) then
-      message(1) = "Debug: Reading frozen densities restart done."
+      messages_lines(1) = "Debug: Reading frozen densities restart done."
       call messages_info(1)
     end if
 
@@ -1153,8 +1153,8 @@ contains
         ! Check that number of columns is five or six.
         ncols = parse_block_cols(blk, ib - 1)
         if(ncols  <  5 .or. ncols > 6) then
-          message(1) = 'Each line in the UserDefinedStates block must have'
-          message(2) = 'five or six columns.'
+          messages_lines(1) = 'Each line in the UserDefinedStates block must have'
+          messages_lines(2) = 'five or six columns.'
           call messages_fatal(2)
         end if
 
@@ -1182,9 +1182,9 @@ contains
                 call parse_block_string(                            &
                   blk, ib - 1, 4, st%user_def_states(id, is, ik))
 
-                write(message(1), '(a,3i5)') 'Substituting state of orbital with k, ist, dim = ', ik, is, id
-                write(message(2), '(2a)') '  with the expression:'
-                write(message(3), '(2a)') '  ',trim(st%user_def_states(id, is, ik))
+                write(messages_lines(1), '(a,3i5)') 'Substituting state of orbital with k, ist, dim = ', ik, is, id
+                write(messages_lines(2), '(2a)') '  with the expression:'
+                write(messages_lines(3), '(2a)') '  ',trim(st%user_def_states(id, is, ik))
                 call messages_info(3)
 
                 ! convert to C string
@@ -1207,22 +1207,22 @@ contains
                 ! Read the filename.
                 call parse_block_string(blk, ib - 1, 4, filename)
 
-                write(message(1), '(a,3i5)') 'Substituting state of orbital with k, ist, dim = ', ik, is, id
-                write(message(2), '(2a)') '  with data from file:'
-                write(message(3), '(2a)') '  ',trim(filename)
+                write(messages_lines(1), '(a,3i5)') 'Substituting state of orbital with k, ist, dim = ', ik, is, id
+                write(messages_lines(2), '(2a)') '  with data from file:'
+                write(messages_lines(3), '(2a)') '  ',trim(filename)
                 call messages_info(3)
 
                 ! finally read the state
                 call zio_function_input(filename, namespace, mesh, zpsi(:, 1), ierr)
                 if (ierr > 0) then
-                  message(1) = 'Could not read the file!'
-                  write(message(2),'(a,i1)') 'Error code: ', ierr
+                  messages_lines(1) = 'Could not read the file!'
+                  write(messages_lines(2),'(a,i1)') 'Error code: ', ierr
                   call messages_fatal(2)
                 end if
 
               case default
-                message(1) = 'Wrong entry in UserDefinedStates, column 4.'
-                message(2) = 'You may state "formula" or "file" here.'
+                messages_lines(1) = 'Wrong entry in UserDefinedStates, column 4.'
+                messages_lines(2) = 'You may state "formula" or "file" here.'
                 call messages_fatal(2)
               end select
 
@@ -1241,8 +1241,8 @@ contains
                 call zmf_normalize(mesh, st%d%dim, zpsi)
                 call states_elec_set_state(st, mesh, is, ik, zpsi)
               case default
-                message(1) = 'The sixth column in UserDefinedStates may either be'
-                message(2) = '"normalize_yes" or "normalize_no"'
+                messages_lines(1) = 'The sixth column in UserDefinedStates may either be'
+                messages_lines(2) = '"normalize_yes" or "normalize_no"'
                 call messages_fatal(2)
               end select
 
@@ -1258,7 +1258,7 @@ contains
       call messages_print_stress(stdout)
 
     else
-      message(1) = "'UserDefinedStates' has to be specified as block."
+      messages_lines(1) = "'UserDefinedStates' has to be specified as block."
       call messages_fatal(1)
     end if
 

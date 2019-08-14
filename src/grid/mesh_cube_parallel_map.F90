@@ -140,7 +140,7 @@ contains
         this%m2c_mf_order(ip) = vec_global2local(mesh%vp, mf_order(ip), mesh%vp%partno)
 #endif
         if (this%m2c_mf_order(ip) == 0) then
-          write(message(1),'(a,i4,a,i4)') "Error in mesh_cube_parallel_map_init (m2c): mesh point ", &
+          write(messages_lines(1),'(a,i4,a,i4)') "Error in mesh_cube_parallel_map_init (m2c): mesh point ", &
                mf_order(ip), " is not stored in partition ", mesh%vp%partno
           call messages_fatal(1)
         end if
@@ -155,7 +155,7 @@ contains
       ixyz = ixyz + cube%center
 
       if (.not. cube_global2local(cube, ixyz, lxyz)) then
-        write(message(1),'(a,3i4,a,i4)') "Error in mesh_cube_parallel_map_init (m2c): cube point ", &
+        write(messages_lines(1),'(a,3i4,a,i4)') "Error in mesh_cube_parallel_map_init (m2c): cube point ", &
              lxyz(1:3), " is not stored in partition ", cube%mpi_grp%rank + 1
         call messages_fatal(1)
       end if
@@ -205,7 +205,7 @@ contains
       ixyz = ixyz + cube%center
 
       if (.not. cube_global2local(cube, ixyz, lxyz)) then
-        write(message(1),'(a,3i4,a,i4)') "Error in mesh_cube_parallel_map_init (c2m): cube point ", &
+        write(messages_lines(1),'(a,3i4,a,i4)') "Error in mesh_cube_parallel_map_init (c2m): cube point ", &
              lxyz(1:3), " is not stored in partition ", cube%mpi_grp%rank + 1
         call messages_fatal(1)
       end if
@@ -219,7 +219,7 @@ contains
       
 #endif
         if (this%c2m_mf_order(ip) == 0) then
-          write(message(1),'(a,i3,a,i3)') "Error in mesh_cube_parallel_map_init (c2m): mesh point ", &
+          write(messages_lines(1),'(a,i3,a,i3)') "Error in mesh_cube_parallel_map_init (c2m): mesh point ", &
                mf_order(ip), " is not stored in partition ", mesh%vp%partno
           call messages_fatal(1)
         end if

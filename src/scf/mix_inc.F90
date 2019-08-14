@@ -292,7 +292,7 @@ subroutine X(broyden_extrapolation_aux)(this, ii, coeff, iter_used, dbeta, dwork
       if(present(zbeta).and.present(zwork)) then
         gamma = ww*sum(zbeta(:, i)*zwork(:))
       else
-        write(message(1), '(a)') 'Internal error in broyden_extrapolation_aux'
+        write(messages_lines(1), '(a)') 'Internal error in broyden_extrapolation_aux'
         call messages_fatal(1)
       end if
     end if

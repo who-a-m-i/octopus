@@ -38,7 +38,7 @@ contains
     PUSH_SUB(pulpo_print)
 
     ! some white space
-    message(1) = ''; message(2) = ''
+    messages_lines(1) = ''; messages_lines(2) = ''
     call messages_info(2)
 
     call loct_printrecipe(trim(conf%share), filename)

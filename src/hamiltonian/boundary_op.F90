@@ -147,7 +147,7 @@ contains
 
       cols_abshape_block = 0
       if(parse_block(namespace, 'ABShape', blk) < 0) then
-        message(1) = "Input: ABShape not specified. Using default values for absorbing boundaries."
+        messages_lines(1) = "Input: ABShape not specified. Using default values for absorbing boundaries."
         call messages_info(1)
       
         if (mesh%sb%box_shape == SPHERE) then
@@ -169,10 +169,10 @@ contains
           call parse_block_float(blk, 0, 1, bounds(2), units_inp%length)
           if (mesh%sb%box_shape == SPHERE) then
             if(bounds(2) > mesh%sb%rsize)  bounds(2) = mesh%sb%rsize 
-            message(1) = "Info: using spherical absorbing boundaries."
+            messages_lines(1) = "Info: using spherical absorbing boundaries."
           else if (mesh%sb%box_shape == PARALLELEPIPED) then
             if(bounds(2) > mesh%sb%lsize(1))  bounds(2) = mesh%sb%lsize(1) 
-            message(1) = "Info: using cubic absorbing boundaries."
+            messages_lines(1) = "Info: using cubic absorbing boundaries."
           end if    
           call messages_info(1)
         case(3)
@@ -190,11 +190,11 @@ contains
             call parse_expression(ufn_re, ufn_im, mesh%sb%dim, xx, rr, M_ZERO, user_def_expr)
             this%ab_ufn(ip) = ufn_re
           end do
-          message(1) = "Input: using user-defined function from expression:"
-          write(message(2),'(a,a)') '   F(x,y,z) = ', trim(user_def_expr) 
+          messages_lines(1) = "Input: using user-defined function from expression:"
+          write(messages_lines(2),'(a,a)') '   F(x,y,z) = ', trim(user_def_expr) 
           call messages_info(2)
         case default
-          message(1) = "Input: ABShape block must have at least 2 columns."
+          messages_lines(1) = "Input: ABShape block must have at least 2 columns."
           call messages_fatal(1)
         end select
 
@@ -213,10 +213,10 @@ contains
       call parse_variable(namespace, 'ABWidth', abwidth, abwidth, units_inp%length)
       bounds(1) = bounds(2) - abwidth
       
-      write(message(1),'(a,es10.3,3a)') & 
+      write(messages_lines(1),'(a,es10.3,3a)') & 
         "  Lower bound = ", units_from_atomic(units_inp%length, bounds(1) ),&
         ' [', trim(units_abbrev(units_inp%length)), ']'
-      write(message(2),'(a,es10.3,3a)') & 
+      write(messages_lines(2),'(a,es10.3,3a)') & 
         "  Upper bound = ", units_from_atomic(units_inp%length, bounds(2) ),&
         ' [', trim(units_abbrev(units_inp%length)), ']'
       call messages_info(2)

@@ -225,11 +225,11 @@ contains
                  position(1, 1), typs(1), geo%natoms, SYMPREC)
       
       if(this%space_group == 0) then
-        message(1) = "Symmetry analysis failed in spglib. Disabling symmetries."
+        messages_lines(1) = "Symmetry analysis failed in spglib. Disabling symmetries."
         call messages_warning(1)
 
         do iatom = 1, geo%natoms
-          write(message(1),'(a,i6,a,3f12.6,a,3f12.6)') 'type ', typs(iatom), &
+          write(messages_lines(1),'(a,i6,a,3f12.6,a,3f12.6)') 'type ', typs(iatom), &
             ' reduced coords ', position(:, iatom), ' cartesian coords ', geo%atom(iatom)%x(:)
           call messages_info(1)
         end do
@@ -270,18 +270,18 @@ contains
           found_identity = .true.
           if(any(abs(translation(1:3, iop)) > real(SYMPREC, REAL_PRECISION))) then
             is_supercell = .true.
-            write(message(1),'(a,3f12.6)') 'Identity has a fractional translation ', translation(1:3, iop)
+            write(messages_lines(1),'(a,3f12.6)') 'Identity has a fractional translation ', translation(1:3, iop)
             call messages_info(1)
           end if
         end if
       end do
       if(.not. found_identity) then
-        message(1) = "Symmetries internal error: Identity is missing from symmetry operations."
+        messages_lines(1) = "Symmetries internal error: Identity is missing from symmetry operations."
         call messages_fatal(1)
       end if
     
       if(is_supercell) then
-        message(1) = "Disabling fractional translations. System appears to be a supercell."
+        messages_lines(1) = "Disabling fractional translations. System appears to be a supercell."
         call messages_info(1)
       end if
       ! actually, we do not use fractional translations regardless currently
@@ -494,13 +494,13 @@ contains
     call messages_print_stress(iunit, 'Symmetries')
 
     if(this%any_non_spherical) then
-      message(1) = "Symmetries are disabled since non-spherically symmetric species may be present."
+      messages_lines(1) = "Symmetries are disabled since non-spherically symmetric species may be present."
       call messages_info(1,iunit = iunit)
       call messages_print_stress(iunit)
     end if
 
     if(.not. this%symmetries_compute) then
-      message(1) = "Symmetries have been disabled by SymmetriesCompute = false."
+      messages_lines(1) = "Symmetries have been disabled by SymmetriesCompute = false."
       call messages_info(1,iunit = iunit)
       call messages_print_stress(iunit)
       POP_SUB(symmetries_write_info)
@@ -517,28 +517,28 @@ contains
         end if
       end if
     else
-      write(message(1),'(a, i4)') 'Space group No. ', this%space_group
-      write(message(2),'(2a)') 'International: ', trim(this%symbol)
-      write(message(3),'(2a)') 'Schoenflies: ', trim(this%schoenflies)
+      write(messages_lines(1),'(a, i4)') 'Space group No. ', this%space_group
+      write(messages_lines(2),'(2a)') 'International: ', trim(this%symbol)
+      write(messages_lines(3),'(2a)') 'Schoenflies: ', trim(this%schoenflies)
       call messages_info(3,iunit = iunit)
 
-      write(message(1),'(a7,a31,12x,a33)') 'Index', 'Rotation matrix', 'Fractional translations'
+      write(messages_lines(1),'(a7,a31,12x,a33)') 'Index', 'Rotation matrix', 'Fractional translations'
       call messages_info(1,iunit = iunit)
       do iop = 1, this%nops
         ! list all operations and leave those that kept the symmetry-breaking
         ! direction invariant and (for the moment) that do not have a translation
         if(dim == 1) &
-        write(message(1),'(i5,1x,a,2x,1(1i4,2x),1f12.6)') iop, ':', symm_op_rotation_matrix_red(this%ops(iop)), &
+        write(messages_lines(1),'(i5,1x,a,2x,1(1i4,2x),1f12.6)') iop, ':', symm_op_rotation_matrix_red(this%ops(iop)), &
                                                                     symm_op_translation_vector_red(this%ops(iop))
         if(dim == 2) &
-        write(message(1),'(i5,1x,a,2x,2(2i4,2x),2f12.6)') iop, ':', symm_op_rotation_matrix_red(this%ops(iop)), &
+        write(messages_lines(1),'(i5,1x,a,2x,2(2i4,2x),2f12.6)') iop, ':', symm_op_rotation_matrix_red(this%ops(iop)), &
                                                                     symm_op_translation_vector_red(this%ops(iop))
         if(dim == 3) &
-        write(message(1),'(i5,1x,a,2x,3(3i4,2x),3f12.6)') iop, ':', symm_op_rotation_matrix_red(this%ops(iop)), &
+        write(messages_lines(1),'(i5,1x,a,2x,3(3i4,2x),3f12.6)') iop, ':', symm_op_rotation_matrix_red(this%ops(iop)), &
                                                                     symm_op_translation_vector_red(this%ops(iop))
         call messages_info(1,iunit = iunit)
       end do
-      write(message(1), '(a,i5,a)') 'Info: The system has ', this%nops, ' symmetries that can be used.'
+      write(messages_lines(1), '(a,i5,a)') 'Info: The system has ', this%nops, ' symmetries that can be used.'
       call messages_info(iunit = iunit)
     end if
     call messages_print_stress(iunit)

@@ -69,7 +69,7 @@ program xyzanim
   !%End
   call parse_variable(default_namespace, 'AnimationSampling', 100, sampling)
   if(sampling < 1) then
-    message(1) = 'Sampling rate (AnimationSampling) should be bigger than 0'
+    messages_lines(1) = 'Sampling rate (AnimationSampling) should be bigger than 0'
     call messages_fatal(1)
   end if
 

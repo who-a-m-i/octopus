@@ -213,9 +213,9 @@ subroutine xc_kli_pauli_solve(mesh, namespace, st, oep)
       if (.not. all(reached_threshold(:)  <=  oep%scftol%conv_abs_dens)) &
         it = it - 1
       
-      write(message(1), '(a,i4,a,es14.6)') &
+      write(messages_lines(1), '(a,i4,a,es14.6)') &
         "Info: After ", it, " iterations, KLI converged to ", maxval(reached_threshold(:))
-      message(2) = ''
+      messages_lines(2) = ''
       call messages_info(2)
       !
       oep%vxc = v_m1

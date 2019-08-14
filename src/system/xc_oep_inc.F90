@@ -222,7 +222,7 @@ subroutine X(xc_oep_solve) (gr, hm, psolver, st, is, vxc, oep)
       end if
 
       if(debug%info) then
-        write(message(1), '(a,es14.6,a,es14.8)') "Info: oep%mixing:", oep%mixing, " norm2ss: ", dmf_nrm2(gr%mesh, ss)
+        write(messages_lines(1), '(a,es14.6,a,es14.8)') "Info: oep%mixing:", oep%mixing, " norm2ss: ", dmf_nrm2(gr%mesh, ss)
         call messages_info(1)
       end if
 
@@ -251,15 +251,15 @@ subroutine X(xc_oep_solve) (gr, hm, psolver, st, is, vxc, oep)
   end if
 
   if(ff > oep%scftol%conv_abs_dens) then
-    write(message(1), '(a)') "OEP did not converge."
+    write(messages_lines(1), '(a)') "OEP did not converge."
     call messages_warning(1)
 
     ! otherwise the number below will be one too high
     iter = iter - 1
   end if
 
-  write(message(1), '(a,i4,a,es14.6)') "Info: After ", iter, " iterations, the OEP residual = ", ff
-  message(2) = ''
+  write(messages_lines(1), '(a,i4,a,es14.6)') "Info: After ", iter, " iterations, the OEP residual = ", ff
+  messages_lines(2) = ''
   call messages_info(2)
 
   call lalg_copy(gr%mesh%np, vxc_old, vxc)

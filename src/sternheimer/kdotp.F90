@@ -109,7 +109,7 @@ contains
     pdim = sys%gr%sb%periodic_dim
 
     if(.not. simul_box_is_periodic(sys%gr%sb)) then
-       message(1) = "k.p perturbation cannot be used for a finite system."
+       messages_lines(1) = "k.p perturbation cannot be used for a finite system."
        call messages_fatal(1)
     end if
 
@@ -137,7 +137,7 @@ contains
       call states_elec_look_and_load(restart_load, sys%namespace, sys%st, sys%gr, is_complex = complex_response)
       call restart_end(restart_load)
     else
-      message(1) = "A previous gs calculation is required."
+      messages_lines(1) = "A previous gs calculation is required."
       call messages_fatal(1)
     end if
 
@@ -153,18 +153,18 @@ contains
     call restart_init(restart_load, sys%namespace, RESTART_KDOTP, RESTART_TYPE_LOAD, sys%mc, ierr, mesh=sys%gr%mesh)
 
     ! setup Hamiltonian
-    message(1) = 'Info: Setting up Hamiltonian for linear response.'
+    messages_lines(1) = 'Info: Setting up Hamiltonian for linear response.'
     call messages_info(1)
     call system_h_setup(sys)
     
     if(states_are_real(sys%st)) then
-      message(1) = 'Info: Using real wavefunctions.'
+      messages_lines(1) = 'Info: Using real wavefunctions.'
     else
-      message(1) = 'Info: Using complex wavefunctions.'
+      messages_lines(1) = 'Info: Using complex wavefunctions.'
     end if
     call messages_info(1)
 
-    message(1) = 'Calculating band velocities.'
+    messages_lines(1) = 'Calculating band velocities.'
     call messages_info(1)
 
     if(states_are_real(sys%st)) then
@@ -207,7 +207,7 @@ contains
         call restart_close_dir(restart_load)
           
         if(ierr /= 0) then
-          message(1) = "Unable to read response wavefunctions from '"//trim(wfs_tag_sigma(str_tmp, 1))//"'."
+          messages_lines(1) = "Unable to read response wavefunctions from '"//trim(wfs_tag_sigma(str_tmp, 1))//"'."
           call messages_warning(1)
         end if
 
@@ -221,7 +221,7 @@ contains
             call restart_close_dir(restart_load)
           
             if(ierr /= 0) then
-              message(1) = "Unable to read response wavefunctions from '"//trim(wfs_tag_sigma(str_tmp, 1))//"'."
+              messages_lines(1) = "Unable to read response wavefunctions from '"//trim(wfs_tag_sigma(str_tmp, 1))//"'."
               call messages_warning(1)
             end if
           end do
@@ -230,13 +230,13 @@ contains
     end do
 
     call info()
-    message(1) = "Info: Calculating k.p linear response of ground-state wavefunctions."
+    messages_lines(1) = "Info: Calculating k.p linear response of ground-state wavefunctions."
     call messages_info(1)
     kdotp_vars%ok = .true.
 
     ! solve the Sternheimer equation
     do idir = 1, pdim
-      write(message(1), '(3a)') 'Info: Calculating response for the ', index2axis(idir), &
+      write(messages_lines(1), '(3a)') 'Info: Calculating response for the ', index2axis(idir), &
                                 '-direction.' 
       call messages_info(1)
       call pert_setup_dir(kdotp_vars%perturbation, idir)
@@ -272,13 +272,13 @@ contains
         end do
       end if
 
-      write(message(1),'(a,g12.6)') "Norm of relative density variation = ", errornorm / sys%st%qtot
+      write(messages_lines(1),'(a,g12.6)') "Norm of relative density variation = ", errornorm / sys%st%qtot
       call messages_info(1)
 
       if(calc_2nd_order) then
         ! by equality of mixed partial derivatives, kdotp_vars%lr2(idir, idir2) = kdotp_vars%lr2(idir2, idir)
         do idir2 = idir, pdim
-          write(message(1), '(3a)') 'Info: Calculating second-order response in the ', index2axis(idir2), &
+          write(messages_lines(1), '(3a)') 'Info: Calculating second-order response in the ', index2axis(idir2), &
             '-direction.' 
           call messages_info(1)
 		  
@@ -297,14 +297,14 @@ contains
           end if
 
         end do
-        message(1) = ""
+        messages_lines(1) = ""
         call messages_info(1)
       end if
     end do ! idir
 
     ! calculate effective masses
     if (calc_eff_mass) then
-      message(1) = "Info: Calculating effective masses."
+      messages_lines(1) = "Info: Calculating effective masses."
       call messages_info(1)
 
       if(states_are_real(sys%st)) then
@@ -436,13 +436,13 @@ contains
 
       call pert_info(kdotp_vars%perturbation)
 
-      write(message(1),'(a)') 'k.p perturbation theory'
-      call messages_print_stress(stdout, trim(message(1)))
+      write(messages_lines(1),'(a)') 'k.p perturbation theory'
+      call messages_print_stress(stdout, trim(messages_lines(1)))
 
       if (kdotp_vars%occ_solution_method == 0) then
-        message(1) = 'Occupied solution method: Sternheimer equation.'
+        messages_lines(1) = 'Occupied solution method: Sternheimer equation.'
       else
-        message(1) = 'Occupied solution method: sum over states.'
+        messages_lines(1) = 'Occupied solution method: sum over states.'
       end if
 
       call messages_info(1)
@@ -570,15 +570,15 @@ contains
       ik2 = states_elec_dim_get_kpoint_index(st%d, ik)
 
       tmp = int2str(ik2)
-      write(message(1), '(3a, i1)') 'k-point ', trim(tmp), ', spin ', ispin 
+      write(messages_lines(1), '(3a, i1)') 'k-point ', trim(tmp), ', spin ', ispin 
       call messages_info(1)
 
       ist = 1
       do while (ist <= st%nst)
       ! test for degeneracies
-         write(message(1),'(a)') '===='
+         write(messages_lines(1),'(a)') '===='
          tmp = int2str(ist)
-         write(message(2),'(a, a, a, f12.8, a, a)') 'State #', trim(tmp), ', Energy = ', &
+         write(messages_lines(2),'(a, a, a, f12.8, a, a)') 'State #', trim(tmp), ', Energy = ', &
            units_from_atomic(units_out%energy, st%eigenval(ist, ik)), ' ', units_abbrev(units_out%energy)
          call messages_info(2)
 
@@ -586,7 +586,7 @@ contains
          do while (ist2 <= st%nst .and. &
            abs(st%eigenval(min(ist2, st%nst), ik) - st%eigenval(ist, ik)) < threshold)
            tmp = int2str(ist2)
-           write(message(1),'(a, a, a, f12.8, a, a)') 'State #', trim(tmp), ', Energy = ', &
+           write(messages_lines(1),'(a, a, a, f12.8, a, a)') 'State #', trim(tmp), ', Energy = ', &
              units_from_atomic(units_out%energy, st%eigenval(ist2, ik)), ' ', units_abbrev(units_out%energy)
            call messages_info(1)
            ist2 = ist2 + 1
@@ -595,11 +595,11 @@ contains
          ist = ist2
       end do
 
-      write(message(1),'()')
+      write(messages_lines(1),'()')
       call messages_info(1)
     end do
 
-    message(1) = "Velocities and effective masses are not correct within degenerate subspaces."
+    messages_lines(1) = "Velocities and effective masses are not correct within degenerate subspaces."
     call messages_warning(1)
 
     POP_SUB(kdotp_write_degeneracies)

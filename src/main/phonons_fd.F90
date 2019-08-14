@@ -64,8 +64,8 @@ contains
     ! and are not valid when the atoms are displaced.
     ! FIXME: implement instead use of symmetry over dynamical matrix to make things more efficient.
     if(sys%st%symmetrize_density .or. sys%gr%sb%kpoints%use_symmetries) then
-      message(1) = "Cannot compute vibrational modes by finite differences when symmetry is being used."
-      message(2) = "Set KPointsUseSymmetries = no and SymmetrizeDensity = no, for gs run and this run."
+      messages_lines(1) = "Cannot compute vibrational modes by finite differences when symmetry is being used."
+      messages_lines(2) = "Set KPointsUseSymmetries = no and SymmetrizeDensity = no, for gs run and this run."
       call messages_fatal(2)
     end if
     
@@ -75,13 +75,13 @@ contains
     call restart_init(gs_restart, sys%namespace, RESTART_GS, RESTART_TYPE_LOAD, sys%mc, ierr, mesh=sys%gr%mesh, exact=.true.)
     if(ierr == 0) call states_elec_load(gs_restart, sys%namespace, sys%st, sys%gr, ierr)
     if (ierr /= 0) then
-      message(1) = "Unable to read wavefunctions."
+      messages_lines(1) = "Unable to read wavefunctions."
       call messages_fatal(1)
     end if
     call restart_end(gs_restart)
 
     ! setup Hamiltonian
-    message(1) = 'Info: Setting up Hamiltonian.'
+    messages_lines(1) = 'Info: Setting up Hamiltonian.'
     call messages_info(1)
     call system_h_setup(sys)
 
@@ -166,7 +166,7 @@ contains
       do alpha = 1, mesh%sb%dim
         imat = vibrations_get_index(vib, iatom, alpha)
 
-        write(message(1), '(a,i3,3a)') 'Info: Moving atom ', iatom, ' in the +', index2axis(alpha), '-direction.'
+        write(messages_lines(1), '(a,i3,3a)') 'Info: Moving atom ', iatom, ' in the +', index2axis(alpha), '-direction.'
         call messages_info(1)
 
         ! move atom iatom in direction alpha by dist
@@ -183,7 +183,7 @@ contains
           forces0(jatom, 1:mesh%sb%dim) = geo%atom(jatom)%f(1:mesh%sb%dim)
         end do
 
-        write(message(1), '(a,i3,3a)') 'Info: Moving atom ', iatom, ' in the -', index2axis(alpha), '-direction.'
+        write(messages_lines(1), '(a,i3,3a)') 'Info: Moving atom ', iatom, ' in the -', index2axis(alpha), '-direction.'
         call messages_info(1)
 
         geo%atom(iatom)%x(alpha) = geo%atom(iatom)%x(alpha) - M_TWO*vib%disp

@@ -188,7 +188,7 @@ subroutine X(io_function_input_global)(filename, namespace, mesh, ff, ierr, map)
 
   case("csv")
     if (mesh%sb%box_shape /= PARALLELEPIPED .and. mesh%sb%box_shape /= HYPERCUBE) then
-      message(1) = "Box shape must be parallelepiped or hypercube when a .csv file is used."
+      messages_lines(1) = "Box shape must be parallelepiped or hypercube when a .csv file is used."
       call messages_fatal(1)
     end if 
 
@@ -199,7 +199,7 @@ subroutine X(io_function_input_global)(filename, namespace, mesh, ff, ierr, map)
     call io_csv_get_info(io_workpath(filename, namespace), dims, ierr)
     
     if (ierr /= 0) then
-      message(1) = "Could not read file "//trim(io_workpath(filename, namespace))//""
+      messages_lines(1) = "Could not read file "//trim(io_workpath(filename, namespace))//""
       call messages_fatal(1)
     end if
     
@@ -211,7 +211,7 @@ subroutine X(io_function_input_global)(filename, namespace, mesh, ff, ierr, map)
 #endif
 
     if (ierr /= 0) then
-      message(1) = "Could not read file "//trim(io_workpath(filename, namespace))//""
+      messages_lines(1) = "Could not read file "//trim(io_workpath(filename, namespace))//""
       call messages_fatal(1)
     end if
 
@@ -832,7 +832,7 @@ subroutine X(io_function_output_global) (how, dir, fname, namespace, mesh, ff, u
     if(ubound(ff, dim = 1) >= mesh%np_part_global) then
       np_max = mesh%np_part_global
     else
-      write(message(1),'(2a)') trim(fname), ': not outputting boundary points; they are not available'
+      write(messages_lines(1),'(2a)') trim(fname), ': not outputting boundary points; they are not available'
       call messages_warning(1)
       ! FIXME: in this case, one could allocate an array of the larger size and apply boundary conditions
     endif
@@ -1343,7 +1343,7 @@ contains
 #endif
 
     if(mesh%sb%dim /= 3 .and. mesh%sb%dim /= 2) then
-      write(message(1), '(a)') 'Cannot output function '//trim(fname_ext)//' in XCrySDen format except in 2D or 3D.'
+      write(messages_lines(1), '(a)') 'Cannot output function '//trim(fname_ext)//' in XCrySDen format except in 2D or 3D.'
       call messages_warning(1)
       return
     end if

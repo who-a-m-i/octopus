@@ -204,39 +204,39 @@ contains
     
     select case(sk%solver_type)
     case(SK_CG)
-      message(1) = 'Info: SPARSKIT solver type: Conjugate Gradient Method'
+      messages_lines(1) = 'Info: SPARSKIT solver type: Conjugate Gradient Method'
       workspace_size = 5*sk%size
     case(SK_CGNR)
-      message(1) = 'Info: SPARSKIT solver type: Conjugate Gradient Method (Normal Residual equation)'
+      messages_lines(1) = 'Info: SPARSKIT solver type: Conjugate Gradient Method (Normal Residual equation)'
       workspace_size = 5*sk%size
     case(SK_BCG)
-      message(1) = 'Info: SPARSKIT solver type: Bi-Conjugate Gradient Method'
+      messages_lines(1) = 'Info: SPARSKIT solver type: Bi-Conjugate Gradient Method'
       workspace_size = 7*sk%size
     case(SK_DBCG)
-      message(1) = 'Info: SPARSKIT solver type: BCG with partial pivoting'
+      messages_lines(1) = 'Info: SPARSKIT solver type: BCG with partial pivoting'
       workspace_size = 11*sk%size
     case(SK_BCGSTAB)
-      message(1) = 'Info: SPARSKIT solver type: BCG stabilized'
+      messages_lines(1) = 'Info: SPARSKIT solver type: BCG stabilized'
       workspace_size = 8*sk%size
     case(SK_TFQMR)
-      message(1) = 'Info: SPARSKIT solver type: Transpose-Free Quasi-Minimum Residual method'
+      messages_lines(1) = 'Info: SPARSKIT solver type: Transpose-Free Quasi-Minimum Residual method'
       workspace_size = 11*sk%size
     case(SK_FOM)
-      message(1) = 'Info: SPARSKIT solver type: Full Orthogonalization Method'
+      messages_lines(1) = 'Info: SPARSKIT solver type: Full Orthogonalization Method'
       workspace_size = (sk%size+3)*(m+2) + (m+1)*m/2
     case(SK_GMRES)
-      message(1) = 'Info: SPARSKIT solver type: Generalized Minimum Residual method'
+      messages_lines(1) = 'Info: SPARSKIT solver type: Generalized Minimum Residual method'
       workspace_size = (sk%size+3)*(m+2) + (m+1)*m/2
     case(SK_FGMRES)
-      message(1) = 'Info: SPARSKIT solver type: Flexible version of Generalized Minimum Residual method'
+      messages_lines(1) = 'Info: SPARSKIT solver type: Flexible version of Generalized Minimum Residual method'
       workspace_size =  2*sk%size*(m+1) + (m+1)*m/2 + 3*m + 2
     case(SK_DQGMRES)
-      message(1) = 'Info: SPARSKIT solver type: Direct versions of Quasi-Generalized Minimum Residual method'
+      messages_lines(1) = 'Info: SPARSKIT solver type: Direct versions of Quasi-Generalized Minimum Residual method'
       workspace_size = sk%size + (m+1) * (2*sk%size+4)
     case default
-      write(message(1), '(a,i4,a)') "Input: '", sk%solver_type, &
+      write(messages_lines(1), '(a,i4,a)') "Input: '", sk%solver_type, &
         "' is not a valid SPARSKIT Solver"
-      message(2) = '( SPARSKIT Solver =  cg | cgnr | bcg | dbcg | bcgstab | tfqmr | fom | gmres | fgmres | dqgmres )'
+      messages_lines(2) = '( SPARSKIT Solver =  cg | cgnr | bcg | dbcg | bcgstab | tfqmr | fom | gmres | fgmres | dqgmres )'
       call messages_fatal(2)
     end select
     call messages_info(1)

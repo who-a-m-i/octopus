@@ -147,7 +147,7 @@ contains
       this%nik_factor = kpoints_kweight_denominator(kpoints)
 
       if(this%nik_factor == 0) then
-        message(1) = "k-point weights in KPoints or KPointsReduced blocks must be rational numbers for semiconducting smearing."
+        messages_lines(1) = "k-point weights in KPoints or KPointsReduced blocks must be rational numbers for semiconducting smearing."
         call messages_fatal(1)
       end if
     end if
@@ -208,8 +208,8 @@ contains
 
     maxq = this%el_per_state * nst * this%nspins
     if (maxq - qtot <= -tol) then ! not enough states
-      message(1) = 'Not enough states'
-      write(message(2),'(6x,a,f12.6,a,i10)')'(total charge = ', qtot, &
+      messages_lines(1) = 'Not enough states'
+      write(messages_lines(2),'(6x,a,f12.6,a,i10)')'(total charge = ', qtot, &
         ' max charge = ', maxq
       call messages_fatal(2)
     end if
@@ -303,7 +303,7 @@ contains
       end do
 
       if(.not.conv) then
-        message(1) = 'Fermi: did not converge.'
+        messages_lines(1) = 'Fermi: did not converge.'
         call messages_fatal(1)
       end if
 
@@ -423,7 +423,7 @@ contains
     deltaf = M_ZERO
     select case(this%method)
     case(SMEAR_FIXED_OCC)
-      message(1) = "smear_delta_function is not defined for SMEAR_FIXED_OCC."
+      messages_lines(1) = "smear_delta_function is not defined for SMEAR_FIXED_OCC."
       call messages_fatal(1)
 
     case(SMEAR_SEMICONDUCTOR)
@@ -482,7 +482,7 @@ contains
     stepf = M_ZERO
     select case(this%method)
     case(SMEAR_FIXED_OCC)
-      message(1) = "smear_step_function is not defined for SMEAR_FIXED_OCC."
+      messages_lines(1) = "smear_step_function is not defined for SMEAR_FIXED_OCC."
       call messages_fatal(1)
 
     case(SMEAR_SEMICONDUCTOR)
@@ -555,7 +555,7 @@ contains
     entropyf = M_ZERO
     select case(this%method)
     case(SMEAR_FIXED_OCC)
-      message(1) = "smear_entropy_function is not defined for SMEAR_FIXED_OCC."
+      messages_lines(1) = "smear_entropy_function is not defined for SMEAR_FIXED_OCC."
       call messages_fatal(1)
 
     case(SMEAR_SEMICONDUCTOR)

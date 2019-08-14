@@ -281,7 +281,7 @@ contains
 
 
     if(bitand(this%what, output_me_one_body) /= 0) then
-      message(1) = "Computing one-body matrix elements"
+      messages_lines(1) = "Computing one-body matrix elements"
       call messages_info(1)
 
       if(st%parallel_in_states)  call messages_not_implemented("OutputMatrixElements=one_body with states parallelization")
@@ -319,7 +319,7 @@ contains
     end if
 
     if(bitand(this%what, output_me_two_body) /= 0) then
-      message(1) = "Computing two-body matrix elements"
+      messages_lines(1) = "Computing two-body matrix elements"
       call messages_info(1)
 
       ASSERT(.not. st%parallel_in_states)
@@ -395,10 +395,10 @@ contains
     ns = 1
     if(st%d%nspin == 2) ns = 2
 
-    write(message(1),'(a)') 'Momentum of the KS states [a.u.]:'
+    write(messages_lines(1),'(a)') 'Momentum of the KS states [a.u.]:'
     call messages_info(1, iunit)      
     if (st%d%nik > ns) then
-      message(1) = 'k-points [' // trim(units_abbrev(unit_one/units_out%length)) // ']'
+      messages_lines(1) = 'k-points [' // trim(units_abbrev(unit_one/units_out%length)) // ']'
       call messages_info(1, iunit)
     end if
 
@@ -407,26 +407,26 @@ contains
       kpoint(1:gr%sb%dim) = kpoints_get_point(gr%sb%kpoints, states_elec_dim_get_kpoint_index(st%d, ik))
 
       if(st%d%nik > ns) then
-        write(message(1), '(a,i4, a)') '#k =', ik, ', k = ('
+        write(messages_lines(1), '(a,i4, a)') '#k =', ik, ', k = ('
         do idir = 1, gr%sb%dim
           write(str_tmp, '(f12.6, a)') units_from_atomic(unit_one/units_out%length, kpoint(idir)), ','
-          message(1) = trim(message(1)) // trim(str_tmp)
+          messages_lines(1) = trim(messages_lines(1)) // trim(str_tmp)
           if(idir == gr%sb%dim) then
-            message(1) = trim(message(1)) // ")"
+            messages_lines(1) = trim(messages_lines(1)) // ")"
           else
-            message(1) = trim(message(1)) // ","
+            messages_lines(1) = trim(messages_lines(1)) // ","
           end if
         end do
         call messages_info(1, iunit)
       end if
 
-      write(message(1), '(a4,1x,a5)') '#st',' Spin'
+      write(messages_lines(1), '(a4,1x,a5)') '#st',' Spin'
       do idir = 1, gr%sb%dim
         write(str_tmp, '(a,a1,a)') '        <p', index2axis(idir), '>'
-        message(1) = trim(message(1)) // trim(str_tmp)
+        messages_lines(1) = trim(messages_lines(1)) // trim(str_tmp)
       end do
       write(str_tmp, '(4x,a12,1x)') 'Occupation '
-      message(1) = trim(message(1)) // trim(str_tmp)
+      messages_lines(1) = trim(messages_lines(1)) // trim(str_tmp)
       call messages_info(1, iunit)
       
       do ist = 1, st%nst
@@ -436,19 +436,19 @@ contains
           if(is  ==  1) cspin = 'dn'
           if(st%d%ispin  ==  UNPOLARIZED .or. st%d%ispin  ==  SPINORS) cspin = '--'
           
-          write(message(1), '(i4,3x,a2,1x)') ist, trim(cspin)
+          write(messages_lines(1), '(i4,3x,a2,1x)') ist, trim(cspin)
           do idir = 1, gr%sb%dim
             write(str_tmp, '(f12.6)') momentum(idir, ist, ik+is)
-            message(1) = trim(message(1)) // trim(str_tmp)
+            messages_lines(1) = trim(messages_lines(1)) // trim(str_tmp)
           end do
           write(str_tmp, '(3x,f12.6)') st%occ(ist, ik+is)
-          message(1) = trim(message(1)) // trim(str_tmp)
+          messages_lines(1) = trim(messages_lines(1)) // trim(str_tmp)
           call messages_info(1, iunit)
           
         end do
       end do
       
-      write(message(1),'(a)') ''
+      write(messages_lines(1),'(a)') ''
       call messages_info(1, iunit)      
       
     end do
@@ -492,7 +492,7 @@ contains
       write(iunit,'(a)') 'Angular Momentum of the KS states [dimensionless]:'
       ! r x k is dimensionless. we do not include hbar.
       if (st%d%nik > ns) then
-        message(1) = 'k-points [' // trim(units_abbrev(unit_one/units_out%length)) // ']'
+        messages_lines(1) = 'k-points [' // trim(units_abbrev(unit_one/units_out%length)) // ']'
         call messages_info(1, iunit)
       end if
     end if
@@ -545,14 +545,14 @@ contains
         kpoint = M_ZERO
         kpoint(1:gr%sb%dim) = kpoints_get_point(gr%sb%kpoints, states_elec_dim_get_kpoint_index(st%d, ik))
         
-        write(message(1), '(a,i4, a)') '#k =', ik, ', k = ('
+        write(messages_lines(1), '(a,i4, a)') '#k =', ik, ', k = ('
         do idir = 1, gr%sb%dim
           write(tmp_str(1), '(f12.6, a)') units_from_atomic(unit_one/units_out%length, kpoint(idir)), ','
-          message(1) = trim(message(1)) // trim(tmp_str(1))
+          messages_lines(1) = trim(messages_lines(1)) // trim(tmp_str(1))
           if(idir == gr%sb%dim) then
-            message(1) = trim(message(1)) // ")"
+            messages_lines(1) = trim(messages_lines(1)) // ")"
           else
-            message(1) = trim(message(1)) // ","
+            messages_lines(1) = trim(messages_lines(1)) // ","
           end if
         end do
         call messages_info(1, iunit)
@@ -573,7 +573,7 @@ contains
         end do
       end if
 #endif
-      write(message(1), '(a4,1x,a5,4a12,4x,a12,1x)')       &
+      write(messages_lines(1), '(a4,1x,a5,4a12,4x,a12,1x)')       &
         '#st',' Spin','        <Lx>', '        <Ly>', '        <Lz>', '        <L2>', 'Occupation '
       call messages_info(1, iunit)
 
@@ -588,18 +588,18 @@ contains
             write(tmp_str(1), '(i4,3x,a2)') ist, trim(cspin)
             write(tmp_str(2), '(1x,4f12.6,3x,f12.6)') &
               (ang(ist, ik+is, idir), idir = 1, 3), ang2(ist, ik+is), st%occ(ist, ik+is)
-            message(1) = trim(tmp_str(1))//trim(tmp_str(2))
+            messages_lines(1) = trim(tmp_str(1))//trim(tmp_str(2))
             call messages_info(1, iunit)
           end do
         end do
       end if
-      write(message(1),'(a)') ''
+      write(messages_lines(1),'(a)') ''
       call messages_info(1, iunit)
       
     end do
 
-    write(message(1),'(a)') 'Total Angular Momentum L [dimensionless]'
-    write(message(2),'(10x,4f12.6)') angular(1:3), lsquare
+    write(messages_lines(1),'(a)') 'Total Angular Momentum L [dimensionless]'
+    write(messages_lines(2),'(10x,4f12.6)') angular(1:3), lsquare
     call messages_info(2, iunit)
 
     call io_close(iunit)

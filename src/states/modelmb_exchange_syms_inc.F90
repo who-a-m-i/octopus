@@ -351,7 +351,7 @@ subroutine X(modelmb_sym_updown)(ndimmb, npptype, &
     else
       norm = TOFLOAT(sum(R_CONJ(antisymwf(:,1,1))*antisymwf(:,1,1))) * normalizer
     end if
-    write (message(1), '(a,I7,a,E20.10)') 'norm of pair-symmetrized-state with ',&
+    write (messages_lines(1), '(a,I7,a,E20.10)') 'norm of pair-symmetrized-state with ',&
             ndown, ' spins down is ', norm
     call messages_info(1)
   end if
@@ -436,7 +436,7 @@ subroutine X(modelmb_antisym_1spin) (n1spin, perms_1spin, ndimmb, npptype, ofst,
     else
       norm = TOFLOAT(sum(R_CONJ(antisymwf(:,1,1))*antisymwf(:,1,1))) * normalizer
     end if
-    write (message(1), '(a,I7,a,E20.10)') 'norm of 1spin-antisym+pairsym-state with ',&
+    write (messages_lines(1), '(a,I7,a,E20.10)') 'norm of 1spin-antisym+pairsym-state with ',&
             n1spin, ' spins of present type is ', norm
     call messages_info(1)
   end if

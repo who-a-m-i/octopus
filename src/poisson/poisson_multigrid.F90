@@ -218,15 +218,15 @@ contains
       if(resnorm < this%threshold) exit
 
       if(debug%info) then
-        write(message(1), '(a,i5,a,e13.6)') "Multigrid: base level: iter ", iter, " res ", resnorm
+        write(messages_lines(1), '(a,i5,a,e13.6)') "Multigrid: base level: iter ", iter, " res ", resnorm
         call messages_info(1)
       end if
 
     end do
 
     if(resnorm >= this%threshold) then
-      message(1) = 'Multigrid Poisson solver did not converge.'
-      write(message(2), '(a,e14.6)') '  Res = ', resnorm
+      messages_lines(1) = 'Multigrid Poisson solver did not converge.'
+      write(messages_lines(2), '(a,e14.6)') '  Res = ', resnorm
       call messages_warning(2)
     end if
 

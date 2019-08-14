@@ -353,7 +353,7 @@ contains
       end do
 
       if(any(abs(kick%pol(1:periodic_dim, :)) > M_EPSILON)) then
-        message(1) = "Kick cannot be applied in a periodic direction. Use GaugeVectorField instead."
+        messages_lines(1) = "Kick cannot be applied in a periodic direction. Use GaugeVectorField instead."
         call messages_fatal(1)
       end if
 
@@ -385,7 +385,7 @@ contains
 
     ! for non-dipole, it is more complicated to check whether it is actually in the periodic direction
     if(periodic_dim > 0) then
-      message(1) = "Kicks cannot be applied correctly in periodic directions."
+      messages_lines(1) = "Kicks cannot be applied correctly in periodic directions."
       call messages_warning(1)
     end if
 
@@ -561,7 +561,7 @@ contains
     end if
 
     if(kick%function_mode < 0) then
-      message(1) = "No kick could be read from file."
+      messages_lines(1) = "No kick could be read from file."
       call messages_fatal(1)
     end if
 
@@ -677,18 +677,18 @@ contains
 
       select case (kick%qkick_mode)
         case (QKICKMODE_COS)
-          write(message(1), '(a,3F9.5,a)') 'Info: Using cos(q.r) field with q = (', kick%qvector(:), ')'
+          write(messages_lines(1), '(a,3F9.5,a)') 'Info: Using cos(q.r) field with q = (', kick%qvector(:), ')'
         case (QKICKMODE_SIN)
-          write(message(1), '(a,3F9.5,a)') 'Info: Using sin(q.r) field with q = (', kick%qvector(:), ')'
+          write(messages_lines(1), '(a,3F9.5,a)') 'Info: Using sin(q.r) field with q = (', kick%qvector(:), ')'
         case (QKICKMODE_SIN + QKICKMODE_COS)
-          write(message(1), '(a,3F9.5,a)') 'Info: Using sin(q.r)+cos(q.r) field with q = (', kick%qvector(:), ')'
+          write(messages_lines(1), '(a,3F9.5,a)') 'Info: Using sin(q.r)+cos(q.r) field with q = (', kick%qvector(:), ')'
         case (QKICKMODE_EXP)
-          write(message(1), '(a,3F9.5,a)') 'Info: Using exp(iq.r) field with q = (', kick%qvector(:), ')'
+          write(messages_lines(1), '(a,3F9.5,a)') 'Info: Using exp(iq.r) field with q = (', kick%qvector(:), ')'
         case (QKICKMODE_BESSEL)
-          write(message(1), '(a,I2,a,I2,a,F9.5)') 'Info: Using j_l(qr)*Y_lm(r) field with (l,m)= (', &
+          write(messages_lines(1), '(a,I2,a,I2,a,F9.5)') 'Info: Using j_l(qr)*Y_lm(r) field with (l,m)= (', &
             kick%qbessel_l, ",", kick%qbessel_m,') and q = ', kick%qlength
         case default
-           write(message(1), '(a,3F9.6,a)') 'Info: Unknown field type!'
+           write(messages_lines(1), '(a,3F9.6,a)') 'Info: Unknown field type!'
       end select
       call messages_info(1)
 
@@ -819,22 +819,22 @@ contains
         kick_function = kick_function + kick_pcm_function
       end if
 
-      write(message(1),'(a,f11.6)') 'Info: Applying delta kick: k = ', kick%delta_strength
+      write(messages_lines(1),'(a,f11.6)') 'Info: Applying delta kick: k = ', kick%delta_strength
       select case (kick%function_mode)
       case (KICK_FUNCTION_DIPOLE)
-        message(2) = "Info: kick function: dipole."
+        messages_lines(2) = "Info: kick function: dipole."
       case (KICK_FUNCTION_MULTIPOLE)
-        message(2) = "Info: kick function: multipoles."
+        messages_lines(2) = "Info: kick function: multipoles."
       case (KICK_FUNCTION_USER_DEFINED)
-        message(2) = "Info: kick function: user defined function."
+        messages_lines(2) = "Info: kick function: user defined function."
       end select
       select case (kick%delta_strength_mode)
       case (KICK_DENSITY_MODE)
-        message(3) = "Info: Delta kick mode: Density mode"
+        messages_lines(3) = "Info: Delta kick mode: Density mode"
       case (KICK_SPIN_MODE)
-        message(3) = "Info: Delta kick mode: Spin mode"
+        messages_lines(3) = "Info: Delta kick mode: Spin mode"
       case (KICK_SPIN_DENSITY_MODE)
-        message(3) = "Info: Delta kick mode: Density + Spin modes"
+        messages_lines(3) = "Info: Delta kick mode: Density + Spin modes"
       end select
       call messages_info(3)
 

@@ -97,11 +97,11 @@ module messages_oct_m
 
   type(message_t), public :: message_g
 
-  character(len=68),      parameter, public :: hyphens = &
+  character(len=68),      parameter :: hyphens = &
     '--------------------------------------------------------------------'
   character(len=69),      parameter :: shyphens = '*'//hyphens
 
-  logical,                           public :: flush_messages
+  logical,                public :: flush_messages
 
 
   !> min_lun in io.F90 is equal to 10. We hardwire this here since we

@@ -1281,6 +1281,8 @@ contains
     subroutine out_susceptibility()
 
       character(len=80) :: dirname1
+      character(len=68), parameter :: hyphens = &
+        '--------------------------------------------------------------------'
 
       PUSH_SUB(em_resp_output.out_susceptibility)
 

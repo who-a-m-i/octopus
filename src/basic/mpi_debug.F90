@@ -109,6 +109,8 @@ contains
   subroutine mpi_debug_statistics()
     integer :: j
     real(8) :: usec_call(C_NUM_MPI_ROUTINES)
+    character(len=68), parameter :: hyphens = &
+      '--------------------------------------------------------------------'
 
     if(.not.debug%info) return
 

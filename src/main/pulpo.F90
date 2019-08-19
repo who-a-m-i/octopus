@@ -38,14 +38,14 @@ contains
     PUSH_SUB(pulpo_print)
 
     ! some white space
-    message%lines(1) = ''; message%lines(2) = ''
-    call message%info(2)
+    message_g%lines(1) = ''; message_g%lines(2) = ''
+    call message_g%info(2)
 
     call loct_printrecipe(trim(conf%share), filename)
     call io_dump_file(stdout, filename)
-    call message%info(2)
+    call message_g%info(2)
     call io_dump_file(stdout, trim(conf%share)//"/recipes/disclaimer.txt")
-    call message%info(2)
+    call message_g%info(2)
 
     POP_SUB(pulpo_print)
 

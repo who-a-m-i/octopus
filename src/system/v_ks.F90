@@ -199,7 +199,7 @@ contains
     ! the user knows what he wants, give her that
     if(parse_is_defined(namespace, 'TheoryLevel')) then
       call parse_variable(namespace, 'TheoryLevel', KOHN_SHAM_DFT, ks%theory_level)
-      if(.not.varinfo_valid_option('TheoryLevel', ks%theory_level)) call message%input_error('TheoryLevel')
+      if(.not.varinfo_valid_option('TheoryLevel', ks%theory_level)) call message_g%input_error('TheoryLevel')
 
       parsed_theory_level = .true.
     end if
@@ -239,9 +239,9 @@ contains
 
     if(.not. parse_is_defined(namespace, 'XCFunctional') &
       .and. (pseudo_x_functional /= PSEUDO_EXCHANGE_ANY .or. pseudo_c_functional /= PSEUDO_CORRELATION_ANY)) then
-      call message%write('Info: the XCFunctional has been selected to match the pseudopotentials', new_line = .true.)
-      call message%write('      used in the calculation.')
-      call message%info()
+      call message_g%write('Info: the XCFunctional has been selected to match the pseudopotentials', new_line = .true.)
+      call message_g%write('      used in the calculation.')
+      call message_g%info()
     end if
     
     ! The description of this variable can be found in file src/xc/functionals_list.F90
@@ -254,9 +254,9 @@ contains
     
     if( (x_id /= pseudo_x_functional .and. pseudo_x_functional /= PSEUDO_EXCHANGE_ANY) .or. &
       (c_id /= pseudo_c_functional .and. pseudo_c_functional /= PSEUDO_EXCHANGE_ANY)) then
-      call message%write('The XCFunctional that you selected does not match the one used', new_line = .true.)
-      call message%write('to generate the pseudopotentials.')
-      call message%warning()
+      call message_g%write('The XCFunctional that you selected does not match the one used', new_line = .true.)
+      call message_g%write('to generate the pseudopotentials.')
+      call message_g%warning()
     end if
 
     ! FIXME: we rarely need this. We should only parse when necessary.
@@ -286,8 +286,8 @@ contains
       xk_id = val - ck_id*1000  
     end if
     
-    call message%obsolete_variable(namespace, 'XFunctional', 'XCFunctional')
-    call message%obsolete_variable(namespace, 'CFunctional', 'XCFunctional')
+    call message_g%obsolete_variable(namespace, 'XFunctional', 'XCFunctional')
+    call message_g%obsolete_variable(namespace, 'CFunctional', 'XCFunctional')
 
     ! initialize XC modules
 
@@ -315,28 +315,28 @@ contains
 
       ! In principle we do not need to parse. However we do it for consistency
       call parse_variable(namespace, 'TheoryLevel', default, ks%theory_level)
-      if(.not.varinfo_valid_option('TheoryLevel', ks%theory_level)) call message%input_error('TheoryLevel')
+      if(.not.varinfo_valid_option('TheoryLevel', ks%theory_level)) call message_g%input_error('TheoryLevel')
      
     end if
 
-    call message%obsolete_variable(namespace, 'NonInteractingElectrons', 'TheoryLevel')
-    call message%obsolete_variable(namespace, 'HartreeFock', 'TheoryLevel')
+    call message_g%obsolete_variable(namespace, 'NonInteractingElectrons', 'TheoryLevel')
+    call message_g%obsolete_variable(namespace, 'HartreeFock', 'TheoryLevel')
 
-    if(ks%theory_level == RDMFT ) call message%experimental('RDMFT theory level')
+    if(ks%theory_level == RDMFT ) call message_g%experimental('RDMFT theory level')
     
     select case(ks%theory_level)
     case(INDEPENDENT_PARTICLES)
       ks%sic_type = SIC_NONE
     case(HARTREE)
-      call message%experimental("Hartree theory level")
+      call message_g%experimental("Hartree theory level")
       if(gr%mesh%sb%periodic_dim == gr%mesh%sb%dim) &
-        call message%experimental("Hartree in fully periodic system")
+        call message_g%experimental("Hartree in fully periodic system")
       if(gr%mesh%sb%kpoints%full%npoints > 1) &
-        call message%not_implemented("Hartree with k-points")
+        call message_g%not_implemented("Hartree with k-points")
 
     case(HARTREE_FOCK)
       if(gr%mesh%sb%kpoints%full%npoints > 1) &
-        call message%not_implemented("Hartree-Fock with k-points")
+        call message_g%not_implemented("Hartree-Fock with k-points")
       
       ks%sic_type = SIC_NONE
 
@@ -363,7 +363,7 @@ contains
         !% C. Legrand <i>et al.</i>, <i>J. Phys. B</i> <b>35</b>, 1115 (2002). 
         !%End
         call parse_variable(namespace, 'SICCorrection', sic_none, ks%sic_type)
-        if(.not. varinfo_valid_option('SICCorrection', ks%sic_type)) call message%input_error('SICCorrection')
+        if(.not. varinfo_valid_option('SICCorrection', ks%sic_type)) call message_g%input_error('SICCorrection')
 
         ! Perdew-Zunger corrections
         if(ks%sic_type == SIC_PZ) ks%xc_family = ior(ks%xc_family, XC_FAMILY_OEP)
@@ -381,8 +381,8 @@ contains
     end select
 
     if (st%d%ispin == SPINORS) then
-      if(bitand(ks%xc_family, XC_FAMILY_GGA + XC_FAMILY_HYB_GGA) /= 0) call message%not_implemented("GGA with spinors")
-      if(bitand(ks%xc_family, XC_FAMILY_MGGA + XC_FAMILY_HYB_MGGA) /= 0) call message%not_implemented("MGGA with spinors")
+      if(bitand(ks%xc_family, XC_FAMILY_GGA + XC_FAMILY_HYB_GGA) /= 0) call message_g%not_implemented("GGA with spinors")
+      if(bitand(ks%xc_family, XC_FAMILY_MGGA + XC_FAMILY_HYB_MGGA) /= 0) call message_g%not_implemented("MGGA with spinors")
     end if
 
     ks%frozen_hxc = .false.
@@ -424,7 +424,7 @@ contains
     call parse_variable(namespace, 'VDWCorrection', OPTION__VDWCORRECTION__NONE, ks%vdw_correction)
     
     if(ks%vdw_correction /= OPTION__VDWCORRECTION__NONE) then
-      call message%experimental('VDWCorrection')
+      call message_g%experimental('VDWCorrection')
 
       select case(ks%vdw_correction)
       case(OPTION__VDWCORRECTION__VDW_TS)
@@ -446,14 +446,14 @@ contains
         ks%vdw_self_consistent = .false.
 
         if(ks%gr%sb%dim /= 3) then
-          call message%write('vdw_d3 can only be used in 3-dimensional systems')
-          call message%fatal()
+          call message_g%write('vdw_d3 can only be used in 3-dimensional systems')
+          call message_g%fatal()
         end if
         
         do iatom = 1, geo%natoms
           if(.not. species_represents_real_atom(geo%atom(iatom)%species)) then
-            call message%write('vdw_d3 is not implemented when non-atomic species are present')
-            call message%fatal()
+            call message_g%write('vdw_d3 is not implemented when non-atomic species are present')
+            call message_g%fatal()
           end if
         end do
          
@@ -488,23 +488,23 @@ contains
         !%  VDWD3Functional = 'pbe'
         !%
         !%End
-        if(parse_is_defined(namespace, 'VDWD3Functional')) call message%experimental('VDWD3Functional')
+        if(parse_is_defined(namespace, 'VDWD3Functional')) call message_g%experimental('VDWD3Functional')
         call parse_variable(namespace, 'VDWD3Functional', d3func_def, d3func)
         
         if(d3func == '') then
-          call message%write('Cannot find  a matching parametrization  of DFT-D3 for the current')
-          call message%new_line()
-          call message%write('XCFunctional.  Please select a different XCFunctional, or select a')
-          call message%new_line()
-          call message%write('functional for DFT-D3 using the <tt>VDWD3Functional</tt> variable.')
-          call message%fatal()
+          call message_g%write('Cannot find  a matching parametrization  of DFT-D3 for the current')
+          call message_g%new_line()
+          call message_g%write('XCFunctional.  Please select a different XCFunctional, or select a')
+          call message_g%new_line()
+          call message_g%write('functional for DFT-D3 using the <tt>VDWD3Functional</tt> variable.')
+          call message_g%fatal()
         end if
 
         if(ks%gr%sb%periodic_dim /= 0 .and. ks%gr%sb%periodic_dim /= 3) then
-          call message%write('For partially periodic systems,  the vdw_d3 interaction is assumed')
-          call message%new_line()
-          call message%write('to be periodic in three dimensions.')
-          call message%warning()
+          call message_g%write('For partially periodic systems,  the vdw_d3 interaction is assumed')
+          call message_g%new_line()
+          call message_g%write('to be periodic in three dimensions.')
+          call message_g%warning()
         end if
           
         call dftd3_init(ks%vdw_d3, d3_input, trim(conf%share)//'/dftd3/pars.dat')
@@ -539,8 +539,8 @@ contains
         cf = species_c_functional(geo%species(ispecies))
 
         if(xf == PSEUDO_EXCHANGE_UNKNOWN .or. cf == PSEUDO_CORRELATION_UNKNOWN) then
-          call message%write("Unknown XC functional for species '"//trim(species_label(geo%species(ispecies)))//"'")
-          call message%warning()
+          call message_g%write("Unknown XC functional for species '"//trim(species_label(geo%species(ispecies)))//"'")
+          call message_g%warning()
           cycle
         end if
 
@@ -548,8 +548,8 @@ contains
           x_functional = xf
         else
           if(xf /= x_functional .and. .not. warned_inconsistent) then
-            call message%write('Inconsistent XC functional detected between species');
-            call message%warning()
+            call message_g%write('Inconsistent XC functional detected between species');
+            call message_g%warning()
             warned_inconsistent = .true.
           end if
         end if
@@ -558,8 +558,8 @@ contains
           c_functional = cf
         else
           if(cf /= c_functional .and. .not. warned_inconsistent) then
-            call message%write('Inconsistent XC functional detected between species');
-            call message%warning()
+            call message_g%write('Inconsistent XC functional detected between species');
+            call message_g%warning()
             warned_inconsistent = .true.
           end if
         end if
@@ -619,8 +619,8 @@ contains
 
     PUSH_SUB(v_ks_write_info)
 
-    call message%print_stress(iunit, "Theory Level")
-    call message%print_var_option(iunit, "TheoryLevel", ks%theory_level)
+    call message_g%print_stress(iunit, "Theory Level")
+    call message_g%print_var_option(iunit, "TheoryLevel", ks%theory_level)
 
     select case(ks%theory_level)
     case(HARTREE_FOCK)
@@ -632,7 +632,7 @@ contains
       call xc_write_info(ks%xc, iunit)
 
       write(iunit, '(1x)')
-      call message%print_var_option(iunit, 'SICCorrection', ks%sic_type)
+      call message_g%print_var_option(iunit, 'SICCorrection', ks%sic_type)
 
       if(bitand(ks%xc_family, XC_FAMILY_OEP) /= 0) then
         call xc_oep_write_info(ks%oep, iunit)
@@ -643,7 +643,7 @@ contains
 
     end select
 
-    call message%print_stress(iunit)
+    call message_g%print_stress(iunit)
 
     POP_SUB(v_ks_write_info)
   end subroutine v_ks_write_info
@@ -711,8 +711,8 @@ contains
     ks%calc%geo => geo
     
     if(debug%info) then
-      write(message%lines(1), '(a)') 'Debug: Calculating Kohn-Sham potential.'
-      call message%info(1)
+      write(message_g%lines(1), '(a)') 'Debug: Calculating Kohn-Sham potential.'
+      call message_g%info(1)
     end if
 
     ks%calc%time_present = present(time) 
@@ -782,12 +782,12 @@ contains
       call states_elec_copy(ks%calc%hf_st, st)
       if(st%parallel_in_states) then
         if(accel_is_enabled()) then
-          call message%write('State parallelization of Hartree-Fock exchange  is not supported')
-          call message%new_line()
-          call message%write('when running with OpenCL/CUDA. Please use domain parallelization')
-          call message%new_line()
-          call message%write("or disable acceleration using 'DisableAccel = yes'.")
-          call message%fatal()
+          call message_g%write('State parallelization of Hartree-Fock exchange  is not supported')
+          call message_g%new_line()
+          call message_g%write('when running with OpenCL/CUDA. Please use domain parallelization')
+          call message_g%new_line()
+          call message_g%write("or disable acceleration using 'DisableAccel = yes'.")
+          call message_g%fatal()
         end if
         call states_elec_parallel_remote_access_start(ks%calc%hf_st)
       end if
@@ -857,10 +857,10 @@ contains
       PUSH_SUB(add_adsic)
       
       if(family_is_mgga(hm%xc_family)) then
-        call message%not_implemented('ADSIC with MGGAs')
+        call message_g%not_implemented('ADSIC with MGGAs')
       end if
       if (st%d%ispin == SPINORS) then
-        call message%not_implemented('ADSIC with non-collinear spin')      
+        call message_g%not_implemented('ADSIC with non-collinear spin')      
       end if
 
       SAFE_ALLOCATE(vxc_sic(1:ks%gr%fine%mesh%np, 1:st%d%nspin))

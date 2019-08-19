@@ -211,17 +211,17 @@ contains
         sb%periodic_dim = geo%periodic_dim
       end if
       if ((sb%periodic_dim < 0) .or. (sb%periodic_dim > MAX_DIM) .or. (sb%periodic_dim > sb%dim)) &
-        call message%input_error('PeriodicDimensions')
+        call message_g%input_error('PeriodicDimensions')
 
       if(sb%periodic_dim > 0 .and. sb%periodic_dim < sb%dim) then
-        call message%experimental('Support for mixed periodicity systems')
+        call message_g%experimental('Support for mixed periodicity systems')
       end if
 
       if(sb%periodic_dim == 1) then
-        call message%write('For systems that  are periodic in 1D, interaction between', new_line = .true.)
-        call message%write('ions is assumed to be periodic in 3D. This affects the calculation', new_line = .true.)
-        call message%write('of total energy and forces.')
-        call message%warning()
+        call message_g%write('For systems that  are periodic in 1D, interaction between', new_line = .true.)
+        call message_g%write('ions is assumed to be periodic in 3D. This affects the calculation', new_line = .true.)
+        call message_g%write('of total energy and forces.')
+        call message_g%warning()
       end if
 
       !%Variable MultiResolutionArea
@@ -238,9 +238,9 @@ contains
 
       if(parse_block(namespace, 'MultiResolutionArea', blk) == 0) then
 
-        call message%experimental('Multi-resolution')
+        call message_g%experimental('Multi-resolution')
 
-        if(sb%dim /= 3) call message%not_implemented('multi-resolution for dim != 3')
+        if(sb%dim /= 3) call message_g%not_implemented('multi-resolution for dim != 3')
 
         ! number of areas
         sb%hr_area%num_areas = parse_block_n(blk)
@@ -255,7 +255,7 @@ contains
           call parse_block_float(blk, 0, idir - 1, sb%hr_area%center(idir))
         end do
 
-        if (sb%hr_area%num_areas /= 1) call message%input_error('MultiResolutionArea')
+        if (sb%hr_area%num_areas /= 1) call message_g%input_error('MultiResolutionArea')
 
         ! the radii
         SAFE_ALLOCATE(sb%hr_area%radius(1:sb%hr_area%num_radii))
@@ -274,7 +274,7 @@ contains
         !%Description
         !% The interpolation order in the multiresolution approach (with <tt>MultiResolutionArea</tt>).
         !%End
-        call message%obsolete_variable(namespace, 'MR_InterpolationOrder', 'MultiResolutionInterpolationOrder')
+        call message_g%obsolete_variable(namespace, 'MR_InterpolationOrder', 'MultiResolutionInterpolationOrder')
         call parse_variable(namespace, 'MultiResolutionInterpolationOrder', 5, order)
         call simul_box_interp_init(sb, order)
 
@@ -347,16 +347,16 @@ contains
         default_boxshape = MINIMUM
       end if
       call parse_variable(namespace, 'BoxShape', default_boxshape, sb%box_shape)
-      if(.not.varinfo_valid_option('BoxShape', sb%box_shape)) call message%input_error('BoxShape')
+      if(.not.varinfo_valid_option('BoxShape', sb%box_shape)) call message_g%input_error('BoxShape')
       select case(sb%box_shape)
       case(SPHERE, MINIMUM, BOX_USDEF)
-        if(sb%dim > 1 .and. simul_box_is_periodic(sb)) call message%input_error('BoxShape')
+        if(sb%dim > 1 .and. simul_box_is_periodic(sb)) call message_g%input_error('BoxShape')
       case(CYLINDER)
         if(sb%dim == 2) then
-          message%lines(1) = "BoxShape = cylinder is not meaningful in 2D. Use sphere if you want a circle."
-          call message%fatal(1)
+          message_g%lines(1) = "BoxShape = cylinder is not meaningful in 2D. Use sphere if you want a circle."
+          call message_g%fatal(1)
         end if
-        if(sb%periodic_dim > 1) call message%input_error('BoxShape')
+        if(sb%periodic_dim > 1) call message_g%input_error('BoxShape')
       end select
 
       ! ignore box_shape in 1D
@@ -364,11 +364,11 @@ contains
         sb%box_shape = SPHERE
 
       ! Cannot use images in 1D or 3D
-      if(sb%dim /= 2 .and. sb%box_shape == BOX_IMAGE) call message%input_error('BoxShape')
+      if(sb%dim /= 2 .and. sb%box_shape == BOX_IMAGE) call message_g%input_error('BoxShape')
 
       if(sb%dim > 3 .and. sb%box_shape /= HYPERCUBE) then
-        message%lines(1) = "For more than 3 dimensions, you can only use the hypercubic box."
-        call message%fatal(1)
+        message_g%lines(1) = "For more than 3 dimensions, you can only use the hypercubic box."
+        call message_g%fatal(1)
         ! FIXME: why not a hypersphere as another option?
         ! Also, hypercube should be unified with parallepiped.
       end if
@@ -389,19 +389,19 @@ contains
       select case(sb%box_shape)
       case(SPHERE, CYLINDER)
         call parse_variable(namespace, 'Radius', def_rsize, sb%rsize, units_inp%length)
-        if(sb%rsize < M_ZERO) call message%input_error('radius')
-        if(def_rsize>M_ZERO) call message%check_def(sb%rsize, .false., def_rsize, 'radius', units_out%length)
+        if(sb%rsize < M_ZERO) call message_g%input_error('radius')
+        if(def_rsize>M_ZERO) call message_g%check_def(sb%rsize, .false., def_rsize, 'radius', units_out%length)
       case(MINIMUM)
 
         if(geo%reduced_coordinates) then
-          message%lines(1) = "The 'minimum' box shape cannot be used if atomic positions"
-          message%lines(2) = "are given as reduced coordinates."
-          call message%fatal(2)
+          message_g%lines(1) = "The 'minimum' box shape cannot be used if atomic positions"
+          message_g%lines(2) = "are given as reduced coordinates."
+          call message_g%fatal(2)
         end if
 
         default=sb%rsize
         call parse_variable(namespace, 'radius', default, sb%rsize, units_inp%length)
-        if(sb%rsize < M_ZERO .and. def_rsize < M_ZERO) call message%input_error('Radius')
+        if(sb%rsize < M_ZERO .and. def_rsize < M_ZERO) call message_g%input_error('Radius')
       end select
 
       if(sb%box_shape == CYLINDER) then
@@ -420,7 +420,7 @@ contains
 
         call parse_variable(namespace, 'Xlength', default, sb%xsize, units_inp%length)
         if(def_rsize > M_ZERO .and. sb%periodic_dim == 0) &
-          call message%check_def(sb%xsize, .false., def_rsize, 'xlength', units_out%length)
+          call message_g%check_def(sb%xsize, .false., def_rsize, 'xlength', units_out%length)
       end if
 
       sb%lsize = M_ZERO
@@ -451,30 +451,30 @@ contains
           sb%lsize(:) = geo%lsize(:)
         else if(parse_block(namespace, 'Lsize', blk) == 0) then
           if(parse_block_cols(blk,0) < sb%dim .and. .not. parse_is_defined(namespace, 'LatticeVectors')) &
-              call message%input_error('Lsize')
+              call message_g%input_error('Lsize')
           do idir = 1, sb%dim
             call parse_block_float(blk, 0, idir - 1, sb%lsize(idir), units_inp%length)
             if(def_rsize > M_ZERO .and. sb%periodic_dim < idir) &
-              call message%check_def(sb%lsize(idir), .false., def_rsize, 'Lsize', units_out%length)
+              call message_g%check_def(sb%lsize(idir), .false., def_rsize, 'Lsize', units_out%length)
           end do
           call parse_block_end(blk)
         else if ((parse_is_defined(namespace, 'Lsize'))) then
           call parse_variable(namespace, 'Lsize', -M_ONE, sb%lsize(1), units_inp%length)
           if(abs(sb%lsize(1)+M_ONE)  <=  M_EPSILON) then
-            call message%input_error('Lsize')
+            call message_g%input_error('Lsize')
           end if
           if(def_rsize > M_ZERO .and. sb%periodic_dim < sb%dim) &
-            call message%check_def(sb%lsize(1), .false., def_rsize, 'Lsize', units_out%length)
+            call message_g%check_def(sb%lsize(1), .false., def_rsize, 'Lsize', units_out%length)
           sb%lsize(1:sb%dim) = sb%lsize(1)
         else
-          message%lines(1) = "Lsize was not found in input file. Continuing anyway."
-          call message%warning(1)
+          message_g%lines(1) = "Lsize was not found in input file. Continuing anyway."
+          call message_g%warning(1)
         end if
       else
         ! if not a compatible box-shape
         if(all(geo%lsize(1:sb%dim) > M_ZERO)) then
-          message%lines(1) = "Ignoring lattice vectors from XSF file."
-          call message%warning(1)
+          message_g%lines(1) = "Ignoring lattice vectors from XSF file."
+          call message_g%warning(1)
         end if
       end if
 
@@ -492,25 +492,25 @@ contains
 #if defined(HAVE_GDLIB)
         call parse_variable(namespace, 'BoxShapeImage', '', sb%filename)
         if(trim(sb%filename) == "") then
-          message%lines(1) = "Must specify BoxShapeImage if BoxShape = box_image."
-          call message%fatal(1)
+          message_g%lines(1) = "Must specify BoxShapeImage if BoxShape = box_image."
+          call message_g%fatal(1)
         end if
 
         ! Find out the file and read it.
         inquire(file=trim(sb%filename), exist=found)
         if(.not. found) then
-          message%lines(1) = "Could not find file '" // trim(sb%filename) // "' for BoxShape = box_image."
+          message_g%lines(1) = "Could not find file '" // trim(sb%filename) // "' for BoxShape = box_image."
 
           sb%filename = trim(conf%share) // '/' // trim(sb%filename)
           inquire(file=trim(sb%filename), exist=found)
           
-          if(.not. found) call message%fatal(1)
+          if(.not. found) call message_g%fatal(1)
         end if
 
         sb%image = loct_gdimage_create_from(sb%filename)
         if(.not.c_associated(sb%image)) then
-          message%lines(1) = "Could not open file '" // trim(sb%filename) // "' for BoxShape = box_image."
-          call message%fatal(1)
+          message_g%lines(1) = "Could not open file '" // trim(sb%filename) // "' for BoxShape = box_image."
+          call message_g%fatal(1)
         end if
         sb%image_size(1) = loct_gdImage_SX(sb%image)
         sb%image_size(2) = loct_gdImage_SY(sb%image)
@@ -525,9 +525,9 @@ contains
           end if
         end do
 #else
-        message%lines(1) = "To use 'BoxShape = box_image', you have to compile Octopus"
-        message%lines(2) = "with GD library support."
-        call message%fatal(2)
+        message_g%lines(1) = "To use 'BoxShape = box_image', you have to compile Octopus"
+        message_g%lines(2) = "with GD library support."
+        call message_g%fatal(2)
 #endif
       end if
 
@@ -564,7 +564,7 @@ contains
         end do
       end select
 
-      call message%obsolete_variable(namespace, 'BoxOffset')
+      call message_g%obsolete_variable(namespace, 'BoxOffset')
       
       POP_SUB(simul_box_init.read_box)
     end subroutine read_box
@@ -605,8 +605,8 @@ contains
     PUSH_SUB(simul_box_interp_init)
     this%hr_area%interp%order=order
     if(this%hr_area%interp%order<=0) then
-      message%lines(1) = "The value for MultiResolutionInterpolationOrder must be > 0."
-      call message%fatal(1)
+      message_g%lines(1) = "The value for MultiResolutionInterpolationOrder must be > 0."
+      call message_g%fatal(1)
     end if
     this%hr_area%interp%nn=2*this%hr_area%interp%order
     SAFE_ALLOCATE(pos(1:this%hr_area%interp%nn))
@@ -666,8 +666,8 @@ contains
         if(parse_block_n(blk) > 1) then ! we have a shift, or even more
           ncols = parse_block_cols(blk, 1)
           if(ncols /= sb%dim) then
-            write(message%lines(1),'(a,i3,a,i3)') 'LatticeParameters angle has ', ncols, ' columns but must have ', sb%dim
-            call message%fatal(1)
+            write(message_g%lines(1),'(a,i3,a,i3)') 'LatticeParameters angle has ', ncols, ' columns but must have ', sb%dim
+            call message_g%fatal(1)
           end if
           do idim = 1, sb%dim
             call parse_block_float(blk, 1, idim - 1, angles(idim))
@@ -677,9 +677,9 @@ contains
         call parse_block_end(blk)
 
         if (parse_is_defined(namespace, 'Lsize')) then
-          message%lines(1) = 'LatticeParameters is incompatible with Lsize'
-          call message%print_var_info(stdout, "LatticeParameters")
-          call message%fatal(1)
+          message_g%lines(1) = 'LatticeParameters is incompatible with Lsize'
+          call message_g%print_var_info(stdout, "LatticeParameters")
+          call message_g%fatal(1)
         end if 
 
       end if
@@ -717,9 +717,9 @@ contains
         end if
 
         if (parse_is_defined(namespace, 'LatticeVectors')) then
-          message%lines(1) = 'LatticeParameters with angles is incompatible with LatticeVectors'
-          call message%print_var_info(stdout, "LatticeParameters")
-          call message%fatal(1)
+          message_g%lines(1) = 'LatticeParameters with angles is incompatible with LatticeVectors'
+          call message_g%print_var_info(stdout, "LatticeParameters")
+          call message_g%fatal(1)
         end if
 
         if(any(angles/=CNST(90.0))) sb%nonorthogonal = .true.
@@ -827,13 +827,13 @@ contains
       end if
 
       if( .not. simul_box_in_box(sb, geo, geo%atom(iatom)%x) ) then
-        write(message%lines(1), '(a,i5,a)') "Atom ", iatom, " is outside the box." 
+        write(message_g%lines(1), '(a,i5,a)') "Atom ", iatom, " is outside the box." 
         if (sb%periodic_dim /= sb%dim) then
           ! FIXME: This could fail for partial periodicity systems
           ! because simul_box_in_box is too strict with atoms close to
           ! the upper boundary to the cell.
-          if(warn_if_not) call message%warning(1)
-          if(die_if_not_) call message%fatal(1)
+          if(warn_if_not) call message_g%warning(1)
+          if(die_if_not_) call message_g%fatal(1)
         end if
       end if
 
@@ -919,8 +919,8 @@ contains
       volume = rv(1, 1)
       kv(1, 1) = M_ONE / rv(1, 1)
     case default ! dim > 3
-      message%lines(1) = "Reciprocal lattice for dim > 3 assumes no periodicity."
-      call message%warning(1)
+      message_g%lines(1) = "Reciprocal lattice for dim > 3 assumes no periodicity."
+      call message_g%warning(1)
       volume = M_ONE
       do ii = 1, dim
         kv(ii, ii) = M_ONE/rv(ii,ii)
@@ -930,8 +930,8 @@ contains
     end select
 
     if ( volume < M_ZERO ) then 
-      message%lines(1) = "Your lattice vectors form a left-handed system."
-      call message%fatal(1)
+      message_g%lines(1) = "Your lattice vectors form a left-handed system."
+      call message_g%fatal(1)
     end if
 
     POP_SUB(reciprocal_lattice)
@@ -979,71 +979,71 @@ contains
 
     PUSH_SUB(simul_box_write_info)
 
-    write(message%lines(1),'(a)') 'Simulation Box:'
+    write(message_g%lines(1),'(a)') 'Simulation Box:'
     if(sb%box_shape  ==  BOX_USDEF) then
-      write(message%lines(2), '(a)') '  Type = user-defined'
+      write(message_g%lines(2), '(a)') '  Type = user-defined'
     else if(sb%box_shape == BOX_IMAGE) then
-      write(message%lines(2), '(3a,i6,a,i6)') '  Type = defined by image "', trim(sb%filename), '", ', &
+      write(message_g%lines(2), '(3a,i6,a,i6)') '  Type = defined by image "', trim(sb%filename), '", ', &
         sb%image_size(1), ' x ', sb%image_size(2)
     else
-      write(message%lines(2), '(2a)') '  Type = ', trim(bs(sb%box_shape))
+      write(message_g%lines(2), '(2a)') '  Type = ', trim(bs(sb%box_shape))
     end if
-    call message%info(2, iunit)
+    call message_g%info(2, iunit)
 
     if(sb%box_shape == SPHERE .or. sb%box_shape == CYLINDER &
       .or. (sb%box_shape == MINIMUM .and. sb%rsize > M_ZERO)) then
-      write(message%lines(1), '(3a,f7.3)') '  Radius  [', trim(units_abbrev(units_out%length)), '] = ', &
+      write(message_g%lines(1), '(3a,f7.3)') '  Radius  [', trim(units_abbrev(units_out%length)), '] = ', &
         units_from_atomic(units_out%length, sb%rsize)
-      call message%info(1, iunit)
+      call message_g%info(1, iunit)
     end if
 
     if (sb%box_shape == MINIMUM .and. sb%rsize <= M_ZERO) then
       do ispec = 1, geo%nspecies     
-        write(message%lines(1), '(a,a5,5x,a,f7.3,2a)') '  Species = ', trim(species_label(geo%species(ispec))), 'Radius = ', &
+        write(message_g%lines(1), '(a,a5,5x,a,f7.3,2a)') '  Species = ', trim(species_label(geo%species(ispec))), 'Radius = ', &
           units_from_atomic(units_out%length, species_def_rsize(geo%species(ispec))), ' ', trim(units_abbrev(units_out%length))
-        call message%info(1, iunit)
+        call message_g%info(1, iunit)
       end do
     end if
 
     if(sb%box_shape == CYLINDER) then
-      write(message%lines(1), '(3a,f7.3)') '  Xlength [', trim(units_abbrev(units_out%length)), '] = ', &
+      write(message_g%lines(1), '(3a,f7.3)') '  Xlength [', trim(units_abbrev(units_out%length)), '] = ', &
         units_from_atomic(units_out%length, sb%xsize)
-      call message%info(1, iunit)
+      call message_g%info(1, iunit)
     end if
 
     if(sb%box_shape == PARALLELEPIPED) then
-      write(message%lines(1),'(3a, 99(a, f8.3), a)')     &
+      write(message_g%lines(1),'(3a, 99(a, f8.3), a)')     &
         '  Lengths [', trim(units_abbrev(units_out%length)), '] = ',    &
         '(', (units_from_atomic(units_out%length, M_TWO*sb%lsize(idir)), ',', idir = 1, sb%dim - 1),  &
         units_from_atomic(units_out%length, M_TWO*sb%lsize(sb%dim)), ')'
-      call message%info(1, iunit)
+      call message_g%info(1, iunit)
     end if
 
-    write(message%lines(1), '(a,i1,a)') '  Octopus will run in ', sb%dim, ' dimension(s).'
-    write(message%lines(2), '(a,i1,a)') '  Octopus will treat the system as periodic in ', &
+    write(message_g%lines(1), '(a,i1,a)') '  Octopus will run in ', sb%dim, ' dimension(s).'
+    write(message_g%lines(2), '(a,i1,a)') '  Octopus will treat the system as periodic in ', &
       sb%periodic_dim, ' dimension(s).'
-    call message%info(2, iunit)
+    call message_g%info(2, iunit)
 
     if(sb%periodic_dim > 0 .or. sb%box_shape == PARALLELEPIPED) then
-      write(message%lines(1),'(1x)')
-      write(message%lines(2),'(a,3a,a)') '  Lattice Vectors [', trim(units_abbrev(units_out%length)), ']'
+      write(message_g%lines(1),'(1x)')
+      write(message_g%lines(2),'(a,3a,a)') '  Lattice Vectors [', trim(units_abbrev(units_out%length)), ']'
       do idir = 1, sb%dim
-        write(message%lines(2+idir),'(9f12.6)') (units_from_atomic(units_out%length, sb%rlattice(idir2, idir)), &
+        write(message_g%lines(2+idir),'(9f12.6)') (units_from_atomic(units_out%length, sb%rlattice(idir2, idir)), &
           idir2 = 1, sb%dim) 
       end do
-      call message%info(2+sb%dim, iunit)
+      call message_g%info(2+sb%dim, iunit)
 
-      write(message%lines(1),'(a,f18.4,3a,i1.1,a)') &
+      write(message_g%lines(1),'(a,f18.4,3a,i1.1,a)') &
         '  Cell volume = ', units_from_atomic(units_out%length**sb%dim, sb%rcell_volume), &
         ' [', trim(units_abbrev(units_out%length**sb%dim)), ']'
-      call message%info(1, iunit)
+      call message_g%info(1, iunit)
 
-      write(message%lines(1),'(a,3a,a)') '  Reciprocal-Lattice Vectors [', trim(units_abbrev(units_out%length**(-1))), ']'
+      write(message_g%lines(1),'(a,3a,a)') '  Reciprocal-Lattice Vectors [', trim(units_abbrev(units_out%length**(-1))), ']'
       do idir = 1, sb%dim
-        write(message%lines(1+idir),'(3f12.6)') (units_from_atomic(unit_one / units_out%length, sb%klattice(idir2, idir)), &
+        write(message_g%lines(1+idir),'(3f12.6)') (units_from_atomic(unit_one / units_out%length, sb%klattice(idir2, idir)), &
           idir2 = 1, sb%dim)
       end do
-      call message%info(1+sb%dim, iunit)
+      call message_g%info(1+sb%dim, iunit)
     end if
 
     POP_SUB(simul_box_write_info)
@@ -1173,10 +1173,10 @@ contains
         radius = M_ZERO
         do iatom = 1, geo%natoms
           if(species_def_rsize(geo%atom(iatom)%species) < -M_EPSILON) then
-            write(message%lines(1),'(a,a,a)') 'Using default radii for minimum box, but radius for ', &
+            write(message_g%lines(1),'(a,a,a)') 'Using default radii for minimum box, but radius for ', &
               trim(species_label(geo%atom(iatom)%species)), ' is negative or undefined.'
-            message%lines(2) = "Define it properly in the Species block or set the Radius variable explicitly."
-            call message%fatal(2)
+            message_g%lines(2) = "Define it properly in the Species block or set the Radius variable explicitly."
+            call message_g%fatal(2)
           end if
           radius = max(radius, species_def_rsize(geo%atom(iatom)%species))
         end do
@@ -1295,8 +1295,8 @@ contains
       position="append", die=.false., grp=mpi_grp)
     if (iunit <= 0) then
       ierr = ierr + 1
-      message%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
-      call message%warning(1)
+      message_g%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
+      call message_g%warning(1)
     else
       !Only root writes
       if (mpi_grp_is_root(mpi_grp)) then
@@ -1366,8 +1366,8 @@ contains
       status="old", die=.false., grp=mpi_grp)
     if (iunit <= 0) then
       ierr = ierr + 1
-      message%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
-      call message%warning(1)
+      message_g%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
+      call message_g%warning(1)
     else
       ! Find the dump tag.
       call iopar_find_line(mpi_grp, iunit, dump_tag, err)
@@ -1550,11 +1550,11 @@ contains
 
     mindist = simul_box_min_distance(geo, sb, real_atoms_only = .false.)
     if(mindist < threshold) then
-      write(message%lines(1), '(a)') "Some of the atoms seem to sit too close to each other."
-      write(message%lines(2), '(a)') "Please review your input files and the output geometry (in 'static/')."
-      write(message%lines(3), '(a, f12.6, 1x, a)') "Minimum distance = ", &
+      write(message_g%lines(1), '(a)') "Some of the atoms seem to sit too close to each other."
+      write(message_g%lines(2), '(a)') "Please review your input files and the output geometry (in 'static/')."
+      write(message_g%lines(3), '(a, f12.6, 1x, a)') "Minimum distance = ", &
         units_from_atomic(units_out%length, mindist), trim(units_abbrev(units_out%length))
-      call message%warning(3)
+      call message_g%warning(3)
 
       ! then write out the geometry, whether asked for or not in Output variable
       call io_mkdir(STATIC_DIR, namespace)
@@ -1562,8 +1562,8 @@ contains
     end if
 
     if(simul_box_min_distance(geo, sb, real_atoms_only = .true.) < threshold) then
-      message%lines(1) = "It cannot be correct to run with physical atoms so close."
-      call message%fatal(1)
+      message_g%lines(1) = "It cannot be correct to run with physical atoms so close."
+      call message_g%fatal(1)
     end if
 
     POP_SUB(simul_box_check_atoms_are_too_close)
@@ -1650,9 +1650,9 @@ contains
         end do
 
         if(iatom_symm > geo%natoms) then
-          write(message%lines(1),'(a,i6)') 'Internal error: could not find symmetric partner for atom number', iatom
-          write(message%lines(2),'(a,i3,a)') 'with symmetry operation number ', iop, '.'
-          call message%fatal(2)
+          write(message_g%lines(1),'(a,i6)') 'Internal error: could not find symmetric partner for atom number', iatom
+          write(message_g%lines(2),'(a,i3,a)') 'with symmetry operation number ', iop, '.'
+          call message_g%fatal(2)
         end if
 
       end do

@@ -113,29 +113,29 @@ contains
 
       call parse_variable(namespace, 'SubspaceDiagonalization', default, this%method)
 
-      if(.not.varinfo_valid_option('SubspaceDiagonalization', this%method)) call message%input_error('SubspaceDiagonalization')
+      if(.not.varinfo_valid_option('SubspaceDiagonalization', this%method)) call message_g%input_error('SubspaceDiagonalization')
     end if
 
-    call message%print_var_option(stdout, 'SubspaceDiagonalization', this%method)
+    call message_g%print_var_option(stdout, 'SubspaceDiagonalization', this%method)
 
     ! some checks for ingenious users
     if(this%method == OPTION__SUBSPACEDIAGONALIZATION__SCALAPACK) then
 #ifndef HAVE_MPI
-      message%lines(1) = 'The scalapack subspace diagonalization can only be used in parallel.'
-      call message%fatal(1, only_root_writes = .true.)
+      message_g%lines(1) = 'The scalapack subspace diagonalization can only be used in parallel.'
+      call message_g%fatal(1, only_root_writes = .true.)
 #else
 #ifndef HAVE_SCALAPACK
-      message%lines(1) = 'The scalapack subspace diagonalization requires scalapack.'
-      call message%fatal(1, only_root_writes = .true.)
+      message_g%lines(1) = 'The scalapack subspace diagonalization requires scalapack.'
+      call message_g%fatal(1, only_root_writes = .true.)
 #endif
       if(st%dom_st_mpi_grp%size == 1) then
-        message%lines(1) = 'The scalapack subspace diagonalization is designed to be used with domain or state parallelization.'
-        call message%warning(1)
+        message_g%lines(1) = 'The scalapack subspace diagonalization is designed to be used with domain or state parallelization.'
+        call message_g%warning(1)
       end if
 
       if(st%d%kpt%parallel) then
-        message%lines(1) = 'Currently the scalapack subspace diagonalization does not use k-point parallelization.'
-        call message%warning(1)
+        message_g%lines(1) = 'Currently the scalapack subspace diagonalization does not use k-point parallelization.'
+        call message_g%warning(1)
       end if
 #endif
     end if

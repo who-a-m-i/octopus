@@ -159,51 +159,51 @@ contains
     end if
 
     if (optional_default(iunit, -1) > 0) then
-      write(message%lines(1), '(6x,a, f18.8)')'Total       = ', units_from_atomic(units_out%energy, hm%energy%total)
-      write(message%lines(2), '(6x,a, f18.8)')'Free        = ', units_from_atomic(units_out%energy, hm%energy%total - hm%energy%TS)
-      write(message%lines(3), '(6x,a)') '-----------'
-      call message%info(3, iunit)
+      write(message_g%lines(1), '(6x,a, f18.8)')'Total       = ', units_from_atomic(units_out%energy, hm%energy%total)
+      write(message_g%lines(2), '(6x,a, f18.8)')'Free        = ', units_from_atomic(units_out%energy, hm%energy%total-hm%energy%TS)
+      write(message_g%lines(3), '(6x,a)') '-----------'
+      call message_g%info(3, iunit)
 
-      write(message%lines(1), '(6x,a, f18.8)')'Ion-ion     = ', units_from_atomic(units_out%energy, hm%ep%eii)
-      write(message%lines(2), '(6x,a, f18.8)')'Eigenvalues = ', units_from_atomic(units_out%energy, hm%energy%eigenvalues)
-      write(message%lines(3), '(6x,a, f18.8)')'Hartree     = ', units_from_atomic(units_out%energy, hm%energy%hartree)
-      write(message%lines(4), '(6x,a, f18.8)')'Int[n*v_xc] = ', units_from_atomic(units_out%energy, hm%energy%intnvxc + evxctau)
-      write(message%lines(5), '(6x,a, f18.8)')'Exchange    = ', units_from_atomic(units_out%energy, hm%energy%exchange)
-      write(message%lines(6), '(6x,a, f18.8)')'Correlation = ', units_from_atomic(units_out%energy, hm%energy%correlation)
-      write(message%lines(7), '(6x,a, f18.8)')'vanderWaals = ', units_from_atomic(units_out%energy, hm%energy%vdw)
-      write(message%lines(8), '(6x,a, f18.8)')'Delta XC    = ', units_from_atomic(units_out%energy, hm%energy%delta_xc)
-      write(message%lines(9), '(6x,a, f18.8)')'Entropy     = ', hm%energy%entropy ! the dimensionless sigma of Kittel&Kroemer
-      write(message%lines(10), '(6x,a, f18.8)')'-TS         = ', -units_from_atomic(units_out%energy, hm%energy%TS)
-      call message%info(10, iunit)
+      write(message_g%lines(1), '(6x,a, f18.8)')'Ion-ion     = ', units_from_atomic(units_out%energy, hm%ep%eii)
+      write(message_g%lines(2), '(6x,a, f18.8)')'Eigenvalues = ', units_from_atomic(units_out%energy, hm%energy%eigenvalues)
+      write(message_g%lines(3), '(6x,a, f18.8)')'Hartree     = ', units_from_atomic(units_out%energy, hm%energy%hartree)
+      write(message_g%lines(4), '(6x,a, f18.8)')'Int[n*v_xc] = ', units_from_atomic(units_out%energy, hm%energy%intnvxc + evxctau)
+      write(message_g%lines(5), '(6x,a, f18.8)')'Exchange    = ', units_from_atomic(units_out%energy, hm%energy%exchange)
+      write(message_g%lines(6), '(6x,a, f18.8)')'Correlation = ', units_from_atomic(units_out%energy, hm%energy%correlation)
+      write(message_g%lines(7), '(6x,a, f18.8)')'vanderWaals = ', units_from_atomic(units_out%energy, hm%energy%vdw)
+      write(message_g%lines(8), '(6x,a, f18.8)')'Delta XC    = ', units_from_atomic(units_out%energy, hm%energy%delta_xc)
+      write(message_g%lines(9), '(6x,a, f18.8)')'Entropy     = ', hm%energy%entropy ! the dimensionless sigma of Kittel&Kroemer
+      write(message_g%lines(10), '(6x,a, f18.8)')'-TS         = ', -units_from_atomic(units_out%energy, hm%energy%TS)
+      call message_g%info(10, iunit)
       
       if (hm%pcm%run_pcm) then
-          write(message%lines(1),'(6x,a, f18.8)')'E_e-solvent = ',  units_from_atomic(units_out%energy, hm%energy%int_ee_pcm + &
+          write(message_g%lines(1),'(6x,a, f18.8)')'E_e-solvent = ',  units_from_atomic(units_out%energy, hm%energy%int_ee_pcm + &
                                                                                                   hm%energy%int_en_pcm + &
                                                                                                   hm%energy%int_e_ext_pcm )
-          write(message%lines(2),'(6x,a, f18.8)')'E_n-solvent = ',  units_from_atomic(units_out%energy, hm%energy%int_nn_pcm + &
+          write(message_g%lines(2),'(6x,a, f18.8)')'E_n-solvent = ',  units_from_atomic(units_out%energy, hm%energy%int_nn_pcm + &
                                                                                                   hm%energy%int_ne_pcm + &
                                                                                                   hm%energy%int_n_ext_pcm )
-          write(message%lines(3),'(6x,a, f18.8)')'E_M-solvent = ',  units_from_atomic(units_out%energy, &
+          write(message_g%lines(3),'(6x,a, f18.8)')'E_M-solvent = ',  units_from_atomic(units_out%energy, &
                                                                              hm%energy%int_ee_pcm + hm%energy%int_en_pcm + &
                                                                              hm%energy%int_nn_pcm + hm%energy%int_ne_pcm + &
                                                                           hm%energy%int_e_ext_pcm + hm%energy%int_n_ext_pcm )
-          call message%info(3, iunit)
+          call message_g%info(3, iunit)
       end if
 
       if(full_) then
-        write(message%lines(1), '(6x,a, f18.8)')'Kinetic     = ', units_from_atomic(units_out%energy, hm%energy%kinetic)
-        write(message%lines(2), '(6x,a, f18.8)')'External    = ', units_from_atomic(units_out%energy, hm%energy%extern)
-        write(message%lines(3), '(6x,a, f18.8)')'Non-local   = ', units_from_atomic(units_out%energy, hm%energy%extern_non_local)
-        call message%info(3, iunit)
+        write(message_g%lines(1), '(6x,a, f18.8)')'Kinetic     = ', units_from_atomic(units_out%energy, hm%energy%kinetic)
+        write(message_g%lines(2), '(6x,a, f18.8)')'External    = ', units_from_atomic(units_out%energy, hm%energy%extern)
+        write(message_g%lines(3), '(6x,a, f18.8)')'Non-local   = ', units_from_atomic(units_out%energy, hm%energy%extern_non_local)
+        call message_g%info(3, iunit)
       end if
       if(associated(hm%vberry) .and. simul_box_is_periodic(gr%sb)) then
-        write(message%lines(1), '(6x,a, f18.8)')'Berry       = ', units_from_atomic(units_out%energy, hm%energy%berry)
-        call message%info(1, iunit)
+        write(message_g%lines(1), '(6x,a, f18.8)')'Berry       = ', units_from_atomic(units_out%energy, hm%energy%berry)
+        call message_g%info(1, iunit)
       end if  
       if(hm%lda_u_level /= DFT_U_NONE) then
-        write(message%lines(1), '(6x,a, f18.8)')'Hubbard     = ', units_from_atomic(units_out%energy, hm%energy%dft_u)
-        write(message%lines(2), '(6x,a, f18.8)')'Int[n*v_U]  = ', units_from_atomic(units_out%energy, hm%energy%int_dft_u)
-        call message%info(2, iunit)
+        write(message_g%lines(1), '(6x,a, f18.8)')'Hubbard     = ', units_from_atomic(units_out%energy, hm%energy%dft_u)
+        write(message_g%lines(2), '(6x,a, f18.8)')'Int[n*v_U]  = ', units_from_atomic(units_out%energy, hm%energy%int_dft_u)
+        call message_g%info(2, iunit)
       end if
     end if
 

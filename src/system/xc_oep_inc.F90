@@ -164,7 +164,7 @@ subroutine X(xc_oep_solve) (gr, hm, psolver, st, is, vxc, oep)
   PUSH_SUB(X(xc_oep_solve))
 
   if(st%parallel_in_states) &
-    call message%not_implemented("Full OEP parallel in states")
+    call message_g%not_implemented("Full OEP parallel in states")
 
   SAFE_ALLOCATE(     bb(1:gr%mesh%np, 1:1))
   SAFE_ALLOCATE(     ss(1:gr%mesh%np))
@@ -222,8 +222,8 @@ subroutine X(xc_oep_solve) (gr, hm, psolver, st, is, vxc, oep)
       end if
 
       if(debug%info) then
-        write(message%lines(1), '(a,es14.6,a,es14.8)') "Info: oep%mixing:", oep%mixing, " norm2ss: ", dmf_nrm2(gr%mesh, ss)
-        call message%info(1)
+        write(message_g%lines(1), '(a,es14.6,a,es14.8)') "Info: oep%mixing:", oep%mixing, " norm2ss: ", dmf_nrm2(gr%mesh, ss)
+        call message_g%info(1)
       end if
 
       call lalg_copy(gr%mesh%np, is, oep%vxc, oep%vxc_old)
@@ -251,16 +251,16 @@ subroutine X(xc_oep_solve) (gr, hm, psolver, st, is, vxc, oep)
   end if
 
   if(ff > oep%scftol%conv_abs_dens) then
-    write(message%lines(1), '(a)') "OEP did not converge."
-    call message%warning(1)
+    write(message_g%lines(1), '(a)') "OEP did not converge."
+    call message_g%warning(1)
 
     ! otherwise the number below will be one too high
     iter = iter - 1
   end if
 
-  write(message%lines(1), '(a,i4,a,es14.6)') "Info: After ", iter, " iterations, the OEP residual = ", ff
-  message%lines(2) = ''
-  call message%info(2)
+  write(message_g%lines(1), '(a,i4,a,es14.6)') "Info: After ", iter, " iterations, the OEP residual = ", ff
+  message_g%lines(2) = ''
+  call message_g%info(2)
 
   call lalg_copy(gr%mesh%np, vxc_old, vxc)
 

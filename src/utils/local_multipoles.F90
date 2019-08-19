@@ -78,16 +78,16 @@ program oct_local_multipoles
   call parser_init()
   default_namespace = namespace_t("")
   
-  call message%init(default_namespace)
+  call message_g%init(default_namespace)
 
   call io_init(default_namespace)
   call profiling_init(default_namespace)
  
   call print_header()
-  call message%print_stress(stdout, "Local Domains mode")
-  call message%print_stress(stdout)
+  call message_g%print_stress(stdout, "Local Domains mode")
+  call message_g%print_stress(stdout)
     
-  call message%experimental("oct-local_multipoles utility")
+  call message_g%experimental("oct-local_multipoles utility")
 
   call unit_system_init(default_namespace)
   call restart_module_init(default_namespace)
@@ -103,7 +103,7 @@ program oct_local_multipoles
   call profiling_end(default_namespace)
   call io_end()
   call print_date("Calculation ended on ")
-  call message%end()
+  call message_g%end()
   call parser_end()
   call global_end()
 
@@ -127,9 +127,9 @@ contains
 
     PUSH_SUB(local_domains)
     
-    message%lines(1) = 'Info: Creating local domains'
-    message%lines(2) = ''
-    call message%info(2)
+    message_g%lines(1) = 'Info: Creating local domains'
+    message_g%lines(2) = ''
+    call message_g%info(2)
 
     write(folder_default,'(a)')'restart/gs/'
 
@@ -149,9 +149,9 @@ contains
     default_dt = M_ZERO
     call parse_variable(default_namespace, 'TDTimeStep', default_dt, dt, unit = units_inp%time)
     if (dt <= M_ZERO) then
-      write(message%lines(1),'(a)') 'Input: TDTimeStep must be positive.'
-      write(message%lines(2),'(a)') 'Input: TDTimeStep reset to 0. Check input file'
-      call message%info(2)
+      write(message_g%lines(1),'(a)') 'Input: TDTimeStep must be positive.'
+      write(message_g%lines(2),'(a)') 'Input: TDTimeStep reset to 0. Check input file'
+      call message_g%info(2)
     end if
 
     !%Variable LDFilename
@@ -220,8 +220,8 @@ contains
         iunit = io_open(radiifile, default_namespace, action='read', status='old', die=.false.)
         if(iunit > 0) then
           if(ia == 1) then
-            write(message%lines(1),'(a,a)')'Redefining def_rsize from file:', trim(radiifile)
-            call message%info(1)
+            write(message_g%lines(1),'(a,a)')'Redefining def_rsize from file:', trim(radiifile)
+            call message_g%info(1)
           end if
           read(iunit,*)
           default_file: do ispec = 1, n_spec_def
@@ -233,8 +233,8 @@ contains
           end do default_file
           call io_close(iunit)
         else 
-          write(message%lines(1),'(a,a)')' Octopus could not open then file:',trim(radiifile)
-          call message%warning(1)
+          write(message_g%lines(1),'(a,a)')' Octopus could not open then file:',trim(radiifile)
+          call message_g%warning(1)
         end if
       end do
     end if
@@ -304,15 +304,15 @@ contains
     !%End
     call parse_variable(default_namespace, 'LDStep', 1, l_step)
 
-    message%lines(1) = 'Info: Computing local multipoles'
-    message%lines(2) = ''
-    call message%info(2)
+    message_g%lines(1) = 'Info: Computing local multipoles'
+    message_g%lines(2) = ''
+    call message_g%info(2)
 
     call local_init(local)
 
     ! Starting loop over selected densities.
     if ( any( local%dshape(:) == BADER )) then
-      call message%experimental('Bader volumes in oct-local_multipoles')
+      call message_g%experimental('Bader volumes in oct-local_multipoles')
     end if
 
     call kick_init(kick, default_namespace, sys%st%d%ispin, sys%gr%mesh%sb%dim, sys%gr%mesh%sb%periodic_dim )
@@ -369,8 +369,8 @@ contains
       if(err == 0) &
         call drestart_read_mesh_function(restart, trim(filename), sys%gr%mesh, sys%st%rho(:,1), err) 
       if (err /= 0 ) then
-        write(message%lines(1),*) 'While reading density: "', trim(filename), '", error code:', err
-        call message%fatal(1)
+        write(message_g%lines(1),*) 'While reading density: "', trim(filename), '", error code:', err
+        call message_g%fatal(1)
       end if
 
       ! Look for the mesh points inside local domains
@@ -389,9 +389,9 @@ contains
     call kick_end(kick)
     call local_end(local)
 
-    message%lines(1) = 'Info: Exiting local domains'
-    message%lines(2) = ''
-    call message%info(2)
+    message_g%lines(1) = 'Info: Exiting local domains'
+    message_g%lines(2) = ''
+    call message_g%info(2)
 
     POP_SUB(local_domains)
   end subroutine local_domains
@@ -460,8 +460,8 @@ contains
       call local_read_from_block(blk, id-1, local%domain(id), local%dshape(id), local%clist(id))
     end do block
     call parse_block_end(blk)
-    message%lines(1) = ''
-    call message%info(1)
+    message_g%lines(1) = ''
+    call message_g%info(1)
 
     POP_SUB(local_init)
   end subroutine local_init
@@ -517,12 +517,12 @@ contains
     select case(shape)
       case(MINIMUM)
         if(sys%geo%reduced_coordinates) then
-          message%lines(1) = "The 'minimum' box shape cannot be used if atomic positions"
-          message%lines(2) = "are given as reduced coordinates."
-          call message%fatal(2)
+          message_g%lines(1) = "The 'minimum' box shape cannot be used if atomic positions"
+          message_g%lines(2) = "are given as reduced coordinates."
+          call message_g%fatal(2)
         end if
         call parse_block_float(blk, row, 2, rsize, unit = units_inp%length)
-        if(rsize < M_ZERO) call message%input_error('radius')
+        if(rsize < M_ZERO) call message_g%input_error('radius')
         call parse_block_string(blk, row, 3, clist)
         nb = 0
         do ic = 1, sys%geo%natoms
@@ -530,13 +530,13 @@ contains
         end do
       case(SPHERE)
         call parse_block_float(blk, row, 2, rsize, unit = units_inp%length)
-        if(rsize < M_ZERO) call message%input_error('radius')
+        if(rsize < M_ZERO) call message_g%input_error('radius')
         do ic = 1, dim 
           call parse_block_float(blk, row, 2 + ic, center(ic), unit = units_inp%length)
         end do
       case(CYLINDER)
         call parse_block_float(blk, row, 2, rsize, unit = units_inp%length)
-        if(rsize < M_ZERO) call message%input_error('radius')
+        if(rsize < M_ZERO) call message_g%input_error('radius')
         call parse_block_float(blk, row, 3, xsize, unit = units_inp%length)
         do ic = 1, dim 
           call parse_block_float(blk, row, 3 + ic, center(ic), unit = units_inp%length)
@@ -637,18 +637,18 @@ contains
       do ia = 1, sys%geo%natoms
         if (box_union_inside(dom, sys%geo%atom(ia)%x).and. .not.loct_isinstringlist(ia, clist) ) then
           ic = ic + 1
-          if(ic <= 20) write(message%lines(ic),'(a,a,I0,a,a)')'Atom: ',trim(species_label(sys%geo%atom(ia)%species)),ia, &
+          if(ic <= 20) write(message_g%lines(ic),'(a,a,I0,a,a)')'Atom: ',trim(species_label(sys%geo%atom(ia)%species)),ia, &
                                  ' is inside the union box BUT not in list: ',trim(clist)
         end if
       end do
       if (ic > 0) then 
          if( ic > 20 ) ic = 20
-         call message%warning(ic)
-         message%lines(1) = ' THIS COULD GIVE INCORRECT RESULTS '
-         call message%warning(1)
+         call message_g%warning(ic)
+         message_g%lines(1) = ' THIS COULD GIVE INCORRECT RESULTS '
+         call message_g%warning(1)
          if ( ic == 20 ) then
-           message%lines(1) = ' AT LEAST 19 ATOMS ARE NOT PRESENT IN THE LIST'
-           call message%warning(1)
+           message_g%lines(1) = ' AT LEAST 19 ATOMS ARE NOT PRESENT IN THE LIST'
+           call message_g%warning(1)
          end if
       end if
     end if
@@ -672,8 +672,8 @@ contains
 
     PUSH_SUB(local_restart)
     
-    message%lines(1) = 'Info: Reading mesh points inside each local domain'
-    call message%info(1)
+    message_g%lines(1) = 'Info: Reading mesh points inside each local domain'
+    call message_g%info(1)
     SAFE_ALLOCATE(inside(1:sys%gr%mesh%np))
     !Read local domain information from ldomains.info 
     filename = "ldomains.info"    
@@ -720,8 +720,8 @@ contains
     PUSH_SUB(local_inside_domain)
 
     !TODO: find a parallel algorithm to perform the charge-density fragmentation.
-    message%lines(1) = 'Info: Assigning mesh points inside each local domain'
-    call message%info(1)
+    message_g%lines(1) = 'Info: Assigning mesh points inside each local domain'
+    call message_g%info(1)
 
     SAFE_ALLOCATE(ff2(1:sys%gr%mesh%np,1))
     ff2(1:sys%gr%mesh%np,1) = ff(1:sys%gr%mesh%np)
@@ -729,8 +729,8 @@ contains
     if (any(lcl%dshape(:) == BADER)) then
 
       if (sys%gr%mesh%parallel_in_domains) then                                                            
-        write(message%lines(1),'(a)') 'Bader volumes can only be computed in serial'                                
-        call message%fatal(1)
+        write(message_g%lines(1),'(a)') 'Bader volumes can only be computed in serial'                                
+        call message_g%fatal(1)
       end if                                                                               
 
       call add_dens_to_ion_x(ff2, namespace, sys%geo)
@@ -741,10 +741,10 @@ contains
       call bader_union_inside(basins, lcl%nd, lcl%domain, lcl%lab, lcl%dshape, lcl%inside) 
 
       if (extra_write) then
-        call message%obsolete_variable(namespace, 'LDOutputHow', 'LDOutputFormat')
+        call message_g%obsolete_variable(namespace, 'LDOutputHow', 'LDOutputFormat')
         call parse_variable(namespace, 'LDOutputFormat', 0, how)
         if(.not.varinfo_valid_option('OutputFormat', how, is_flag=.true.)) then
-          call message%input_error('LDOutputFormat')
+          call message_g%input_error('LDOutputFormat')
         end if
         filename = 'basinsmap'
         call dio_function_output(how, trim('local.general'), trim(filename), default_namespace, &
@@ -770,8 +770,8 @@ contains
     base_folder = "./restart/"
     folder = "ld/"
     filename = "ldomains"
-    write(message%lines(1),'(a,a)')'Info: Writing restart info to ', trim(filename)
-    call message%info(1)
+    write(message_g%lines(1),'(a,a)')'Info: Writing restart info to ', trim(filename)
+    call message_g%info(1)
     call restart_init(restart, namespace, RESTART_UNDEFINED, RESTART_TYPE_DUMP, sys%mc, ierr, &
                       mesh=sys%gr%mesh, dir=trim(base_folder)//trim(folder)) 
     ff2 = M_ZERO
@@ -894,7 +894,7 @@ contains
     if (extra_write) then
       call parse_variable(default_namespace, 'LDOutputFormat', 0, how)
       if(.not.varinfo_valid_option('OutputFormat', how, is_flag=.true.)) then
-        call message%input_error('LDOutputFormat')
+        call message_g%input_error('LDOutputFormat')
       end if
       dble_domain_map(1:nd, 1:sys%gr%mesh%np) = M_ZERO
       domain_mesh(1:sys%gr%mesh%np) = M_ZERO
@@ -1020,8 +1020,8 @@ contains
         write(ions_list(id), '(a,i0)')trim(chtmp),ia
       end if
 
-!      write(message%lines(1),'(a,1x,i0,1x,a,1x,a)')'Atoms inside domain',id,':',trim(ions_list(id))
-!      call message%warning(1)
+!      write(message_g%lines(1),'(a,1x,i0,1x,a,1x,a)')'Atoms inside domain',id,':',trim(ions_list(id))
+!      call message_g%warning(1)
     end do
 
     POP_SUB(local_ions_inside)

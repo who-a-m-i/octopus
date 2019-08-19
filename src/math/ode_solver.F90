@@ -65,20 +65,20 @@ contains
     select case(os%solver_type)
     case(ODE_RK4)
       os%vsize = 4
-      message%lines(1) = 'Info: ode_solver: Using Runge-Kutta, 4th order.'
-      call message%info(1)
+      message_g%lines(1) = 'Info: ode_solver: Using Runge-Kutta, 4th order.'
+      call message_g%info(1)
     case(ODE_FB78)
       os%vsize = 13
-      message%lines(1) = 'Info: ode_solver: Using Fehlberg, 7th/8th order.'
-      call message%info(1)
+      message_g%lines(1) = 'Info: ode_solver: Using Fehlberg, 7th/8th order.'
+      call message_g%info(1)
     case(ODE_VR89)
       os%vsize = 16
-      message%lines(1) = 'Info: ode_solver: Using Verner, 8th/9th order.'
-      call message%info(1)
+      message_g%lines(1) = 'Info: ode_solver: Using Verner, 8th/9th order.'
+      call message_g%info(1)
     case(ODE_PD89)
       os%vsize = 13
-      message%lines(1) = 'Info: ode_solver: Using Prince-Dormand, 8th/9th order.'
-      call message%info(1)
+      message_g%lines(1) = 'Info: ode_solver: Using Prince-Dormand, 8th/9th order.'
+      call message_g%info(1)
     end select
     
     SAFE_ALLOCATE(os%a(1:os%vsize, 1:os%vsize))

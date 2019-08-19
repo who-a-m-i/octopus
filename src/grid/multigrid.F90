@@ -123,9 +123,9 @@ contains
     order = der%order
     if (optional_default(used_for_preconditioner, .false.)) then
       n_levels = 3
-      write(message%lines(1), '(a)') "Set number of multigrid levels to 3 for preconditioner. "//&
+      write(message_g%lines(1), '(a)') "Set number of multigrid levels to 3 for preconditioner. "//&
         "This ignores the value of MultigridLevels."
-      call message%info(1)
+      call message_g%info(1)
 
       !%Variable MultigridDerivativesOrder
       !%Type integer
@@ -166,8 +166,8 @@ contains
     mgrid%level(0)%tt%n_fine = mesh%np
     SAFE_ALLOCATE(mgrid%level(0)%tt%fine_i(1:mesh%np))
 
-    write(message%lines(1), '(a,i3)') "Multigrid levels:", n_levels + 1
-    call message%info(1)
+    write(message_g%lines(1), '(a,i3)') "Multigrid levels:", n_levels + 1
+    call message_g%info(1)
 
     do i = 1, mgrid%n_levels
       SAFE_ALLOCATE(mgrid%level(i)%mesh)

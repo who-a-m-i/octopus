@@ -77,8 +77,8 @@ contains
 
     case (BOX_CYLINDER)
       if (dim == 2) then
-        message%lines(1) = "Cannot create a cylinder in 2D. Use sphere if you want a circle."
-        call message%fatal(1)
+        message_g%lines(1) = "Cannot create a cylinder in 2D. Use sphere if you want a circle."
+        call message_g%fatal(1)
       end if
       box%rsize = sizes(1)
       box%xsize = sizes(2)
@@ -87,8 +87,8 @@ contains
       box%lsize(1:dim) = sizes(1:dim)
 
     case default
-      message%lines(1) = "Unknown box shape in box_create."
-      call message%fatal(1)
+      message_g%lines(1) = "Unknown box shape in box_create."
+      call message_g%fatal(1)
 
     end select
     

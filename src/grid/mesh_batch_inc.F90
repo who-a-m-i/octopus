@@ -475,8 +475,8 @@ subroutine X(mesh_batch_exchange_points)(mesh, aa, forward_map, backward_map)
   end if
 
   if(.not. mesh%parallel_in_domains) then
-    message%lines(1) = "Not implemented for the serial case. Really, only in parallel."
-    call message%fatal(1)
+    message_g%lines(1) = "Not implemented for the serial case. Really, only in parallel."
+    call message_g%fatal(1)
   else
 
 #ifdef HAVE_MPI

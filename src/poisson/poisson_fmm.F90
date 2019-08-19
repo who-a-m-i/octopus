@@ -231,7 +231,7 @@ contains
       if (.not.((mesh%sb%box_shape == PARALLELEPIPED) .and. ((mesh%sb%lsize(1) == mesh%sb%lsize(2)) .and. &
         (mesh%sb%lsize(1) == mesh%sb%lsize(3)) .and. &
         (mesh%sb%lsize(2) == mesh%sb%lsize(3))))) then
-        call message%not_implemented("FMM Poisson solver with non-cubic boxes.")
+        call message_g%not_implemented("FMM Poisson solver with non-cubic boxes.")
       end if
     end if
 

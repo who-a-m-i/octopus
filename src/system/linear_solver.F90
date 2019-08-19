@@ -172,47 +172,47 @@ contains
     !%End
     call parse_variable(namespace, "LinearSolverMaxIter", 1000, this%max_iter)
 
-    write(message%lines(1),'(a)') 'Linear Solver'
-    call message%print_stress(stdout, trim(message%lines(1)))
+    write(message_g%lines(1),'(a)') 'Linear Solver'
+    call message_g%print_stress(stdout, trim(message_g%lines(1)))
     
     ! solver 
     select case(this%solver)
       case(OPTION__LINEARSOLVER__CG)
-        message%lines(1)='Linear Solver: Conjugate Gradients'
+        message_g%lines(1)='Linear Solver: Conjugate Gradients'
 
       case(OPTION__LINEARSOLVER__BICGSTAB)
-        message%lines(1)='Linear Solver: Biconjugate Gradients Stabilized'
+        message_g%lines(1)='Linear Solver: Biconjugate Gradients Stabilized'
 
       case(OPTION__LINEARSOLVER__IDRS)
-        message%lines(1)='Linear Solver: IDRS'
+        message_g%lines(1)='Linear Solver: IDRS'
 
       case(OPTION__LINEARSOLVER__MULTIGRID)
-        message%lines(1)='Multigrid (currently only Gauss-Jacobi - EXPERIMENTAL)'
+        message_g%lines(1)='Multigrid (currently only Gauss-Jacobi - EXPERIMENTAL)'
 
       case(OPTION__LINEARSOLVER__QMR_SYMMETRIC)
-        message%lines(1)='Linear Solver: Quasi-Minimal Residual, for symmetric matrix'
+        message_g%lines(1)='Linear Solver: Quasi-Minimal Residual, for symmetric matrix'
 
       case(OPTION__LINEARSOLVER__QMR_SYMMETRIZED)
-        message%lines(1)='Linear Solver: Quasi-Minimal Residual, for symmetrized matrix'
+        message_g%lines(1)='Linear Solver: Quasi-Minimal Residual, for symmetrized matrix'
 
       case(OPTION__LINEARSOLVER__QMR_DOTP)
-        message%lines(1)='Linear Solver: Quasi-Minimal Residual, symmetric with conjugated dot product'
+        message_g%lines(1)='Linear Solver: Quasi-Minimal Residual, symmetric with conjugated dot product'
 
       case(OPTION__LINEARSOLVER__QMR_GENERAL)
-        message%lines(1)='Linear Solver: Quasi-Minimal Residual, general algorithm'
+        message_g%lines(1)='Linear Solver: Quasi-Minimal Residual, general algorithm'
 
       case(OPTION__LINEARSOLVER__SOS)
-        message%lines(1)='Linear Solver: Sum-over-States'
+        message_g%lines(1)='Linear Solver: Sum-over-States'
     end select
 
-    call message%info(1)
+    call message_g%info(1)
     
-    call message%print_stress(stdout)
+    call message_g%print_stress(stdout)
 
     if(this%solver == OPTION__LINEARSOLVER__MULTIGRID) &
-      call message%experimental("Multigrid linear solver")
+      call message_g%experimental("Multigrid linear solver")
     if(this%solver == OPTION__LINEARSOLVER__QMR_DOTP)  &
-      call message%experimental("QMR solver (symmetric with conjugated dot product)")
+      call message_g%experimental("QMR solver (symmetric with conjugated dot product)")
 
     POP_SUB(linear_solver_init)
 
@@ -248,8 +248,8 @@ contains
     character(len=*),    intent(in)    :: old_prefix
     character(len=*),    intent(in)    :: new_prefix
     
-    call message%obsolete_variable(namespace, trim(old_prefix)//"LinearSolver", trim(new_prefix)//"LinearSolver")
-    call message%obsolete_variable(namespace, trim(old_prefix)//"LinearSolverMaxIter", trim(new_prefix)//"LinearSolverMaxIter")
+    call message_g%obsolete_variable(namespace, trim(old_prefix)//"LinearSolver", trim(new_prefix)//"LinearSolver")
+    call message_g%obsolete_variable(namespace, trim(old_prefix)//"LinearSolverMaxIter", trim(new_prefix)//"LinearSolverMaxIter")
 
     call preconditioner_obsolete_variables(namespace, old_prefix, new_prefix)
 

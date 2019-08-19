@@ -95,8 +95,8 @@ contains
     iunit = io_open(trim(filename), namespace, action='read', form='formatted', status='old')
     i = load_params(iunit, psp)
     if(i /= 0) then
-      call message%write('Error reading hgh file')
-      call message%fatal()
+      call message_g%write('Error reading hgh file')
+      call message_g%fatal()
     end if
     call io_close(iunit)
 
@@ -176,10 +176,10 @@ contains
     ! are obtained, but not the real ones!!!
     call solve_schroedinger(psp, ierr)
     if(ierr /= 0) then ! If the wavefunctions could not be found, we set its number to zero.
-      write(message%lines(1),'(a)') 'The algorithm that calculates atomic wavefunctions could not'
-      write(message%lines(2),'(a)') 'do its job. The program will continue, but expect poor'
-      write(message%lines(3),'(a)') 'convergence properties.'
-      call message%warning(3)
+      write(message_g%lines(1),'(a)') 'The algorithm that calculates atomic wavefunctions could not'
+      write(message_g%lines(2),'(a)') 'do its job. The program will continue, but expect poor'
+      write(message_g%lines(3),'(a)') 'convergence properties.'
+      call message_g%warning(3)
       psp%conf%p = 0
     end if
 
@@ -632,9 +632,9 @@ contains
         e = sqrt(sum(psp%g%drdi(2:psp%g%nrval)*psp%rphi(2:psp%g%nrval, n)**2))
         e = abs(e - M_ONE)
         if (e > CNST(1.0e-5)) then
-          write(message%lines(1), '(a,i2,a)') "Eigenstate for n = ", n , ' is not normalized'
-          write(message%lines(2), '(a, f12.6,a)') '(abs(1-norm) = ', e, ')'
-          call message%warning(2)
+          write(message_g%lines(1), '(a,i2,a)') "Eigenstate for n = ", n , ' is not normalized'
+          write(message_g%lines(2), '(a, f12.6,a)') '(abs(1-norm) = ', e, ')'
+          call message_g%warning(2)
         end if
       end do
 

@@ -150,7 +150,7 @@ subroutine X(mesh_interpolation_evaluate_vec)(this, npoints, values, positions, 
 
       ! this line is simply to suppress warnings about the result being uninitialized
       interpolated_values(ipoint) = M_ZERO
-      call message%not_implemented("mesh interpolation in dimensions other than 1,2,3")
+      call message_g%not_implemented("mesh interpolation in dimensions other than 1,2,3")
 
     end select
 
@@ -205,12 +205,12 @@ subroutine X(mesh_interpolation_test)(mesh)
       do idir = 1, mesh%sb%dim
         xx(idir, itest) = mesh%x(ip, idir) + mesh%spacing(idir)*loct_ran_flat(random_gen_pointer, CNST(-1.0), CNST(1.0))
       end do
-      call message%write('Point')
-      call message%write(itest)
+      call message_g%write('Point')
+      call message_g%write(itest)
       do idir = 1, mesh%sb%dim
-        call message%write(xx(idir, itest))
+        call message_g%write(xx(idir, itest))
       end do
-      call message%info()
+      call message_g%info()
     end do
   end if
 
@@ -230,16 +230,16 @@ subroutine X(mesh_interpolation_test)(mesh)
     calculated = sum(coeff(1:mesh%sb%dim)*xx(1:mesh%sb%dim, itest))
     call mesh_interpolation_evaluate(interp, ff, xx(:, itest), interpolated)
     
-    call message%write('Random point')
+    call message_g%write('Random point')
 #ifdef R_TREAL
-    call message%write(' real')
+    call message_g%write(' real')
 #else
-    call message%write(' complex')
+    call message_g%write(' complex')
 #endif
-    call message%write(itest, fmt = '(i3)')
-    call message%write(' error:')
-    call message%write(abs(calculated - interpolated), fmt = '(e8.2)', align_left = .true.)
-    call message%info()
+    call message_g%write(itest, fmt = '(i3)')
+    call message_g%write(' error:')
+    call message_g%write(abs(calculated - interpolated), fmt = '(e8.2)', align_left = .true.)
+    call message_g%info()
 
   end do
 
@@ -251,16 +251,16 @@ subroutine X(mesh_interpolation_test)(mesh)
 
     calculated = sum(coeff(1:mesh%sb%dim)*xx(1:mesh%sb%dim, itest))
     
-    call message%write('Random point')
+    call message_g%write('Random point')
 #ifdef R_TREAL
-    call message%write(' real')
+    call message_g%write(' real')
 #else
-    call message%write(' complex')
+    call message_g%write(' complex')
 #endif
-    call message%write(ntest_points + itest, fmt = '(i3)')
-    call message%write(' error:')
-    call message%write(abs(calculated - interpolated2(itest)), fmt = '(e8.2)', align_left = .true.)
-    call message%info()
+    call message_g%write(ntest_points + itest, fmt = '(i3)')
+    call message_g%write(' error:')
+    call message_g%write(abs(calculated - interpolated2(itest)), fmt = '(e8.2)', align_left = .true.)
+    call message_g%info()
 
   end do
   

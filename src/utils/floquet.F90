@@ -77,16 +77,16 @@ program oct_floquet
   call parser_init()
   default_namespace = namespace_t("")
   
-  call message%init(default_namespace)
+  call message_g%init(default_namespace)
 
   call io_init(default_namespace)
   call profiling_init(default_namespace)
 
   call print_header()
-  call message%print_stress(stdout, "Non-interacting Floquet")
-  call message%print_stress(stdout)
+  call message_g%print_stress(stdout, "Non-interacting Floquet")
+  call message_g%print_stress(stdout)
 
-  call message%experimental("oct-floquet utility")
+  call message_g%experimental("oct-floquet utility")
   call fft_all_init(default_namespace)
   call unit_system_init(default_namespace)
   call restart_module_init(default_namespace)
@@ -116,8 +116,8 @@ program oct_floquet
   call restart_init(restart, default_namespace, RESTART_GS, RESTART_TYPE_LOAD, sys%mc, ierr, mesh=gr%mesh, exact=.true.)
   if(ierr == 0) call states_elec_load(restart, default_namespace, st, gr, ierr, label = ": gs")
   if (ierr /= 0) then
-     message%lines(1) = 'Unable to read ground-state wavefunctions.'
-     call message%fatal(1)
+     message_g%lines(1) = 'Unable to read ground-state wavefunctions.'
+     call message_g%fatal(1)
   end if
 
   call density_calc(st, gr, st%rho)
@@ -140,7 +140,7 @@ program oct_floquet
   call profiling_end(default_namespace)
   call io_end()
   call print_date("Calculation ended on ")
-  call message%end()
+  call message_g%end()
 
   call parser_end()
   call global_end()
@@ -157,27 +157,27 @@ contains
 
       ! variables documented in td/td_write.F90
       call parse_variable(default_namespace, 'TDFloquetFrequency', M_ZERO, omega, units_inp%energy)
-      call message%print_var_value(stdout,'Frequency used for Floquet analysis', omega)
+      call message_g%print_var_value(stdout,'Frequency used for Floquet analysis', omega)
       if(abs(omega)<=M_EPSILON) then
-         message%lines(1) = "Please give a non-zero value for TDFloquetFrequency"
-         call message%fatal(1)
+         message_g%lines(1) = "Please give a non-zero value for TDFloquetFrequency"
+         call message_g%fatal(1)
       endif
 
       ! get time of one cycle
       Tcycle=M_TWO*M_PI/omega
 
       call parse_variable(default_namespace, 'TDFloquetSample',20 ,nt)
-      call message%print_var_value(stdout,'Number of Floquet time-sampling points', nT)
+      call message_g%print_var_value(stdout,'Number of Floquet time-sampling points', nT)
       dt = Tcycle/real(nT)
 
       call parse_variable(default_namespace, 'TDFloquetDimension',-1,Forder)
       if(Forder.ge.0) then
-        call message%print_var_value(stdout,'Order of multiphoton Floquet-Hamiltonian', Forder)
+        call message_g%print_var_value(stdout,'Order of multiphoton Floquet-Hamiltonian', Forder)
         !Dimension of multiphoton Floquet-Hamiltonian
         Fdim = 2*Forder+1
       else
-        message%lines(1) = 'Floquet-Hamiltonian is downfolded'
-        call message%info(1)
+        message_g%lines(1) = 'Floquet-Hamiltonian is downfolded'
+        call message_g%info(1)
         downfolding = .true.
         Forder = 1
         Fdim = 3

@@ -104,9 +104,9 @@ subroutine output_etsf(st, gr, geo, dir, outp)
   if (bitand(outp%what, OPTION__OUTPUT__WFS) /= 0) then
 
     if(st%parallel_in_states) &
-      call message%not_implemented("ETSF_IO real-space wavefunctions output parallel in states")
+      call message_g%not_implemented("ETSF_IO real-space wavefunctions output parallel in states")
     if(st%d%kpt%parallel) &
-      call message%not_implemented("ETSF_IO real-space wavefunctions output parallel in k")
+      call message_g%not_implemented("ETSF_IO real-space wavefunctions output parallel in k")
 
     call dcube_function_alloc_rs(dcube, cf)
 
@@ -136,9 +136,9 @@ subroutine output_etsf(st, gr, geo, dir, outp)
   if (bitand(outp%what, OPTION__OUTPUT__WFS_FOURIER) /= 0) then
 
     if(st%parallel_in_states) &
-      call message%not_implemented("ETSF_IO Fourier-space wavefunctions output parallel in states")
+      call message_g%not_implemented("ETSF_IO Fourier-space wavefunctions output parallel in states")
     if(st%d%kpt%parallel) &
-      call message%not_implemented("ETSF_IO Fourier-space wavefunctions output parallel in k")
+      call message_g%not_implemented("ETSF_IO Fourier-space wavefunctions output parallel in k")
 
     call zcube_function_alloc_rs(zcube, cf)
     call cube_function_alloc_fs(zcube, cf)
@@ -217,8 +217,8 @@ subroutine output_etsf_error(error_data)
   PUSH_SUB(output_etsf_error)
   
   call output_etsf_io_low_error_handle(error_data)
-  message%lines(1) = "ETSF_IO returned a fatal error. See message above."
-  call message%fatal(1, only_root_writes = .true.)
+  message_g%lines(1) = "ETSF_IO returned a fatal error. See message above."
+  call message_g%fatal(1, only_root_writes = .true.)
 
   POP_SUB(output_etsf_error)
 end subroutine output_etsf_error
@@ -650,9 +650,9 @@ subroutine output_etsf_basisdata_write(mesh, shell, ncid)
   PUSH_SUB(output_etsf_basisdata_write)
 
   if((maxval(mesh%spacing(1:3)) - minval(mesh%spacing(1:3))) > CNST(1e-10)) then
-    message%lines(1) = 'Cannot generate a ETSF plane-wave wave-functions file,'
-    message%lines(2) = 'spacing is not the same for each direction.'
-    call message%fatal(2)
+    message_g%lines(1) = 'Cannot generate a ETSF plane-wave wave-functions file,'
+    message_g%lines(2) = 'spacing is not the same for each direction.'
+    call message_g%fatal(2)
   end if
 
   SAFE_ALLOCATE(basisdata%basis_set)

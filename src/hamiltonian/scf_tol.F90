@@ -120,10 +120,10 @@ contains
     end if
 
     if(this%conv_abs_dens <= M_ZERO .and. this%conv_rel_dens <= M_ZERO) then
-      message%lines(1) = "Input: Not all convergence criteria can be <= 0"
-      message%lines(2) = "Please set one of the following to a nonzero value:"
-      message%lines(3) = "LRConvAbsDens | LRConvRelDens"
-      call message%fatal(3)
+      message_g%lines(1) = "Input: Not all convergence criteria can be <= 0"
+      message_g%lines(2) = "Please set one of the following to a nonzero value:"
+      message_g%lines(3) = "LRConvAbsDens | LRConvRelDens"
+      call message_g%fatal(3)
     end if
 
     !%Variable LRTolScheme
@@ -152,7 +152,7 @@ contains
       call parse_variable(namespace, 'LRTolScheme', SCF_TOL_ADAPTIVE, this%scheme)
     end if
     if(.not.varinfo_valid_option('LRTolScheme', this%scheme)) &
-      call message%input_error('LRTolScheme')
+      call message_g%input_error('LRTolScheme')
 
     !%Variable LRTolInitTol
     !%Type float
@@ -292,13 +292,13 @@ contains
 
     PUSH_SUB(scf_tol_obsolete_variables)
 
-    call message%obsolete_variable(namespace, trim(old_prefix)//'LRMaximumIter', trim(new_prefix)//'LRMaximumIter')
-    call message%obsolete_variable(namespace, trim(old_prefix)//'LRConvAbsDens', trim(new_prefix)//'LRConvAbsDens')
-    call message%obsolete_variable(namespace, trim(old_prefix)//'LRTolScheme', trim(new_prefix)//'LRTolScheme')
-    call message%obsolete_variable(namespace, trim(old_prefix)//'LRTolInitTol', trim(new_prefix)//'LRTolInitTol')
-    call message%obsolete_variable(namespace, trim(old_prefix)//'LRTolFinalTol', trim(new_prefix)//'LRTolFinalTol')
-    call message%obsolete_variable(namespace, trim(old_prefix)//'LRTolAdaptiveFactor', trim(new_prefix)//'LRTolAdaptiveFactor')
-    call message%obsolete_variable(namespace, trim(old_prefix)//'LRTolIterWindow', trim(new_prefix)//'LRTolIterWindow')
+    call message_g%obsolete_variable(namespace, trim(old_prefix)//'LRMaximumIter', trim(new_prefix)//'LRMaximumIter')
+    call message_g%obsolete_variable(namespace, trim(old_prefix)//'LRConvAbsDens', trim(new_prefix)//'LRConvAbsDens')
+    call message_g%obsolete_variable(namespace, trim(old_prefix)//'LRTolScheme', trim(new_prefix)//'LRTolScheme')
+    call message_g%obsolete_variable(namespace, trim(old_prefix)//'LRTolInitTol', trim(new_prefix)//'LRTolInitTol')
+    call message_g%obsolete_variable(namespace, trim(old_prefix)//'LRTolFinalTol', trim(new_prefix)//'LRTolFinalTol')
+    call message_g%obsolete_variable(namespace, trim(old_prefix)//'LRTolAdaptiveFactor', trim(new_prefix)//'LRTolAdaptiveFactor')
+    call message_g%obsolete_variable(namespace, trim(old_prefix)//'LRTolIterWindow', trim(new_prefix)//'LRTolIterWindow')
 
     POP_SUB(scf_tol_obsolete_variables)
   end subroutine scf_tol_obsolete_variables

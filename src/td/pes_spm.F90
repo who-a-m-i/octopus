@@ -104,8 +104,8 @@ contains
     sdim   = st%d%dim
     mdim   = mesh%sb%dim
 
-    message%lines(1) = 'Info: Calculating PES using sample point technique.'
-    call message%info(1)
+    message_g%lines(1) = 'Info: Calculating PES using sample point technique.'
+    call message_g%info(1)
 
     !%Variable PES_spm_points
     !%Type block
@@ -120,18 +120,18 @@ contains
     !% <br>%
     !% </tt>
     !%End
-    call message%obsolete_variable(namespace, 'PhotoElectronSpectrumPoints', 'PES_spm_points')
+    call message_g%obsolete_variable(namespace, 'PhotoElectronSpectrumPoints', 'PES_spm_points')
     this%sphgrid = .false.
     if (parse_block(namespace, 'PES_spm_points', blk) < 0) then
       this%sphgrid = .true.
     end if
 
     if(this%sphgrid) then
-      message%lines(1) = 'Info: Using spherical grid.'
+      message_g%lines(1) = 'Info: Using spherical grid.'
     else
-      message%lines(1) = 'Info: Using sample points from block.'
+      message_g%lines(1) = 'Info: Using sample points from block.'
     end if
-    call message%info(1)
+    call message_g%info(1)
 
     !%Variable PES_spm_recipe
     !%Type integer
@@ -148,8 +148,8 @@ contains
     !%End
     call parse_variable(namespace, 'PES_spm_recipe', M_PHASE, this%recipe)
     if(.not.varinfo_valid_option('PES_spm_recipe', this%recipe, is_flag = .true.)) &
-      call message%input_error('PES_spm_recipe')
-    call message%print_var_option(stdout, "PES_spm_recipe", this%recipe)
+      call message_g%input_error('PES_spm_recipe')
+    call message_g%print_var_option(stdout, "PES_spm_recipe", this%recipe)
 
     !%Variable PES_spm_OmegaMax
     !%Type float
@@ -164,9 +164,9 @@ contains
     this%onfly = .false.
     if(this%omegamax > M_ZERO) then
       this%onfly = .true.
-      message%lines(1) = 'Info: Calculating PES during time propagation.'
-      call message%info(1)
-      call message%print_var_value(stdout, "PES_spm_OmegaMax", this%omegamax)
+      message_g%lines(1) = 'Info: Calculating PES during time propagation.'
+      call message_g%info(1)
+      call message_g%print_var_value(stdout, "PES_spm_OmegaMax", this%omegamax)
     end if
  
     !%Variable PES_spm_DeltaOmega
@@ -178,8 +178,8 @@ contains
     !%End
     call parse_variable(namespace, 'PES_spm_DeltaOmega', units_to_atomic(units_inp%energy, this%omegamax/CNST(500)), this%delomega)
     if(this%onfly) then
-      if(this%delomega <= M_ZERO) call message%input_error('PES_spm_DeltaOmega')
-      call message%print_var_value(stdout, "PES_spm_DeltaOmega", this%delomega)
+      if(this%delomega <= M_ZERO) call message_g%input_error('PES_spm_DeltaOmega')
+      call message_g%print_var_value(stdout, "PES_spm_DeltaOmega", this%delomega)
     end if
 
     !%Variable PES_spm_StepsThetaR
@@ -191,7 +191,7 @@ contains
     !% <tt>PES_spm_points</tt> are given).
     !%End
     call parse_variable(namespace, 'PES_spm_StepsThetaR', 45, this%nstepsthetar)
-    if(this%sphgrid .and. this%nstepsthetar < 0) call message%input_error('PES_spm_StepsThetaR')
+    if(this%sphgrid .and. this%nstepsthetar < 0) call message_g%input_error('PES_spm_StepsThetaR')
 
     !%Variable PES_spm_StepsPhiR
     !%Type integer
@@ -203,7 +203,7 @@ contains
     !%End
     call parse_variable(namespace, 'PES_spm_StepsPhiR', 90, this%nstepsphir)
     if(this%sphgrid) then
-      if(this%nstepsphir < 0)  call message%input_error('PES_spm_StepsPhiR')
+      if(this%nstepsphir < 0)  call message_g%input_error('PES_spm_StepsPhiR')
       if(this%nstepsphir == 0) this%nstepsphir = 1
     end if
 
@@ -217,8 +217,8 @@ contains
     if(this%sphgrid) then
       if(parse_is_defined(namespace, 'PES_spm_Radius')) then
         call parse_variable(namespace, 'PES_spm_Radius', M_ZERO, radius)
-        if(radius <= M_ZERO) call message%input_error('PES_spm_Radius')
-        call message%print_var_value(stdout, "PES_spm_Radius", radius)
+        if(radius <= M_ZERO) call message_g%input_error('PES_spm_Radius')
+        call message_g%print_var_value(stdout, "PES_spm_Radius", radius)
       else
         select case(mesh%sb%box_shape)
         case(PARALLELEPIPED)
@@ -226,9 +226,9 @@ contains
         case(SPHERE)
           radius = mesh%sb%rsize
         case default
-          message%lines(1) = "Spherical grid not implemented for this box shape."
-          message%lines(2) = "Specify sample points with block PES_spm_points."
-          call message%fatal(2)
+          message_g%lines(1) = "Spherical grid not implemented for this box shape."
+          message_g%lines(2) = "Specify sample points with block PES_spm_points."
+          call message_g%fatal(2)
         end select
       end if
     end if
@@ -258,20 +258,20 @@ contains
 
       end select
 
-      if(mdim == 3) call message%print_var_value(stdout, "PES_spm_StepsThetaR", this%nstepsthetar)
-      call message%print_var_value(stdout, "PES_spm_StepsPhiR", this%nstepsphir)
+      if(mdim == 3) call message_g%print_var_value(stdout, "PES_spm_StepsThetaR", this%nstepsthetar)
+      call message_g%print_var_value(stdout, "PES_spm_StepsPhiR", this%nstepsphir)
 
     end if
 
-    call message%print_var_value(stdout, "Number of sample points", this%nspoints)
+    call message_g%print_var_value(stdout, "Number of sample points", this%nspoints)
 
     SAFE_ALLOCATE(this%rcoords(1:mdim, 1:this%nspoints))
     SAFE_ALLOCATE(this%rcoords_nrm(1:mdim, 1:this%nspoints))
 
     if(.not. this%sphgrid) then
 
-      message%lines(1) = 'Info: Reading sample points from input.'
-      call message%info(1)
+      message_g%lines(1) = 'Info: Reading sample points from input.'
+      call message_g%info(1)
 
       ! read points from input file
       do isp = 1, this%nspoints
@@ -286,8 +286,8 @@ contains
 
     else ! this%sphgrid == .true.
 
-      message%lines(1) = 'Info: Initializing spherical grid.'
-      call message%info(1)
+      message_g%lines(1) = 'Info: Initializing spherical grid.'
+      call message_g%info(1)
 
       ! initializing spherical grid
       thetar = M_PI / M_TWO
@@ -827,8 +827,8 @@ contains
     end if
     
     if (debug%info) then
-      message%lines(1) = "Debug: Writing PES_spm restart."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Writing PES_spm restart."
+      call message_g%info(1)
     end if
 
     if(this%onfly) then 
@@ -845,8 +845,8 @@ contains
     if (err /= 0) ierr = ierr + 1
     
     if (debug%info) then
-      message%lines(1) = "Debug: Writing PES_spm restart done."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Writing PES_spm restart done."
+      call message_g%info(1)
     end if
     
     POP_SUB(pes_spm_dump)
@@ -873,8 +873,8 @@ contains
     end if
     
     if (debug%info) then
-      message%lines(1) = "Debug: Reading PES_spm restart."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Reading PES_spm restart."
+      call message_g%info(1)
     end if
 
     if(this%onfly) then
@@ -891,8 +891,8 @@ contains
     if (err /= 0) ierr = ierr + 1
     
     if(debug%info) then
-      message%lines(1) = "Debug: Reading PES_spm restart done."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Reading PES_spm restart done."
+      call message_g%info(1)
     end if
     
     POP_SUB(pes_spm_load)

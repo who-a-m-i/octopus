@@ -58,14 +58,14 @@ program casida_spectrum
 
   call parser_init()
   default_namespace = namespace_t("")
-  call message%init(default_namespace)
+  call message_g%init(default_namespace)
   call io_init(default_namespace)
   call unit_system_init(default_namespace)
   call space_init(cs%space, default_namespace)
 
   ! Reads the spin components. This is read here, as well as in states_init.
   call parse_variable(default_namespace, 'SpinComponents', 1, cs%ispin)
-  if(.not.varinfo_valid_option('SpinComponents', cs%ispin)) call message%input_error('SpinComponents')
+  if(.not.varinfo_valid_option('SpinComponents', cs%ispin)) call message_g%input_error('SpinComponents')
   cs%ispin = min(2, cs%ispin)
 
   !%Variable CasidaSpectrumBroadening
@@ -77,7 +77,7 @@ program casida_spectrum
   !%End
   call parse_variable(default_namespace, 'CasidaSpectrumBroadening', CNST(0.005), cs%br, units_inp%energy)
 
-  call message%print_var_value(stdout, 'CasidaSpectrumBroadening', cs%br, unit = units_out%energy)
+  call message_g%print_var_value(stdout, 'CasidaSpectrumBroadening', cs%br, unit = units_out%energy)
 
   !%Variable CasidaSpectrumEnergyStep
   !%Type float
@@ -88,7 +88,7 @@ program casida_spectrum
   !%End
   call parse_variable(default_namespace, 'CasidaSpectrumEnergyStep', CNST(0.001), cs%energy_step, units_inp%energy)
 
-  call message%print_var_value(stdout, 'CasidaSpectrumEnergyStep', cs%energy_step, unit = units_out%energy)
+  call message_g%print_var_value(stdout, 'CasidaSpectrumEnergyStep', cs%energy_step, unit = units_out%energy)
 
   !%Variable CasidaSpectrumMinEnergy
   !%Type float
@@ -99,7 +99,7 @@ program casida_spectrum
   !%End
   call parse_variable(default_namespace, 'CasidaSpectrumMinEnergy', M_ZERO, cs%min_energy, units_inp%energy)
 
-  call message%print_var_value(stdout, 'CasidaSpectrumMinEnergy', cs%min_energy, unit = units_out%energy)
+  call message_g%print_var_value(stdout, 'CasidaSpectrumMinEnergy', cs%min_energy, unit = units_out%energy)
 
   !%Variable CasidaSpectrumMaxEnergy
   !%Type float
@@ -110,7 +110,7 @@ program casida_spectrum
   !%End
   call parse_variable(default_namespace, 'CasidaSpectrumMaxEnergy', M_ONE, cs%max_energy, units_inp%energy)
 
-  call message%print_var_value(stdout, 'CasidaSpectrumMaxEnergy', cs%max_energy, unit = units_out%energy)
+  call message_g%print_var_value(stdout, 'CasidaSpectrumMaxEnergy', cs%max_energy, unit = units_out%energy)
 
   identity = M_ZERO
   do idir = 1, MAX_DIM
@@ -135,16 +135,16 @@ program casida_spectrum
     end do
     call parse_block_end(blk)
 
-    message%lines(1) = "Info: Applying rotation matrix"
-    call message%info(1)
+    message_g%lines(1) = "Info: Applying rotation matrix"
+    call message_g%info(1)
     call output_tensor(stdout, rotation, cs%space%dim, unit_one, write_average = .false.)
 
     ! allowing inversions is fine
     rot2(:,:) = abs(matmul(transpose(rotation), rotation))
     if(any(abs(rot2(:,:) - identity(:,:)) > CNST(1e-6))) then
-      write(message%lines(1),'(a,es12.6)') "Rotation matrix is not orthogonal. max discrepancy in product = ", &
+      write(message_g%lines(1),'(a,es12.6)') "Rotation matrix is not orthogonal. max discrepancy in product = ", &
         maxval(abs(rot2(:,:) - identity(:,:)))
-      call message%warning(1)
+      call message_g%warning(1)
     end if
 
     ! apply rotation to geometry
@@ -167,7 +167,7 @@ program casida_spectrum
 
   call space_end(cs%space)
   call io_end()
-  call message%end()
+  call message_g%end()
 
   call parser_end()
   call global_end()
@@ -196,9 +196,9 @@ contains
     iunit = io_open(trim(dir)// fname, default_namespace, action='read', status='old', die = .false.)
 
     if(iunit < 0) then
-      message%lines(1) = 'Cannot open file "'//trim(dir)//trim(fname)//'".'
-      message%lines(2) = 'The '//trim(fname)//' spectrum was not generated.'
-      call message%warning(2)
+      message_g%lines(1) = 'Cannot open file "'//trim(dir)//trim(fname)//'".'
+      message_g%lines(2) = 'The '//trim(fname)//' spectrum was not generated.'
+      call message_g%warning(2)
       return
     end if
 
@@ -231,8 +231,8 @@ contains
       if(ios < 0) then
         exit ! end of file
       else if(ios > 0) then
-        message%lines(1) = "Error parsing file " // trim(fname)
-        call message%fatal(1)
+        message_g%lines(1) = "Error parsing file " // trim(fname)
+        call message_g%fatal(1)
       end if
 
       energy = units_to_atomic(units_out%energy, energy)

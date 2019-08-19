@@ -161,9 +161,9 @@ contains
     SAFE_ALLOCATE(vhxc_t2(1:gr%mesh%np, 1:st%d%nspin))
     call lalg_copy(gr%mesh%np, st%d%nspin, hm%vhxc, vhxc_t1)
 
-    call message%new_line()
-    call message%write('        Self-consistency iteration:')
-    call message%info()
+    call message_g%new_line()
+    call message_g%write('        Self-consistency iteration:')
+    call message_g%info()
 
     !Propagate the states to t+dt/2 and compute the density at t+dt
     call propagation_ops_elec_fuse_density_exp_apply(tr%te, st, gr, hm, psolver, M_HALF*dt, dt)
@@ -215,11 +215,11 @@ contains
       end do
       diff = dmf_integrate(gr%mesh, vhxc_t2(:, 1))
 
-      call message%write('          step ')
-      call message%write(iter)
-      call message%write(', residue = ')
-      call message%write(abs(diff), fmt = '(1x,es9.2)')
-      call message%info()
+      call message_g%write('          step ')
+      call message_g%write(iter)
+      call message_g%write(', residue = ')
+      call message_g%write(abs(diff), fmt = '(1x,es9.2)')
+      call message_g%info()
 
       if(diff <= sctol) exit
 
@@ -240,7 +240,7 @@ contains
     end if
 
     ! print an empty line
-    call message%info()
+    call message_g%info()
 
     if(present(scsteps)) scsteps = iter
 
@@ -369,7 +369,7 @@ contains
     ! copy vold to a cl buffer
     if(accel_is_enabled() .and. hamiltonian_elec_apply_packed(hm, gr%mesh)) then
       if(hm%family_is_mgga_with_exc) then
-        call message%not_implemented('CAETRS propagator with accel and MGGA with energy functionals')
+        call message_g%not_implemented('CAETRS propagator with accel and MGGA with energy functionals')
       end if
       pnp = accel_padded_size(gr%mesh%np)
       call accel_create_buffer(phase_buff, ACCEL_MEM_READ_ONLY, TYPE_FLOAT, pnp*st%d%nspin)

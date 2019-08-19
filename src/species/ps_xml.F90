@@ -79,33 +79,33 @@ contains
     call pseudo_init(pseudo, filename, fmt, ierr)
 
     if(ierr == PSEUDO_STATUS_FILE_NOT_FOUND) then
-      call message%write("Pseudopotential file '" // trim(filename) // "' not found")
-      call message%fatal()
+      call message_g%write("Pseudopotential file '" // trim(filename) // "' not found")
+      call message_g%fatal()
     end if
 
     if(ierr == PSEUDO_STATUS_UNKNOWN_FORMAT) then
-      call message%write("Cannot determine the format for pseudopotential file '" // trim(filename) // "'")
-      call message%fatal()
+      call message_g%write("Cannot determine the format for pseudopotential file '" // trim(filename) // "'")
+      call message_g%fatal()
     end if
 
     if(ierr == PSEUDO_STATUS_UNSUPPORTED_TYPE_ULTRASOFT) then
-      call message%write("Ultrasoft pseudopotential file '" // trim(filename) // "' not supported")
-      call message%fatal()
+      call message_g%write("Ultrasoft pseudopotential file '" // trim(filename) // "' not supported")
+      call message_g%fatal()
     end if
 
     if(ierr == PSEUDO_STATUS_UNSUPPORTED_TYPE_PAW) then
-      call message%write("PAW pseudopotential file '" // trim(filename) // "' not supported")
-      call message%fatal()
+      call message_g%write("PAW pseudopotential file '" // trim(filename) // "' not supported")
+      call message_g%fatal()
     end if
     
     if(ierr == PSEUDO_STATUS_UNSUPPORTED_TYPE) then
-      call message%write("Pseudopotential file '" // trim(filename) // "' not supported")
-      call message%fatal()
+      call message_g%write("Pseudopotential file '" // trim(filename) // "' not supported")
+      call message_g%fatal()
     end if
     
     if(ierr == PSEUDO_STATUS_FORMAT_NOT_SUPPORTED) then
-      call message%write("Pseudopotential file '" // trim(filename) // "' not supported")
-      call message%fatal()
+      call message_g%write("Pseudopotential file '" // trim(filename) // "' not supported")
+      call message_g%fatal()
     end if
 
     this%initialized = .true.
@@ -132,10 +132,10 @@ contains
       
       do ll = 0, this%lmax
         if(.not. pseudo_has_radial_function(pseudo, ll)) then
-          call message%write("The pseudopotential file '"//trim(filename)//"' does not contain")
-          call message%new_line()
-          call message%write("the wave functions. Octopus cannot use it.")
-          call message%fatal()
+          call message_g%write("The pseudopotential file '"//trim(filename)//"' does not contain")
+          call message_g%new_line()
+          call message_g%write("the wave functions. Octopus cannot use it.")
+          call message_g%fatal()
         end if
 
         call pseudo_radial_function(pseudo, ll, this%wavefunction(1, ll))
@@ -224,9 +224,9 @@ contains
 
       nrm = abs(nrm - M_ONE)
       if (nrm > CNST(1.0e-5)) then
-        write(message%lines(1), '(a,i2,a)') "Eigenstate for l = ", ll, ' is not normalized'
-        write(message%lines(2), '(a, f12.6,a)') '(abs(1 - norm) = ', nrm, ')'
-        call message%warning(2)
+        write(message_g%lines(1), '(a,i2,a)') "Eigenstate for l = ", ll, ' is not normalized'
+        write(message_g%lines(2), '(a, f12.6,a)') '(abs(1 - norm) = ', nrm, ')'
+        call message_g%warning(2)
       end if
 
     end do

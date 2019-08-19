@@ -136,8 +136,8 @@ contains
        case('d'); c%l(j) = 2
        case('f'); c%l(j) = 3
        case default
-          message%lines(1) = 'read_valconf.'
-          call message%fatal(1)
+          message_g%lines(1) = 'read_valconf.'
+          call message_g%fatal(1)
        end select
     end do
 
@@ -188,8 +188,8 @@ contains
       xcfunc = 'GGA'
       xcauth = 'PBE'
     case default
-      message%lines(1) = 'Internal Error in atomhxc: unknown functl'
-      call message%fatal(1)
+      message_g%lines(1) = 'Internal Error in atomhxc: unknown functl'
+      call message_g%fatal(1)
     end select
 
     rho = dens
@@ -313,8 +313,8 @@ contains
       GGA = .TRUE.
     ELSE
       GGA = .FALSE.
-      write(message%lines(1),'(a,a)') 'atomxc: Unknown functional ', FUNCTL
-      call message%fatal(1)
+      write(message_g%lines(1),'(a,a)') 'atomxc: Unknown functional ', FUNCTL
+      call message_g%fatal(1)
     ENDIF
     
     ! initialize xc functional
@@ -329,8 +329,8 @@ contains
       else IF ( AUTHOR.EQ.'PW92' .OR. AUTHOR.EQ.'pw92' ) THEN
         call XC_F90(func_init)(c_conf, c_info, XC_LDA_C_PW, NSPIN)
       else
-        write(message%lines(1),'(a,a)') 'LDAXC: Unknown author ', AUTHOR
-        call message%fatal(1)
+        write(message_g%lines(1),'(a,a)') 'LDAXC: Unknown author ', AUTHOR
+        call message_g%fatal(1)
       end if
     end if
     
@@ -946,8 +946,8 @@ contains
 
 
     if (mod(n,2) /= 1) then
-      write(message%lines(1),'(a,i6)') ' nrmlzg: n should be odd. n =', n
-      call message%warning(1)
+      write(message_g%lines(1),'(a,i6)') ' nrmlzg: n should be odd. n =', n
+      call message_g%warning(1)
     end if
 
     norm = M_ZERO

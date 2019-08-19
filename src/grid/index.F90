@@ -146,8 +146,8 @@ contains
       position="append", die=.false., grp=mpi_grp)
     if (iunit <= 0) then
       ierr = ierr + 1
-      message%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
-      call message%warning(1)
+      message_g%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
+      call message_g%warning(1)
     else
       !Only root writes to the file
       if (mpi_grp_is_root(mpi_grp)) then
@@ -198,8 +198,8 @@ contains
       status="old", die=.false., grp=mpi_grp)
     if (iunit <= 0) then
       ierr = ierr + 1
-      message%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
-      call message%warning(1)
+      message_g%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
+      call message_g%warning(1)
     else
       ! Find the dump tag.
       call iopar_find_line(mpi_grp, iunit, dump_tag, err)
@@ -258,8 +258,8 @@ contains
         call io_binary_write(trim(io_workpath(dir, namespace))//"/lxyz.obf", np*idx%dim, idx%lxyz, err)
         if (err /= 0) then
           ierr = ierr + 1
-          message%lines(1) = "Unable to write index function to '"//trim(dir)//"/lxyz.obf'."
-          call message%warning(1) 
+          message_g%lines(1) = "Unable to write index function to '"//trim(dir)//"/lxyz.obf'."
+          call message_g%warning(1) 
         end if
       end if
 
@@ -297,8 +297,8 @@ contains
         call io_binary_read(trim(io_workpath(dir, namespace))//"/lxyz.obf", np*idx%dim, idx%lxyz, err)
         if (err /= 0) then
           ierr = ierr + 1
-          message%lines(1) = "Unable to read index function from '"//trim(dir)//"/lxyz.obf'."
-          call message%warning(1)
+          message_g%lines(1) = "Unable to read index function from '"//trim(dir)//"/lxyz.obf'."
+          call message_g%warning(1)
         end if
       end if
 

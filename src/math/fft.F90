@@ -216,7 +216,7 @@ contains
     !% assumptions.
     !%End
     call parse_variable(namespace, 'FFTPreparePlan', FFTW_MEASURE, fft_prepare_plan)
-    if(.not. varinfo_valid_option('FFTPreparePlan', fft_prepare_plan)) call message%input_error('FFTPreparePlan')
+    if(.not. varinfo_valid_option('FFTPreparePlan', fft_prepare_plan)) call message_g%input_error('FFTPreparePlan')
 
     !%Variable FFTLibrary
     !%Type integer
@@ -236,26 +236,26 @@ contains
 
     if(fft_default_lib == FFTLIB_ACCEL) then
 #if ! (defined(HAVE_CLFFT) || defined(HAVE_CUDA))
-      call message%write('You have selected the Accelerated FFT, but Octopus was compiled', new_line = .true.)
-      call message%write('without clfft (OpenCL) or Cuda support.')
-      call message%fatal()
+      call message_g%write('You have selected the Accelerated FFT, but Octopus was compiled', new_line = .true.)
+      call message_g%write('without clfft (OpenCL) or Cuda support.')
+      call message_g%fatal()
 #endif
       if(.not. accel_is_enabled()) then
-        call message%write('You have selected the accelerated FFT, but acceleration is disabled.')
-        call message%fatal()
+        call message_g%write('You have selected the accelerated FFT, but acceleration is disabled.')
+        call message_g%fatal()
       end if
     end if
     
 #if defined(HAVE_OPENMP) && defined(HAVE_FFTW3_THREADS)
     if(omp_get_max_threads() > 1) then
 
-      call message%write('Info: Initializing Multi-threaded FFTW')
-      call message%info()
+      call message_g%write('Info: Initializing Multi-threaded FFTW')
+      call message_g%info()
       
       iret = fftw_init_threads()
       if (iret == 0) then 
-        call message%write('Initialization of FFTW3 threads failed.')
-        call message%fatal()
+        call message_g%write('Initialization of FFTW3 threads failed.')
+        call message_g%fatal()
       end if
       call fftw_plan_with_nthreads(omp_get_max_threads())
 
@@ -340,11 +340,11 @@ contains
     end do
 
     if(fft_dim  ==  0) then
-      message%lines(1) = "Internal error in fft_init: apparently, a 1x1x1 FFT is required."
-      call message%fatal(1)
+      message_g%lines(1) = "Internal error in fft_init: apparently, a 1x1x1 FFT is required."
+      call message_g%fatal(1)
     end if
 
-    if(fft_dim > 3) call message%not_implemented('FFT for dimension > 3')
+    if(fft_dim > 3) call message_g%not_implemented('FFT for dimension > 3')
 
     library_ = library
     nn_temp(1:fft_dim) = nn(1:fft_dim)
@@ -366,8 +366,8 @@ contains
       
       ! if we can't optimize, in some cases we can't use the library
       if(any(nn(1:fft_dim) /= nn_temp(1:fft_dim))) then
-        call message%write('Invalid grid size for clfft. FFTW will be used instead.')
-        call message%warning()
+        call message_g%write('Invalid grid size for clfft. FFTW will be used instead.')
+        call message_g%warning()
         library_ = FFTLIB_FFTW
       end if
       
@@ -388,18 +388,18 @@ contains
       end do 
           
       if(fft_dim < 3) &
-          call message%not_implemented('PNFFT support for dimension < 3')
+          call message_g%not_implemented('PNFFT support for dimension < 3')
                     
     case default
 
       if(fft_dim < 3 .and. library_ == FFTLIB_PFFT) &
-           call message%not_implemented('PFFT support for dimension < 3')
+           call message_g%not_implemented('PFFT support for dimension < 3')
 
 
       ! FFT optimization
       if(any(optimize_parity(1:fft_dim) > 1)) then
-        message%lines(1) = "Internal error in fft_init: optimize_parity must be negative, 0, or 1."
-        call message%fatal(1)
+        message_g%lines(1) = "Internal error in fft_init: optimize_parity must be negative, 0, or 1."
+        call message_g%fatal(1)
       end if
       
       do ii = 1, fft_dim
@@ -430,9 +430,9 @@ contains
     end do
 
     if(jj == 0) then
-      message%lines(1) = "Not enough slots for FFTs."
-      message%lines(2) = "Please increase FFT_MAX in fft.F90 and recompile."
-      call message%fatal(2)
+      message_g%lines(1) = "Not enough slots for FFTs."
+      message_g%lines(2) = "Please increase FFT_MAX in fft.F90 and recompile."
+      call message_g%fatal(2)
     end if
 
     ! jj now contains an empty slot
@@ -457,10 +457,10 @@ contains
       ierror = pfft_create_procmesh_2d(mpi_grp_%comm, column_size, row_size, fft_array(jj)%comm)        
    
       if (ierror /= 0) then
-        message%lines(1) = "The number of rows and columns in PFFT processor grid is not equal to "
-        message%lines(2) = "the number of processor in the MPI communicator."
-        message%lines(3) = "Please check it."
-        call message%fatal(3)
+        message_g%lines(1) = "The number of rows and columns in PFFT processor grid is not equal to "
+        message_g%lines(2) = "the number of processor in the MPI communicator."
+        message_g%lines(3) = "Please check it."
+        call message_g%fatal(3)
       end if
 #endif
 
@@ -724,54 +724,54 @@ contains
 #endif
 
     case default
-      call message%write('Invalid FFT library.')
-      call message%fatal()
+      call message_g%write('Invalid FFT library.')
+      call message_g%fatal()
     end select
     
     this = fft_array(jj)
 
     ! Write information
     if (.not. (library_ == FFTLIB_NFFT .or. library_ == FFTLIB_PNFFT)) then
-      call message%write('Info: FFT grid dimensions       =')
+      call message_g%write('Info: FFT grid dimensions       =')
       do idir = 1, dim
-        call message%write(fft_array(jj)%rs_n_global(idir))
-        if(idir < dim) call message%write(" x ")
+        call message_g%write(fft_array(jj)%rs_n_global(idir))
+        if(idir < dim) call message_g%write(" x ")
       end do
-      call message%new_line()
+      call message_g%new_line()
 
-      call message%write('      Total grid size           =')
-      call message%write(product(fft_array(jj)%rs_n_global(1:dim)))
-      call message%write(' (')
-      call message%write(product(fft_array(jj)%rs_n_global(1:dim))*CNST(8.0), units = unit_megabytes, fmt = '(f6.1)')
-      call message%write(' )')
+      call message_g%write('      Total grid size           =')
+      call message_g%write(product(fft_array(jj)%rs_n_global(1:dim)))
+      call message_g%write(' (')
+      call message_g%write(product(fft_array(jj)%rs_n_global(1:dim))*CNST(8.0), units = unit_megabytes, fmt = '(f6.1)')
+      call message_g%write(' )')
       if(any(nn(1:fft_dim) /= nn_temp(1:fft_dim))) then
-        call message%new_line()
-        call message%write('      Inefficient FFT grid. A better grid would be: ')
+        call message_g%new_line()
+        call message_g%write('      Inefficient FFT grid. A better grid would be: ')
         do idir = 1, fft_dim
-          call message%write(nn_temp(idir))
+          call message_g%write(nn_temp(idir))
         end do
       end if
-      call message%info()
+      call message_g%info()
     end if
     
     select case (library_)
     case (FFTLIB_PFFT)
-      write(message%lines(1),'(a)') "Info: FFT library = PFFT"
-      write(message%lines(2),'(a)') "Info: PFFT processor grid"
-      write(message%lines(3),'(a, i9)') " No. of processors                = ", mpi_grp_%size
-      write(message%lines(4),'(a, i9)') " No. of columns in the proc. grid = ", column_size
-      write(message%lines(5),'(a, i9)') " No. of rows    in the proc. grid = ", row_size
-      write(message%lines(6),'(a, i9)') " The size of integer is = ", C_INTPTR_T
-      call message%info(6)
+      write(message_g%lines(1),'(a)') "Info: FFT library = PFFT"
+      write(message_g%lines(2),'(a)') "Info: PFFT processor grid"
+      write(message_g%lines(3),'(a, i9)') " No. of processors                = ", mpi_grp_%size
+      write(message_g%lines(4),'(a, i9)') " No. of columns in the proc. grid = ", column_size
+      write(message_g%lines(5),'(a, i9)') " No. of rows    in the proc. grid = ", row_size
+      write(message_g%lines(6),'(a, i9)') " The size of integer is = ", C_INTPTR_T
+      call message_g%info(6)
 
     case (FFTLIB_PNFFT)
-      call message%write("Info: FFT library = PNFFT")
-      call message%info()
+      call message_g%write("Info: FFT library = PNFFT")
+      call message_g%info()
       call pnfft_write_info(fft_array(jj)%pnfft)
       
     case (FFTLIB_NFFT)
-      call message%write("Info: FFT library = NFFT")
-      call message%info()
+      call message_g%write("Info: FFT library = NFFT")
+      call message_g%info()
       call nfft_write_info(fft_array(jj)%nfft)
 
     end select
@@ -814,8 +814,8 @@ contains
       call pnfft_set_sp_nodes(fft_array(slot)%pnfft, namespace, XX)
 
     case default
-      call message%write('Invalid FFT library.')
-      call message%fatal()
+      call message_g%write('Invalid FFT library.')
+      call message_g%fatal()
     end select
 
 
@@ -835,8 +835,8 @@ contains
 
     ii = this%slot
     if(fft_refs(ii) == FFT_NULL) then
-      message%lines(1) = "Trying to deallocate FFT that has not been allocated."
-      call message%warning(1)
+      message_g%lines(1) = "Trying to deallocate FFT that has not been allocated."
+      call message_g%warning(1)
     else
       if(fft_refs(ii) > 1) then
         fft_refs(ii) = fft_refs(ii) - 1

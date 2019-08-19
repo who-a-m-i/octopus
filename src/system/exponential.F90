@@ -146,12 +146,12 @@ contains
       !% wrong.
       !%End
       call parse_variable(namespace, 'TDLanczosTol', CNST(1e-5), te%lanczos_tol)
-      if (te%lanczos_tol <= M_ZERO) call message%input_error('TDLanczosTol')
+      if (te%lanczos_tol <= M_ZERO) call message_g%input_error('TDLanczosTol')
 
     case default
-      call message%input_error('TDExponentialMethod')
+      call message_g%input_error('TDExponentialMethod')
     end select
-    call message%print_var_option(stdout, 'TDExponentialMethod', te%exp_method)
+    call message_g%print_var_option(stdout, 'TDExponentialMethod', te%exp_method)
 
     if(te%exp_method==EXP_TAYLOR.or.te%exp_method==EXP_CHEBYSHEV.or.te%exp_method==EXP_LANCZOS) then
       !%Variable TDExpOrder
@@ -164,7 +164,7 @@ contains
       !% it is the Lanczos-subspace dimension.
       !%End
       call parse_variable(namespace, 'TDExpOrder', DEFAULT__TDEXPORDER, te%exp_order)
-      if (te%exp_order < 2) call message%input_error('TDExpOrder')
+      if (te%exp_order < 2) call message_g%input_error('TDExpOrder')
 
     end if
 
@@ -277,13 +277,13 @@ contains
         case(EXP_TAYLOR, EXP_LANCZOS)
           timestep = M_zI*deltat
         case default
-          write(message%lines(1), '(a)') &
+          write(message_g%lines(1), '(a)') &
             'Imaginary time evolution can only be performed with the Lanczos'
-          write(message%lines(2), '(a)') &
+          write(message_g%lines(2), '(a)') &
             'exponentiation scheme ("TDExponentialMethod = lanczos") or with the'
-          write(message%lines(3), '(a)') &
+          write(message_g%lines(3), '(a)') &
             'Taylor expansion ("TDExponentialMethod = taylor") method.'
-          call message%fatal(3)
+          call message_g%fatal(3)
         end select
       end if
     end if
@@ -511,8 +511,8 @@ contains
         end do
 
         if(res > tol) then ! Here one should consider the possibility of the happy breakdown.
-          write(message%lines(1),'(a,es9.2)') 'Lanczos exponential expansion did not converge: ', res
-          call message%warning(1)
+          write(message_g%lines(1),'(a,es9.2)') 'Lanczos exponential expansion did not converge: ', res
+          call message_g%warning(1)
         end if
 
         ! zpsi = nrm * V * expo(1:iter, 1) = nrm * V * expo * V^(T) * zpsi
@@ -566,8 +566,8 @@ contains
           end do
 
           if(res > tol) then ! Here one should consider the possibility of the happy breakdown.
-            write(message%lines(1),'(a,es9.2)') 'Lanczos exponential expansion did not converge: ', res
-            call message%warning(1)
+            write(message_g%lines(1),'(a,es9.2)') 'Lanczos exponential expansion did not converge: ', res
+            call message_g%warning(1)
           end if
 
           do idim = 1, hm%d%dim
@@ -845,8 +845,8 @@ contains
       end do !iter 
 
       if(any(res > te%lanczos_tol)) then ! Here one should consider the possibility of the happy breakdown.
-        write(message%lines(1),'(a,es9.2)') 'Lanczos exponential expansion did not converge: ', maxval(res)
-        call message%warning(1)
+        write(message_g%lines(1),'(a,es9.2)') 'Lanczos exponential expansion did not converge: ', maxval(res)
+        call message_g%warning(1)
       end if
 
       ! zpsi = nrm * V * expo(1:iter, 1) = nrm * V * expo * V^(T) * zpsi

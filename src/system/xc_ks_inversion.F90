@@ -102,9 +102,9 @@ contains
     PUSH_SUB(xc_ks_inversion_init)
 
 !    if(mc%n_node > 1) &
-!      call message%not_implemented("Kohn-Sham inversion in parallel")
+!      call message_g%not_implemented("Kohn-Sham inversion in parallel")
 
-    call message%experimental("Kohn-Sham inversion")
+    call message_g%experimental("Kohn-Sham inversion")
     
     !%Variable InvertKSmethod
     !%Type integer
@@ -126,8 +126,8 @@ contains
 
     if(ks_inv%method < XC_INV_METHOD_TWO_PARTICLE &
       .or. ks_inv%method > XC_INV_METHOD_ITER_GODBY) then
-      call message%input_error('InvertKSmethod')
-      call message%fatal(1)
+      call message_g%input_error('InvertKSmethod')
+      call message_g%fatal(1)
     end if
 
     !%Variable KSInversionLevel
@@ -141,9 +141,9 @@ contains
     !%Option ks_inversion_adiabatic 2
     !% Compute exact adiabatic <math>v_{xc}</math>.
     !%End
-    call message%obsolete_variable(namespace, 'KS_Inversion_Level', 'KSInversionLevel')
+    call message_g%obsolete_variable(namespace, 'KS_Inversion_Level', 'KSInversionLevel')
     call parse_variable(namespace, 'KSInversionLevel', XC_KS_INVERSION_ADIABATIC, ks_inv%level)
-    if(.not.varinfo_valid_option('KSInversionLevel', ks_inv%level)) call message%input_error('KSInversionLevel')
+    if(.not.varinfo_valid_option('KSInversionLevel', ks_inv%level)) call message_g%input_error('KSInversionLevel')
 
     !%Variable KSInversionAsymptotics
     !%Type integer
@@ -201,7 +201,7 @@ contains
     if(ks_inversion%level == XC_KS_INVERSION_NONE) return
 
     PUSH_SUB(xc_ks_inversion_write_info)
-    call message%print_var_option(iunit, 'KSInversionLevel', ks_inversion%level)
+    call message_g%print_var_option(iunit, 'KSInversionLevel', ks_inversion%level)
 
     POP_SUB(xc_ks_inversion_write_info)
   end subroutine xc_ks_inversion_write_info
@@ -237,8 +237,8 @@ contains
     smalldensity = 5d-6
 
     if(any(target_rho(:,:) < -M_EPSILON)) then
-      write(message%lines(1),*) "Target density has negative points. min value = ", minval(target_rho(:,:))
-      call message%warning(1)
+      write(message_g%lines(1),*) "Target density has negative points. min value = ", minval(target_rho(:,:))
+      call message_g%warning(1)
     end if
     
     do jj = 1, nspin
@@ -429,8 +429,8 @@ contains
     !%End
     call parse_variable(namespace, 'InvertKSVerbosity', 0, verbosity)  
     if(verbosity < 0 .or. verbosity > 2) then
-      call message%input_error('InvertKSVerbosity')
-      call message%fatal(1)
+      call message_g%input_error('InvertKSVerbosity')
+      call message_g%fatal(1)
     end if
 
     !%Variable InvertKSMaxIter
@@ -488,10 +488,10 @@ contains
   
         ! proposition to increase convergence speed progressively
         alpha = max(CNST(0.05), CNST(0.5) - diffdensity*CNST(100.0)*CNST(0.45))
-        write(message%lines(1),'(a,2E15.4,3I8, 2E15.4)') &
+        write(message_g%lines(1),'(a,2E15.4,3I8, 2E15.4)') &
           ' KSinversion: diffdensity, convdensity, imax, counter, max_iter, alpha, beta ', &
           diffdensity, convdensity, imax, counter, max_iter, alpha, beta
-        call message%info(1)
+        call message_g%info(1)
         do ii = 1, nspin
 !TODO: parallelize these loops over np
           do jj = 1, np
@@ -505,10 +505,10 @@ contains
 !        if (diffdensity < CNST(0.001)) then
 !          npower = min(npower_in, diffdensity*CNST(50.0))
 !        end if
-        write(message%lines(1),'(a,2E15.4,3I8, 2E15.4)') &
+        write(message_g%lines(1),'(a,2E15.4,3I8, 2E15.4)') &
           ' KSinversion: diffdensity, convdensity, imax, counter, max_iter, power, mu ', &
           diffdensity, convdensity, imax, counter, max_iter, npower, mu
-        call message%info(1)
+        call message_g%info(1)
         do ii = 1, nspin
 !TODO: parallelize these loops over np
           do jj = 1, np
@@ -597,8 +597,8 @@ contains
     call eigensolver_run(eigensolver, gr, st, aux_hm, psolver, 1)
     call density_calc(st, gr, st%rho)
     
-    write(message%lines(1),'(a,I8)') "Iterative KS inversion, iterations needed:", counter
-    call message%info(1)
+    write(message_g%lines(1),'(a,I8)') "Iterative KS inversion, iterations needed:", counter
+    call message_g%info(1)
     
     call io_close(iunit)      
 
@@ -631,8 +631,8 @@ contains
     call density_calc(st, gr, st%rho)
     
     if(present(time)) then
-      write(message%lines(1),'(A,F18.12)') 'xc_ks_inversion_calc - time:', time
-      call message%info(1)
+      write(message_g%lines(1),'(A,F18.12)') 'xc_ks_inversion_calc - time:', time
+      call message_g%info(1)
     end if
 
     ks_inversion%aux_hm%energy%intnvxc     = M_ZERO

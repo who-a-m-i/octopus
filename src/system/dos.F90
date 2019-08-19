@@ -203,9 +203,9 @@ contains
             end do
           end do
           do is = 0, ns-1
-            write(message%lines(1), '(2f12.6)') units_from_atomic(units_out%energy, energy), &
+            write(message_g%lines(1), '(2f12.6)') units_from_atomic(units_out%energy, energy), &
                                           units_from_atomic(unit_one / units_out%energy, dos(ie, ist, is))
-            call message%info(1, iunit(is))
+            call message_g%info(1, iunit(is))
           end do
         end do
 
@@ -228,9 +228,9 @@ contains
             do ist = 1, st%nst
               tdos = tdos + dos(ie, ist, is)
             end do
-            write(message%lines(1), '(2f12.6)') units_from_atomic(units_out%energy, energy), &
+            write(message_g%lines(1), '(2f12.6)') units_from_atomic(units_out%energy, energy), &
                                           units_from_atomic(unit_one / units_out%energy, tdos)
-            call message%info(1, iunit(is))
+            call message_g%info(1, iunit(is))
           end do
 
           call io_close(iunit(is))
@@ -250,9 +250,9 @@ contains
             tdos = tdos + dos(ie, ist, is)
           end do
         end do
-        write(message%lines(1), '(2f12.6)') units_from_atomic(units_out%energy, energy), &
+        write(message_g%lines(1), '(2f12.6)') units_from_atomic(units_out%energy, energy), &
                                       units_from_atomic(unit_one / units_out%energy, tdos)
-        call message%info(1, iunit(0))
+        call message_g%info(1, iunit(0))
       end do
 
       call io_close(iunit(0))
@@ -260,16 +260,16 @@ contains
 
       ! write Fermi file
       iunit(0) = io_open(trim(dir)//'/'//'total-dos-efermi.dat', namespace, action='write')
-      write(message%lines(1), '(3a)') '# Fermi energy [', trim(units_abbrev(units_out%energy)), &
+      write(message_g%lines(1), '(3a)') '# Fermi energy [', trim(units_abbrev(units_out%energy)), &
         '] in a format compatible with total-dos.dat'
 
       ! this is the maximum that tdos can reach
       maxdos = st%smear%el_per_state * st%nst
 
-      write(message%lines(2), '(2f12.6)') units_from_atomic(units_out%energy, st%smear%e_fermi), M_ZERO
-      write(message%lines(3), '(f12.6,i6)') units_from_atomic(units_out%energy, st%smear%e_fermi), maxdos
+      write(message_g%lines(2), '(2f12.6)') units_from_atomic(units_out%energy, st%smear%e_fermi), M_ZERO
+      write(message_g%lines(3), '(f12.6,i6)') units_from_atomic(units_out%energy, st%smear%e_fermi), maxdos
 
-      call message%info(3, iunit(0))
+      call message_g%info(3, iunit(0))
       call io_close(iunit(0))
 
     end if
@@ -424,9 +424,9 @@ contains
                    this%gamma / ( (energy - st%eigenval(ist, ik))**2 + this%gamma**2 )
                 end do
               end do
-              write(message%lines(1), '(2f12.6)') units_from_atomic(units_out%energy, energy), &
+              write(message_g%lines(1), '(2f12.6)') units_from_atomic(units_out%energy, energy), &
                                       units_from_atomic(unit_one / units_out%energy, tdos)
-              call message%info(1, iunit(0))
+              call message_g%info(1, iunit(0))
             end do
             call io_close(iunit(0))
           end if

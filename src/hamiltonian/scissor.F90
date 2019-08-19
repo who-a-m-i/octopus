@@ -87,37 +87,37 @@ contains
   ASSERT(.not. this%apply)
   ASSERT(.not. states_are_real(st))
 
-  call message%print_stress(stdout, "TDScissor")
+  call message_g%print_stress(stdout, "TDScissor")
 
-  if(this%gs_st%parallel_in_states) call message%not_implemented("Scissor operator parallel in states")
-  if(gr%mesh%parallel_in_domains) call message%not_implemented("Scissor operator parallel in domains")
+  if(this%gs_st%parallel_in_states) call message_g%not_implemented("Scissor operator parallel in states")
+  if(gr%mesh%parallel_in_domains) call message_g%not_implemented("Scissor operator parallel in domains")
 
   this%apply = .true.
   this%gap = real(gap)
 
-  write(message%lines(1),'(a)')    'Start loading GS states.'
-  call message%info(1) 
+  write(message_g%lines(1),'(a)')    'Start loading GS states.'
+  call message_g%info(1) 
   !We need to load GS states and to store them in this%gs_st
   call states_elec_copy(this%gs_st, st)
   
   call restart_init(restart_gs, namespace, RESTART_PROJ, RESTART_TYPE_LOAD, mc, ierr, mesh=gr%mesh)
   if(ierr /= 0) then
-     message%lines(1) = "Unable to read states information."
-     call message%fatal(1)
+     message_g%lines(1) = "Unable to read states information."
+     call message_g%fatal(1)
   end if
 
   call states_elec_load(restart_gs, namespace, this%gs_st, gr, ierr, label = ': gs for TDScissor')
   if(ierr /= 0 .and. ierr /= (this%gs_st%st_end-this%gs_st%st_start+1)*this%gs_st%d%nik*this%gs_st%d%dim) then
-    message%lines(1) = "Unable to read wavefunctions for TDScissor."
-    call message%fatal(1)
+    message_g%lines(1) = "Unable to read wavefunctions for TDScissor."
+    call message_g%fatal(1)
   end if
   call restart_end(restart_gs)
 
   if (simul_box_is_periodic(gr%sb) .and. &
         .not. (kpoints_number(gr%sb%kpoints) == 1 .and. kpoints_point_is_gamma(gr%sb%kpoints, 1))) then
 
-    write(message%lines(1),'(a)')    'Adding the phase for GS states.'
-    call message%info(1)
+    write(message_g%lines(1),'(a)')    'Adding the phase for GS states.'
+    call message_g%info(1)
   
     SAFE_ALLOCATE(temp_state(1:gr%mesh%np_part,1:this%gs_st%d%dim))
     SAFE_ALLOCATE(phase(1:gr%mesh%np))
@@ -141,7 +141,7 @@ contains
     SAFE_DEALLOCATE_A(phase)
   end if
 
-  call message%print_stress(stdout) 
+  call message_g%print_stress(stdout) 
 
   POP_SUB(scissor_init)
  end subroutine scissor_init

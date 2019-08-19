@@ -304,8 +304,8 @@ subroutine X(lobpcg)(gr, st, hm, psolver, st_start, st_end, psi, constr_start, c
   call X(lobpcg_orth)(st_start, psi, no_bof)
 
   if(no_bof) then
-    message%lines(1) = 'Problem: orthonormalization of initial vectors failed.'
-    call message%warning(1)
+    message_g%lines(1) = 'Problem: orthonormalization of initial vectors failed.'
+    call message_g%warning(1)
   end if
 
   ! Get initial Ritz-values and -vectors.
@@ -326,8 +326,8 @@ subroutine X(lobpcg)(gr, st, hm, psolver, st_start, st_end, psi, constr_start, c
   call lalg_eigensolve(nst, ritz_vec, eval, bof=no_bof)
 
   if(no_bof) then
-    message%lines(1) = 'Problem: Rayleigh-Ritz procedure for initial vectors failed.'
-    call message%warning(1)
+    message_g%lines(1) = 'Problem: Rayleigh-Ritz procedure for initial vectors failed.'
+    call message_g%warning(1)
   end if
   call X(block_matr_mul)(psi, ritz_vec, tmp, xpsi = all_ev, xres = all_ev)
   call lalg_copy(gr%mesh%np_part, st%d%dim, lnst, tmp(:, :, st_start:), psi(:, :, st_start:))
@@ -384,10 +384,10 @@ subroutine X(lobpcg)(gr, st, hm, psolver, st_start, st_end, psi, constr_start, c
     ! FIXME: a proper restart should be initiated here.
 
     if(no_bof) then
-      message%lines(1) = 'Big problem: orthonormalization of residuals failed.'
-      message%lines(2) = 'Quitting eigensolver iteration.'
-      write(message%lines(3), '(a,i6)') 'in iteration #', iter
-      call message%warning(3)
+      message_g%lines(1) = 'Big problem: orthonormalization of residuals failed.'
+      message_g%lines(2) = 'Quitting eigensolver iteration.'
+      write(message_g%lines(3), '(a,i6)') 'in iteration #', iter
+      call message_g%warning(3)
       exit iteration
     end if
 
@@ -424,9 +424,9 @@ subroutine X(lobpcg)(gr, st, hm, psolver, st_start, st_end, psi, constr_start, c
       call profiling_out(C_PROFILING_LOBPCG_CHOL)
 
       if(no_bof) then
-        message%lines(1) = 'Problem: orthonormalization of conjugate directions failed'
-        write(message%lines(2), '(a,i6)') 'in iteration #', iter
-        call message%warning(2)
+        message_g%lines(1) = 'Problem: orthonormalization of conjugate directions failed'
+        write(message_g%lines(2), '(a,i6)') 'in iteration #', iter
+        call message_g%warning(2)
         ! Set directions to zero.
         ! FIXME: they should not be included in the subspace at all in this case.
         ! (the code has to be cleaned up anyway, so this can be done then).
@@ -517,9 +517,9 @@ subroutine X(lobpcg)(gr, st, hm, psolver, st_start, st_end, psi, constr_start, c
     call profiling_out(C_PROFILING_LOBPCG_ESOLVE)
 
     if(no_bof) then
-      message%lines(1) = 'Problem: Rayleigh-Ritz procedure failed'
-      write(message%lines(2), '(a,i6)') 'in iteration #', iter
-      call message%warning(2)
+      message_g%lines(1) = 'Problem: Rayleigh-Ritz procedure failed'
+      write(message_g%lines(2), '(a,i6)') 'in iteration #', iter
+      call message_g%warning(2)
       exit iteration
     end if
 
@@ -639,9 +639,9 @@ contains
       diff(ist) = X(mf_nrm2)(gr%mesh, st%d%dim, res(:, :, ist))
 
       if(debug%info) then
-        write(message%lines(1), '(a,i4,a,i4,a,i4,a,es12.6)') &
+        write(message_g%lines(1), '(a,i4,a,i4,a,i4,a,es12.6)') &
           'Debug: LOBPCG Eigensolver - ik', ik, ' ist ', ist, ' iter ', iter, ' res ', diff(ist)
-        call message%info(1)
+        call message_g%info(1)
       end if
 
       if(diff(ist) >= tol) then

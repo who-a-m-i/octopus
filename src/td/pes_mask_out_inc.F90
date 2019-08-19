@@ -257,14 +257,14 @@ subroutine pes_mask_pmesh(dim, kpoints, ll, LG, pmesh, idxZero, krng, Lp)
   else   
     
     if (err == -1) then
-      call message%write('Illformed momentum-space mesh: could not find p = 0 coordinate.')
-      call message%fatal()
+      call message_g%write('Illformed momentum-space mesh: could not find p = 0 coordinate.')
+      call message_g%fatal()
     end if 
 
     if (err > 1) then
-      call message%write('Illformed momentum-space mesh: more than one point with p = 0 coordinate.')
-      call message%write('This can happen only if the kpoint mesh does not contain gamma.')
-      call message%warning()
+      call message_g%write('Illformed momentum-space mesh: more than one point with p = 0 coordinate.')
+      call message_g%write('This can happen only if the kpoint mesh does not contain gamma.')
+      call message_g%warning()
     end if 
 
   end if
@@ -275,8 +275,8 @@ subroutine pes_mask_pmesh(dim, kpoints, ll, LG, pmesh, idxZero, krng, Lp)
 
 
   if (err == -2) then
-    call message%write('Illformed momentum-space mesh: two or more points with the same p.')
-    call message%fatal()
+    call message_g%write('Illformed momentum-space mesh: two or more points with the same p.')
+    call message_g%fatal()
   end if 
   
  
@@ -673,15 +673,15 @@ subroutine pes_mask_interpolator_init(pesK, Lk, ll, dim, cube_f, interp, pmesh)
   PUSH_SUB(pes_mask_interpolator_init)
 
 
-  call message%write("Initializing Qshep interpolator. Be patient it may take a while... ")
-  call message%info()  
+  call message_g%write("Initializing Qshep interpolator. Be patient it may take a while... ")
+  call message_g%info()  
   
   np = ll(1)*ll(2)*ll(3)  
 
   !check dim
   if (dim  <  2 .or. dim > 3) then
-    message%lines(1) = "This interpolator works only for 2 <= dim <= 3." 
-    call message%fatal(1)
+    message_g%lines(1) = "This interpolator works only for 2 <= dim <= 3." 
+    call message_g%fatal(1)
   end if
   
   SAFE_ALLOCATE(cube_f(1:np))
@@ -746,9 +746,9 @@ subroutine pes_mask_interpolator_init(pesK, Lk, ll, dim, cube_f, interp, pmesh)
   SAFE_DEALLOCATE_A(ky)    
   SAFE_DEALLOCATE_A(kz)    
  
-  call message%write("done")
-  call message%new_line()
-  call message%info()
+  call message_g%write("done")
+  call message_g%new_line()
+  call message_g%info()
   
 
   POP_SUB(pes_mask_interpolator_init)
@@ -812,8 +812,8 @@ subroutine pes_mask_output_full_mapM(pesK, file, namespace, Lk, ll, how, sb, pme
   
   if(bitand(how, OPTION__OUTPUTFORMAT__NETCDF) /= 0) then
     filename = trim(file)//".ncdf"
-    write(message%lines(1), '(a)') 'Writing netcdf format file: '
-    call message%info(1)
+    write(message_g%lines(1), '(a)') 'Writing netcdf format file: '
+    call message_g%info(1)
   
     call dout_cf_netcdf(filename, ierr, cf, cube, sb%dim, dk(:) , & 
           .false., sqrt(units_out%energy)**sb%dim)
@@ -824,8 +824,8 @@ subroutine pes_mask_output_full_mapM(pesK, file, namespace, Lk, ll, how, sb, pme
   
   if(bitand(how, OPTION__OUTPUTFORMAT__VTK) /= 0)  then
     filename = trim(file)//".vtk"
-    write(message%lines(1), '(a)') 'Writing vtk format file: '
-    call message%info(1)
+    write(message_g%lines(1), '(a)') 'Writing vtk format file: '
+    call message_g%info(1)
     
     if (present(pmesh)) then          
       call dvtk_out_cf_structured(filename, namespace, 'PES_mapM', ierr, cf, cube,& 
@@ -836,8 +836,8 @@ subroutine pes_mask_output_full_mapM(pesK, file, namespace, Lk, ll, how, sb, pme
     end if        
       
 !   else
-!     write(message%lines(1), '(a)') 'Writing ASCII format file: '
-!     call message%info(1)
+!     write(message_g%lines(1), '(a)') 'Writing ASCII format file: '
+!     call message_g%info(1)
 !     call out_ascii()
   end if
   
@@ -1204,8 +1204,8 @@ subroutine pes_mask_output_ar_polar_M(pesK, file, namespace, Lk, ll, dim, dir, E
 
   !in 1D we do not interpolate 
   if (  (dim  ==  1) ) then 
-    message%lines(1)="Impossible to obtain angle-dependent quantities in 1D."
-    call message%fatal(1)
+    message_g%lines(1)="Impossible to obtain angle-dependent quantities in 1D."
+    call message_g%fatal(1)
 
   else
 
@@ -1325,8 +1325,8 @@ subroutine pes_mask_output_ar_plane_M(pesK, file, namespace, Lk, ll, dim, dir, E
 
   !in 1D we do not interpolate 
   if (  (dim  ==  1) ) then 
-    message%lines(1)="Impossible to obtain angle-dependent quantities in 1D."
-    call message%fatal(1)
+    message_g%lines(1)="Impossible to obtain angle-dependent quantities in 1D."
+    call message_g%fatal(1)
 
   else
 
@@ -1456,8 +1456,8 @@ subroutine pes_mask_output_ar_spherical_cut_M(pesK, file, namespace, Lk, ll, dim
 
   !in 1D we do not interpolate 
   if (  (dim  ==  1) ) then 
-    message%lines(1)="Impossible to obtain angle-dependent quantities in 1D."
-    call message%fatal(1)
+    message_g%lines(1)="Impossible to obtain angle-dependent quantities in 1D."
+    call message_g%fatal(1)
 
   else
 
@@ -2120,8 +2120,8 @@ subroutine pes_mask_dump(restart, mask, st, ierr)
   ierr = 0
 
   if (debug%info) then
-    message%lines(1) = "Debug: Writing PES mask restart."
-    call message%info(1)
+    message_g%lines(1) = "Debug: Writing PES mask restart."
+    call message_g%info(1)
   end if
 
   call profiling_in(prof, "PESMASK_dump")
@@ -2173,8 +2173,8 @@ subroutine pes_mask_dump(restart, mask, st, ierr)
           call io_binary_write(path, np, gwf(:,:,:), err)
           if (err /= 0) then
             err2 = err2 + 1
-            message%lines(1) = "Unable to write PES mask restart data to '"//trim(path)//"'."
-            call message%warning(1)
+            message_g%lines(1) = "Unable to write PES mask restart data to '"//trim(path)//"'."
+            call message_g%warning(1)
           end if
         end if
 
@@ -2188,8 +2188,8 @@ subroutine pes_mask_dump(restart, mask, st, ierr)
   if (err2 /= 0) ierr = ierr + 2
 
   if (debug%info) then
-    message%lines(1) = "Debug: Writing PES mask restart done."
-    call message%info(1)
+    message_g%lines(1) = "Debug: Writing PES mask restart done."
+    call message_g%info(1)
   end if
 
   call profiling_out(prof)
@@ -2221,8 +2221,8 @@ subroutine pes_mask_load(restart, mask, st, ierr)
   end if
 
   if (debug%info) then
-    message%lines(1) = "Debug: Reading PES mask restart."
-    call message%info(1)
+    message_g%lines(1) = "Debug: Reading PES mask restart."
+    call message_g%info(1)
   end if
 
 
@@ -2259,9 +2259,9 @@ subroutine pes_mask_load(restart, mask, st, ierr)
 
   if (ierr == 0) then
     if (rr(1) /= mask%mask_r(1) .or. rr(2) /= mask%mask_r(2)) then
-      message%lines(1) = "PhotoElectronSpectrum = pes_mask : The mask parameters have changed."
-      message%lines(2) = "I will restart mapping from the previous context."
-      call message%warning(2)
+      message_g%lines(1) = "PhotoElectronSpectrum = pes_mask : The mask parameters have changed."
+      message_g%lines(2) = "I will restart mapping from the previous context."
+      call message_g%warning(2)
       call pes_mask_restart_map(mask, st, rr)
     end if
   end if
@@ -2269,8 +2269,8 @@ subroutine pes_mask_load(restart, mask, st, ierr)
   SAFE_DEALLOCATE_A(rr)
 
   if (debug%info) then
-    message%lines(1) = "Debug: Reading PES mask restart done."
-    call message%info(1)
+    message_g%lines(1) = "Debug: Reading PES mask restart done."
+    call message_g%info(1)
   end if
 
   POP_SUB(pes_mask_load)

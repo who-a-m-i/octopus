@@ -112,10 +112,10 @@ contains
 
     if(.not.debug%info) return
 
-    message%lines(1) = ''
-    message%lines(2) = hyphens
-    message%lines(3) = ''
-    write(message%lines(4), '(23x,a,4x,a,8x,a)') 'total time', 'calls', 'usec/call'
+    message_g%lines(1) = ''
+    message_g%lines(2) = hyphens
+    message_g%lines(3) = ''
+    write(message_g%lines(4), '(23x,a,4x,a,8x,a)') 'total time', 'calls', 'usec/call'
     do j = 1, C_NUM_MPI_ROUTINES
       if (call_counter(j) <= 0) then
         usec_call(j) = 0
@@ -123,13 +123,13 @@ contains
         usec_call(j) = (sec_accum(j)*1000000)/call_counter(j)
       end if
 
-      write(message%lines(j+4),'(a,f13.6,6x,i4,6x,f13.0)') &
+      write(message_g%lines(j+4),'(a,f13.6,6x,i4,6x,f13.0)') &
         mpi_rlabel(j)//' : ', sec_accum(j),          &
         call_counter(j), usec_call(j)
     end do
-    message%lines(C_NUM_MPI_ROUTINES+5) = ''
-    message%lines(C_NUM_MPI_ROUTINES+6) = hyphens
-    call message%debug(C_NUM_MPI_ROUTINES+6)
+    message_g%lines(C_NUM_MPI_ROUTINES+5) = ''
+    message_g%lines(C_NUM_MPI_ROUTINES+6) = hyphens
+    call message_g%debug(C_NUM_MPI_ROUTINES+6)
   end subroutine mpi_debug_statistics
 
 
@@ -141,10 +141,10 @@ contains
 
     call_counter(index) = call_counter(index) + 1
     sec_in              = MPI_Wtime()
-    write(message%lines(1),'(a,f18.6,a,z8.8,a,i6.6,a,f13.6)') '* MPI_I ', &
+    write(message_g%lines(1),'(a,f18.6,a,z8.8,a,i6.6,a,f13.6)') '* MPI_I ', &
       sec_in, ' '//mpi_rlabel(index)//' : 0x', comm, ' | ',  &
       call_counter(index), ' - ', sec_accum(index)
-    call message%debug(1)
+    call message_g%debug(1)
   end subroutine mpi_debug_in
 
 
@@ -158,10 +158,10 @@ contains
 
     sec_out = MPI_Wtime()
     call mpi_time_accum(index, sec_out, sec_diff)
-    write(message%lines(1),'(a,f18.6,a,z8.8,a,i6.6,a,f13.6,a,f13.6)')         &
+    write(message_g%lines(1),'(a,f18.6,a,z8.8,a,i6.6,a,f13.6,a,f13.6)')         &
       '* MPI_O ', sec_out, ' '//mpi_rlabel(index)//' : 0x', comm, ' | ', &
       call_counter(index), ' - ', sec_accum(index), ' - ', sec_diff
-    call message%debug(1)
+    call message_g%debug(1)
   end subroutine mpi_debug_out
 
 

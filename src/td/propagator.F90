@@ -250,16 +250,16 @@ contains
     !%Option cfmagnus4 16
     !% WARNING EXPERIMENTAL
     !%End
-    call message%obsolete_variable(namespace, 'TDEvolutionMethod', 'TDPropagator')
+    call message_g%obsolete_variable(namespace, 'TDEvolutionMethod', 'TDPropagator')
 
     call parse_variable(namespace, 'TDPropagator', PROP_ETRS, tr%method)
-    if(.not.varinfo_valid_option('TDPropagator', tr%method)) call message%input_error('TDPropagator')
+    if(.not.varinfo_valid_option('TDPropagator', tr%method)) call message_g%input_error('TDPropagator')
 
     select case(tr%method)
     case(PROP_ETRS)
     case(PROP_AETRS)
     case(PROP_CAETRS)
-      call message%experimental("CAETRS propagator")
+      call message_g%experimental("CAETRS propagator")
     case(PROP_EXPONENTIAL_MIDPOINT)
     case(PROP_CRANK_NICOLSON)
       ! set up pointer for zmf_dotu_aux, zmf_nrm2_aux
@@ -273,13 +273,13 @@ contains
       call sparskit_solver_init(namespace, tr%tdsk_size, tr%tdsk, .true.)
 
 #ifndef HAVE_SPARSKIT
-      message%lines(1) = 'Octopus was not compiled with support for the SPARSKIT library. This'
-      message%lines(2) = 'library is required if the "runge_kutta4" propagator is selected.'
-      message%lines(3) = 'Try using a different propagation scheme or recompile with SPARSKIT support.'
-      call message%fatal(3)
+      message_g%lines(1) = 'Octopus was not compiled with support for the SPARSKIT library. This'
+      message_g%lines(2) = 'library is required if the "runge_kutta4" propagator is selected.'
+      message_g%lines(3) = 'Try using a different propagation scheme or recompile with SPARSKIT support.'
+      call message_g%fatal(3)
 #endif
 
-      call message%experimental("Runge-Kutta 4 propagator")
+      call message_g%experimental("Runge-Kutta 4 propagator")
     case(PROP_RUNGE_KUTTA2)
 
       ! set up pointer for zmf_dotu_aux, zmf_nrm2_aux
@@ -290,13 +290,13 @@ contains
       call sparskit_solver_init(namespace, tr%tdsk_size, tr%tdsk, .true.)
 
 #ifndef HAVE_SPARSKIT
-      message%lines(1) = 'Octopus was not compiled with support for the SPARSKIT library. This'
-      message%lines(2) = 'library is required if the "runge_kutta2" propagator is selected.'
-      message%lines(3) = 'Try using a different propagation scheme or recompile with SPARSKIT support.'
-      call message%fatal(3)
+      message_g%lines(1) = 'Octopus was not compiled with support for the SPARSKIT library. This'
+      message_g%lines(2) = 'library is required if the "runge_kutta2" propagator is selected.'
+      message_g%lines(3) = 'Try using a different propagation scheme or recompile with SPARSKIT support.'
+      call message_g%fatal(3)
 #endif
 
-      call message%experimental("Runge-Kutta 2 propagator")
+      call message_g%experimental("Runge-Kutta 2 propagator")
     case(PROP_CRANK_NICOLSON_SPARSKIT)
       ! set up pointer for zmf_dotu_aux
       call mesh_init_mesh_aux(gr%mesh)
@@ -306,24 +306,24 @@ contains
       call sparskit_solver_init(namespace, st%d%dim*gr%mesh%np, tr%tdsk, .true.)
 
 #ifndef HAVE_SPARSKIT
-      message%lines(1) = 'Octopus was not compiled with support for the SPARSKIT library. This'
-      message%lines(2) = 'library is required if the "crank_nicolson_sparskit" propagator is selected.'
-      message%lines(3) = 'Try using a different propagation scheme or recompile with SPARSKIT support.'
-      call message%fatal(3)
+      message_g%lines(1) = 'Octopus was not compiled with support for the SPARSKIT library. This'
+      message_g%lines(2) = 'library is required if the "crank_nicolson_sparskit" propagator is selected.'
+      message_g%lines(3) = 'Try using a different propagation scheme or recompile with SPARSKIT support.'
+      call message_g%fatal(3)
 #endif
     case(PROP_MAGNUS)
-      call message%experimental("Magnus propagator")
+      call message_g%experimental("Magnus propagator")
       SAFE_ALLOCATE(tr%vmagnus(1:gr%mesh%np, 1:st%d%nspin, 1:2))
     case(PROP_QOCT_TDDFT_PROPAGATOR)
-      call message%experimental("QOCT+TDDFT propagator")
+      call message_g%experimental("QOCT+TDDFT propagator")
     case(PROP_EXPLICIT_RUNGE_KUTTA4)
-      call message%experimental("explicit Runge-Kutta 4 propagator")
+      call message_g%experimental("explicit Runge-Kutta 4 propagator")
     case(PROP_CFMAGNUS4)
-      call message%experimental("Commutator-Free Magnus propagator")
+      call message_g%experimental("Commutator-Free Magnus propagator")
     case default
-      call message%input_error('TDPropagator')
+      call message_g%input_error('TDPropagator')
     end select
-    call message%print_var_option(stdout, 'TDPropagator', tr%method)
+    call message_g%print_var_option(stdout, 'TDPropagator', tr%method)
 
     if(have_fields) then
       if(tr%method /= PROP_ETRS .and.    &
@@ -335,8 +335,8 @@ contains
          tr%method /= PROP_EXPLICIT_RUNGE_KUTTA4 .and. &
          tr%method /= PROP_RUNGE_KUTTA2 .and. &
          tr%method /= PROP_CRANK_NICOLSON_SPARSKIT ) then
-        message%lines(1) = "To move the ions or put in a gauge field, use the etrs, aetrs or exp_mid propagators." 
-        call message%fatal(1)
+        message_g%lines(1) = "To move the ions or put in a gauge field, use the etrs, aetrs or exp_mid propagators." 
+        call message_g%fatal(1)
       end if
     end if
 
@@ -349,7 +349,7 @@ contains
 
     call exponential_init(tr%te, namespace) ! initialize propagator
 
-    call message%obsolete_variable(namespace, 'TDSelfConsistentSteps', 'TDStepsWithSelfConsistency')
+    call message_g%obsolete_variable(namespace, 'TDSelfConsistentSteps', 'TDStepsWithSelfConsistency')
 
     !%Variable TDStepsWithSelfConsistency
     !%Type integer
@@ -372,14 +372,14 @@ contains
     call parse_variable(namespace, 'TDStepsWithSelfConsistency', 0, tr%scf_propagation_steps)
 
     if(tr%scf_propagation_steps == -1) tr%scf_propagation_steps = HUGE(tr%scf_propagation_steps)
-    if(tr%scf_propagation_steps < 0) call message%input_error('TDStepsWithSelfConsistency', 'Cannot be negative')
+    if(tr%scf_propagation_steps < 0) call message_g%input_error('TDStepsWithSelfConsistency', 'Cannot be negative')
 
     if(tr%scf_propagation_steps /= 0) then
-      call message%experimental('TDStepsWithSelfConsistency')
+      call message_g%experimental('TDStepsWithSelfConsistency')
 
       if(tr%method /= PROP_ETRS) then
-        call message%write('TDStepsWithSelfConsistency only works with the ETRS propagator')
-        call message%fatal()
+        call message_g%write('TDStepsWithSelfConsistency only works with the ETRS propagator')
+        call message_g%fatal()
       end if
     end if
 
@@ -671,7 +671,7 @@ contains
 
     !TODO: we should update the occupation matrices here 
     if(hm%lda_u_level /= DFT_U_NONE) then
-      call message%not_implemented("DFT+U with propagator_dt_bo")  
+      call message_g%not_implemented("DFT+U with propagator_dt_bo")  
     end if
 
     call hamiltonian_elec_epot_generate(hm, namespace,  gr, geo, st, psolver, time = iter*dt)

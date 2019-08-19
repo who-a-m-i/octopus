@@ -112,8 +112,8 @@ contains
       if(ierr == 0) call states_elec_load(restart_load, sys%namespace, sys%st, sys%gr, ierr)
       call restart_end(restart_load)
       if(ierr /= 0) then
-        message%lines(1) = "Unable to read wavefunctions: Starting from scratch."
-        call message%warning(1)
+        message_g%lines(1) = "Unable to read wavefunctions: Starting from scratch."
+        call message_g%warning(1)
         fromscratch = .true.
       end if
     end if
@@ -124,8 +124,8 @@ contains
       call lcao_run(sys, lmm_r = g_opt%scfv%lmm_r)
     else
       ! setup Hamiltonian
-      message%lines(1) = 'Info: Setting up Hamiltonian.'
-      call message%info(1)
+      message_g%lines(1) = 'Info: Setting up Hamiltonian.'
+      call message_g%info(1)
       call system_h_setup(sys)
     end if
 
@@ -169,20 +169,20 @@ contains
 
     if(ierr == 1025) then
       ! not a GSL error, set by our minimize routines, so we must handle it separately
-      message%lines(1) = "Reached maximum number of iterations allowed by GOMaxIter."
-      call message%info(1)
+      message_g%lines(1) = "Reached maximum number of iterations allowed by GOMaxIter."
+      call message_g%info(1)
     else if (ierr /= 0) then
-      message%lines(1) = "Error occurred during the GSL minimization procedure:"
-      call loct_strerror(ierr, message%lines(2))
-      call message%fatal(2)
+      message_g%lines(1) = "Error occurred during the GSL minimization procedure:"
+      call loct_strerror(ierr, message_g%lines(2))
+      call message_g%fatal(2)
     end if
 
     if(sys%st%d%pack_states .and. hamiltonian_elec_apply_packed(sys%hm, sys%gr%mesh)) call sys%st%unpack()
   
     ! print out geometry
     call from_coords(g_opt, coords)
-    message%lines(1) = "Writing final coordinates to min.xyz"
-    call message%info(1)
+    message_g%lines(1) = "Writing final coordinates to min.xyz"
+    call message_g%info(1)
     call geometry_write_xyz(g_opt%geo, './min', g_opt%syst%namespace)
 
     SAFE_DEALLOCATE_A(coords)
@@ -232,7 +232,7 @@ contains
       if(center) then
         g_opt%fixed_atom = 1
         g_opt%size = g_opt%size  - g_opt%dim
-        call message%experimental('GOCenter')
+        call message_g%experimental('GOCenter')
       end if
 
       !Check if atoms are allowed to move and redifine g_opt%size
@@ -284,8 +284,8 @@ contains
       !% Ref: E. Bitzek, P. Koskinen, F. Gahler, M. Moseler, and P. Gumbsch, <i>Phys. Rev. Lett.</i> <b>97</b>, 170201 (2006).
       !%End
       call parse_variable(sys%namespace, 'GOMethod', MINMETHOD_FIRE, g_opt%method)
-      if(.not.varinfo_valid_option('GOMethod', g_opt%method)) call message%input_error('GOMethod')
-      call message%print_var_option(stdout, "GOMethod", g_opt%method)
+      if(.not.varinfo_valid_option('GOMethod', g_opt%method)) call message_g%input_error('GOMethod')
+      call message_g%print_var_option(stdout, "GOMethod", g_opt%method)
 
       !%Variable GOTolerance
       !%Type float
@@ -320,7 +320,7 @@ contains
       end if
       call parse_variable(sys%namespace, 'GOMinimumMove', default_toldr, g_opt%toldr, units_inp%length)
 
-      if(g_opt%method == MINMETHOD_NMSIMPLEX .and. g_opt%toldr <= M_ZERO) call message%input_error('GOMinimumMove')
+      if(g_opt%method == MINMETHOD_NMSIMPLEX .and. g_opt%toldr <= M_ZERO) call message_g%input_error('GOMinimumMove')
       
       !%Variable GOStep
       !%Type float
@@ -360,8 +360,8 @@ contains
       !%End
       call parse_variable(sys%namespace, 'GOMaxIter', 200, g_opt%max_iter)
       if(g_opt%max_iter <= 0) then
-        message%lines(1) = "GOMaxIter has to be larger than 0"
-        call message%fatal(1)
+        message_g%lines(1) = "GOMaxIter has to be larger than 0"
+        call message_g%fatal(1)
       end if
 
       !%Variable GOFireMass
@@ -397,7 +397,7 @@ contains
       !%End
       call parse_variable(sys%namespace, 'GOFireIntegrator', OPTION__GOFIREINTEGRATOR__VERLET, g_opt%fire_integrator)
 
-      call message%obsolete_variable(sys%namespace, 'GOWhat2Minimize', 'GOObjective')
+      call message_g%obsolete_variable(sys%namespace, 'GOWhat2Minimize', 'GOObjective')
 
       !%Variable GOObjective
       !%Type integer
@@ -417,8 +417,8 @@ contains
       !% This is, of course, inconsistent, and may lead to very strange behavior.
       !%End
       call parse_variable(sys%namespace, 'GOObjective', MINWHAT_ENERGY, g_opt%what2minimize)
-      if(.not.varinfo_valid_option('GOObjective', g_opt%what2minimize)) call message%input_error('GOObjective')
-      call message%print_var_option(stdout, "GOObjective", g_opt%what2minimize)
+      if(.not.varinfo_valid_option('GOObjective', g_opt%what2minimize)) call message_g%input_error('GOObjective')
+      call message_g%print_var_option(stdout, "GOObjective", g_opt%what2minimize)
 
 
       !%Variable XYZGOConstrains
@@ -478,8 +478,8 @@ contains
       if(xyz%source /= READ_COORDS_ERR) then
         !Sanity check
         if(g_opt%geo%natoms /= xyz%n) then
-          write(message%lines(1), '(a,i4,a,i4)') 'I need exactly ', g_opt%geo%natoms, ' constrains, but I found ', xyz%n
-          call message%fatal(1)
+          write(message_g%lines(1), '(a,i4,a,i4)') 'I need exactly ', g_opt%geo%natoms, ' constrains, but I found ', xyz%n
+          call message_g%fatal(1)
         end if
         ! copy information and adjust units
         do iatom = 1, g_opt%geo%natoms
@@ -493,7 +493,7 @@ contains
         call read_coords_end(xyz)
        
         if(g_opt%fixed_atom /= 0) &
-          call message%not_implemented("GOCenter with constrains") 
+          call message_g%not_implemented("GOCenter with constrains") 
       else
         do iatom = 1, g_opt%geo%natoms
           g_opt%geo%atom(iatom)%c = M_ZERO
@@ -680,31 +680,31 @@ contains
       call io_close(iunit)
     end if
 
-    call message%new_line()
-    call message%new_line()
+    call message_g%new_line()
+    call message_g%new_line()
 
-    call message%write("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", new_line = .true.)
+    call message_g%write("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", new_line = .true.)
 
-    call message%write("+++++++++++++++++++++ MINIMIZATION ITER #:")
-    call message%write(geom_iter, fmt = "I5")
-    call message%write(" ++++++++++++++++++++++", new_line = .true.)
+    call message_g%write("+++++++++++++++++++++ MINIMIZATION ITER #:")
+    call message_g%write(geom_iter, fmt = "I5")
+    call message_g%write(" ++++++++++++++++++++++", new_line = .true.)
 
-    call message%write("  Energy    = ")
-    call message%write(energy, units = units_out%energy, fmt = "f16.10,1x", print_units = .true., new_line = .true.)
+    call message_g%write("  Energy    = ")
+    call message_g%write(energy, units = units_out%energy, fmt = "f16.10,1x", print_units = .true., new_line = .true.)
 
     if(maxdf > M_ZERO) then
-      call message%write("  Max force = ")
-      call message%write(maxdf, units = units_out%force, fmt = "f16.10,1x", print_units = .true., new_line = .true.)
+      call message_g%write("  Max force = ")
+      call message_g%write(maxdf, units = units_out%force, fmt = "f16.10,1x", print_units = .true., new_line = .true.)
     end if
 
-    call message%write("  Max dr    = ")
-    call message%write(maxdx, units = units_out%length, fmt = "f16.10,1x", print_units = .true., new_line = .true.)
+    call message_g%write("  Max dr    = ")
+    call message_g%write(maxdx, units = units_out%length, fmt = "f16.10,1x", print_units = .true., new_line = .true.)
 
-    call message%write("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", new_line = .true.)
-    call message%write("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", new_line = .true.)
-    call message%new_line()
-    call message%new_line()
-    call message%info()
+    call message_g%write("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", new_line = .true.)
+    call message_g%write("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", new_line = .true.)
+    call message_g%new_line()
+    call message_g%new_line()
+    call message_g%info()
 
     POP_SUB(write_iter_info)
   end subroutine write_iter_info

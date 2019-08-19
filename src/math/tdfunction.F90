@@ -536,8 +536,8 @@ contains
          wgrid(i) = (i-1)*df
       end do
     case default
-      message%lines(1) = "Illegal mode in tdf_fourier_grid."
-      call message%fatal(1)
+      message_g%lines(1) = "Illegal mode in tdf_fourier_grid."
+      call message_g%fatal(1)
     end select
 
     POP_SUB(tdf_fourier_grid)
@@ -699,8 +699,8 @@ contains
     case(TDF_ZERO_FOURIER)
       n = 2*f%nfreqs-2
     case default
-      message%lines(1) = "Illegal value for f%mode in tdf_set_random."
-      call message%fatal(1)
+      message_g%lines(1) = "Illegal value for f%mode in tdf_set_random."
+      call message_g%fatal(1)
     end select
     SAFE_ALLOCATE(e(1:n))
 
@@ -1131,8 +1131,8 @@ contains
         fminusg%valww(i) = fminusg%valww(i) - g%valww(i)
       end do
     case default
-      message%lines(1) = "Illegal value for f%mode in tdf_diff"
-      call message%fatal(1)
+      message_g%lines(1) = "Illegal value for f%mode in tdf_diff"
+      call message_g%fatal(1)
     end select
 
     fg = tdf_dot_product(fminusg, fminusg)

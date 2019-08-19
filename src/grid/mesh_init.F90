@@ -142,14 +142,14 @@ subroutine mesh_init_stage_1(mesh, sb, cv, spacing, enlarge)
   end do
 
   if( any(abs(mesh%spacing(1:sb%periodic_dim) - spacing(1:sb%periodic_dim)) > CNST(1e-6)) ) then
-    call message%write('The spacing has been modified to make it commensurate with the periodicity of the system.')
-    call message%warning()
+    call message_g%write('The spacing has been modified to make it commensurate with the periodicity of the system.')
+    call message_g%warning()
   end if
 
   do idir = sb%periodic_dim + 1, sb%dim
     if(mesh%idx%nr(2, idir) == 0) then
-      write(message%lines(1),'(a,i2)') 'Spacing > box size in direction ', idir
-      call message%fatal(1)
+      write(message_g%lines(1),'(a,i2)') 'Spacing > box size in direction ', idir
+      call message_g%fatal(1)
     end if
   end do
 
@@ -299,8 +299,8 @@ subroutine mesh_init_stage_2(mesh, sb, geo, cv, stencil)
     MPI_INTEGER, MPI_BOR, mpi_world%comm, mpi_err)
   ! MPI2 not working could also provoke a segmentation fault in the line above, which we cannot catch.
   if(all(mesh%idx%lxyz_inv(:,:,:) == 0)) then
-    message%lines(1) = "Failure of MPI_Allreduce in place for lxyz_inv. MPI2 is not working correctly."
-    call message%fatal(1)
+    message_g%lines(1) = "Failure of MPI_Allreduce in place for lxyz_inv. MPI2 is not working correctly."
+    call message_g%fatal(1)
   end if
 
   call profiling_out(prof_reduce)
@@ -417,9 +417,9 @@ subroutine mesh_init_stage_2(mesh, sb, geo, cv, stencil)
                    any((/newi, newj, newk/) >  mesh%idx%nr(2, 1:3)) .or. &
                    mesh%idx%lxyz_inv(newi,newj,newk) == 0) then
 
-                     message%lines(1) = 'Multiresolution radii are too close to each other (or outer boundary)'
-                     write(message%lines(2),'(7I4)') ix,iy,iz,newi,newj,newk,mesh%resolution(ix,iy,iz)
-                     call message%fatal(2)
+                     message_g%lines(1) = 'Multiresolution radii are too close to each other (or outer boundary)'
+                     write(message_g%lines(2),'(7I4)') ix,iy,iz,newi,newj,newk,mesh%resolution(ix,iy,iz)
+                     call message_g%fatal(2)
                 end if
               end do
             end do
@@ -552,8 +552,8 @@ contains
     select case(order)
     case(ORDER_BLOCKS)
 
-      call message%obsolete_variable(namespace, 'MeshBlockSizeXY', 'MeshBlockSize')
-      call message%obsolete_variable(namespace, 'MeshBlockSizeZ', 'MeshBlockSize')
+      call message_g%obsolete_variable(namespace, 'MeshBlockSizeXY', 'MeshBlockSize')
+      call message_g%obsolete_variable(namespace, 'MeshBlockSizeZ', 'MeshBlockSize')
 
       !%Variable MeshBlockSize
       !%Type block
@@ -644,7 +644,7 @@ contains
 
     case(ORDER_HILBERT)
 
-      call message%experimental('Hilbert grid ordering')
+      call message_g%experimental('Hilbert grid ordering')
 
       size = maxval(mesh%idx%nr(2, 1:mesh%sb%dim) - mesh%idx%nr(1, 1:mesh%sb%dim) + 1)
 
@@ -702,7 +702,7 @@ contains
 
     case(ORDER_HILBERT_2D)
 
-      call message%experimental('Hilbert 2D grid ordering')
+      call message_g%experimental('Hilbert 2D grid ordering')
 
       size = maxval(mesh%idx%nr(2, 1:2) - mesh%idx%nr(1, 1:2) + 1)
 
@@ -777,9 +777,9 @@ contains
       ASSERT(iin == mesh%np_global)
 
       if(ien /= mesh%np_part_global) then
-        write(message%lines(1), '(a,i9,a,i9)') 'Assertion failure from create_x_lxyz: ien = ', ien, ' /= ', mesh%np_part_global
-        write(message%lines(2), '(a)') 'Probably MPI2 is not working correctly.'
-        call message%fatal(2)
+        write(message_g%lines(1), '(a,i9,a,i9)') 'Assertion failure from create_x_lxyz: ien = ', ien, ' /= ', mesh%np_part_global
+        write(message_g%lines(2), '(a)') 'Probably MPI2 is not working correctly.'
+        call message_g%fatal(2)
       end if
 
       POP_SUB(mesh_init_stage_3.create_x_lxyz)
@@ -821,9 +821,9 @@ contains
       call parse_variable(namespace, 'MeshPartitionVirtualSize', mesh%mpi_grp%size, vsize)
       
       if (vsize /= mesh%mpi_grp%size) then
-        write(message%lines(1),'(a,I7)') "Changing the partition size to", vsize
-        write(message%lines(2),'(a)') "The execution will crash."
-        call message%warning(2)
+        write(message_g%lines(1),'(a,I7)') "Changing the partition size to", vsize
+        write(message_g%lines(2),'(a)') "The execution will crash."
+        call message_g%warning(2)
         has_virtual_partition = .true.
       else 
         has_virtual_partition = .false.
@@ -853,10 +853,10 @@ contains
     if (has_virtual_partition) then
       call profiling_end(namespace)
       call print_date("Calculation ended on ")
-      write(message%lines(1),'(a)') "Execution has ended."
-      write(message%lines(2),'(a)') "If you want to run your system, do not use MeshPartitionVirtualSize."
-      call message%warning(2)
-      call message%end()
+      write(message_g%lines(1),'(a)') "Execution has ended."
+      write(message_g%lines(2),'(a)') "If you want to run your system, do not use MeshPartitionVirtualSize."
+      call message_g%warning(2)
+      call message_g%end()
       call global_end()
       stop
     end if
@@ -1045,8 +1045,8 @@ contains
 
       if(mesh%sb%mr_flag) then
 
-        message%lines(1) = 'Info: Point volumes are calculated by solving interpolation coefficients for the intermediate points.'
-        call message%info(1)
+        message_g%lines(1) = 'Info: Point volumes are calculated by solving interpolation coefficients for the intermediate points.'
+        call message_g%info(1)
 
         ! The following interpolation routine is essentially the same as in the calculation of the Laplacian
 
@@ -1083,8 +1083,8 @@ contains
 
         do i_lev = 1, sb%hr_area%num_radii
 
-          write (message%lines(1),'(a,I2,a,I2)') 'Info: Point volume calculation at stage ',i_lev,'/',sb%hr_area%num_radii
-          call message%info(1)
+          write (message_g%lines(1),'(a,I2,a,I2)') 'Info: Point volume calculation at stage ',i_lev,'/',sb%hr_area%num_radii
+          call message_g%info(1)
 
           ! loop through _all_ the points
           do iz = mesh%idx%nr(1,3), mesh%idx%nr(2,3)
@@ -1139,8 +1139,9 @@ contains
           mesh%vol_pp(ip) = vol_tmp(ix,iy,iz)
         end do
        
-        write (message%lines(1),'(a,F26.12)') 'Info: Point volume calculation finished. Total volume :',sum(mesh%vol_pp(1:mesh%np))
-        call message%info(1)
+        write (message_g%lines(1),'(a,F26.12)') 'Info: Point volume calculation finished. Total volume :',&
+          sum(mesh%vol_pp(1:mesh%np))
+        call message_g%info(1)
 
         SAFE_DEALLOCATE_A(ww)
         SAFE_DEALLOCATE_A(pos)

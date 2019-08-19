@@ -130,13 +130,13 @@ contains
     PUSH_SUB(sternheimer_init)
 
     if(sys%st%smear%method  ==  SMEAR_FIXED_OCC) then
-      call message%experimental("Sternheimer equation for arbitrary occupations")
+      call message_g%experimental("Sternheimer equation for arbitrary occupations")
     end if
     if(sys%st%smear%method  ==  SMEAR_SEMICONDUCTOR .and. &
       (abs(sys%st%smear%ef_occ) > M_EPSILON) .and. abs(sys%st%smear%ef_occ - M_ONE) > M_EPSILON) then
-      write(message%lines(1),'(a,f12.6)') 'Partial occupation at the Fermi level: ', sys%st%smear%ef_occ
-      message%lines(2) = 'Semiconducting smearing cannot be used for Sternheimer in this situation.'
-      call message%fatal(2)
+      write(message_g%lines(1),'(a,f12.6)') 'Partial occupation at the Fermi level: ', sys%st%smear%ef_occ
+      message_g%lines(2) = 'Semiconducting smearing cannot be used for Sternheimer in this situation.'
+      call message_g%fatal(2)
     end if
 
     if(wfs_are_cplx) then
@@ -213,24 +213,24 @@ contains
        this%last_occ_response = .false.
     end if
 
-    message%lines(1) = "Variation of the Hamiltonian in Sternheimer equation: V_ext"
-    if(this%add_hartree) write(message%lines(1), '(2a)') trim(message%lines(1)), ' + hartree'
-    if(this%add_fxc)     write(message%lines(1), '(2a)') trim(message%lines(1)), ' + fxc'
+    message_g%lines(1) = "Variation of the Hamiltonian in Sternheimer equation: V_ext"
+    if(this%add_hartree) write(message_g%lines(1), '(2a)') trim(message_g%lines(1)), ' + hartree'
+    if(this%add_fxc)     write(message_g%lines(1), '(2a)') trim(message_g%lines(1)), ' + fxc'
 
-    message%lines(2) = "Solving Sternheimer equation for"
+    message_g%lines(2) = "Solving Sternheimer equation for"
     if (this%occ_response) then
-       write(message%lines(2), '(2a)') trim(message%lines(2)), ' full linear response.'
+       write(message_g%lines(2), '(2a)') trim(message_g%lines(2)), ' full linear response.'
     else
-       write(message%lines(2), '(2a)') trim(message%lines(2)), ' linear response in unoccupied subspace only.'
+       write(message_g%lines(2), '(2a)') trim(message_g%lines(2)), ' linear response in unoccupied subspace only.'
     end if
 
-    message%lines(3) = "Sternheimer preorthogonalization:"
+    message_g%lines(3) = "Sternheimer preorthogonalization:"
     if (this%preorthogonalization) then
-       write(message%lines(3), '(2a)') trim(message%lines(3)), ' yes'
+       write(message_g%lines(3), '(2a)') trim(message_g%lines(3)), ' yes'
     else
-       write(message%lines(3), '(2a)') trim(message%lines(3)), ' no'
+       write(message_g%lines(3), '(2a)') trim(message_g%lines(3)), ' no'
     end if
-    call message%info(3) 
+    call message_g%info(3) 
 
     call linear_solver_init(this%solver, sys%namespace, sys%gr, states_are_real(sys%st), set_default_solver)
 
@@ -421,8 +421,8 @@ contains
     case(2)
       sigma_char = '-'
     case default 
-      write(message%lines(1),'(a,i2)') "Illegal integer isigma passed to wfs_tag_sigma: ", isigma
-      call message%fatal(1)
+      write(message_g%lines(1),'(a,i2)') "Illegal integer isigma passed to wfs_tag_sigma: ", isigma
+      call message_g%fatal(1)
     end select
 
     str = trim(base_name) // sigma_char
@@ -440,8 +440,8 @@ contains
     
     PUSH_SUB(sternheimer_obsolete_variables)
 
-    call message%obsolete_variable(namespace, trim(old_prefix)//'Preorthogonalization', trim(new_prefix)//'Preorthogonalization')
-    call message%obsolete_variable(namespace, trim(old_prefix)//'HamiltonianVariation', trim(new_prefix)//'HamiltonianVariation')
+    call message_g%obsolete_variable(namespace, trim(old_prefix)//'Preorthogonalization', trim(new_prefix)//'Preorthogonalization')
+    call message_g%obsolete_variable(namespace, trim(old_prefix)//'HamiltonianVariation', trim(new_prefix)//'HamiltonianVariation')
 
     call linear_solver_obsolete_variables(namespace, old_prefix, new_prefix)
     call scf_tol_obsolete_variables(namespace, old_prefix, new_prefix)

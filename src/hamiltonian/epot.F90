@@ -172,11 +172,11 @@ contains
     !% The filter of E. L. Briggs, D. J. Sullivan, and J. Bernholc, <i>Phys. Rev. B</i> <b>54</b>, 14362 (1996).
     !%End
     call parse_variable(namespace, 'FilterPotentials', PS_FILTER_TS, filter)
-    if(.not.varinfo_valid_option('FilterPotentials', filter)) call message%input_error('FilterPotentials')
-    call message%print_var_option(stdout, "FilterPotentials", filter)
+    if(.not.varinfo_valid_option('FilterPotentials', filter)) call message_g%input_error('FilterPotentials')
+    call message_g%print_var_option(stdout, "FilterPotentials", filter)
 
     if(family_is_mgga(xc_family) .and. filter /= PS_FILTER_NONE) &
-      call message%not_implemented("FilterPotentials different from filter_none with MGGA")
+      call message_g%not_implemented("FilterPotentials different from filter_none with MGGA")
 
     if(filter == PS_FILTER_TS) call spline_filter_mask_init(namespace)
     do ispec = 1, geo%nspecies
@@ -192,7 +192,7 @@ contains
     if(geo%ncatoms > 0) then
 
       if(simul_box_is_periodic(gr%mesh%sb)) &
-        call message%not_implemented("classical atoms in periodic systems")
+        call message_g%not_implemented("classical atoms in periodic systems")
       
       !%Variable ClassicalPotential
       !%Type integer
@@ -212,14 +212,14 @@ contains
       !%End
       call parse_variable(namespace, 'ClassicalPotential', 0, ep%classical_pot)
       if(ep%classical_pot  ==  CLASSICAL_GAUSSIAN) then
-        call message%experimental("Gaussian smeared classical charges")
+        call message_g%experimental("Gaussian smeared classical charges")
         ! This method probably works but definitely needs to be made user-friendly:
         ! i.e. telling the user what widths are used and letting them be set somehow.
       end if
 
       if(ep%classical_pot > 0) then
-        message%lines(1) = 'Info: generating classical external potential.'
-        call message%info(1)
+        message_g%lines(1) = 'Info: generating classical external potential.'
+        call message_g%info(1)
 
         SAFE_ALLOCATE(ep%Vclassical(1:gr%mesh%np))
         call epot_generate_classical(ep, gr%mesh, geo)
@@ -232,7 +232,7 @@ contains
     call kick_init(ep%kick, namespace, ispin, gr%mesh%sb%dim, gr%mesh%sb%periodic_dim)
 
     ! No more "UserDefinedTDPotential" from this version on.
-    call message%obsolete_variable(namespace, 'UserDefinedTDPotential', 'TDExternalFields')
+    call message_g%obsolete_variable(namespace, 'UserDefinedTDPotential', 'TDExternalFields')
 
     !%Variable StaticElectricField
     !%Type block
@@ -253,12 +253,12 @@ contains
         call parse_block_float(blk, 0, idir - 1, ep%E_field(idir), units_inp%energy / units_inp%length)
 
         if(idir <= gr%sb%periodic_dim .and. abs(ep%E_field(idir)) > M_EPSILON) then
-          message%lines(1) = "Applying StaticElectricField in a periodic direction is only accurate for large supercells."
+          message_g%lines(1) = "Applying StaticElectricField in a periodic direction is only accurate for large supercells."
           if(nik == 1) then
-            call message%warning(1)
+            call message_g%warning(1)
           else
-            message%lines(2) = "Single-point Berry phase is not appropriate when k-point sampling is needed."
-            call message%warning(2)
+            message_g%lines(2) = "Single-point Berry phase is not appropriate when k-point sampling is needed."
+            call message_g%warning(2)
           end if
         end if
       end do
@@ -324,7 +324,7 @@ contains
       !%End
       call parse_variable(namespace, 'StaticMagneticField2DGauge', 0, gauge_2d)
       if(.not.varinfo_valid_option('StaticMagneticField2DGauge', gauge_2d)) &
-        call message%input_error('StaticMagneticField2DGauge')
+        call message_g%input_error('StaticMagneticField2DGauge')
 
       SAFE_ALLOCATE(ep%B_field(1:3))
       do idir = 1, 3
@@ -332,28 +332,28 @@ contains
       end do
       select case(gr%sb%dim)
       case(1)
-        call message%input_error('StaticMagneticField')
+        call message_g%input_error('StaticMagneticField')
       case(2)
         if(gr%sb%periodic_dim == 2) then
-          message%lines(1) = "StaticMagneticField cannot be applied in a 2D, 2D-periodic system."
-          call message%fatal(1)
+          message_g%lines(1) = "StaticMagneticField cannot be applied in a 2D, 2D-periodic system."
+          call message_g%fatal(1)
         end if
-        if(ep%B_field(1)**2 + ep%B_field(2)**2 > M_ZERO) call message%input_error('StaticMagneticField')
+        if(ep%B_field(1)**2 + ep%B_field(2)**2 > M_ZERO) call message_g%input_error('StaticMagneticField')
       case(3)
         ! Consider cross-product below: if grx(1:sb%periodic_dim) is used, it is not ok.
         ! Therefore, if idir is periodic, B_field for all other directions must be zero.
         ! 1D-periodic: only Bx. 2D-periodic or 3D-periodic: not allowed. Other gauges could allow 2D-periodic case.
         if(gr%sb%periodic_dim >= 2) then
-          message%lines(1) = "In 3D, StaticMagneticField cannot be applied when the system is 2D- or 3D-periodic."
-          call message%fatal(1)
+          message_g%lines(1) = "In 3D, StaticMagneticField cannot be applied when the system is 2D- or 3D-periodic."
+          call message_g%fatal(1)
         else if(gr%sb%periodic_dim == 1 .and. any(abs(ep%B_field(2:3)) > M_ZERO)) then
-          message%lines(1) = "In 3D, 1D-periodic, StaticMagneticField must be zero in the y- and z-directions."
-          call message%fatal(1)
+          message_g%lines(1) = "In 3D, 1D-periodic, StaticMagneticField must be zero in the y- and z-directions."
+          call message_g%fatal(1)
         end if
       end select
       call parse_block_end(blk)
 
-      if(gr%sb%dim > 3) call message%not_implemented('Magnetic field for dim > 3')
+      if(gr%sb%dim > 3) call message_g%not_implemented('Magnetic field for dim > 3')
 
       ! Compute the vector potential
       SAFE_ALLOCATE(ep%A_static(1:gr%mesh%np, 1:gr%sb%dim))
@@ -364,9 +364,9 @@ contains
         select case(gauge_2d)
         case(0) ! linear_xy
           if(gr%sb%periodic_dim == 1) then
-            message%lines(1) = "For 2D system, 1D-periodic, StaticMagneticField can only be "
-            message%lines(2) = "applied for StaticMagneticField2DGauge = linear_y."
-            call message%fatal(2)
+            message_g%lines(1) = "For 2D system, 1D-periodic, StaticMagneticField can only be "
+            message_g%lines(2) = "applied for StaticMagneticField2DGauge = linear_y."
+            call message_g%fatal(2)
           end if
           do ip = 1, gr%mesh%np
             grx(1:gr%sb%dim) = gr%mesh%x(ip, 1:gr%sb%dim)
@@ -422,13 +422,13 @@ contains
     !% Spin-orbit.
     !%End
     call parse_variable(namespace, 'RelativisticCorrection', NOREL, ep%reltype)
-    if(.not.varinfo_valid_option('RelativisticCorrection', ep%reltype)) call message%input_error('RelativisticCorrection')
+    if(.not.varinfo_valid_option('RelativisticCorrection', ep%reltype)) call message_g%input_error('RelativisticCorrection')
     if (ispin /= SPINORS .and. ep%reltype == SPIN_ORBIT) then
-      message%lines(1) = "The spin-orbit term can only be applied when using spinors."
-      call message%fatal(1)
+      message_g%lines(1) = "The spin-orbit term can only be applied when using spinors."
+      call message_g%fatal(1)
     end if
 
-    call message%print_var_option(stdout, "RelativisticCorrection", ep%reltype)
+    call message_g%print_var_option(stdout, "RelativisticCorrection", ep%reltype)
 
     !%Variable SOStrength
     !%Type float
@@ -458,7 +458,7 @@ contains
     !%End
     call parse_variable(namespace, 'IgnoreExternalIons', .false., ep%ignore_external_ions)
     if(ep%ignore_external_ions) then
-      if(gr%sb%periodic_dim > 0) call message%input_error('IgnoreExternalIons')
+      if(gr%sb%periodic_dim > 0) call message_g%input_error('IgnoreExternalIons')
     end if
 
     !%Variable ForceTotalEnforce
@@ -470,7 +470,7 @@ contains
     !% of the total forces will be enforced to be zero.
     !%End
     call parse_variable(namespace, 'ForceTotalEnforce', .false., ep%force_total_enforce)
-    if(ep%force_total_enforce) call message%experimental('ForceTotalEnforce')
+    if(ep%force_total_enforce) call message_g%experimental('ForceTotalEnforce')
 
     SAFE_ALLOCATE(ep%proj(1:geo%natoms))
     do ia = 1, geo%natoms
@@ -528,9 +528,9 @@ contains
       call tdf_read(ep%global_force_function, namespace, trim(function_name), ierr)
 
       if(ierr /= 0) then
-        call message%write("You have enabled the GlobalForce option but Octopus could not find")
-        call message%write("the '"//trim(function_name)//"' function in the TDFunctions block.")
-        call message%fatal()
+        call message_g%write("You have enabled the GlobalForce option but Octopus could not find")
+        call message_g%write("the '"//trim(function_name)//"' function in the TDFunctions block.")
+        call message_g%fatal()
       end if
 
     else
@@ -844,7 +844,7 @@ contains
           if(abs(rr - rc) < r_small) rr = rc + sign(r_small, rr - rc)
           ep%Vclassical(ip) = ep%Vclassical(ip) - geo%catom(ia)%charge * (rr**4 - rc**4) / (rr**5 - rc**5)
         case default
-          call message%input_error('ClassicalPotential')
+          call message_g%input_error('ClassicalPotential')
         end select
       end do
     end do

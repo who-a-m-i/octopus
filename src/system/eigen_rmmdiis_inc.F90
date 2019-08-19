@@ -242,9 +242,9 @@ subroutine X(eigensolver_rmmdiis) (gr, st, hm, psolver, pre, tol, niter, converg
         call X(mesh_batch_dotp_vector)(gr%der%mesh, resb(iter)%batch, resb(iter)%batch, eigen)
 
         do ist = minst, maxst
-          write(message%lines(1), '(a,i4,a,i4,a,i4,a,es12.6)') &
+          write(message_g%lines(1), '(a,i4,a,i4,a,i4,a,es12.6)') &
             'Debug: RMMDIIS Eigensolver - ik', ik, ' ist ', ist, ' iter ', iter, ' res ', sqrt(abs(eigen(ist - minst + 1)))
-          call message%info(1)
+          call message_g%info(1)
         end do
       end if
 
@@ -426,9 +426,9 @@ subroutine X(eigensolver_rmmdiis_min) (gr, st, hm, psolver, pre, niter, converge
         call X(mesh_batch_dotp_vector)(gr%der%mesh, resb, resb, diff)
 
         do ist = minst, maxst
-          write(message%lines(1), '(a,i4,a,i4,a,i4,a,es12.6)') &
+          write(message_g%lines(1), '(a,i4,a,i4,a,i4,a,es12.6)') &
             'Debug: RMMDIIS MIN Eigensolver - ik', ik, ' ist ', ist, ' iter ', isd, ' res ', sqrt(abs(diff(ist - minst + 1)))
-          call message%info(1)
+          call message_g%info(1)
         end do
       end if
 

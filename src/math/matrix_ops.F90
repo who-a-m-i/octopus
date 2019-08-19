@@ -209,8 +209,8 @@ contains
         w = eigenvalues(1), z = devec(1, 1), iz = 1, jz = 1, descz = desc(1), work = dworksize, lwork = -1, info = info)
       
       if(info /= 0) then
-        write(message%lines(1),'(a,i6)') "ScaLAPACK pdsyev workspace query failure, error code = ", info
-        call message%fatal(1)
+        write(message_g%lines(1),'(a,i6)') "ScaLAPACK pdsyev workspace query failure, error code = ", info
+        call message_g%fatal(1)
       end if
 
       SAFE_ALLOCATE(dwork(1:int(dworksize)))
@@ -219,9 +219,9 @@ contains
         w = eigenvalues(1), z = devec(1, 1), iz = 1, jz = 1, descz = desc(1), work = dwork(1), lwork = int(dworksize), info = info)
 
       if(info /= 0) then
-        call message%write('ScaLAPACK pdsyev call failure, error code = ')
-        call message%write(info)
-        call message%fatal()
+        call message_g%write('ScaLAPACK pdsyev call failure, error code = ')
+        call message_g%write(info)
+        call message_g%fatal()
       end if
       
       SAFE_DEALLOCATE_A(dwork)
@@ -245,8 +245,8 @@ contains
         rwork = lrwork, lrwork = -1, info = info)
       
       if(info /= 0) then
-        write(message%lines(1),'(a,i6)') "ScaLAPACK pdsyev workspace query failure, error code = ", info
-        call message%fatal(1)
+        write(message_g%lines(1),'(a,i6)') "ScaLAPACK pdsyev workspace query failure, error code = ", info
+        call message_g%fatal(1)
       end if
 
       SAFE_ALLOCATE(zwork(1:int(zworksize)))
@@ -257,9 +257,9 @@ contains
         rwork = rwork(1), lrwork = int(lrwork), info = info)
 
       if(info /= 0) then
-        call message%write('ScaLAPACK pzheev call failure, error code = ')
-        call message%write(info)
-        call message%fatal()
+        call message_g%write('ScaLAPACK pzheev call failure, error code = ')
+        call message_g%write(info)
+        call message_g%fatal()
       end if
       
       SAFE_DEALLOCATE_A(zwork)

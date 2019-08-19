@@ -142,7 +142,7 @@ subroutine X(lr_build_dl_rho) (mesh, st, lr, nsigma)
   PUSH_SUB(X(lr_build_dl_rho))
 
   if(st%d%ispin == SPINORS) then
-    call message%not_implemented('linear response density for spinors')
+    call message_g%not_implemented('linear response density for spinors')
   end if
 
   ! correction to density response due to shift in Fermi level
@@ -312,8 +312,8 @@ subroutine X(lr_dump_rho)(lr, mesh, nspin, restart, rho_tag, ierr)
   end if
 
   if (debug%info) then
-    message%lines(1) = "Debug: Writing linear-response density restart."
-    call message%info(1)
+    message_g%lines(1) = "Debug: Writing linear-response density restart."
+    call message_g%info(1)
   end if
 
   err2 = 0
@@ -325,8 +325,8 @@ subroutine X(lr_dump_rho)(lr, mesh, nspin, restart, rho_tag, ierr)
   if (err2 /= 0) ierr = ierr + 1
 
   if (debug%info) then
-    message%lines(1) = "Debug: Writing linear-response density restart done."
-    call message%info(1)
+    message_g%lines(1) = "Debug: Writing linear-response density restart done."
+    call message_g%info(1)
   end if
 
   POP_SUB(X(lr_dump_rho))
@@ -356,8 +356,8 @@ subroutine X(lr_load_rho)(dl_rho, mesh, nspin, restart, rho_tag, ierr)
   end if
 
   if (debug%info) then
-    message%lines(1) = "Debug: Reading linear-response density restart."
-    call message%info(1)
+    message_g%lines(1) = "Debug: Reading linear-response density restart."
+    call message_g%info(1)
   end if
 
   ASSERT(ubound(dl_rho, 1) >= mesh%np)
@@ -372,8 +372,8 @@ subroutine X(lr_load_rho)(dl_rho, mesh, nspin, restart, rho_tag, ierr)
   if (err2 /= 0) ierr = ierr + 1
 
   if (debug%info) then
-    message%lines(1) = "Debug: Reading linear-response density restart done."
-    call message%info(1)
+    message_g%lines(1) = "Debug: Reading linear-response density restart done."
+    call message_g%info(1)
   end if
 
   POP_SUB(X(lr_load_rho))

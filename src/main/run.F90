@@ -115,7 +115,7 @@ contains
     call parse_variable(namespace, 'ResponseMethod', LR, get_resp_method)
 
     if(.not.varinfo_valid_option('ResponseMethod', get_resp_method)) then
-      call message%input_error('ResponseMethod')
+      call message_g%input_error('ResponseMethod')
     end if
 
     POP_SUB(get_resp_method)
@@ -135,9 +135,9 @@ contains
 
     calc_mode_id = cm
 
-    call message%print_stress(stdout, "Calculation Mode")
-    call message%print_var_option(stdout, "CalculationMode", calc_mode_id)
-    call message%print_stress(stdout)
+    call message_g%print_stress(stdout, "Calculation Mode")
+    call message_g%print_var_option(stdout, "CalculationMode", calc_mode_id)
+    call message_g%print_stress(stdout)
 
     call calc_mode_init()
 
@@ -178,34 +178,34 @@ contains
           select case (calc_mode_id)
           case (CM_GS)
             if (sys%hm%pcm%epsilon_infty /= sys%hm%pcm%epsilon_0 .and. sys%hm%pcm%tdlevel /= PCM_TD_EQ) then
-              message%lines(1) = 'Non-equilbrium PCM is not active in a time-independent run.'
-              message%lines(2) = 'You set epsilon_infty /= epsilon_0, but epsilon_infty is not relevant for CalculationMode = gs.'
-              message%lines(3) = 'By definition, the ground state is in equilibrium with the solvent.'
-              message%lines(4) = 'Therefore, the only relevant dielectric constant is the static one.'
-              message%lines(5) = 'Nevertheless, the dynamical PCM response matrix is evaluated for benchamarking purposes.'
-              call message%warning(5)
+              message_g%lines(1) = 'Non-equilbrium PCM is not active in a time-independent run.'
+              message_g%lines(2) = 'You set epsilon_infty /= epsilon_0, but epsilon_infty is not relevant for CalculationMode = gs.'
+              message_g%lines(3) = 'By definition, the ground state is in equilibrium with the solvent.'
+              message_g%lines(4) = 'Therefore, the only relevant dielectric constant is the static one.'
+              message_g%lines(5) = 'Nevertheless, the dynamical PCM response matrix is evaluated for benchamarking purposes.'
+              call message_g%warning(5)
             end if
           case (CM_TD)
-            call message%experimental("PCM for CalculationMode = td")
+            call message_g%experimental("PCM for CalculationMode = td")
           case default
-            call message%not_implemented("PCM for CalculationMode /= gs or td")
+            call message_g%not_implemented("PCM for CalculationMode /= gs or td")
           end select
 
           if ( (sys%mc%par_strategy /= P_STRATEGY_SERIAL).and.(sys%mc%par_strategy /= P_STRATEGY_STATES) ) then
-            call message%experimental('Parallel in domain calculations with PCM')
+            call message_g%experimental('Parallel in domain calculations with PCM')
           end if
         end if
 
-        call message%print_stress(stdout, 'Approximate memory requirements')
+        call message_g%print_stress(stdout, 'Approximate memory requirements')
         call memory_run(sys)
-        call message%print_stress(stdout)
+        call message_g%print_stress(stdout)
 
         if(calc_mode_id /= CM_DUMMY) then
-          message%lines(1) = "Info: Generating external potential"
-          call message%info(1)
+          message_g%lines(1) = "Info: Generating external potential"
+          call message_g%info(1)
           call hamiltonian_elec_epot_generate(sys%hm, sys%namespace, sys%gr, sys%geo, sys%st, sys%psolver)
-          message%lines(1) = "      done."
-          call message%info(1)
+          message_g%lines(1) = "      done."
+          call message_g%info(1)
         end if
 
         if(sys%ks%theory_level /= INDEPENDENT_PARTICLES) then
@@ -218,9 +218,9 @@ contains
         end if
 
         if(.not. multicomm_is_slave(sys%mc)) then
-          call message%write('Info: Octopus initialization completed.', new_line = .true.)
-          call message%write('Info: Starting calculation mode.')
-          call message%info()
+          call message_g%write('Info: Octopus initialization completed.', new_line = .true.)
+          call message_g%write('Info: Starting calculation mode.')
+          call message_g%info()
 
           !%Variable FromScratch
           !%Type logical
@@ -243,11 +243,11 @@ contains
             call unocc_run(sys, fromScratch)
           case(CM_TD)
             if(sys%gr%sb%kpoints%use_symmetries) &
-              call message%experimental("KPoints symmetries with CalculationMode = td")
+              call message_g%experimental("KPoints symmetries with CalculationMode = td")
             call td_run(sys, fromScratch)
           case(CM_LR_POL)
             if(sys%gr%sb%kpoints%use_symmetries) &
-              call message%experimental("KPoints symmetries with CalculationMode = em_resp")
+              call message_g%experimental("KPoints symmetries with CalculationMode = em_resp")
             select case(get_resp_method(sys%namespace))
             case(FD)
               call static_pol_run(sys, fromScratch)
@@ -256,15 +256,15 @@ contains
             end select
           case(CM_VDW)
             if(sys%gr%sb%kpoints%use_symmetries) &
-              call message%experimental("KPoints symmetries with CalculationMode = vdw")
+              call message_g%experimental("KPoints symmetries with CalculationMode = vdw")
             call vdW_run(sys, fromScratch)
           case(CM_GEOM_OPT)
             if(sys%gr%sb%kpoints%use_symmetries) &
-              call message%experimental("KPoints symmetries with CalculationMode = go")
+              call message_g%experimental("KPoints symmetries with CalculationMode = go")
             call geom_opt_run(sys, fromScratch)
           case(CM_PHONONS_LR)
             if(sys%gr%sb%kpoints%use_symmetries) &
-              call message%experimental("KPoints symmetries with CalculationMode = vib_modes")
+              call message_g%experimental("KPoints symmetries with CalculationMode = vib_modes")
             select case(get_resp_method(sys%namespace))
             case(FD)
               call phonons_run(sys)
@@ -273,23 +273,23 @@ contains
             end select
           case(CM_OPT_CONTROL)
             if(sys%gr%sb%kpoints%use_symmetries) &
-              call message%experimental("KPoints symmetries with CalculationMode = opt_control")
+              call message_g%experimental("KPoints symmetries with CalculationMode = opt_control")
             call opt_control_run(sys)
           case(CM_CASIDA)
             if(sys%gr%sb%kpoints%use_symmetries) &
-              call message%experimental("KPoints symmetries with CalculationMode = casida")
+              call message_g%experimental("KPoints symmetries with CalculationMode = casida")
             call casida_run(sys, fromScratch)
           case(CM_ONE_SHOT)
-            message%lines(1) = "CalculationMode = one_shot is obsolete. Please use gs with MaximumIter = 0."
-            call message%fatal(1)
+            message_g%lines(1) = "CalculationMode = one_shot is obsolete. Please use gs with MaximumIter = 0."
+            call message_g%fatal(1)
           case(CM_KDOTP)
             if(sys%gr%sb%kpoints%use_symmetries) &
-              call message%experimental("KPoints symmetries with CalculationMode = kdotp")
+              call message_g%experimental("KPoints symmetries with CalculationMode = kdotp")
             call kdotp_lr_run(sys, fromScratch)
           case(CM_DUMMY)
           case(CM_INVERTKDS)
             if(sys%gr%sb%kpoints%use_symmetries) &
-              call message%experimental("KPoints symmetries with CalculationMode = invert_ks")
+              call message_g%experimental("KPoints symmetries with CalculationMode = invert_ks")
             call invert_ks_run(sys)
           case(CM_PULPO_A_FEIRA)
             ASSERT(.false.) !this is handled before, if we get here, it is an error
@@ -301,8 +301,8 @@ contains
         if(sys%ks%theory_level /= INDEPENDENT_PARTICLES) call poisson_async_end(sys%ks%psolver, sys%mc)
 
       class default
-        message%lines(1) = "Unknow system type."
-        call message%fatal(1)
+        message_g%lines(1) = "Unknow system type."
+        call message_g%fatal(1)
       end select
       call systems%next()
     end do

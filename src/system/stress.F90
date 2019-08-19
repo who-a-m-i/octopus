@@ -93,9 +93,9 @@ contains
     SAFE_ALLOCATE(rho(1:ks%gr%fine%mesh%np, 1:st%d%nspin))
 
     if(gr%der%mesh%sb%kpoints%use_symmetries) then
-      write(message%lines(1), '(a)') "Symmetry operation is not implemented in stress calculation."
-      write(message%lines(2), '(a)') "Stress might not be correct."
-      call message%warning(2)
+      write(message_g%lines(1), '(a)') "Symmetry operation is not implemented in stress calculation."
+      write(message_g%lines(2), '(a)') "Stress might not be correct."
+      call message_g%warning(2)
     end if
   
     stress(:,:) = M_ZERO
@@ -217,8 +217,8 @@ contains
       select case(cube%fft%library)
       case(FFTLIB_PFFT)
 ! Not implemented yet
-         write(message%lines(1),'(a)') 'Internal error: PFFT library is not applicable for stress calculation.'
-         call message%fatal(1)
+         write(message_g%lines(1),'(a)') 'Internal error: PFFT library is not applicable for stress calculation.'
+         call message_g%fatal(1)
       case(FFTLIB_FFTW)
          if(associated(cube%Lrs))then
             xx(1:3) = cube%Lrs(1,1:3)
@@ -246,8 +246,8 @@ contains
          end do
       case(FFTLIB_ACCEL)
 ! Not implemented yet
-         write(message%lines(1),'(a)') 'Internal error: ACCEL library is not applicable for stress calculation.'
-         call message%fatal(1)
+         write(message_g%lines(1),'(a)') 'Internal error: ACCEL library is not applicable for stress calculation.'
+         call message_g%fatal(1)
       case default
          ASSERT(.false.)
        end select

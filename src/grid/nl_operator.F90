@@ -191,10 +191,10 @@ contains
     default = OP_VEC
 
     call parse_variable(namespace, 'OperateDouble', default, dfunction_global)
-    if(.not.varinfo_valid_option('OperateDouble', dfunction_global)) call message%input_error('OperateDouble')
+    if(.not.varinfo_valid_option('OperateDouble', dfunction_global)) call message_g%input_error('OperateDouble')
 
     call parse_variable(namespace, 'OperateComplex', default, zfunction_global)
-    if(.not.varinfo_valid_option('OperateComplex', zfunction_global)) call message%input_error('OperateComplex')
+    if(.not.varinfo_valid_option('OperateComplex', zfunction_global)) call message_g%input_error('OperateComplex')
 
 
     !%Variable OperateSingle
@@ -224,10 +224,10 @@ contains
     !%End
     
     call parse_variable(namespace, 'OperateSingle', OP_FORTRAN, sfunction_global)
-    if(.not.varinfo_valid_option('OperateSingle', sfunction_global)) call message%input_error('OperateSingle')
+    if(.not.varinfo_valid_option('OperateSingle', sfunction_global)) call message_g%input_error('OperateSingle')
     
     call parse_variable(namespace, 'OperateComplexSingle', OP_FORTRAN, cfunction_global)
-    if(.not.varinfo_valid_option('OperateComplexSingle', cfunction_global)) call message%input_error('OperateComplexSingle')
+    if(.not.varinfo_valid_option('OperateComplexSingle', cfunction_global)) call message_g%input_error('OperateComplexSingle')
 
     if(accel_is_enabled()) then
 
@@ -247,7 +247,7 @@ contains
       !%End
       call parse_variable(namespace, 'OperateAccel',  OP_MAP, function_opencl)
 
-      call message%obsolete_variable(namespace, 'OperateOpenCL', 'OperateAccel')
+      call message_g%obsolete_variable(namespace, 'OperateOpenCL', 'OperateAccel')
 
     end if
 
@@ -265,7 +265,7 @@ contains
     call parse_variable(namespace, 'NLOperatorCompactBoundaries', .false., compact_boundaries)
 
     if(compact_boundaries) then
-      call message%experimental('NLOperatorCompactBoundaries')
+      call message_g%experimental('NLOperatorCompactBoundaries')
     end if
       
     POP_SUB(nl_operator_global_init)
@@ -373,7 +373,7 @@ contains
     PUSH_SUB(nl_operator_build)
 
     if(mesh%parallel_in_domains .and. .not. const_w) then
-      call message%experimental('Domain parallelization with curvilinear coordinates')
+      call message_g%experimental('Domain parallelization with curvilinear coordinates')
     end if
 
     ASSERT(np > 0)
@@ -388,14 +388,14 @@ contains
     if(op%const_w) then
       SAFE_ALLOCATE(op%w(1:op%stencil%size, 1:1))
       if(debug%info) then
-        message%lines(1) = 'Info: nl_operator_build: working with constant weights.'
-        call message%info(1)
+        message_g%lines(1) = 'Info: nl_operator_build: working with constant weights.'
+        call message_g%info(1)
       end if
     else
       SAFE_ALLOCATE(op%w(1:op%stencil%size, 1:op%np))
       if(debug%info) then
-        message%lines(1) = 'Info: nl_operator_build: working with non-constant weights.'
-        call message%info(1)
+        message_g%lines(1) = 'Info: nl_operator_build: working with non-constant weights.'
+        call message_g%info(1)
       end if
     end if
 
@@ -703,16 +703,16 @@ contains
 
     if(debug%info) then
 
-      write(message%lines(1), '(3a)') 'Debug info: Finite difference weights for ', trim(this%label), '.'
-      write(message%lines(2), '(a)')  '            Spacing:'
+      write(message_g%lines(1), '(3a)') 'Debug info: Finite difference weights for ', trim(this%label), '.'
+      write(message_g%lines(2), '(a)')  '            Spacing:'
       do idir = 1, this%mesh%sb%dim
-        write(message%lines(2), '(a,f16.8)') trim(message%lines(2)), this%mesh%spacing(idir)
+        write(message_g%lines(2), '(a,f16.8)') trim(message_g%lines(2)), this%mesh%spacing(idir)
       end do
-      call message%info(2)
+      call message_g%info(2)
       
       do istencil = 1, this%stencil%size
-        write(message%lines(1), '(a,i3,3i4,f25.10)') '      ', istencil, this%stencil%points(1:3, istencil), this%w(istencil, 1)
-        call message%info(1)
+        write(message_g%lines(1), '(a,i3,3i4,f25.10)') '      ', istencil, this%stencil%points(1:3, istencil), this%w(istencil, 1)
+        call message_g%info(1)
       end do
       
     end if

@@ -369,7 +369,7 @@ contains
 
       end if
     case default
-      call message%not_implemented('species_atom_density_np for non-pseudopotential species')
+      call message_g%not_implemented('species_atom_density_np for non-pseudopotential species')
 
     end select
 
@@ -423,7 +423,7 @@ contains
       end if
        
     case default
-      call message%not_implemented('species_atom_density_derivative for non-pseudopotential species')
+      call message_g%not_implemented('species_atom_density_derivative for non-pseudopotential species')
 
     end select
 
@@ -460,10 +460,10 @@ contains
 
       end do
     else
-      call message%write('The pseudopotential for')
-      call message%write(species_label(atom%species))
-      call message%write(' does not contain the density.')
-      call message%fatal()
+      call message_g%write('The pseudopotential for')
+      call message_g%write(species_label(atom%species))
+      call message_g%write(' does not contain the density.')
+      call message_g%fatal()
     end if
 
     POP_SUB(species_atom_density_derivative_np)
@@ -528,14 +528,14 @@ contains
         call periodic_copy_end(pp)
 
       else 
-        call message%write('The pseudopotential for')
-        call message%write(species_label(species))
-        call message%write(' does not contain the density.')
-        call message%fatal()
+        call message_g%write('The pseudopotential for')
+        call message_g%write(species_label(species))
+        call message_g%write(' does not contain the density.')
+        call message_g%fatal()
       end if
       
     case default
-      call message%not_implemented('species_atom_density_grad for non-pseudopotential species')
+      call message_g%not_implemented('species_atom_density_grad for non-pseudopotential species')
 
     end select
 
@@ -639,17 +639,17 @@ contains
         end if
       end if
 
-      write(message%lines(1), '(3a,f5.2,3a)') &
+      write(message_g%lines(1), '(3a,f5.2,3a)') &
         "Info: species_full_delta species ", trim(species_label(species)), &
         " atom displaced ", units_from_atomic(units_out%length, sqrt(dist2_min)), &
         " [ ", trim(units_abbrev(units_out%length)), " ]"
-      call message%info(1)
+      call message_g%info(1)
 
     case(SPECIES_FULL_GAUSSIAN)
 
       ! periodic copies are not considered in this routine
       if(simul_box_is_periodic(mesh%sb)) then
-        call message%experimental("species_full_gaussian for periodic systems")
+        call message_g%experimental("species_full_gaussian for periodic systems")
       end if
 
       ! --------------------------------------------------------------
@@ -689,8 +689,8 @@ contains
       call droot_solver_run(rs, func, x, conv, startval=startval)
 
       if(.not.conv) then
-        write(message%lines(1),'(a)') 'Internal error in species_get_density.'
-        call message%fatal(1)
+        write(message_g%lines(1),'(a)') 'Internal error in species_get_density.'
+        call message_g%fatal(1)
       end if
 
       ! we want a charge of -Z
@@ -951,9 +951,9 @@ contains
 
         call dio_function_input(trim(species_filename(species)), namespace, mesh, vl, err)
         if(err /= 0) then
-          write(message%lines(1), '(a)')    'Error loading file '//trim(species_filename(species))//'.'
-          write(message%lines(2), '(a,i4)') 'Error code returned = ', err
-          call message%fatal(2)
+          write(message_g%lines(1), '(a)')    'Error loading file '//trim(species_filename(species))//'.'
+          write(message_g%lines(2), '(a,i4)') 'Error code returned = ', err
+          call message_g%fatal(2)
         end if
 
       case(SPECIES_JELLIUM)

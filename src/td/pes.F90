@@ -160,7 +160,7 @@ contains
 
     call parse_variable(namespace, 'PhotoElectronSpectrum', PHOTOELECTRON_NONE, photoelectron_flags)
     if(.not.varinfo_valid_option('PhotoElectronSpectrum', photoelectron_flags, is_flag = .true.)) then
-      call message%input_error('PhotoElectronSpectrum')
+      call message_g%input_error('PhotoElectronSpectrum')
     end if
     
     pes%calc_spm  = bitand(photoelectron_flags, PHOTOELECTRON_SPM) /= 0
@@ -170,7 +170,7 @@ contains
     !Header Photoelectron info
     if(pes%calc_spm .or. pes%calc_mask .or. pes%calc_flux) then 
       write(str, '(a,i5)') 'Photoelectron'
-      call message%print_stress(stdout, trim(str))
+      call message_g%print_stress(stdout, trim(str))
     end if 
 
     
@@ -181,7 +181,7 @@ contains
 
     !Footer Photoelectron info
     if(pes%calc_spm .or. pes%calc_mask .or. pes%calc_flux) then 
-      call message%print_stress(stdout)
+      call message_g%print_stress(stdout)
     end if 
 
     POP_SUB(pes_init)
@@ -263,8 +263,8 @@ contains
     end if
 
     if (debug%info) then
-      message%lines(1) = "Debug: Writing PES restart."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Writing PES restart."
+      call message_g%info(1)
     end if
 
     if (pes%calc_mask) then
@@ -280,8 +280,8 @@ contains
     end if
 
     if (debug%info) then
-      message%lines(1) = "Debug: Writing PES restart done."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Writing PES restart done."
+      call message_g%info(1)
     end if
 
     POP_SUB(pes_dump)
@@ -307,8 +307,8 @@ contains
     end if
 
     if (debug%info) then
-      message%lines(1) = "Debug: Reading PES restart."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Reading PES restart."
+      call message_g%info(1)
     end if
 
     if (pes%calc_mask) then
@@ -324,8 +324,8 @@ contains
     end if
 
     if (debug%info) then
-      message%lines(1) = "Debug: Reading PES restart done."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Reading PES restart done."
+      call message_g%info(1)
     end if
 
     POP_SUB(pes_load)

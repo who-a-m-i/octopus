@@ -114,8 +114,8 @@
     case(INJECTION)
       call X(multigrid_injection)(tt, f_fine, f_coarse)
     case default
-      write(message%lines(1), '(a,i2,a)') 'Multigrid: Restriction method  = ', method, ' is not valid.'
-      call message%fatal(1)
+      write(message_g%lines(1), '(a,i2,a)') 'Multigrid: Restriction method  = ', method, ' is not valid.'
+      call message_g%fatal(1)
     end select
 
     POP_SUB(X(multigrid_fine2coarse))

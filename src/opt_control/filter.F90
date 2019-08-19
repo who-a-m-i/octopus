@@ -153,8 +153,8 @@ contains
     end if
     
     do i = 1, no_f
-      write(message%lines(1),'(a,i2)') "Info: Applying filter "         
-      call message%info(1)
+      write(message_g%lines(1),'(a,i2)') "Info: Applying filter "         
+      call message_g%info(1)
 
       nfreqs = tdf_nfreqs(f)
 
@@ -171,8 +171,8 @@ contains
        call tdf_fourier_to_numerical(f)
 
       case default
-        message%lines(1) = "...I don't know this filter type..."
-        call message%fatal(1)
+        message_g%lines(1) = "...I don't know this filter type..."
+        call message_g%fatal(1)
       end select
 
     end do
@@ -212,9 +212,9 @@ contains
         end do
        
       case default
-        write(message%lines(1),'(a)') "Unknown choice of domain for filter."
-        write(message%lines(2),'(a)') "Choose: time or freq ."
-        call message%fatal(2)
+        write(message_g%lines(1),'(a)') "Unknown choice of domain for filter."
+        write(message_g%lines(2),'(a)') "Choose: time or freq ."
+        call message_g%fatal(2)
       end select
 
       call tdf_set_numerical(filter%f(i), 1, real(ff(1), REAL_PRECISION))

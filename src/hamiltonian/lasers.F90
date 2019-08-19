@@ -260,7 +260,7 @@ contains
 
     PUSH_SUB(laser_init)
 
-    call message%obsolete_variable(namespace, "TDLasers", "TDExternalFields")
+    call message_g%obsolete_variable(namespace, "TDLasers", "TDExternalFields")
     !%Variable TDExternalFields
     !%Type block
     !%Section Time-Dependent
@@ -383,10 +383,10 @@ contains
           call parse_block_string(blk, il-1, jj+3, phase_expression)
           call tdf_read(lasers(il)%phi, namespace, trim(phase_expression), ierr)
           if (ierr /= 0) then            
-            write(message%lines(1),'(3A)') 'Error in the "', trim(envelope_expression), &
+            write(message_g%lines(1),'(3A)') 'Error in the "', trim(envelope_expression), &
               '" field defined in the TDExternalFields block:'
-            write(message%lines(2),'(3A)') 'Time-dependent phase function "', trim(phase_expression), '" not found.'
-            call message%warning(2)
+            write(message_g%lines(2),'(3A)') 'Time-dependent phase function "', trim(phase_expression), '" not found.'
+            call message_g%warning(2)
           end if
         else
           call tdf_init(lasers(il)%phi)
@@ -434,9 +434,9 @@ contains
         if(iop == symmetries_identity_index(mesh%sb%symm)) cycle
         do il = 1, no_l
           if(.not. symm_op_invariant_cart(mesh%sb%symm%ops(iop), lasers(il)%pol(:), SYMPREC)) then
-            message%lines(1) = "The lasers break (at least) one of the symmetries used to reduce the k-points."
-            message%lines(2) = "Set SymmetryBreakDir accordingly to your laser fields."
-            call message%fatal(2)
+            message_g%lines(1) = "The lasers break (at least) one of the symmetries used to reduce the k-points."
+            message_g%lines(2) = "Set SymmetryBreakDir accordingly to your laser fields."
+            call message_g%fatal(2)
           end if
         end do
       end do

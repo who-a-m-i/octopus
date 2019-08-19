@@ -53,9 +53,9 @@
         tg%rho(ip) = psi_re
       end do
     else
-      message%lines(1) = 'If OCTTargetOperator = oct_tg_local, then you must give the shape'
-      message%lines(2) = 'of this target in variable "OCTLocalTarget".'
-      call message%fatal(2)
+      message_g%lines(1) = 'If OCTTargetOperator = oct_tg_local, then you must give the shape'
+      message_g%lines(2) = 'of this target in variable "OCTLocalTarget".'
+      call message_g%fatal(2)
     end if
 
     POP_SUB(target_init_local)

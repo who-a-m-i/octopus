@@ -197,8 +197,8 @@ contains
       if (mpi_debug_hook) then
         call loct_gettimeofday(sec, usec)
         call epoch_time_diff(sec,usec)
-        write(message%lines(1),'(a,i6,a,i6.6,20x,a)') '* I ',sec,'.',usec,' | MPI debug hook'
-        call message%debug(1)
+        write(message_g%lines(1),'(a,i6,a,i6.6,20x,a)') '* I ',sec,'.',usec,' | MPI debug hook'
+        call message_g%debug(1)
 
         write(stdout,'(a,i3,a)') 'node:', mpi_world%rank, ' In debug hook'
         write(node_hook,'(i3.3)') mpi_world%rank
@@ -217,8 +217,8 @@ contains
 
         call loct_gettimeofday(sec, usec)
         call epoch_time_diff(sec,usec)
-        write(message%lines(1),'(a,i6,a,i6.6,20x,a)') '* O ', sec, '.', usec,' | MPI debug hook'
-        call message%debug(1)
+        write(message_g%lines(1),'(a,i6,a,i6.6,20x,a)') '* O ', sec, '.', usec,' | MPI debug hook'
+        call message_g%debug(1)
       end if
     end if
 
@@ -401,8 +401,8 @@ contains
       call io_assign(iunit)
       if(iunit<0) then
         if(die_) then
-          write(message%lines(1), '(a)') '*** IO Error: Too many files open.'
-          call message%fatal(1)
+          write(message_g%lines(1), '(a)') '*** IO Error: Too many files open.'
+          call message_g%fatal(1)
         end if
         POP_SUB(io_open)
         return
@@ -422,9 +422,9 @@ contains
         call io_free(iunit)
         iunit = -1
         if(die_) then
-          write(message%lines(1), '(5a,i6)') '*** IO Error: Could not open file "', trim(file_), &
+          write(message_g%lines(1), '(5a,i6)') '*** IO Error: Could not open file "', trim(file_), &
             '" for action="', trim(action), '". Error code = ', iostat
-          call message%fatal(1)
+          call message_g%fatal(1)
         end if
       end if
 
@@ -628,8 +628,8 @@ contains
     file_exists = .false.
     inquire(file=trim(filename), exist=file_exists)
     if(file_exists .and. present(msg)) then
-      message%lines(1) = trim(msg)
-      call message%warning(1)
+      message_g%lines(1) = trim(msg)
+      call message_g%warning(1)
     end if
 
     POP_SUB(io_file_exists)

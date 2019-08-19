@@ -900,10 +900,10 @@ contains
     else
       local_point = vec_global2local(vp, global_point, vp%partno)
       if (local_point == 0) then
-        write(message%lines(1), '(a)') "You are trying to access a neighbour that does not exist."
-        write(message%lines(2), '(a, i5)') "Global point = ", global_point
-        write(message%lines(3), '(a, 3i5)') "x,y,z point  = ", jx
-        call message%warning(3)
+        write(message_g%lines(1), '(a)') "You are trying to access a neighbour that does not exist."
+        write(message_g%lines(2), '(a, i5)') "Global point = ", global_point
+        write(message_g%lines(3), '(a, 3i5)') "x,y,z point  = ", jx
+        call message_g%warning(3)
       end if
     end if
     

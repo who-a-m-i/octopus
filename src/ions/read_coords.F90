@@ -175,8 +175,8 @@ contains
       ! no default, since we do not do this unless the input tag is present
       call parse_variable(namespace, 'PDB'//trim(what), '', str)
 
-      message%lines(1) = "Reading " // trim(what) // " from " // trim(str)
-      call message%info(1)
+      message_g%lines(1) = "Reading " // trim(what) // " from " // trim(str)
+      call message_g%info(1)
 
       iunit = io_open(str, namespace, action='read')
       call read_coords_read_PDB(what, iunit, gf)
@@ -215,15 +215,15 @@ contains
       ! no default, since we do not do this unless the input tag is present
       call parse_variable(namespace, 'XYZ'//trim(what), '', str)
 
-      message%lines(1) = "Reading " // trim(what) // " from " // trim(str)
-      call message%info(1)
+      message_g%lines(1) = "Reading " // trim(what) // " from " // trim(str)
+      call message_g%info(1)
 
       iunit = io_open(str, namespace, action='read', status='old')
       read(iunit, *) gf%n
 
       if(gf%n <= 0) then
-        write(message%lines(1),'(a,i6)') "Invalid number of atoms ", gf%n
-        call message%fatal(1)
+        write(message_g%lines(1),'(a,i6)') "Invalid number of atoms ", gf%n
+        call message_g%fatal(1)
       end if
 
       read(iunit, *) ! skip comment line
@@ -257,8 +257,8 @@ contains
       ! no default, since we do not do this unless the input tag is present
       call parse_variable(namespace, 'XSF'//trim(what), '', str)
 
-      message%lines(1) = "Reading " // trim(what) // " from " // trim(str)
-      call message%info(1)
+      message_g%lines(1) = "Reading " // trim(what) // " from " // trim(str)
+      call message_g%info(1)
 
       iunit = io_open(str, namespace, action='read', status='old')
 
@@ -277,14 +277,14 @@ contains
         !%End
         call parse_variable(namespace, 'XSFCoordinatesAnimStep', 1, step_to_use)
         if(step_to_use < 1) then
-          message%lines(1) = "XSFCoordinatesAnimStep must be > 0."
-          call message%fatal(1)
+          message_g%lines(1) = "XSFCoordinatesAnimStep must be > 0."
+          call message_g%fatal(1)
         else if(step_to_use > nsteps) then
-          write(message%lines(1),'(a,i9)') "XSFCoordinatesAnimStep must be <= available number of steps ", nsteps
-          call message%fatal(1)
+          write(message_g%lines(1),'(a,i9)') "XSFCoordinatesAnimStep must be <= available number of steps ", nsteps
+          call message_g%fatal(1)
         end if
-        write(message%lines(1),'(a,i9,a,i9)') 'Using animation step ', step_to_use, ' out of ', nsteps
-        call message%info(1)
+        write(message_g%lines(1),'(a,i9,a,i9)') 'Using animation step ', step_to_use, ' out of ', nsteps
+        call message_g%info(1)
       else
         nsteps = 0
         step_to_use = 1
@@ -301,10 +301,10 @@ contains
       case('MOLECULE')
         gf%periodic_dim = 0
       case('ATOMS')
-        call message%not_implemented("Input from XSF file beginning with ATOMS")
+        call message_g%not_implemented("Input from XSF file beginning with ATOMS")
       case default
-        write(message%lines(1),'(3a)') 'Line in file was "', trim(str), '" instead of CRYSTAL/SLAB/POLYMER/MOLECULE.'
-        call message%fatal(1)
+        write(message_g%lines(1),'(3a)') 'Line in file was "', trim(str), '" instead of CRYSTAL/SLAB/POLYMER/MOLECULE.'
+        call message_g%fatal(1)
       end select
 
       do istep = 1, step_to_use - 1
@@ -321,14 +321,14 @@ contains
 
       read(iunit, '(a256)') str
       if(str(1:7) /= 'PRIMVEC') then
-        write(message%lines(1),'(3a)') 'Line in file was "', trim(str), '" instead of "PRIMVEC".'
-        call message%warning(1)
+        write(message_g%lines(1),'(3a)') 'Line in file was "', trim(str), '" instead of "PRIMVEC".'
+        call message_g%warning(1)
       end if
       if(nsteps > 0) then
         read(str(8:), *) istep
         if(istep /= step_to_use) then
-          write(message%lines(1), '(a,i9,a,i9)') 'Found PRIMVEC index ', istep, ' instead of ', step_to_use
-          call message%fatal(1)
+          write(message_g%lines(1), '(a,i9,a,i9)') 'Found PRIMVEC index ', istep, ' instead of ', step_to_use
+          call message_g%fatal(1)
         end if
       end if
 
@@ -339,35 +339,35 @@ contains
         latvec(jdir, jdir) = M_ZERO
       end do
       if(any(abs(latvec(1:space%dim, 1:space%dim)) > M_EPSILON)) then
-        message%lines(1) = 'XSF file has non-orthogonal lattice vectors. Only orthogonal is supported.'
-        call message%fatal(1)
+        message_g%lines(1) = 'XSF file has non-orthogonal lattice vectors. Only orthogonal is supported.'
+        call message_g%fatal(1)
       end if
       if(any(gf%lsize(1:space%dim) < M_EPSILON)) then
-        message%lines(1) = "XSF file must have positive lattice vectors."
-        call message%fatal(1)
+        message_g%lines(1) = "XSF file must have positive lattice vectors."
+        call message_g%fatal(1)
       end if
 
       read(iunit, '(a256)') str
       if(str(1:9) /= 'PRIMCOORD') then
-        write(message%lines(1),'(3a)') 'Line in file was "', trim(str), '" instead of "PRIMCOORD".'
-        call message%warning(1)
+        write(message_g%lines(1),'(3a)') 'Line in file was "', trim(str), '" instead of "PRIMCOORD".'
+        call message_g%warning(1)
       end if
       if(nsteps > 0) then
         read(str(10:), *) istep
         if(istep /= step_to_use) then
-          write(message%lines(1), '(a,i9,a,i9)') 'Found PRIMCOORD index ', istep, ' instead of ', step_to_use
-          call message%fatal(1)
+          write(message_g%lines(1), '(a,i9,a,i9)') 'Found PRIMCOORD index ', istep, ' instead of ', step_to_use
+          call message_g%fatal(1)
         end if
       end if
 
       read(iunit, *) gf%n, int_one
       if(gf%n <= 0) then
-        write(message%lines(1),'(a,i6)') "Invalid number of atoms ", gf%n
-        call message%fatal(1)
+        write(message_g%lines(1),'(a,i6)') "Invalid number of atoms ", gf%n
+        call message_g%fatal(1)
       end if
       if(int_one /= 1) then
-        write(message%lines(1),'(a,i6,a)') 'Number in file was ', int_one, ' instead of 1.'
-        call message%warning(1)
+        write(message_g%lines(1),'(a,i6,a)') 'Number in file was ', int_one, ' instead of 1.'
+        call message_g%warning(1)
       end if
       SAFE_ALLOCATE(gf%atom(1:gf%n))
 
@@ -411,16 +411,16 @@ contains
       gf%source = READ_COORDS_INP
       gf%flags = ior(gf%flags, XYZ_FLAGS_MOVE)
 
-      message%lines(1) = "Reading " // trim(what) // " from " // trim(what) // " block"
-      call message%info(1)
+      message_g%lines(1) = "Reading " // trim(what) // " from " // trim(what) // " block"
+      call message_g%info(1)
 
       SAFE_ALLOCATE(gf%atom(1:gf%n))
 
       do ia = 1, gf%n
         ncol = parse_block_cols(blk, ia - 1)
         if((ncol  <  space%dim + 1) .or. (ncol > space%dim + 2)) then
-          write(message%lines(1), '(3a,i2)') 'Error in block ', what, ' line #', ia
-          call message%fatal(1)
+          write(message_g%lines(1), '(3a,i2)') 'Error in block ', what, ' line #', ia
+          call message_g%fatal(1)
         end if
         call parse_block_string (blk, ia - 1, 0, gf%atom(ia)%label)
         do jdir = 1, space%dim
@@ -461,16 +461,16 @@ contains
         gf%source = READ_COORDS_REDUCED
         gf%flags = ior(gf%flags, XYZ_FLAGS_MOVE)
 
-        message%lines(1) = "Reading " // trim(what) // " from Reduced" // trim(what) // " block"
-        call message%info(1)
+        message_g%lines(1) = "Reading " // trim(what) // " from Reduced" // trim(what) // " block"
+        call message_g%info(1)
 
         SAFE_ALLOCATE(gf%atom(1:gf%n))
 
         do ia = 1, gf%n
           ncol = parse_block_cols(blk, ia - 1)
           if((ncol  <  space%dim + 1) .or. (ncol > space%dim + 2)) then
-            write(message%lines(1), '(3a,i2)') 'Error in block ', what, ' line #', ia
-            call message%fatal(1)
+            write(message_g%lines(1), '(3a,i2)') 'Error in block ', what, ' line #', ia
+            call message_g%fatal(1)
           end if
           call parse_block_string (blk, ia - 1, 0, gf%atom(ia)%label)
           do jdir = 1, space%dim
@@ -518,8 +518,8 @@ contains
       if(.not. done) then
         done = .true.
       else
-        message%lines(1) = 'Multiple definitions of '//trim(what)//' in the input file.'
-        call message%fatal(1)
+        message_g%lines(1) = 'Multiple definitions of '//trim(what)//' in the input file.'
+        call message_g%fatal(1)
       end if
 
       POP_SUB(read_coords_read.check_duplicated)

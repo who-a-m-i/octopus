@@ -88,7 +88,7 @@ contains
 
     call accel_init(mpi_world, sys%namespace)
 
-    call message%obsolete_variable(sys%namespace, 'SystemName')
+    call message_g%obsolete_variable(sys%namespace, 'SystemName')
 
     call space_init(sys%space, sys%namespace)
     
@@ -201,8 +201,8 @@ contains
     call v_ks_calc(sys%ks, sys%namespace, sys%hm, sys%st, sys%geo, calc_eigenval = calc_eigenval_) ! get potentials
 
     if(sys%st%restart_reorder_occs .and. .not. sys%st%fromScratch) then
-      message%lines(1) = "Reordering occupations for restart."
-      call message%info(1)
+      message_g%lines(1) = "Reordering occupations for restart."
+      call message_g%info(1)
 
       SAFE_ALLOCATE(ind(1:sys%st%nst))
       SAFE_ALLOCATE(copy_occ(1:sys%st%nst))

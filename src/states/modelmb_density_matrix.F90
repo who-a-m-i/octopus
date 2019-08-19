@@ -99,22 +99,22 @@ contains
     !%
     !%End
    
-    call message%obsolete_variable(namespace, 'DensityMatrixtoCalc', 'DensitytoCalc')
-    call message%obsolete_variable(namespace, 'DensitiestoCalc', 'DensitytoCalc')
+    call message_g%obsolete_variable(namespace, 'DensityMatrixtoCalc', 'DensitytoCalc')
+    call message_g%obsolete_variable(namespace, 'DensitiestoCalc', 'DensitytoCalc')
 
     if(parse_block(namespace, 'DensitytoCalc', blk) /= 0) then
-     message%lines(1) = 'To print out density (matrices), you must specify the DensitytoCalc block in input'
-     call message%fatal(1)
+     message_g%lines(1) = 'To print out density (matrices), you must specify the DensitytoCalc block in input'
+     call message_g%fatal(1)
     end if
    
     ncols = parse_block_cols(blk, 0)
     if(ncols /= 3 ) then
-      call message%input_error("DensitytoCalc")
+      call message_g%input_error("DensitytoCalc")
     end if
     denmat%ndensmat_to_calculate=parse_block_n(blk)
     if (denmat%ndensmat_to_calculate < 0 .or. &
         denmat%ndensmat_to_calculate > st%modelmbparticles%nparticle) then
-      call message%input_error("DensitytoCalc")
+      call message_g%input_error("DensitytoCalc")
     end if
 
     SAFE_ALLOCATE(denmat%labels(1:denmat%ndensmat_to_calculate))
@@ -126,10 +126,10 @@ contains
       call parse_block_integer(blk, ipart-1, 1, denmat%particle_kept(ipart))
       call parse_block_integer(blk, ipart-1, 2, denmat%nnatorb_prt(ipart))
 
-      write (message%lines(1),'(a,a)') 'labels_densmat = ', denmat%labels(ipart)
-      write (message%lines(2),'(a,i6)') 'particle_kept_densmat = ', denmat%particle_kept(ipart)
-      write (message%lines(3),'(a,i6)') 'nnatorb_prt_densmat = ', denmat%nnatorb_prt(ipart)
-      call message%info(3)
+      write (message_g%lines(1),'(a,a)') 'labels_densmat = ', denmat%labels(ipart)
+      write (message_g%lines(2),'(a,i6)') 'particle_kept_densmat = ', denmat%particle_kept(ipart)
+      write (message_g%lines(3),'(a,i6)') 'nnatorb_prt_densmat = ', denmat%nnatorb_prt(ipart)
+      call message_g%info(3)
     end do
     call parse_block_end(blk)
     ! END reading in of input var block DensitytoCalc

@@ -31,8 +31,8 @@
     PUSH_SUB(target_init_spin)
 
 
-    message%lines(1) =  'Info: Using a spin target'
-    call message%info(1)
+    message_g%lines(1) =  'Info: Using a spin target'
+    call message_g%info(1)
 
     !%Variable OCTTargetSpin
     !%Type block
@@ -56,14 +56,14 @@
         tg%spin_matrix(2, 1) = alpha(1) + M_zI * alpha(2)
         
       else
-        message%lines(1) = '"OCTTargetSpin" has to be specified as block.'
-        call message%fatal(1)
+        message_g%lines(1) = '"OCTTargetSpin" has to be specified as block.'
+        call message_g%fatal(1)
       end if
 
     else
-      message%lines(1) = 'If "OCTTargetOperator = oct_tg_spin", then you must'
-      message%lines(2) = 'supply a "OCTTargetSpin" block.'
-      call message%fatal(2)
+      message_g%lines(1) = 'If "OCTTargetOperator = oct_tg_spin", then you must'
+      message_g%lines(2) = 'supply a "OCTTargetSpin" block.'
+      call message_g%fatal(2)
     end if
 
 

@@ -183,8 +183,8 @@ contains
 #endif
 
     if(clean_stop) then
-      message%lines(1) = 'Clean STOP'
-      call message%warning(1)
+      message_g%lines(1) = 'Clean STOP'
+      call message_g%warning(1)
     end if
 
     POP_SUB(clean_stop)
@@ -235,12 +235,12 @@ contains
     info(RESTART_PARTITION)%dir = PARTITION_DIR
 
     ! Read input
-    call message%obsolete_variable(namespace, 'RestartFileFormat', 'RestartOptions')
-    call message%obsolete_variable(namespace, 'TmpDir', 'RestartOptions')
-    call message%obsolete_variable(namespace, 'RestartDir', 'RestartOptions')
-    call message%obsolete_variable(namespace, 'MeshPartitionRead', 'RestartOptions')
-    call message%obsolete_variable(namespace, 'MeshPartitionWrite', 'RestartOptions')
-    call message%obsolete_variable(namespace, 'MeshPartitionDir', 'RestartOptions')
+    call message_g%obsolete_variable(namespace, 'RestartFileFormat', 'RestartOptions')
+    call message_g%obsolete_variable(namespace, 'TmpDir', 'RestartOptions')
+    call message_g%obsolete_variable(namespace, 'RestartDir', 'RestartOptions')
+    call message_g%obsolete_variable(namespace, 'MeshPartitionRead', 'RestartOptions')
+    call message_g%obsolete_variable(namespace, 'MeshPartitionWrite', 'RestartOptions')
+    call message_g%obsolete_variable(namespace, 'MeshPartitionDir', 'RestartOptions')
 
     !%Variable RestartOptions
     !%Type block
@@ -374,7 +374,7 @@ contains
         n_cols = parse_block_cols(blk,iline-1)
 
         call parse_block_integer(blk, iline-1, 0, data_type)
-        if (data_type < 0 .or. data_type > RESTART_N_DATA_TYPES) call message%input_error('RestartOptions')
+        if (data_type < 0 .or. data_type > RESTART_N_DATA_TYPES) call message_g%input_error('RestartOptions')
         if (data_type == 0) then
           call parse_block_string(blk, iline-1, 1, default_basedir)
         else
@@ -424,8 +424,8 @@ contains
 
     ! Sanity checks
     if (present(exact) .and. .not. present(mesh)) then
-      message%lines(1) = "Error in restart_init: the 'exact' optional argument requires a mesh."
-      call message%fatal(1)
+      message_g%lines(1) = "Error in restart_init: the 'exact' optional argument requires a mesh."
+      call message_g%fatal(1)
     end if
 
     restart%has_mesh = present(mesh)
@@ -437,8 +437,8 @@ contains
     call mpi_grp_init(restart%mpi_grp, mc%master_comm)
     restart%format = io_function_fill_how("Binary")
     if (data_type < RESTART_UNDEFINED .and. data_type > RESTART_N_DATA_TYPES) then
-      message%lines(1) = "Illegal data_type in restart_init"
-      call message%fatal(1)
+      message_g%lines(1) = "Illegal data_type in restart_init"
+      call message_g%fatal(1)
     end if
     restart%data_type = data_type
     restart%namespace => namespace
@@ -459,8 +459,8 @@ contains
       restart%skip = .not. restart_write
 
       if(restart%skip) then
-        message%lines(1) = 'Restart information will not be written.'
-        call message%warning(1)
+        message_g%lines(1) = 'Restart information will not be written.'
+        call message_g%warning(1)
       end if
         
     case (RESTART_TYPE_LOAD)
@@ -468,8 +468,8 @@ contains
       restart%skip = .false.
       
     case default
-      message%lines(1) = "Unknown restart type in restart_init"
-      call message%fatal(1)
+      message_g%lines(1) = "Unknown restart type in restart_init"
+      call message_g%fatal(1)
     end select
 
 
@@ -512,8 +512,8 @@ contains
     select case (restart%type)
     case (RESTART_TYPE_DUMP)
       if (.not. restart%skip) then
-        message%lines(1) = "Info: "//trim(tag)//" restart information will be written to '"//trim(restart%pwd)//"'."
-        call message%info(1)
+        message_g%lines(1) = "Info: "//trim(tag)//" restart information will be written to '"//trim(restart%pwd)//"'."
+        call message_g%info(1)
 
         ! Dump the grid information. The main parameters of the grid should not change
         ! during the calculation, so we should only need to dump it once.
@@ -529,27 +529,27 @@ contains
           
           call mesh_dump(mesh, restart%pwd, "mesh", restart%mpi_grp, namespace, ierr)
           if (ierr /= 0) then
-            message%lines(1) = "Unable to write mesh information to '"//trim(restart%pwd)//"/mesh'."
-            call message%fatal(1)
+            message_g%lines(1) = "Unable to write mesh information to '"//trim(restart%pwd)//"/mesh'."
+            call message_g%fatal(1)
           end if
 
           call index_dump_lxyz(mesh%idx, mesh%np_part_global, restart%pwd, restart%mpi_grp, &
             restart%namespace, ierr)
           if (ierr /= 0) then
-            message%lines(1) = "Unable to write index map to '"//trim(restart%pwd)//"'."
-            call message%fatal(1)
+            message_g%lines(1) = "Unable to write index map to '"//trim(restart%pwd)//"'."
+            call message_g%fatal(1)
           end if
 
           call mesh_write_fingerprint(mesh, restart%pwd, "grid", restart%mpi_grp, namespace, ierr)
           if (ierr /= 0) then
-            message%lines(1) = "Unable to write mesh fingerprint to '"//trim(restart%pwd)//"/grid'."
-            call message%fatal(1)
+            message_g%lines(1) = "Unable to write mesh fingerprint to '"//trim(restart%pwd)//"/grid'."
+            call message_g%fatal(1)
           end if
 
           call simul_box_dump(mesh%sb, namespace, restart%pwd, "mesh", restart%mpi_grp, ierr)
           if (ierr /= 0) then
-            message%lines(1) = "Unable to write simulation box information to '"//trim(restart%pwd)//"/mesh'."
-            call message%fatal(1)
+            message_g%lines(1) = "Unable to write simulation box information to '"//trim(restart%pwd)//"/mesh'."
+            call message_g%fatal(1)
           end if
         end if
         
@@ -560,13 +560,13 @@ contains
         ierr = 1
         restart%skip = .true.
 
-        message%lines(1) = "Could not find '"//trim(restart%pwd)//"' directory for restart."
-        message%lines(2) = "No restart information will be read."
-        call message%warning(2)
+        message_g%lines(1) = "Could not find '"//trim(restart%pwd)//"' directory for restart."
+        message_g%lines(2) = "No restart information will be read."
+        call message_g%warning(2)
 
       else
-        message%lines(1) = "Info: "//trim(tag)//" restart information will be read from '"//trim(restart%pwd)//"'."
-        call message%info(1)
+        message_g%lines(1) = "Info: "//trim(tag)//" restart information will be read from '"//trim(restart%pwd)//"'."
+        call message_g%info(1)
 
         if (present(mesh)) then
           call mesh_check_dump_compatibility(mesh, restart%pwd, "grid", restart%namespace, &
@@ -575,33 +575,33 @@ contains
           ! Check whether an error occurred. In this case we cannot read.
           if (ierr /= 0) then
             if (ierr == -1) then
-              message%lines(1) = "Unable to check mesh compatibility: unable to read mesh fingerprint"
-              message%lines(2) = "in '"//trim(restart%pwd)//"'."
+              message_g%lines(1) = "Unable to check mesh compatibility: unable to read mesh fingerprint"
+              message_g%lines(2) = "in '"//trim(restart%pwd)//"'."
             else if (ierr > 0) then
-              message%lines(1) = "Mesh from current calculation is not compatible with mesh found in"
-              message%lines(2) = "'"//trim(restart%pwd)//"'."
+              message_g%lines(1) = "Mesh from current calculation is not compatible with mesh found in"
+              message_g%lines(2) = "'"//trim(restart%pwd)//"'."
             end if
-            message%lines(3) = "No restart information will be read."
-            call message%warning(3)
+            message_g%lines(3) = "No restart information will be read."
+            call message_g%warning(3)
             ierr = 1
           end if
 
           ! Print some warnings in case the mesh is compatible, but changed.
           if (grid_changed) then
             if (grid_reordered) then
-              message%lines(1) = "Octopus is attempting to restart from a mesh with a different order of points."
+              message_g%lines(1) = "Octopus is attempting to restart from a mesh with a different order of points."
             else
-              message%lines(1) = "Octopus is attempting to restart from a different mesh."
+              message_g%lines(1) = "Octopus is attempting to restart from a different mesh."
             end if
-            call message%warning(1)
+            call message_g%warning(1)
           end if
 
           if (present(exact)) then
             restart%skip = grid_changed .and. .not. grid_reordered .and. exact
             if (restart%skip) then
-              message%lines(1) = "This calculation requires the exact same mesh to restart."
-              message%lines(2) = "No restart information will be read from '"//trim(restart%pwd)//"'."
-              call message%warning(2)
+              message_g%lines(1) = "This calculation requires the exact same mesh to restart."
+              message_g%lines(2) = "No restart information will be read from '"//trim(restart%pwd)//"'."
+              call message_g%warning(2)
               ierr = 1
             end if
           else
@@ -634,13 +634,13 @@ contains
     if(mpi_grp_is_root(restart%mpi_grp) .and. .not. restart%skip) then
       select case (restart%type)
       case (RESTART_TYPE_LOAD)
-        message%lines(1) = "Info: Finished reading information from '"//trim(restart%dir)//"'."
+        message_g%lines(1) = "Info: Finished reading information from '"//trim(restart%dir)//"'."
         call io_rm(trim(restart%pwd)//"/loading", restart%namespace)
       case (RESTART_TYPE_DUMP)
         call io_rm(trim(restart%pwd)//"/dumping", restart%namespace)
-        message%lines(1) = "Info: Finished writing information to '"//trim(restart%dir)//"'."
+        message_g%lines(1) = "Info: Finished writing information to '"//trim(restart%dir)//"'."
       end select
-      call message%info(1)
+      call message_g%info(1)
     end if
 
     restart%type = 0
@@ -792,8 +792,8 @@ contains
       die = .false.
 
     case default
-      message%lines(1) = "Error in restart_open: illegal restart type"
-      call message%fatal(1)
+      message_g%lines(1) = "Error in restart_open: illegal restart type"
+      call message_g%fatal(1)
     end select
 
     if (present(status)) status_ = status
@@ -803,8 +803,8 @@ contains
       die=die, position=position, form="formatted", grp=restart%mpi_grp)
 
     if (restart_open < 0 .and. .not. optional_default(silent, .false.)) then    
-      message%lines(1) = "Unable to open file '"//trim(restart%pwd)//"/"//trim(filename)//"'."
-      call message%warning(1)
+      message_g%lines(1) = "Unable to open file '"//trim(restart%pwd)//"/"//trim(filename)//"'."
+      call message_g%warning(1)
     end if
 
     POP_SUB(restart_open)

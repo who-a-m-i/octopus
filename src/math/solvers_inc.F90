@@ -521,19 +521,19 @@ end subroutine X(bi_conjugate_gradients)
         if (present(converged)) converged = .true.
       end if
     case(1)
-      write(message%lines(1), '(a)') "QMR breakdown, cannot continue: b or P*b is the zero vector!"
+      write(message_g%lines(1), '(a)') "QMR breakdown, cannot continue: b or P*b is the zero vector!"
     case(2)
-      write(message%lines(1), '(a)') "QMR breakdown, cannot continue: v^T*z is zero!"
+      write(message_g%lines(1), '(a)') "QMR breakdown, cannot continue: v^T*z is zero!"
     case(3)
-      write(message%lines(1), '(a)') "QMR breakdown, cannot continue: q^T*p is zero!"
+      write(message_g%lines(1), '(a)') "QMR breakdown, cannot continue: q^T*p is zero!"
     case(4)
-      write(message%lines(1), '(a)') "QMR breakdown, cannot continue: gamma is zero!"
+      write(message_g%lines(1), '(a)') "QMR breakdown, cannot continue: gamma is zero!"
     case(5)
     end select
 
     if (err>0) then
-      write(message%lines(2), '(a)') "Try to change some system parameters (e.g. Spacing, TDTimeStep, ...)."
-      call message%fatal(2)
+      write(message_g%lines(2), '(a)') "Try to change some system parameters (e.g. Spacing, TDTimeStep, ...)."
+      call message_g%fatal(2)
     end if
 
     if(showprogress_) write(*,*) ''
@@ -745,23 +745,23 @@ end subroutine X(bi_conjugate_gradients)
       if(res < threshold_) then
         if (present(converged)) converged = .true.
       else
-        write(message%lines(1), '(a)') "QMR solver not converged!"
-        write(message%lines(2), '(a)') "Try increasing the maximum number of iterations or the tolerance."
-        call message%warning(2)
+        write(message_g%lines(1), '(a)') "QMR solver not converged!"
+        write(message_g%lines(2), '(a)') "Try increasing the maximum number of iterations or the tolerance."
+        call message_g%warning(2)
       end if
     case(1)
-      write(message%lines(1), '(a)') "QMR failure, can't continue: b or P*b is the zero vector!"
+      write(message_g%lines(1), '(a)') "QMR failure, can't continue: b or P*b is the zero vector!"
     case(2)
-      write(message%lines(1), '(a)') "QMR failure, can't continue: z^T*y is zero!"
+      write(message_g%lines(1), '(a)') "QMR failure, can't continue: z^T*y is zero!"
     case(3)
-      write(message%lines(1), '(a)') "QMR failure, can't continue: q^T*p is zero!"
+      write(message_g%lines(1), '(a)') "QMR failure, can't continue: q^T*p is zero!"
     case(4)
-      write(message%lines(1), '(a)') "QMR failure, can't continue: gamma is zero!"
+      write(message_g%lines(1), '(a)') "QMR failure, can't continue: gamma is zero!"
     end select
 
     if (err>0) then
-      write(message%lines(2), '(a)') "Try to change some system parameters (e.g. Spacing, TDTimeStep, ...)."
-      call message%fatal(2)
+      write(message_g%lines(2), '(a)') "Try to change some system parameters (e.g. Spacing, TDTimeStep, ...)."
+      call message_g%fatal(2)
     end if
 
     if(showprogress_) write(*,*) ''
@@ -901,8 +901,8 @@ end subroutine X(bi_conjugate_gradients)
     ! Check optional input parameters:
     if ( present(tolerance) ) then
       if ( tolerance < 0 ) then
-        message%lines(1) = 'The tolerance parameter in idrs routine must be non-negative'
-        call message%fatal(1)
+        message_g%lines(1) = 'The tolerance parameter in idrs routine must be non-negative'
+        call message_g%fatal(1)
       end if
       tol = tolerance 
     else
@@ -946,8 +946,8 @@ end subroutine X(bi_conjugate_gradients)
     out_resvec     = present(resvec)
     if ( out_resvec ) then
       if ( maxit+1 > size(resvec) ) then
-        message%lines(1) = 'idrs: Length of vector with residual norms too small, should be maxit+1'
-        call message%fatal(1)
+        message_g%lines(1) = 'idrs: Length of vector with residual norms too small, should be maxit+1'
+        call message_g%fatal(1)
       end if
     end if
 
@@ -955,8 +955,8 @@ end subroutine X(bi_conjugate_gradients)
     if ( out_H ) then
       nritz = size(H,1)-1
       if ( size(H,2) /= nritz ) then
-        message%lines(1) = 'Second dimension of H incompatible, with first'
-        call message%fatal(1)
+        message_g%lines(1) = 'Second dimension of H incompatible, with first'
+        call message_g%fatal(1)
       end if
       H = M_ZERO
     end if

@@ -56,8 +56,8 @@ contains
     case(8)
       !O.K.
     case default
-      message%lines(1) = "Only interpolating functions 8, 14, 16, 20, 24, 30, 40, 50, 60, 100."
-      call message%fatal(1)
+      message_g%lines(1) = "Only interpolating functions 8, 14, 16, 20, 24, 30, 40, 50, 60, 100."
+      call message_g%fatal(1)
     end select
 !!$  write(unit=*,fmt="(1x,a,i0,a)") &
 !!$       "Use interpolating scaling functions of ",itype," order"
@@ -118,8 +118,8 @@ contains
     case(8)
       !O.K.
     case default
-      message%lines(1) = "Only interpolating functions 8, 14, 16, 20, 24, 30, 40, 50, 60, 100."
-      call message%fatal(1)
+      message_g%lines(1) = "Only interpolating functions 8, 14, 16, 20, 24, 30, 40, 50, 60, 100."
+      call message_g%fatal(1)
     end select
 
     select case(itype)

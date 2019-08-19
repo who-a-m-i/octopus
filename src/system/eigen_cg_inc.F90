@@ -250,9 +250,9 @@ subroutine X(eigensolver_cg2) (gr, st, hm, psolver, xc, pre, tol, niter, converg
         res = sqrt(abs(gg))
 
         if(debug%info) then
-          write(message%lines(1), '(a,i4,a,i4,a,i4,a,es13.6,a,i4)') 'Debug: CG Eigensolver - ik', ik, &
+          write(message_g%lines(1), '(a,i4,a,i4,a,i4,a,es13.6,a,i4)') 'Debug: CG Eigensolver - ik', ik, &
                ' ist ', ist, ' iter ', iter, ' res ', res, " max ", maxter
-          call message%info(1)
+          call message_g%info(1)
         end if
         exit
       end if
@@ -271,7 +271,7 @@ subroutine X(eigensolver_cg2) (gr, st, hm, psolver, xc, pre, tol, niter, converg
         case (OPTION__CGDIRECTION__POLAK)
           gamma = (gg - gg1)/gg0   ! (Polack-Ribiere)
         case default
-          call message%input_error('Conjugate Direction')
+          call message_g%input_error('Conjugate Direction')
         end select
         ! save for next iteration
         gg0 = gg
@@ -411,10 +411,10 @@ subroutine X(eigensolver_cg2) (gr, st, hm, psolver, xc, pre, tol, niter, converg
       end if
 
       if(debug%info .and. first_delta_e > M_ZERO) then
-        write(message%lines(1), '(a,i4,a,i4,a,i4,a,es12.5,a,es12.5,a,i4)') 'Debug: CG Eigensolver - ik', ik, ' ist ', ist, &
+        write(message_g%lines(1), '(a,i4,a,i4,a,i4,a,es12.5,a,es12.5,a,i4)') 'Debug: CG Eigensolver - ik', ik, ' ist ', ist, &
              ' iter ', iter, ' deltae ', abs(st%eigenval(ist, ik) - old_energy), ' ', &
              abs(st%eigenval(ist, ik) - old_energy)/first_delta_e, " max ", maxter
-        call message%info(1)
+        call message_g%info(1)
       end if
 
       if(iter > 1) then
@@ -571,9 +571,9 @@ subroutine X(eigensolver_cg2_new) (gr, st, hm, psolver, tol, niter, converged, i
 
       if(debug%info) then
         norm = X(mf_nrm2)(gr%mesh, dim, phi)
-        write(message%lines(1), '(a,i4,a,i4,a,i4,a,es13.6,a,es13.6)') 'Debug: CG New Eigensolver - ik', ik, &
+        write(message_g%lines(1), '(a,i4,a,i4,a,i4,a,es13.6,a,es13.6)') 'Debug: CG New Eigensolver - ik', ik, &
           ' ist ', ist, ' iter ', i + 1, ' res ', res, ' ', res/norm
-        call message%info(1)
+        call message_g%info(1)
       end if
 
       if(present(diff)) diff(ist) = res

@@ -52,7 +52,7 @@ program octopus
   call parser_init()
   default_namespace = namespace_t("")
   
-  call message%init(default_namespace)
+  call message_g%init(default_namespace)
 
   call walltimer_init(default_namespace)
   
@@ -113,13 +113,13 @@ program octopus
   !% Prints out a tasty recipe.
   !%End
   if(parse_block(default_namespace, 'CalculationMode', blk) == 0) then
-    call message%write('The datasets mode has been deprecated,', new_line = .true.)
-    call message%write('please use several Octopus runs.')
-    call message%fatal()
+    call message_g%write('The datasets mode has been deprecated,', new_line = .true.)
+    call message_g%write('please use several Octopus runs.')
+    call message_g%fatal()
   end if
 
   call parse_variable(default_namespace, 'CalculationMode', CM_GS, inp_calc_mode)
-  if(.not.varinfo_valid_option('CalculationMode', inp_calc_mode)) call message%input_error('CalculationMode')
+  if(.not.varinfo_valid_option('CalculationMode', inp_calc_mode)) call message_g%input_error('CalculationMode')
 
   ! Now we can initialize the I/O
   call io_init(default_namespace)
@@ -127,17 +127,17 @@ program octopus
   call calc_mode_par_init()
   
   ! now we declare octopus as running
-  call message%switch_status('running')
+  call message_g%switch_status('running')
   
   call profiling_init(default_namespace)
   
   call print_header()
 
 #if !defined(HAVE_LIBXC3) && !defined(HAVE_LIBXC4)
-  call message%write('You have compiled Octopus with version 2 of Libxc.', new_line = .true.)
-  call message%write('Support for this version of Libxc has been deprecated and', new_line = .true.)
-  call message%write('will be removed in the next major release of Octopus.', new_line = .true.)
-  call message%warning()
+  call message_g%write('You have compiled Octopus with version 2 of Libxc.', new_line = .true.)
+  call message_g%write('Support for this version of Libxc has been deprecated and', new_line = .true.)
+  call message_g%write('will be removed in the next major release of Octopus.', new_line = .true.)
+  call message_g%warning()
 #endif
   
   ! now we really start
@@ -149,7 +149,7 @@ program octopus
 #endif
   
   ! run finished successfully
-  call message%switch_status('finished')
+  call message_g%switch_status('finished')
   call io_end()
   
   call profiling_end(default_namespace)
@@ -161,7 +161,7 @@ program octopus
   call print_date("Calculation ended on ")
   call print_walltime()
 
-  call message%end()
+  call message_g%end()
 
   call parser_end()
   
@@ -180,15 +180,15 @@ contains
     min   = (sec / 60) - (days * 1440) - (hours * 60)
     sec   = modulo(sec, 60)
 
-    message%lines(2) = ''
-    if(days  > 0) write(message%lines(2), '(i3,a)') days, ' days,'
-    if(hours > 0.or.message%lines(2) /= '') &
-      write(message%lines(2), '(a,1x,i2.2,a)') trim(message%lines(2)), hours, 'h'
-    if(min   > 0.or.message%lines(1) /= '') &
-      write(message%lines(2), '(a,1x,i2.2,a)') trim(message%lines(2)), min, 'm'
-    write(message%lines(2), '(a,1x,i2.2,a,i3,a)') trim(message%lines(2)), sec, '.', usec/1000, 's'
-    message%lines(1) = str_center('Walltime: ' // trim(message%lines(2)), 70)
-    call message%info(1)
+    message_g%lines(2) = ''
+    if(days  > 0) write(message_g%lines(2), '(i3,a)') days, ' days,'
+    if(hours > 0.or.message_g%lines(2) /= '') &
+      write(message_g%lines(2), '(a,1x,i2.2,a)') trim(message_g%lines(2)), hours, 'h'
+    if(min   > 0.or.message_g%lines(1) /= '') &
+      write(message_g%lines(2), '(a,1x,i2.2,a)') trim(message_g%lines(2)), min, 'm'
+    write(message_g%lines(2), '(a,1x,i2.2,a,i3,a)') trim(message_g%lines(2)), sec, '.', usec/1000, 's'
+    message_g%lines(1) = str_center('Walltime: ' // trim(message_g%lines(2)), 70)
+    call message_g%info(1)
 
   end subroutine print_walltime
 

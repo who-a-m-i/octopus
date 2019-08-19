@@ -95,7 +95,7 @@ module messages_oct_m
     procedure :: dump_stack => messages_dump_stack
   end type message_t
 
-  type(message_t), public :: message
+  type(message_t), public :: message_g
 
   character(len=68),      parameter, public :: hyphens = &
     '--------------------------------------------------------------------'
@@ -593,8 +593,8 @@ contains
     character(len=*), intent(in) :: file
     integer,          intent(in) :: line
 
-    write(message%lines(1), '(a,i18,3a,i5)') "Failed to allocate ", size, " words in file '", trim(file), "' line ", line
-    call message%fatal(1)
+    write(message_g%lines(1), '(a,i18,3a,i5)') "Failed to allocate ", size, " words in file '", trim(file), "' line ", line
+    call message_g%fatal(1)
 
   end subroutine alloc_error
 
@@ -605,8 +605,9 @@ contains
     character(len=*), intent(in) :: file
     integer,          intent(in) :: line
 
-    write(message%lines(1), '(a,i18,3a,i5)') "Failed to deallocate array of ", size, " words in file '", trim(file), "' line ", line
-    call message%fatal(1)
+    write(message_g%lines(1), '(a,i18,3a,i5)') "Failed to deallocate array of ", size, " words in file '", &
+      trim(file), "' line ", line
+    call message_g%fatal(1)
 
   end subroutine dealloc_error
 
@@ -899,13 +900,13 @@ contains
     integer :: val(8)
 
     call date_and_time(values=val)
-    message%lines(1) = ""
-    write(message%lines(3),'(a,i4,a1,i2.2,a1,i2.2,a,i2.2,a1,i2.2,a1,i2.2)') &
+    message_g%lines(1) = ""
+    write(message_g%lines(3),'(a,i4,a1,i2.2,a1,i2.2,a,i2.2,a1,i2.2,a1,i2.2)') &
       str , val(1), "/", val(2), "/", val(3), &
       " at ", val(5), ":", val(6), ":", val(7)
-    message%lines(2) = str_center(trim(message%lines(3)), 70)
-    message%lines(3) = ""
-    call message%info(3)
+    message_g%lines(2) = str_center(trim(message_g%lines(3)), 70)
+    message_g%lines(3) = ""
+    call message_g%info(3)
 
   end subroutine print_date
 
@@ -986,11 +987,11 @@ contains
     no_sub_stack = no_sub_stack + 1
     if(no_sub_stack > 49) then
       sub_stack(50) = 'push_sub'
-      message%lines(1) = 'Too many recursion levels (max=50)'
-      call message%fatal(1)
+      message_g%lines(1) = 'Too many recursion levels (max=50)'
+      call message_g%fatal(1)
     end if
 
-    sub_stack(no_sub_stack)  = trim(message%clean_path(sub_name))
+    sub_stack(no_sub_stack)  = trim(message_g%clean_path(sub_name))
     time_stack(no_sub_stack) = loct_clock()
 
     if(debug%trace_file) then
@@ -1020,7 +1021,7 @@ contains
       do ii = no_sub_stack - 1, 1, -1
         write(tmpstr, '(2a)') trim(tmpstr), "..|"
       end do
-      write(tmpstr, '(2a)') trim(tmpstr), trim(message%clean_path(sub_name))
+      write(tmpstr, '(2a)') trim(tmpstr), trim(message_g%clean_path(sub_name))
       call flush_msg(iunit_out, tmpstr)
 
     end subroutine push_sub_write
@@ -1044,19 +1045,19 @@ contains
     if(no_sub_stack <= 0) then
       no_sub_stack = 1
       sub_stack(1) = 'pop_sub'
-      message%lines(1) = 'Too few recursion levels.'
-      call message%fatal(1)
+      message_g%lines(1) = 'Too few recursion levels.'
+      call message_g%fatal(1)
     end if
 
     ! the name might be truncated in sub_stack, so we copy to a string
     ! of the same size
-    sub_name_short = trim(message%clean_path(sub_name))
+    sub_name_short = trim(message_g%clean_path(sub_name))
 
     if(sub_name_short /= sub_stack(no_sub_stack)) then
-      write (message%lines(1),'(a)') 'Wrong sub name on pop_sub :'
-      write (message%lines(2),'(2a)') ' got      : ', sub_name_short
-      write (message%lines(3),'(2a)') ' expected : ', sub_stack(no_sub_stack)
-      call message%fatal(3)
+      write (message_g%lines(1),'(a)') 'Wrong sub name on pop_sub :'
+      write (message_g%lines(2),'(2a)') ' got      : ', sub_name_short
+      write (message_g%lines(3),'(2a)') ' expected : ', sub_stack(no_sub_stack)
+      call message_g%fatal(3)
     end if
 
     if(debug%trace_file) then
@@ -1433,19 +1434,19 @@ subroutine assert_die(s, f, l)
   character(len=*), intent(in) :: s, f
   integer, intent(in) :: l
     
-  call message%write('Node ')
-  call message%write(mpi_world%rank)
-  call message%write(':')
-  call message%new_line()
+  call message_g%write('Node ')
+  call message_g%write(mpi_world%rank)
+  call message_g%write(':')
+  call message_g%new_line()
 
-  call message%write(' Assertion "'//trim(s)//'"')
-  call message%new_line()
+  call message_g%write(' Assertion "'//trim(s)//'"')
+  call message_g%new_line()
 
-  call message%write(' failed in line ')
-  call message%write(l)
-  call message%write(' of file "'//trim(message%clean_path(f))//'".')
+  call message_g%write(' failed in line ')
+  call message_g%write(l)
+  call message_g%write(' of file "'//trim(message_g%clean_path(f))//'".')
 
-  call message%fatal()
+  call message_g%fatal()
 
 end subroutine assert_die
 
@@ -1458,7 +1459,7 @@ subroutine dump_call_stack(isignal)
   
   integer, intent(in) :: isignal
   
-  call message%dump_stack(isignal)
+  call message_g%dump_stack(isignal)
   
 end subroutine dump_call_stack
 

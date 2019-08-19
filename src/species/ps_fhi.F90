@@ -69,8 +69,8 @@ contains
     inquire(file = filename, exist = found)
 
     if(.not.found) then
-      call message%write("Pseudopotential file '" // trim(filename) // "' not found")
-      call message%fatal()
+      call message_g%write("Pseudopotential file '" // trim(filename) // "' not found")
+      call message_g%fatal()
     end if
 
     iunit = io_open(filename, namespace, action='read', form='formatted', status='old')
@@ -111,16 +111,16 @@ contains
     PUSH_SUB(ps_fhi_process)
 
     if(lmax /= ps_fhi%fhi_file%lmax) then
-      message%lines(1) = "Inconsistency in pseudopotential :"
-      write(message%lines(2),'(a,i2,a,i2)') "  Input file says lmax = ", lmax, &
+      message_g%lines(1) = "Inconsistency in pseudopotential :"
+      write(message_g%lines(2),'(a,i2,a,i2)') "  Input file says lmax = ", lmax, &
         " but ps file says lmax = ", ps_fhi%fhi_file%lmax
-      call message%warning(2)
+      call message_g%warning(2)
     end if
     if(lloc /= ps_fhi%fhi_file%lloc) then
-      message%lines(1) = "Inconsistency in pseudopotential :"
-      write(message%lines(2),'(a,i2,a,i2)') "  Input file says lloc = ", lloc, &
+      message_g%lines(1) = "Inconsistency in pseudopotential :"
+      write(message_g%lines(2),'(a,i2,a,i2)') "  Input file says lloc = ", lloc, &
         " but ps file says lloc = ", ps_fhi%fhi_file%lloc
-      call message%warning(2)
+      call message_g%warning(2)
     end if
 
     ! check norm of rphi

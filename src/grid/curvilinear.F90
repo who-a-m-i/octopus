@@ -101,11 +101,11 @@ contains
     !% (NOT WORKING).
     !%End
     call parse_variable(namespace, 'CurvMethod', CURV_METHOD_UNIFORM, cv%method)
-    if(.not.varinfo_valid_option('CurvMethod', cv%method)) call message%input_error('CurvMethod')
-    call message%print_var_option(stdout, "CurvMethod", cv%method)
+    if(.not.varinfo_valid_option('CurvMethod', cv%method)) call message_g%input_error('CurvMethod')
+    call message_g%print_var_option(stdout, "CurvMethod", cv%method)
 
     ! FIXME: The other two methods are apparently not working
-    if(cv%method > CURV_METHOD_GYGI) call message%experimental('Selected curvilinear coordinates method')
+    if(cv%method > CURV_METHOD_GYGI) call message_g%experimental('Selected curvilinear coordinates method')
 
     select case(cv%method)
     case(CURV_METHOD_GYGI)
@@ -198,8 +198,8 @@ contains
     case(CURV_METHOD_GYGI)
       call curv_gygi_x2chi(sb, cv%gygi, x, chi)
     case(CURV_METHOD_BRIGGS, CURV_METHOD_MODINE)
-      message%lines(1) = "Internal error in curvilinear_x2chi"
-      call message%fatal(1)
+      message_g%lines(1) = "Internal error in curvilinear_x2chi"
+      call message_g%fatal(1)
     end select
 
     POP_SUB(curvilinear_x2chi)
@@ -252,24 +252,24 @@ contains
 
     select case(cv%method)
     case(CURV_METHOD_GYGI)
-      write(message%lines(1), '(a)')  '  Curvilinear Method = gygi'
-      write(message%lines(2), '(a)')  '  Gygi Parameters:'
-      write(message%lines(3), '(4x,a,f6.3)')  'A = ', cv%gygi%a
-      write(message%lines(4), '(4x,3a,f6.3)') 'alpha [', &
+      write(message_g%lines(1), '(a)')  '  Curvilinear Method = gygi'
+      write(message_g%lines(2), '(a)')  '  Gygi Parameters:'
+      write(message_g%lines(3), '(4x,a,f6.3)')  'A = ', cv%gygi%a
+      write(message_g%lines(4), '(4x,3a,f6.3)') 'alpha [', &
         trim(units_abbrev(units_out%length)), '] = ', &
         units_from_atomic(units_out%length, cv%gygi%alpha)
-      write(message%lines(5), '(4x,3a,f6.3)') 'beta  [', &
+      write(message_g%lines(5), '(4x,3a,f6.3)') 'beta  [', &
         trim(units_abbrev(units_out%length)), '] = ', &
         units_from_atomic(units_out%length, cv%gygi%beta)
-      call message%info(5, unit)
+      call message_g%info(5, unit)
 
     case(CURV_METHOD_BRIGGS)
-      write(message%lines(1), '(a)') '  Curvilinear Method = briggs'
-      call message%info(1, unit)
+      write(message_g%lines(1), '(a)') '  Curvilinear Method = briggs'
+      call message_g%info(1, unit)
 
     case(CURV_METHOD_MODINE)
-      write(message%lines(1), '(a)') ' Curvilinear  Method = modine'
-      call message%info(1, unit)
+      write(message_g%lines(1), '(a)') ' Curvilinear  Method = modine'
+      call message_g%info(1, unit)
 
     end select
 

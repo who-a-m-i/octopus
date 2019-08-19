@@ -60,7 +60,7 @@ contains
     PUSH_SUB(basins_init)
 
     if(mesh%parallel_in_domains) &
-      call message%experimental("Bader basins parallel in domains")
+      call message_g%experimental("Bader basins parallel in domains")
     
     SAFE_ALLOCATE(this%map(1:mesh%np))
     this%map(1:mesh%np) = -1
@@ -215,8 +215,8 @@ contains
 
       this%number = maxval(this%map) + 1
       if(this%number <= 0) then
-        message%lines(1) = "Internal error analysing basins of attraction"
-        call message%fatal(1)
+        message_g%lines(1) = "Internal error analysing basins of attraction"
+        call message_g%fatal(1)
       end if
 
       SAFE_ALLOCATE(this%position  (1:this%number))

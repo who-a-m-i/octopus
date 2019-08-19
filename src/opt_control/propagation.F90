@@ -152,8 +152,8 @@ contains
 
     PUSH_SUB(propagate_forward)
 
-    message%lines(1) = "Info: Forward propagation."
-    call message%info(1)
+    message_g%lines(1) = "Info: Forward propagation."
+    call message_g%info(1)
 
     call controlfunction_to_h(par, sys%hm%ep)
 
@@ -204,8 +204,8 @@ contains
     if (present(prop)) then
       call oct_prop_dump_states(prop, 0, psi, gr, ierr)
       if (ierr /= 0) then
-        message%lines(1) = "Unable to write OCT states restart."
-        call message%warning(1)
+        message_g%lines(1) = "Unable to write OCT states restart."
+        call message_g%warning(1)
       end if
     end if
 
@@ -222,8 +222,8 @@ contains
       if(present(prop)) then
         call oct_prop_dump_states(prop, istep, psi, gr, ierr)
         if (ierr /= 0) then
-          message%lines(1) = "Unable to write OCT states restart."
-          call message%warning(1)
+          message_g%lines(1) = "Unable to write OCT states restart."
+          call message_g%warning(1)
         end if
       end if
 
@@ -253,8 +253,8 @@ contains
     if(mpi_grp_is_root(mpi_world)) write(stdout, '(1x)')
 
     final_time = loct_clock()
-    write(message%lines(1),'(a,f12.2,a)') 'Propagation time: ', final_time - init_time, ' seconds.'
-    call message%info(1)
+    write(message_g%lines(1),'(a,f12.2,a)') 'Propagation time: ', final_time - init_time, ' seconds.'
+    call message_g%info(1)
 
     if(vel_target_) then
        do iatom=1, sys%geo%natoms
@@ -288,8 +288,8 @@ contains
 
     PUSH_SUB(propagate_backward)
     
-    message%lines(1) = "Info: Backward propagation."
-    call message%info(1)
+    message_g%lines(1) = "Info: Backward propagation."
+    call message_g%info(1)
 
     gr => sys%gr
     psi => opt_control_point_qs(qcpsi)
@@ -303,8 +303,8 @@ contains
 
     call oct_prop_dump_states(prop, td%max_iter, psi, gr, ierr)
     if (ierr /= 0) then
-      message%lines(1) = "Unable to write OCT states restart."
-      call message%warning(1)
+      message_g%lines(1) = "Unable to write OCT states restart."
+      call message_g%warning(1)
     end if
     
     if(mpi_grp_is_root(mpi_world)) call loct_progress_bar(-1, td%max_iter)
@@ -315,8 +315,8 @@ contains
 
       call oct_prop_dump_states(prop, istep - 1, psi, gr, ierr)
       if (ierr /= 0) then
-        message%lines(1) = "Unable to write OCT states restart."
-        call message%warning(1)
+        message_g%lines(1) = "Unable to write OCT states restart."
+        call message_g%warning(1)
       end if
 
       call v_ks_calc(sys%ks, sys%namespace, sys%hm, psi, sys%geo)
@@ -364,8 +364,8 @@ contains
 
     PUSH_SUB(fwd_step)
 
-    message%lines(1) = "Info: Forward propagation."
-    call message%info(1)
+    message_g%lines(1) = "Info: Forward propagation."
+    call message_g%info(1)
 
     call controlfunction_to_realtime(par)
 
@@ -401,13 +401,13 @@ contains
 
     call oct_prop_dump_states(prop_psi, 0, psi, gr, ierr)
     if (ierr /= 0) then
-      message%lines(1) = "Unable to write OCT states restart."
-      call message%warning(1)
+      message_g%lines(1) = "Unable to write OCT states restart."
+      call message_g%warning(1)
     end if
     call oct_prop_load_states(prop_chi, sys%namespace, chi, gr, 0, ierr)
     if (ierr /= 0) then
-      message%lines(1) = "Unable to read OCT states restart."
-      call message%fatal(1)
+      message_g%lines(1) = "Unable to read OCT states restart."
+      call message_g%fatal(1)
     end if
 
     do i = 1, td%max_iter
@@ -429,8 +429,8 @@ contains
 
       call oct_prop_dump_states(prop_psi, i, psi, gr, ierr)
       if (ierr /= 0) then
-        message%lines(1) = "Unable to write OCT states restart."
-        call message%warning(1)
+        message_g%lines(1) = "Unable to write OCT states restart."
+        call message_g%warning(1)
       end if
       call oct_prop_check(prop_chi, sys%namespace, chi, gr, i)
     end do
@@ -483,8 +483,8 @@ contains
 
     PUSH_SUB(bwd_step)
 
-    message%lines(1) = "Info: Backward propagation."
-    call message%info(1)
+    message_g%lines(1) = "Info: Backward propagation."
+    call message_g%info(1)
 
     call controlfunction_to_realtime(par_chi)
 
@@ -501,8 +501,8 @@ contains
     call states_elec_copy(psi, chi)
     call oct_prop_load_states(prop_psi, sys%namespace, psi, gr, td%max_iter, ierr)
     if (ierr /= 0) then
-      message%lines(1) = "Unable to read OCT states restart."
-      call message%fatal(1)
+      message_g%lines(1) = "Unable to read OCT states restart."
+      call message_g%fatal(1)
     end if
 
     call density_calc(psi, gr, psi%rho)
@@ -514,8 +514,8 @@ contains
     td%dt = -td%dt
     call oct_prop_dump_states(prop_chi, td%max_iter, chi, gr, ierr)
     if (ierr /= 0) then
-      message%lines(1) = "Unable to write OCT states restart."
-      call message%warning(1)
+      message_g%lines(1) = "Unable to write OCT states restart."
+      call message_g%warning(1)
     end if
 
     do i = td%max_iter, 1, -1
@@ -527,8 +527,8 @@ contains
         td%ions, sys%geo, sys%outp)
       call oct_prop_dump_states(prop_chi, i-1, chi, gr, ierr)
       if (ierr /= 0) then
-        message%lines(1) = "Unable to write OCT states restart."
-        call message%warning(1)
+        message_g%lines(1) = "Unable to write OCT states restart."
+        call message_g%warning(1)
       end if
       call update_hamiltonian_elec_psi(i-1, sys%namespace, gr, sys%ks, sys%hm, td, tg, par, psi, sys%geo)
       call hamiltonian_elec_update(sys%hm, gr%mesh, sys%namespace, time = abs(i*td%dt))
@@ -609,8 +609,8 @@ contains
     psi => opt_control_point_qs(qcpsi)
     call oct_prop_load_states(prop_psi, sys%namespace, psi, gr, td%max_iter, ierr)
     if (ierr /= 0) then
-      message%lines(1) = "Unable to read OCT states restart."
-      call message%fatal(1)
+      message_g%lines(1) = "Unable to read OCT states restart."
+      call message_g%fatal(1)
     end if
 
     SAFE_ALLOCATE(vhxc(1:gr%mesh%np, 1:sys%hm%d%nspin))
@@ -623,8 +623,8 @@ contains
     td%dt = -td%dt
     call oct_prop_dump_states(prop_chi, td%max_iter, chi, gr, ierr)
     if (ierr /= 0) then
-      message%lines(1) = "Unable to write OCT states restart."
-      call message%warning(1)
+      message_g%lines(1) = "Unable to write OCT states restart."
+      call message_g%warning(1)
     end if
 
     call states_elec_copy(st_ref, psi)
@@ -632,8 +632,8 @@ contains
     if(ion_dynamics_ions_move(td%ions)) &
       call forces_calculate(gr, sys%namespace, sys%geo, sys%hm, psi, sys%ks, t = td%max_iter*abs(td%dt), dt = td%dt)
 
-    message%lines(1) = "Info: Backward propagation."
-    call message%info(1)
+    message_g%lines(1) = "Info: Backward propagation."
+    call message_g%info(1)
     if(mpi_grp_is_root(mpi_world)) call loct_progress_bar(-1, td%max_iter)
 
     init_time = loct_clock()
@@ -723,8 +723,8 @@ contains
 
       call oct_prop_dump_states(prop_chi, i-1, chi, gr, ierr)
       if (ierr /= 0) then
-        message%lines(1) = "Unable to write OCT states restart."
-        call message%warning(1)
+        message_g%lines(1) = "Unable to write OCT states restart."
+        call message_g%warning(1)
       end if
 
       if( (mod(i, 100) == 0 ).and. mpi_grp_is_root(mpi_world)) call loct_progress_bar(td%max_iter-i, td%max_iter)
@@ -735,8 +735,8 @@ contains
     end if
 
     final_time = loct_clock()
-    write(message%lines(1),'(a,f12.2,a)') 'Propagation time: ', final_time - init_time, ' seconds.'
-    call message%info(1)
+    write(message_g%lines(1),'(a,f12.2,a)') 'Propagation time: ', final_time - init_time, ' seconds.'
+    call message_g%info(1)
 
     call states_elec_end(st_ref)
 
@@ -1137,17 +1137,17 @@ contains
        call restart_open_dir(prop%restart_load, dirname, ierr)
        if (ierr == 0) call states_elec_load(prop%restart_load, namespace, stored_st, gr, ierr, verbose=.false.)
        if (ierr /= 0) then
-         message%lines(1) = "Unable to read wavefunctions from '"//trim(dirname)//"'."
-         call message%fatal(1)
+         message_g%lines(1) = "Unable to read wavefunctions from '"//trim(dirname)//"'."
+         call message_g%fatal(1)
        end if
        call restart_close_dir(prop%restart_load)
        prev_overlap = zstates_elec_mpdotp(gr%mesh, stored_st, stored_st)
        overlap = zstates_elec_mpdotp(gr%mesh, stored_st, psi)
        if( abs(overlap - prev_overlap) > WARNING_THRESHOLD ) then
-          write(message%lines(1), '(a,es13.4)') &
+          write(message_g%lines(1), '(a,es13.4)') &
             "Forward-backward propagation produced an error of", abs(overlap-prev_overlap)
-          write(message%lines(2), '(a,i8)') "Iter = ", iter
-          call message%warning(2)
+          write(message_g%lines(2), '(a,i8)') "Iter = ", iter
+          call message_g%warning(2)
        end if
        ! Restore state only if the number of checkpoints is larger than zero.
        if(prop%number_checkpoints > 0) then
@@ -1183,8 +1183,8 @@ contains
     end if
 
     if (debug%info) then
-      message%lines(1) = "Debug: Writing OCT propagation states restart."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Writing OCT propagation states restart."
+      call message_g%info(1)
     end if
 
     do j = 1, prop%number_checkpoints + 2
@@ -1193,8 +1193,8 @@ contains
         call restart_open_dir(prop%restart_dump, dirname, err)
         if (err == 0) call states_elec_dump(prop%restart_dump, psi, gr, err, iter, verbose = .false.)
         if (err /= 0) then
-          message%lines(1) = "Unable to write wavefunctions to '"//trim(dirname)//"'."
-          call message%warning(1)
+          message_g%lines(1) = "Unable to write wavefunctions to '"//trim(dirname)//"'."
+          call message_g%warning(1)
           ierr = ierr + 2**j
         end if
         call restart_close_dir(prop%restart_dump)
@@ -1202,8 +1202,8 @@ contains
     end do
 
     if (debug%info) then
-      message%lines(1) = "Debug: Writing OCT propagation states restart done."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Writing OCT propagation states restart done."
+      call message_g%info(1)
     end if
 
     POP_SUB(oct_prop_dump_states)
@@ -1234,8 +1234,8 @@ contains
     end if
 
     if (debug%info) then
-      message%lines(1) = "Debug: Reading OCT propagation states restart."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Reading OCT propagation states restart."
+      call message_g%info(1)
     end if
 
     do j = 1, prop%number_checkpoints + 2
@@ -1244,8 +1244,8 @@ contains
         call restart_open_dir(prop%restart_load, dirname, err)
         if (err == 0) call states_elec_load(prop%restart_load, namespace, psi, gr, err, verbose=.false.)
         if (err /= 0) then
-          message%lines(1) = "Unable to read wavefunctions from '"//trim(dirname)//"'."
-          call message%warning(1)
+          message_g%lines(1) = "Unable to read wavefunctions from '"//trim(dirname)//"'."
+          call message_g%warning(1)
           ierr = ierr + 2**j
         end if
         call restart_close_dir(prop%restart_load)
@@ -1253,8 +1253,8 @@ contains
     end do
 
     if (debug%info) then
-      message%lines(1) = "Debug: Reading OCT propagation states restart done."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Reading OCT propagation states restart done."
+      call message_g%info(1)
     end if
 
     POP_SUB(oct_prop_load_states)

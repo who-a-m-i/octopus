@@ -129,23 +129,23 @@ contains
 
     if(parse_block(namespace, 'UserDefinedInitialMaxwellStates', blk) == 0) then
 
-      !call message%print_stress(stdout, trim('Substitution of the electromagnetic fields'))
+      !call message_g%print_stress(stdout, trim('Substitution of the electromagnetic fields'))
 
       ! find out how many lines (i.e. states) the block has
       nlines = parse_block_n(blk)
 
-      write(message%lines(1), '(a,i5)') 'Maxwell electromagnetic fields are added.'
-      write(message%lines(2), '(a,i5)') ''
-      call message%info(2)
+      write(message_g%lines(1), '(a,i5)') 'Maxwell electromagnetic fields are added.'
+      write(message_g%lines(2), '(a,i5)') ''
+      call message_g%info(2)
 
       ! read all lines
       do il = 1, nlines
         ! Check that number of columns is five or six.
         ncols = parse_block_cols(blk, il - 1)
         if(ncols  <  4 .or. ncols > 4) then
-          message%lines(1) = 'Each line in the UserDefinedMaxwellStates block must have'
-          message%lines(2) = 'four columns.'
-          call message%fatal(2)
+          message_g%lines(1) = 'Each line in the UserDefinedMaxwellStates block must have'
+          message_g%lines(2) = 'four columns.'
+          call message_g%fatal(2)
         end if
 
         call parse_block_integer(blk, il - 1, 0, idim)
@@ -161,11 +161,11 @@ contains
           call parse_block_integer(blk, il - 1, 2, maxwell_field )
           if (maxwell_field == OPTION__USERDEFINEDINITIALMAXWELLSTATES__ELECTRIC_FIELD) then
             call parse_block_string( blk, il - 1, 3, st%user_def_e_field(idim))
-            call message%write("  E-field in dimension "//trim(cdim)//" : "//trim(st%user_def_e_field(idim)), fmt='(a,i1,2a)')
+            call message_g%write("  E-field in dimension "//trim(cdim)//" : "//trim(st%user_def_e_field(idim)), fmt='(a,i1,2a)')
             call conv_to_C_string(st%user_def_e_field(idim))
           else if (maxwell_field == OPTION__USERDEFINEDINITIALMAXWELLSTATES__MAGNETIC_FIELD) then
             call parse_block_string( blk, il - 1, 3, st%user_def_b_field(idim))
-            call message%write("  B-field in dimension "//trim(cdim)//" : "//trim(st%user_def_b_field(idim)), fmt='(a,i1,2a)')
+            call message_g%write("  B-field in dimension "//trim(cdim)//" : "//trim(st%user_def_b_field(idim)), fmt='(a,i1,2a)')
             call conv_to_C_string(st%user_def_b_field(idim))
           end if
           ! fill Maxwell states with user-defined formulas
@@ -200,22 +200,22 @@ contains
           b_field = M_ZERO
           if (maxwell_field == OPTION__USERDEFINEDINITIALMAXWELLSTATES__ELECTRIC_FIELD) then
             call parse_block_string(blk, il - 1, 3, filename_e_field)
-            call message%write("  E-field in dimension "//trim(cdim)//" : "//trim(filename_e_field), fmt='(a,i1,2a)')
+            call message_g%write("  E-field in dimension "//trim(cdim)//" : "//trim(filename_e_field), fmt='(a,i1,2a)')
             call dio_function_input(filename_e_field, namespace, mesh, e_field(:), ierr)
             if (ierr > 0) then
-              message%lines(1) = 'Could not read the file!'
-              write(message%lines(2),'(a,i1)') 'Error code: ', ierr
-              call message%fatal(2)
+              message_g%lines(1) = 'Could not read the file!'
+              write(message_g%lines(2),'(a,i1)') 'Error code: ', ierr
+              call message_g%fatal(2)
             end if
             e_field = units_to_atomic(units_inp%energy/units_inp%length, e_field)
           else if (maxwell_field == OPTION__USERDEFINEDINITIALMAXWELLSTATES__MAGNETIC_FIELD) then
             call parse_block_string(blk, il - 1, 3, filename_b_field)
-            call message%write("  B-field in dimension "//trim(cdim)//" : "//trim(filename_b_field), fmt='(a,i1,2a)')
+            call message_g%write("  B-field in dimension "//trim(cdim)//" : "//trim(filename_b_field), fmt='(a,i1,2a)')
             call dio_function_input(filename_b_field, namespace, mesh, b_field(:), ierr)
             if (ierr > 0) then
-              message%lines(1) = 'Could not read the file!'
-              write(message%lines(2),'(a,i1)') 'Error code: ', ierr
-              call message%fatal(2)
+              message_g%lines(1) = 'Could not read the file!'
+              write(message_g%lines(2),'(a,i1)') 'Error code: ', ierr
+              call message_g%fatal(2)
             end if
             b_field = units_to_atomic(unit_one/units_inp%length**2, b_field)
           end if
@@ -227,9 +227,9 @@ contains
           SAFE_DEALLOCATE_A(b_field)
 
         case default
-          message%lines(1) = 'Wrong entry in UserDefinedMaxwellStates, column 2.'
-          message%lines(2) = 'You may state "formula" or "file" here.'
-          call message%fatal(2)
+          message_g%lines(1) = 'Wrong entry in UserDefinedMaxwellStates, column 2.'
+          message_g%lines(2) = 'You may state "formula" or "file" here.'
+          call message_g%fatal(2)
         end select
 
         rs_state(:,idim) = rs_state(:,idim) + rs_state_add(:,idim)
@@ -243,11 +243,11 @@ contains
       SAFE_DEALLOCATE_A(rs_state)
       SAFE_DEALLOCATE_A(rs_state_add)
       call parse_block_end(blk)
-      !call message%print_stress(stdout)
+      !call message_g%print_stress(stdout)
 
     else
-      message%lines(1) = "'UserDefineInitialdStates' has to be specified as block."
-      call message%fatal(1)
+      message_g%lines(1) = "'UserDefineInitialdStates' has to be specified as block."
+      call message_g%fatal(1)
     end if
 
     POP_SUB(states_mxll_read_user_def)
@@ -286,8 +286,8 @@ contains
     end if
 
     if(verbose_) then
-      message%lines(1) = "Info: Writing Maxwell states."
-      call print_date(trim(message%lines(1))//' ')
+      message_g%lines(1) = "Info: Writing Maxwell states."
+      call print_date(trim(message_g%lines(1))//' ')
     end if
 
     call profiling_in(prof_write, "MAXWELL_RESTART_WRITE")
@@ -352,8 +352,8 @@ contains
     call restart_close(restart, iunit_wfns)
 
     if(verbose_) then
-      message%lines(1) = "Info: Finished writing Maxwell states."
-      call print_date(trim(message%lines(1))//' ')
+      message_g%lines(1) = "Info: Finished writing Maxwell states."
+      call print_date(trim(message_g%lines(1))//' ')
     end if
 
     call restart_unblock_signals()
@@ -414,12 +414,12 @@ contains
       label_ = trim(label)
     end if
 
-    message%lines(1) = 'Info: Reading Maxwell states'
+    message_g%lines(1) = 'Info: Reading Maxwell states'
     if (len(trim(label_)) > 0) then
-      message%lines(1) = trim(message%lines(1)) // trim(label_)
+      message_g%lines(1) = trim(message_g%lines(1)) // trim(label_)
     end if
-    message%lines(1) = trim(message%lines(1)) // "."
-    if(verbose_) call print_date(trim(message%lines(1))//' ')
+    message_g%lines(1) = trim(message_g%lines(1)) // "."
+    if(verbose_) call print_date(trim(message_g%lines(1))//' ')
 
     states_file  = restart_open(restart, 'maxwell_states')
     call restart_read(restart, states_file, lines, 3, err)
@@ -532,7 +532,7 @@ contains
     SAFE_DEALLOCATE_A(filled)
 
     if(mpi_grp_is_root(mpi_world) .and. verbose_) then
-      call message%new_line()
+      call message_g%new_line()
     end if
 
     if (ierr == 0 .and. iread /= st%nst * zff_dim) then
@@ -544,15 +544,15 @@ contains
       ! otherwise ierr = 0 would mean either all was read correctly, or nothing at all was read!
 
       write(str, '(a,i5)') 'Reading Maxwell states.'
-      call message%print_stress(stdout, trim(str))
-      write(message%lines(1),'(a,i6,a,i6,a)') 'Only ', iread,' files out of ', &
+      call message_g%print_stress(stdout, trim(str))
+      write(message_g%lines(1),'(a,i6,a,i6,a)') 'Only ', iread,' files out of ', &
            st%nst * zff_dim, ' could be read.'
-      call message%info(1)
-      call message%print_stress(stdout)
+      call message_g%info(1)
+      call message_g%print_stress(stdout)
     end if
 
-    message%lines(1) = 'Info: Maxwell states reading done.'
-    if(verbose_) call print_date(trim(message%lines(1))//' ')
+    message_g%lines(1) = 'Info: Maxwell states reading done.'
+    if(verbose_) call print_date(trim(message_g%lines(1))//' ')
 
     call profiling_out(prof_read)
     POP_SUB(states_mxll_load)

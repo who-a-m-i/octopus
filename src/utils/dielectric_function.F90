@@ -64,7 +64,7 @@ program dielectric_function
   call parser_init()
   default_namespace = namespace_t("")
 
-  call message%init(default_namespace)
+  call message_g%init(default_namespace)
 
   call io_init(default_namespace)
 
@@ -89,25 +89,25 @@ program dielectric_function
   else
     
     if(in_file < 0) then 
-      message%lines(1) = "Cannot find the GaugeVectorField in the input file"
-      call message%fatal(1)
+      message_g%lines(1) = "Cannot find the GaugeVectorField in the input file"
+      call message_g%fatal(1)
     end if
 
   end if
 
-  message%lines(1) = "This program assumes that the gauge field is in the 'x'"
-  message%lines(2) = "direction, and that the 'y' and 'z' directions are equivalent."
-  message%lines(3) = "If this is not the case the dielectric function and the"
-  message%lines(4) = "susceptibility will be wrong."
-  call message%warning(4)
+  message_g%lines(1) = "This program assumes that the gauge field is in the 'x'"
+  message_g%lines(2) = "direction, and that the 'y' and 'z' directions are equivalent."
+  message_g%lines(3) = "If this is not the case the dielectric function and the"
+  message_g%lines(4) = "susceptibility will be wrong."
+  call message_g%warning(4)
 
   start_time = spectrum%start_time
   call parse_variable(default_namespace, 'GaugeFieldDelay', start_time, spectrum%start_time )
 
   in_file = io_open('td.general/gauge_field', default_namespace, action='read', status='old', die=.false.)
   if(in_file < 0) then 
-    message%lines(1) = "Cannot open file '"//trim(io_workpath('td.general/gauge_field', default_namespace))//"'"
-    call message%fatal(1)
+    message_g%lines(1) = "Cannot open file '"//trim(io_workpath('td.general/gauge_field', default_namespace))//"'"
+    call message_g%fatal(1)
   end if
   call io_skip_header(in_file)
   call spectrum_count_time_steps(in_file, time_steps, dt)
@@ -129,20 +129,20 @@ program dielectric_function
     call parse_variable(default_namespace, 'TransientAbsorptionReference', '.', ref_filename)
     ref_file = io_open(trim(ref_filename)//'/gauge_field', default_namespace, action='read', status='old', die=.false.)
     if(ref_file < 0) then
-      message%lines(1) = "Cannot open reference file '"// &
+      message_g%lines(1) = "Cannot open reference file '"// &
         trim(io_workpath(trim(ref_filename)//'/gauge_field', default_namespace))//"'"
-      call message%fatal(1)
+      call message_g%fatal(1)
     end if
     call io_skip_header(ref_file)
     call spectrum_count_time_steps(ref_file, time_steps_ref, dt_ref)
     if(time_steps_ref < time_steps) then
-      message%lines(1) = "The reference calculation does not contain enought time steps"
-      call message%fatal(1)
+      message_g%lines(1) = "The reference calculation does not contain enought time steps"
+      call message_g%fatal(1)
     end if
  
     if(dt_ref /= dt) then
-      message%lines(1) = "The time step of the reference calculation is different from the current calculation"
-      call message%fatal(1)
+      message_g%lines(1) = "The time step of the reference calculation is different from the current calculation"
+      call message_g%fatal(1)
     end if
 
   end if
@@ -175,9 +175,9 @@ program dielectric_function
     end do
   end if
 
-  write(message%lines(1), '(a, i7, a)') "Info: Read ", time_steps, " steps from file '"// &
+  write(message_g%lines(1), '(a, i7, a)') "Info: Read ", time_steps, " steps from file '"// &
     trim(io_workpath('td.general/gauge_field', default_namespace))//"'"
-  call message%info(1)
+  call message_g%info(1)
 
 
   ! Find out the iteration numbers corresponding to the time limits.
@@ -300,7 +300,7 @@ program dielectric_function
   call geometry_end(geo)
   call space_end(space)
   call io_end()
-  call message%end()
+  call message_g%end()
 
   call parser_end()
   call global_end()

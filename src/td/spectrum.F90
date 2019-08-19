@@ -123,7 +123,7 @@ contains
 
     PUSH_SUB(spectrum_init)
     
-    call message%print_stress(stdout, "Spectrum Options")
+    call message_g%print_stress(stdout, "Spectrum Options")
 
     !%Variable PropagationSpectrumType
     !%Type integer
@@ -144,9 +144,9 @@ contains
     call parse_variable(namespace, 'PropagationSpectrumType', SPECTRUM_ABSORPTION, spectrum%spectype)
 
     if(.not.varinfo_valid_option('PropagationSpectrumType', spectrum%spectype)) then
-      call message%input_error('PropagationSpectrumType')
+      call message_g%input_error('PropagationSpectrumType')
     end if
-    call message%print_var_option(stdout, 'PropagationSpectrumType', spectrum%spectype)
+    call message_g%print_var_option(stdout, 'PropagationSpectrumType', spectrum%spectype)
       
     !%Variable SpectrumMethod
     !%Type integer
@@ -161,12 +161,12 @@ contains
     !%End
     call parse_variable(namespace, 'SpectrumMethod', SPECTRUM_FOURIER, spectrum%method)
     if(.not.varinfo_valid_option('SpectrumMethod', spectrum%method)) then
-      call message%input_error('SpectrumMethod')
+      call message_g%input_error('SpectrumMethod')
     end if
-    call message%print_var_option(stdout, 'SpectrumMethod', spectrum%method)
+    call message_g%print_var_option(stdout, 'SpectrumMethod', spectrum%method)
 
     if(spectrum%method == SPECTRUM_COMPRESSED_SENSING) then
-      call message%experimental('compressed sensing')
+      call message_g%experimental('compressed sensing')
 
       !%Variable SpectrumSignalNoise
       !%Type float
@@ -178,7 +178,7 @@ contains
       !% noise that is given by this dimensionless quantity.
       !%End
       call parse_variable(namespace, 'SpectrumSignalNoise', CNST(0.0), spectrum%noise)
-      call message%print_var_value(stdout, 'SpectrumSignalNoise', spectrum%noise)
+      call message_g%print_var_value(stdout, 'SpectrumSignalNoise', spectrum%noise)
     end if
  
 
@@ -205,14 +205,14 @@ contains
     call parse_variable(namespace, 'PropagationSpectrumDampMode', default, spectrum%damp)
 
     if(.not.varinfo_valid_option('PropagationSpectrumDampMode', spectrum%damp)) then
-      call message%input_error('PropagationSpectrumDampMode')
+      call message_g%input_error('PropagationSpectrumDampMode')
     end if
-    call message%print_var_option(stdout, 'PropagationSpectrumDampMode', spectrum%damp)
+    call message_g%print_var_option(stdout, 'PropagationSpectrumDampMode', spectrum%damp)
 
     if(spectrum%method == SPECTRUM_COMPRESSED_SENSING .and. spectrum%damp /= SPECTRUM_DAMP_NONE) then
-      message%lines(1) = 'Using damping with compressed sensing, this is not required'
-      message%lines(2) = 'and can introduce noise in the spectra.'
-      call message%warning(2)
+      message_g%lines(1) = 'Using damping with compressed sensing, this is not required'
+      message_g%lines(2) = 'and can introduce noise in the spectra.'
+      call message_g%warning(2)
     end if
 
     !%Variable PropagationSpectrumTransform
@@ -232,9 +232,9 @@ contains
     !%End
     call parse_variable(namespace, 'PropagationSpectrumTransform', SPECTRUM_TRANSFORM_SIN, spectrum%transform)
     if(.not.varinfo_valid_option('PropagationSpectrumTransform', spectrum%transform)) then
-      call message%input_error('PropagationSpectrumTransform')
+      call message_g%input_error('PropagationSpectrumTransform')
     end if
-    call message%print_var_option(stdout, 'PropagationSpectrumTransform', spectrum%transform)
+    call message_g%print_var_option(stdout, 'PropagationSpectrumTransform', spectrum%transform)
 
     !%Variable PropagationSpectrumStartTime
     !%Type float
@@ -245,7 +245,7 @@ contains
     !% value of this variable.
     !%End
     call parse_variable(namespace, 'PropagationSpectrumStartTime',  M_ZERO, spectrum%start_time, units_inp%time)
-    call message%print_var_value(stdout, 'PropagationSpectrumStartTime', spectrum%start_time, unit = units_out%time)
+    call message_g%print_var_value(stdout, 'PropagationSpectrumStartTime', spectrum%start_time, unit = units_out%time)
 
     !%Variable PropagationSpectrumEndTime
     !%Type float
@@ -257,7 +257,7 @@ contains
     !% the corresponding multipole file will used.
     !%End
     call parse_variable(namespace, 'PropagationSpectrumEndTime', -M_ONE, spectrum%end_time, units_inp%time)
-    call message%print_var_value(stdout, 'PropagationSpectrumEndTime', spectrum%end_time, unit = units_out%time)
+    call message_g%print_var_value(stdout, 'PropagationSpectrumEndTime', spectrum%end_time, unit = units_out%time)
 
     !%Variable PropagationSpectrumEnergyStep
     !%Type float
@@ -270,7 +270,7 @@ contains
     fdefault = CNST(0.01)/(M_TWO*P_Ry)
     if(present(default_energy_step)) fdefault = default_energy_step
     call parse_variable(namespace, 'PropagationSpectrumEnergyStep', fdefault, spectrum%energy_step, units_inp%energy)
-    call message%print_var_value(stdout, 'PropagationSpectrumEnergyStep', spectrum%energy_step, unit = units_out%energy)
+    call message_g%print_var_value(stdout, 'PropagationSpectrumEnergyStep', spectrum%energy_step, unit = units_out%energy)
 
     !%Variable PropagationSpectrumMinEnergy
     !%Type float
@@ -280,7 +280,7 @@ contains
     !% The Fourier transform is calculated for energies larger than this value.
     !%End
     call parse_variable(namespace, 'PropagationSpectrumMinEnergy', M_ZERO, spectrum%min_energy, units_inp%energy)
-    call message%print_var_value(stdout, 'PropagationSpectrumMinEnergy', spectrum%min_energy, unit = units_out%energy)
+    call message_g%print_var_value(stdout, 'PropagationSpectrumMinEnergy', spectrum%min_energy, unit = units_out%energy)
 
     
     !%Variable PropagationSpectrumMaxEnergy
@@ -293,7 +293,7 @@ contains
     fdefault = CNST(20.0)/(M_TWO*P_Ry)
     if(present(default_max_energy)) fdefault = default_max_energy
     call parse_variable(namespace, 'PropagationSpectrumMaxEnergy', fdefault, spectrum%max_energy, units_inp%energy)
-    call message%print_var_value(stdout, 'PropagationSpectrumMaxEnergy', spectrum%max_energy, unit = units_out%energy)
+    call message_g%print_var_value(stdout, 'PropagationSpectrumMaxEnergy', spectrum%max_energy, unit = units_out%energy)
 
     !%Variable PropagationSpectrumDampFactor
     !%Type float
@@ -306,7 +306,7 @@ contains
     !%End
     call parse_variable(namespace, 'PropagationSpectrumDampFactor', -M_ONE, spectrum%damp_factor, units_inp%time**(-1))
 
-    call message%print_var_value(stdout, 'PropagationSpectrumDampFactor', spectrum%damp_factor, unit = units_out%time**(-1))
+    call message_g%print_var_value(stdout, 'PropagationSpectrumDampFactor', spectrum%damp_factor, unit = units_out%time**(-1))
 
     !%Variable PropagationSpectrumSigmaDiagonalization
     !%Type logical
@@ -317,9 +317,9 @@ contains
     !% This variable is only used if the cross_section_tensor is computed. 
     !%End
     call parse_variable(namespace, 'PropagationSpectrumSigmaDiagonalization', .false., spectrum%sigma_diag)
-    call message%print_var_value(stdout, 'PropagationSpectrumSigmaDiagonalization', spectrum%sigma_diag)
+    call message_g%print_var_value(stdout, 'PropagationSpectrumSigmaDiagonalization', spectrum%sigma_diag)
 
-    call message%print_stress(stdout)
+    call message_g%print_stress(stdout)
 
     POP_SUB(spectrum_init)
   end subroutine spectrum_init
@@ -635,25 +635,25 @@ contains
           (time_steps /= ref_time_steps) .or. &
           (.not.(dt .app. ref_dt))         .or. &
           (lmax /= ref_lmax) ) then
-        write(message%lines(1),'(a)') 'The multipoles and reference multipoles files do not match.'
-        call message%fatal(1)
+        write(message_g%lines(1),'(a)') 'The multipoles and reference multipoles files do not match.'
+        call message_g%fatal(1)
       end if
     end if
 
     ! Now we cannot process files that do not contain the dipole, or that contain more than the dipole.
     if(lmax /= 1) then
-      message%lines(1) = 'Multipoles file should contain the dipole -- and only the dipole.'
-      call message%fatal(1)
+      message_g%lines(1) = 'Multipoles file should contain the dipole -- and only the dipole.'
+      call message_g%fatal(1)
     end if
 
     if(kick%function_mode /= KICK_FUNCTION_DIPOLE) then
-      message%lines(1) = "Kick function must have been dipole to run this utility."
-      call message%fatal(1)
+      message_g%lines(1) = "Kick function must have been dipole to run this utility."
+      call message_g%fatal(1)
     end if
 
     if(kick%pol_dir < 1) then
-      message%lines(1) = "Kick polarization direction is not set. Probably no kick was used."
-      call message%fatal(1)
+      message_g%lines(1) = "Kick polarization direction is not set. Probably no kick was used."
+      call message_g%fatal(1)
     end if
 
     ! Find out the iteration numbers corresponding to the time limits.
@@ -1065,8 +1065,8 @@ contains
 
     ! Now we cannot process files that do not contain the dipole, or that contain more than the dipole.
     if (lmax /= 1) then
-      message%lines(1) = 'Multipoles file should contain the dipole -- and only the dipole.'
-      call message%fatal(1)
+      message_g%lines(1) = 'Multipoles file should contain the dipole -- and only the dipole.'
+      call message_g%fatal(1)
     end if
 
     ! Find out the iteration numbers corresponding to the time limits.
@@ -1199,8 +1199,8 @@ contains
     call spectrum_count_time_steps(in_file_cos, time_steps_cos, dt_cos)
 
     if(dt_sin /= dt_cos) then
-      message%lines(1) = "dt is different in ftchds.cos and ftchds.sin!"
-      call message%fatal(1)
+      message_g%lines(1) = "dt is different in ftchds.cos and ftchds.sin!"
+      call message_g%fatal(1)
     end if
 
     time_steps = min(time_steps_sin, time_steps_cos)
@@ -1383,23 +1383,23 @@ contains
     SAFE_DEALLOCATE_A(angular)
 
     ! print some info
-    write(message%lines(1), '(a,i8)')    'Number of time steps = ', ntiter
-    write(message%lines(2), '(a,i4)')    'PropagationSpectrumDampMode   = ', & 
+    write(message_g%lines(1), '(a,i8)')    'Number of time steps = ', ntiter
+    write(message_g%lines(2), '(a,i4)')    'PropagationSpectrumDampMode   = ', & 
       spectrum%damp
-    write(message%lines(3), '(a,f10.4)') 'PropagationSpectrumDampFactor = ', &
+    write(message_g%lines(3), '(a,f10.4)') 'PropagationSpectrumDampFactor = ', &
       units_from_atomic(units_out%time**(-1), spectrum%damp_factor)
-    write(message%lines(4), '(a,f10.4)') 'PropagationSpectrumStartTime  = ', &
+    write(message_g%lines(4), '(a,f10.4)') 'PropagationSpectrumStartTime  = ', &
       units_from_atomic(units_out%time, spectrum%start_time)
-    write(message%lines(5), '(a,f10.4)') 'PropagationSpectrumEndTime    = ', &
+    write(message_g%lines(5), '(a,f10.4)') 'PropagationSpectrumEndTime    = ', &
       units_from_atomic(units_out%time, spectrum%end_time)
-    write(message%lines(6), '(a,f10.4)') 'PropagationSpectrumMaxEnergy  = ', &
+    write(message_g%lines(6), '(a,f10.4)') 'PropagationSpectrumMaxEnergy  = ', &
       units_from_atomic(units_inp%energy, spectrum%max_energy) 
-    write(message%lines(7),'(a,f10.4)')  'PropagationSpectrumEnergyStep = ', &
+    write(message_g%lines(7),'(a,f10.4)')  'PropagationSpectrumEnergyStep = ', &
       units_from_atomic(units_inp%energy, spectrum%energy_step)
-    message%lines(8) = ""
-    write(message%lines(9), '(a,5e15.6,5e15.6)') 'R(0) sum rule = ', sum1
-    write(message%lines(10),'(a,5e15.6,5e15.6)') 'R(2) sum rule = ', sum2
-    call message%info(10)
+    message_g%lines(8) = ""
+    write(message_g%lines(9), '(a,5e15.6,5e15.6)') 'R(0) sum rule = ', sum1
+    write(message_g%lines(10),'(a,5e15.6,5e15.6)') 'R(2) sum rule = ', sum2
+    call message_g%info(10)
 
 
     ! Output to file
@@ -1528,9 +1528,9 @@ contains
     end if
 
     if(ierr /= 0) then
-      write(message%lines(1),'(a,f14.6,a)') 'spectrum_hsfunction_min: The maximum at', xx,' was not properly converged.'
-      write(message%lines(2),'(a,i12)')      'Error code: ', ierr
-      call message%warning(2)
+      write(message_g%lines(1),'(a,f14.6,a)') 'spectrum_hsfunction_min: The maximum at', xx,' was not properly converged.'
+      write(message_g%lines(2),'(a,i12)')      'Error code: ', ierr
+      call message_g%warning(2)
     end if
     call hsfunction(xx, hsval)
     omega_min = xx
@@ -2314,8 +2314,8 @@ contains
     time_steps = time_steps - 1
     
     if(time_steps < 3) then
-      message%lines(1) = "Empty file?"
-      call message%fatal(1)
+      message_g%lines(1) = "Empty file?"
+      call message_g%fatal(1)
     end if
 
     POP_SUB(count_time_steps)
@@ -2352,8 +2352,8 @@ contains
     dw = units_to_atomic(units_out%energy, e2 - e1)
 
     if(energy_steps < 3) then
-      message%lines(1) = "Empty multipole file?"
-      call message%fatal(1)
+      message_g%lines(1) = "Empty multipole file?"
+      call message_g%fatal(1)
     end if
 
     POP_SUB(spectrum_cross_section_info)
@@ -2401,8 +2401,8 @@ contains
     time_steps = time_steps - 1
 
     if(time_steps < 3) then
-      message%lines(1) = "Empty file?"
-      call message%fatal(1)
+      message_g%lines(1) = "Empty file?"
+      call message_g%fatal(1)
     end if
 
     rewind(iunit)
@@ -2687,7 +2687,7 @@ contains
     !% This variable is only used if the cross_section_tensor is computed. 
     !%End
     call parse_variable(namespace, 'PropagationSpectrumSymmetrizeSigma', .false., symmetrize)
-    call message%print_var_value(stdout, 'PropagationSpectrumSymmetrizeSigma', symmetrize)
+    call message_g%print_var_value(stdout, 'PropagationSpectrumSymmetrizeSigma', symmetrize)
 
     spins_singlet = .true.
     spins_triplet = .false.

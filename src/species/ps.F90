@@ -171,7 +171,7 @@ contains
     
     ! Fix the threshold to calculate the radius of the projector-function localization spheres:
 
-    call message%obsolete_variable(namespace, 'SpecieProjectorSphereThreshold', 'SpeciesProjectorSphereThreshold')
+    call message_g%obsolete_variable(namespace, 'SpecieProjectorSphereThreshold', 'SpeciesProjectorSphereThreshold')
 
     !%Variable SpeciesProjectorSphereThreshold
     !%Type float
@@ -191,20 +191,20 @@ contains
     !% below a certain threshold. This threshold is set by <tt>SpeciesProjectorSphereThreshold</tt>.
     !%End
     call parse_variable(namespace, 'SpeciesProjectorSphereThreshold', CNST(0.001), ps%projectors_sphere_threshold)
-    if(ps%projectors_sphere_threshold <= M_ZERO) call message%input_error('SpeciesProjectorSphereThreshold')
+    if(ps%projectors_sphere_threshold <= M_ZERO) call message_g%input_error('SpeciesProjectorSphereThreshold')
 
     ps%file_format = pseudo_detect_format(filename)
 
     if(ps%file_format == PSEUDO_FORMAT_FILE_NOT_FOUND) then
-      call message%write("Cannot open pseudopotential file '"//trim(filename)//"'.")
-      call message%fatal()
+      call message_g%write("Cannot open pseudopotential file '"//trim(filename)//"'.")
+      call message_g%fatal()
     end if
 
     if(ps%file_format == PSEUDO_FORMAT_UNKNOWN) then
-      call message%write("Cannot determine the pseudopotential type for species '"//trim(label)//"' from", &
+      call message_g%write("Cannot determine the pseudopotential type for species '"//trim(label)//"' from", &
                           new_line = .true.)
-      call message%write("file '"//trim(filename)//"'.")
-      call message%fatal()
+      call message_g%write("file '"//trim(filename)//"'.")
+      call message_g%fatal()
     end if
 
     ps%label   = label
@@ -235,9 +235,9 @@ contains
       if(user_lmax /= INVALID_L) then
         ps%lmax = min(ps%lmax, user_lmax) ! Maybe the file does not have enough components.
         if(user_lmax /= ps%lmax) then
-          message%lines(1) = "lmax in Species block for " // trim(label) // &
+          message_g%lines(1) = "lmax in Species block for " // trim(label) // &
                        " is larger than number available in pseudopotential."
-          call message%fatal(1)
+          call message_g%fatal(1)
         end if
       end if
 
@@ -282,9 +282,9 @@ contains
       if(user_lmax /= INVALID_L) then
         ps%lmax = min(ps%lmax, user_lmax) ! Maybe the file does not have enough components.
         if(user_lmax /= ps%lmax) then
-          message%lines(1) = "lmax in Species block for " // trim(label) // &
+          message_g%lines(1) = "lmax in Species block for " // trim(label) // &
                        " is larger than number available in pseudopotential."
-          call message%fatal(1)
+          call message_g%fatal(1)
         end if
       end if
 
@@ -323,7 +323,7 @@ contains
     case(PSEUDO_FORMAT_QSO, PSEUDO_FORMAT_UPF1, PSEUDO_FORMAT_UPF2, PSEUDO_FORMAT_PSML, PSEUDO_FORMAT_PSP8)
       
       if(.not. xml_warned) then
-        call message%experimental('XML (QSO, UPF, and PSML, PSP8) pseudopotential support')
+        call message_g%experimental('XML (QSO, UPF, and PSML, PSP8) pseudopotential support')
         xml_warned = .true.
       end if
       
@@ -451,105 +451,105 @@ contains
     type(ps_t),       intent(in) :: ps
     character(len=*), intent(in) :: filename
 
-    call message%write("  Species '"//trim(ps%label)//"'", new_line = .true.)
-    call message%write("    type             : pseudopotential", new_line = .true.)
-    call message%write("    file             : '"//trim(filename)//"'")
-    call message%info()
+    call message_g%write("  Species '"//trim(ps%label)//"'", new_line = .true.)
+    call message_g%write("    type             : pseudopotential", new_line = .true.)
+    call message_g%write("    file             : '"//trim(filename)//"'")
+    call message_g%info()
     
-    call message%write("    file format      :")
+    call message_g%write("    file format      :")
     select case(ps%file_format)
     case(PSEUDO_FORMAT_UPF1)
-      call message%write(" UPF1")
+      call message_g%write(" UPF1")
     case(PSEUDO_FORMAT_UPF2)
-      call message%write(" UPF2")
+      call message_g%write(" UPF2")
     case(PSEUDO_FORMAT_QSO)
-      call message%write(" QSO")
+      call message_g%write(" QSO")
     case(PSEUDO_FORMAT_PSML)
-      call message%write(" PSML")
+      call message_g%write(" PSML")
     case(PSEUDO_FORMAT_PSP8)
-      call message%write(" PSP8")
+      call message_g%write(" PSP8")
     case(PSEUDO_FORMAT_PSF)
-      call message%write(" PSF")
+      call message_g%write(" PSF")
     case(PSEUDO_FORMAT_CPI)
-      call message%write(" CPI")
+      call message_g%write(" CPI")
     case(PSEUDO_FORMAT_FHI)
-      call message%write(" FHI")
+      call message_g%write(" FHI")
     case(PSEUDO_FORMAT_HGH)
-      call message%write(" HGH")
+      call message_g%write(" HGH")
     end select
-    call message%new_line()
+    call message_g%new_line()
 
-    call message%write("    valence charge   :")
-    call message%write(ps%z_val, align_left = .true., fmt = '(f4.1)')
-    call message%info()
+    call message_g%write("    valence charge   :")
+    call message_g%write(ps%z_val, align_left = .true., fmt = '(f4.1)')
+    call message_g%info()
 
-    call message%write("    atomic number    :")
-    call message%write(nint(ps%z), fmt = '(i4)')
-    call message%info()
+    call message_g%write("    atomic number    :")
+    call message_g%write(nint(ps%z), fmt = '(i4)')
+    call message_g%info()
     
-    call message%write("    form on file     :")
+    call message_g%write("    form on file     :")
     select case(ps%pseudo_type)
     case(PSEUDO_TYPE_ULTRASOFT)
-      call message%write(" ultrasoft")
+      call message_g%write(" ultrasoft")
     case(PSEUDO_TYPE_SEMILOCAL)
-      call message%write(" semilocal")
+      call message_g%write(" semilocal")
     case(PSEUDO_TYPE_KLEINMAN_BYLANDER)
-      call message%write(" kleinman-bylander")
+      call message_g%write(" kleinman-bylander")
     case(PSEUDO_TYPE_PAW)
-      call message%write(" paw")
+      call message_g%write(" paw")
     end select
-    call message%info()
+    call message_g%info()
 
     if(ps%pseudo_type == PSEUDO_TYPE_SEMILOCAL) then
-      call message%write("    orbital origin   :")
+      call message_g%write("    orbital origin   :")
       select case(ps%file_format)
       case(PSEUDO_FORMAT_PSF)
-        call message%write(" calculated");
+        call message_g%write(" calculated");
       case default
-        call message%write(" from file");
+        call message_g%write(" from file");
       end select
-      call message%info()
+      call message_g%info()
     end if
 
-    call message%write("    lmax             :")
-    call message%write(ps%lmax, fmt = '(i2)')
-    call message%info()
+    call message_g%write("    lmax             :")
+    call message_g%write(ps%lmax, fmt = '(i2)')
+    call message_g%info()
 
-    call message%write("    llocal           :")
+    call message_g%write("    llocal           :")
     if(ps%llocal >= 0) then
-      call message%write(ps%llocal, fmt = '(i2)')
+      call message_g%write(ps%llocal, fmt = '(i2)')
     else
-      call message%write(ps%llocal, fmt = '(i3)')
+      call message_g%write(ps%llocal, fmt = '(i3)')
     end if
-    call message%info()
+    call message_g%info()
 
-    call message%write("    projectors per l :")
-    call message%write(ps%kbc, fmt = '(i2)')
-    call message%info()
+    call message_g%write("    projectors per l :")
+    call message_g%write(ps%kbc, fmt = '(i2)')
+    call message_g%info()
     
-    call message%write("    total projectors :")
+    call message_g%write("    total projectors :")
     if(ps%llocal < 0) then
-      call message%write(ps%kbc*(ps%lmax + 1), fmt = '(i2)')
+      call message_g%write(ps%kbc*(ps%lmax + 1), fmt = '(i2)')
     else
-      call message%write(ps%kbc*ps%lmax, fmt = '(i2)')
+      call message_g%write(ps%kbc*ps%lmax, fmt = '(i2)')
     end if
-    call message%info()
+    call message_g%info()
 
     if(ps%local) then
-      call message%write("    application form : local")
+      call message_g%write("    application form : local")
     else
-      call message%write("    application form : kleinman-bylander")
+      call message_g%write("    application form : kleinman-bylander")
     end if
-    call message%info()
+    call message_g%info()
 
-    call message%write("    orbitals         :")
-    call message%write(ps_niwfs(ps), fmt='(i3)')
-    call message%info()
-    call message%write("    bound orbitals   :")
-    call message%write(ps_bound_niwfs(ps), fmt='(i3)')
-    call message%info()
+    call message_g%write("    orbitals         :")
+    call message_g%write(ps_niwfs(ps), fmt='(i3)')
+    call message_g%info()
+    call message_g%write("    bound orbitals   :")
+    call message_g%write(ps_bound_niwfs(ps), fmt='(i3)')
+    call message_g%info()
 
-    call message%info()
+    call message_g%info()
     
   end subroutine ps_info
 
@@ -1448,8 +1448,8 @@ contains
     PUSH_SUB(ps_density_volume)
     
     if (.not. ps_has_density(ps)) then
-       message%lines(1) = "The pseudopotential does not contain an atomic density"
-       call message%fatal(1)
+       message_g%lines(1) = "The pseudopotential does not contain an atomic density"
+       call message_g%fatal(1)
     end if
 
     SAFE_ALLOCATE(vol(1:ps%g%nrval))

@@ -157,17 +157,17 @@ contains
 
       call parse_block_end(blk)
       if(.not. simul_box_is_periodic(sb)) then
-        message%lines(1) = "GaugeVectorField is intended for periodic systems."
-        call message%warning(1)
+        message_g%lines(1) = "GaugeVectorField is intended for periodic systems."
+        call message_g%warning(1)
       end if
 
       if(sb%kpoints%use_symmetries) then
         do iop = 1, symmetries_number(sb%symm)
           if(iop == symmetries_identity_index(sb%symm)) cycle
           if(.not. symm_op_invariant_cart(sb%symm%ops(iop), this%vecpot_kick, CNST(1e-5))) then
-            message%lines(1) = "The GaugeVectorField breaks (at least) one of the symmetries used to reduce the k-points."
-            message%lines(2) = "Set SymmetryBreakDir equal to GaugeVectorField."
-            call message%fatal(2)
+            message_g%lines(1) = "The GaugeVectorField breaks (at least) one of the symmetries used to reduce the k-points."
+            message_g%lines(2) = "Set SymmetryBreakDir equal to GaugeVectorField."
+            call message_g%fatal(2)
           end if
         end do
       end if
@@ -288,8 +288,8 @@ contains
     ! apply kick, in case kicktime=0 the kick has already been applied
     if(this%kicktime > M_ZERO .and. time-dt <= this%kicktime .and. time >= this%kicktime )  then
       this%vecpot(1:this%ndim) = this%vecpot(1:this%ndim) +  this%vecpot_kick(1:this%ndim)
-      call message%write('     ----------------  Applying gauge kick  ----------------')
-      call message%info()
+      call message_g%write('     ----------------  Applying gauge kick  ----------------')
+      call message_g%info()
     endif
 
     this%vecpot(1:this%ndim) = this%vecpot(1:this%ndim) + dt * this%vecpot_vel(1:this%ndim) + &
@@ -302,9 +302,9 @@ contains
 
         warning_shown = .true.
 
-        write(message%lines(1),'(a)') 'It seems that the gauge-field might be diverging. You should probably check'
-        write(message%lines(2),'(a)') 'the simulation parameters, in particular the number of k-points.'
-        call message%warning(2)
+        write(message_g%lines(1),'(a)') 'It seems that the gauge-field might be diverging. You should probably check'
+        write(message_g%lines(2),'(a)') 'the simulation parameters, in particular the number of k-points.'
+        call message_g%warning(2)
       end if
     end do
     POP_SUB(gauge_field_propagate)
@@ -334,9 +334,9 @@ contains
 
     this%wp2 = M_FOUR*M_PI*st%qtot/sb%rcell_volume
 
-    write (message%lines(1), '(a,f12.6,a)') "Info: Electron-gas plasmon frequency", &
+    write (message_g%lines(1), '(a,f12.6,a)') "Info: Electron-gas plasmon frequency", &
          units_from_atomic(units_out%energy, sqrt(this%wp2)), " ["//trim(units_abbrev(units_out%energy))//"]"
-    call message%info(1)
+    call message_g%info(1)
 
     POP_SUB(gauge_field_init_vec_pot)
   end subroutine gauge_field_init_vec_pot
@@ -372,8 +372,8 @@ contains
     end if
 
     if (debug%info) then
-      message%lines(1) = "Debug: Writing gauge field restart."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Writing gauge field restart."
+      call message_g%info(1)
     end if
 
     SAFE_ALLOCATE(vecpot(1:gfield%ndim, 1:2))
@@ -386,8 +386,8 @@ contains
     if (err /= 0) ierr = ierr + 1
 
     if (debug%info) then
-      message%lines(1) = "Debug: Writing gauge field restart done."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Writing gauge field restart done."
+      call message_g%info(1)
     end if
 
     POP_SUB(gauge_field_dump)
@@ -414,8 +414,8 @@ contains
     end if
 
     if (debug%info) then
-      message%lines(1) = "Debug: Reading gauge field restart."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Reading gauge field restart."
+      call message_g%info(1)
     end if
 
     SAFE_ALLOCATE(vecpot(1:gfield%ndim, 1:2))
@@ -427,8 +427,8 @@ contains
     SAFE_DEALLOCATE_A(vecpot)
     
     if (debug%info) then
-      message%lines(1) = "Debug: Reading gauge field restart done."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Reading gauge field restart done."
+      call message_g%info(1)
     end if
 
     POP_SUB(gauge_field_load)

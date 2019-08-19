@@ -298,8 +298,8 @@ contains
       do il=1, nlines
         ncols = parse_block_cols(blk,0)
         if (ncols < 3 .or. ncols > 3) then
-            message%lines(1) = 'MaxwellFieldCoordinate must have 3 columns.'
-            call message%fatal(1)
+            message_g%lines(1) = 'MaxwellFieldCoordinate must have 3 columns.'
+            call message_g%fatal(1)
         end if
         do idim=1, st%d%dim
           call parse_block_float(blk, il-1, idim-1, pos(idim), units_inp%length)

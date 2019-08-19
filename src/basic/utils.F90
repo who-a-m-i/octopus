@@ -80,8 +80,8 @@ contains
         n_divisors = n_divisors + 1
 
         if(n_divisors > max_d - 1) then
-          message%lines(1) = "Internal error in get_divisors. Please increase n_divisors"
-          call message%fatal(1)
+          message_g%lines(1) = "Internal error in get_divisors. Please increase n_divisors"
+          call message_g%fatal(1)
         end if
 
         divisors(n_divisors) = ii
@@ -203,46 +203,46 @@ contains
     call io_dump_file(stdout, trim(trim(conf%share) // '/logo'))
 
     ! Let us print the version
-    message%lines(1) = ""
-    message%lines(2) = str_center("Running octopus", 70)
-    message%lines(3) = ""
-    call message%info(3)
+    message_g%lines(1) = ""
+    message_g%lines(2) = str_center("Running octopus", 70)
+    message_g%lines(3) = ""
+    call message_g%info(3)
 
-    message%lines(1) = &
+    message_g%lines(1) = &
          "Version                : " // trim(conf%version)
-    message%lines(2) = &
+    message_g%lines(2) = &
          "Commit                 : "// trim(conf%git_commit)
-    message%lines(3) = &
+    message_g%lines(3) = &
          "Build time             : "// trim(conf%build_time)
-    call message%info(3)
+    call message_g%info(3)
 
-    message%lines(1) = 'Configuration options  : ' // trim(get_config_opts())
-    message%lines(2) = 'Optional libraries     :'  // trim(get_optional_libraries())
+    message_g%lines(1) = 'Configuration options  : ' // trim(get_config_opts())
+    message_g%lines(2) = 'Optional libraries     :'  // trim(get_optional_libraries())
 
-    message%lines(3) = 'Architecture           : ' + TOSTRING(OCT_ARCH)
-    call message%info(3)
+    message_g%lines(3) = 'Architecture           : ' + TOSTRING(OCT_ARCH)
+    call message_g%info(3)
 
-    message%lines(1) = &
+    message_g%lines(1) = &
          "C compiler             : "//trim(conf%cc)
-    message%lines(2) = &
+    message_g%lines(2) = &
          "C compiler flags       : "//trim(conf%cflags)
 #ifdef HAVE_FC_COMPILER_VERSION
-    message%lines(3) = "Fortran compiler       : "//trim(conf%fc) //" ("//compiler_version()//")"
+    message_g%lines(3) = "Fortran compiler       : "//trim(conf%fc) //" ("//compiler_version()//")"
 #else
-    message%lines(3) = "Fortran compiler       : "//trim(conf%fc)
+    message_g%lines(3) = "Fortran compiler       : "//trim(conf%fc)
 #endif
-    message%lines(4) = &
+    message_g%lines(4) = &
          "Fortran compiler flags : "//trim(conf%fcflags)
-    call message%info(4)
+    call message_g%info(4)
 
-    message%lines(1) = ""
-    call message%info(1)
+    message_g%lines(1) = ""
+    call message_g%info(1)
 
     ! Let us print where we are running
     call loct_sysname(sys_name)
-    write(message%lines(1), '(a)') str_center("The octopus is swimming in " // trim(sys_name), 70)
-    message%lines(2) = ""
-    call message%info(2)
+    write(message_g%lines(1), '(a)') str_center("The octopus is swimming in " // trim(sys_name), 70)
+    message_g%lines(2) = ""
+    call message_g%info(2)
 
 #if defined(HAVE_MPI)
     call MPI_Barrier(mpi_world%comm, mpi_err)

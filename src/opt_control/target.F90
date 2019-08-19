@@ -252,21 +252,21 @@ contains
     !% (Experimental)
     !%End
     call parse_variable(namespace, 'OCTTargetOperator', oct_tg_gstransformation, tg%type)
-      if(tg%type == oct_tg_excited) call message%experimental('OCTTargetOperator = oct_tg_excited')
-      if(tg%type == oct_tg_userdefined) call message%experimental('OCTTargetOperator = oct_tg_userdefined')
-      if(tg%type == oct_tg_jdensity) call message%experimental('OCTTargetOperator = oct_tg_jdensity')
-      if(tg%type == oct_tg_local) call message%experimental('OCTTargetOperator = oct_tg_local')
-      if(tg%type == oct_tg_td_local) call message%experimental('OCTTargetOperator = oct_tg_td_local')
-      if(tg%type == oct_tg_exclude_state) call message%experimental('OCTTargetOperator = oct_tg_exclude_state')
-      if(tg%type == oct_tg_hhg) call message%experimental('OCTTargetOperator = oct_tg_hhg')
-      if(tg%type == oct_tg_velocity) call message%experimental('OCTTargetOperator = oct_tg_velocity')
-      if(tg%type == oct_tg_hhgnew) call message%experimental('OCTTargetOperator = oct_tg_hhgnew')
-      if(tg%type == oct_tg_classical) call message%experimental('OCTTargetOperator = oct_tg_classical')
-      if(tg%type == oct_tg_spin) call message%experimental('OCTTargetOperator = oct_tg_spin')
+      if(tg%type == oct_tg_excited) call message_g%experimental('OCTTargetOperator = oct_tg_excited')
+      if(tg%type == oct_tg_userdefined) call message_g%experimental('OCTTargetOperator = oct_tg_userdefined')
+      if(tg%type == oct_tg_jdensity) call message_g%experimental('OCTTargetOperator = oct_tg_jdensity')
+      if(tg%type == oct_tg_local) call message_g%experimental('OCTTargetOperator = oct_tg_local')
+      if(tg%type == oct_tg_td_local) call message_g%experimental('OCTTargetOperator = oct_tg_td_local')
+      if(tg%type == oct_tg_exclude_state) call message_g%experimental('OCTTargetOperator = oct_tg_exclude_state')
+      if(tg%type == oct_tg_hhg) call message_g%experimental('OCTTargetOperator = oct_tg_hhg')
+      if(tg%type == oct_tg_velocity) call message_g%experimental('OCTTargetOperator = oct_tg_velocity')
+      if(tg%type == oct_tg_hhgnew) call message_g%experimental('OCTTargetOperator = oct_tg_hhgnew')
+      if(tg%type == oct_tg_classical) call message_g%experimental('OCTTargetOperator = oct_tg_classical')
+      if(tg%type == oct_tg_spin) call message_g%experimental('OCTTargetOperator = oct_tg_spin')
 
 
     if(.not.varinfo_valid_option('OCTTargetOperator', tg%type)) &
-      call message%input_error('OCTTargetOperator')
+      call message_g%input_error('OCTTargetOperator')
 
     call states_elec_copy(tg%st, stin)
     call states_elec_deallocate_wfns(tg%st)
@@ -274,15 +274,15 @@ contains
     nullify(tg%td_fitness)
     call restart_init(restart, namespace, RESTART_GS, RESTART_TYPE_LOAD, mc, ierr, mesh=gr%mesh, exact=.true.)
     if(ierr /= 0) then
-      message%lines(1) = "Could not read gs for OCTTargetOperator."
-      call message%fatal(1)
+      message_g%lines(1) = "Could not read gs for OCTTargetOperator."
+      call message_g%fatal(1)
     end if
 
     select case(tg%type)
     case(oct_tg_groundstate)
       call target_init_groundstate(gr, namespace, tg, td, restart)
     case(oct_tg_excited)
-      call message%experimental('OCTTargetOperator = oct_tg_excited')
+      call message_g%experimental('OCTTargetOperator = oct_tg_excited')
       call target_init_excited(gr, namespace, tg, td, restart)
     case(oct_tg_exclude_state)
       call target_init_exclude(gr, namespace, tg, td, restart)
@@ -299,19 +299,19 @@ contains
     case(oct_tg_hhg)
       call target_init_hhg(tg, namespace, td, w0)
     case(oct_tg_hhgnew)
-      call message%experimental('OCTTargetOperator = oct_tg_hhgnew')
+      call message_g%experimental('OCTTargetOperator = oct_tg_hhgnew')
       call target_init_hhgnew(gr, namespace, tg, td, geo, ep)
     case(oct_tg_velocity)
       call target_init_velocity(gr, namespace, geo, tg, oct, td, ep)
     case(oct_tg_classical)
-      call message%experimental('OCTTargetOperator = oct_tg_classical')
+      call message_g%experimental('OCTTargetOperator = oct_tg_classical')
       call target_init_classical(geo, namespace, tg, td, oct)
     case(oct_tg_spin)
-      call message%experimental('OCTTargetOperator = oct_tg_spin')
+      call message_g%experimental('OCTTargetOperator = oct_tg_spin')
       call target_init_spin(tg, namespace)
     case default
-      write(message%lines(1),'(a)') "Target Operator not properly defined."
-      call message%fatal(1)
+      write(message_g%lines(1),'(a)') "Target Operator not properly defined."
+      call message_g%fatal(1)
     end select
 
     call restart_end(restart)
@@ -439,8 +439,8 @@ contains
     case(oct_tg_jdensity)
       call target_tdcalc_density(tg, gr, psi, time)
     case default
-      message%lines(1) = 'Error in target.target_tdcalc: default.'
-      call message%fatal(1)
+      message_g%lines(1) = 'Error in target.target_tdcalc: default.'
+      call message_g%fatal(1)
     end select
 
     POP_SUB(target_tdcalc)
@@ -525,8 +525,8 @@ contains
       end if     
 
     case default
-      write(message%lines(1),'(a)') 'Internal error in target_inh'
-      call message%fatal(1)
+      write(message_g%lines(1),'(a)') 'Internal error in target_inh'
+      call message_g%fatal(1)
   
     end select
 

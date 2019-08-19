@@ -159,11 +159,11 @@ contains
       end do
     end do
 
-    write(message%lines(1),'(a)') 'Info: Symmetrizing dynamical matrix.'
-    write(message%lines(2),'(a,es12.6,a,a)') 'Info: Maximum discrepancy from symmetry: ', &
+    write(message_g%lines(1),'(a)') 'Info: Symmetrizing dynamical matrix.'
+    write(message_g%lines(2),'(a,es12.6,a,a)') 'Info: Maximum discrepancy from symmetry: ', &
       units_from_atomic(this%unit_dynmat, maxdiff), &
       " ", trim(units_abbrev(this%unit_dynmat))
-    call message%info(2)
+    call message_g%info(2)
 
     POP_SUB(vibrations_symmetrize_dyn_matrix)
   end subroutine vibrations_symmetrize_dyn_matrix
@@ -274,8 +274,8 @@ contains
     this%freq(1:this%num_modes) = -this%freq(1:this%num_modes) / this%total_mass
 
     if(any(this%freq(1:this%num_modes) < -M_EPSILON)) then
-      message%lines(1) = "There are imaginary vibrational frequencies (represented as negative)."
-      call message%warning(1)
+      message_g%lines(1) = "There are imaginary vibrational frequencies (represented as negative)."
+      call message_g%warning(1)
     end if
 
     do imode = 1, this%num_modes

@@ -35,7 +35,7 @@ subroutine X(cholesky)(n, a, bof, err_code)
   call lapack_potrf('U', n, a(1, 1), lead_dim(a), info)
   if(info /= 0) then
     if(optional_default(bof, .true.)) then
-      write(message%lines(1), '(5a,i5)') 'In ', TOSTRING(X(cholesky)), ', LAPACK ', TOSTRING(X(potrf)), ' returned error message ', info
+      write(message_g%lines(1), '(5a,i5)') 'In ', TOSTRING(X(cholesky)), ', LAPACK ', TOSTRING(X(potrf)), ' returned error message ', info
 ! http://www.netlib.org/lapack/explore-3.1.1-html/dpotrf.f.html and zpotrf.f.html
 !      *  INFO    (output) INTEGER
 !      *          = 0:  successful exit
@@ -44,11 +44,11 @@ subroutine X(cholesky)(n, a, bof, err_code)
 !      *                positive definite, and the factorization could not be
 !      *                completed.
       if(info < 0) then
-        write(message%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
+        write(message_g%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
       else
-        write(message%lines(2), '(a,i5,a)') 'The leading minor of order ', info, ' is not positive definite.'
+        write(message_g%lines(2), '(a,i5,a)') 'The leading minor of order ', info, ' is not positive definite.'
       end if
-      call message%fatal(2)
+      call message_g%fatal(2)
     else
       if(present(bof)) then
         bof = .true.
@@ -118,11 +118,11 @@ subroutine X(geneigensolve)(n, a, b, e, bof, err_code)
 
   if(info /= 0) then
     if(optional_default(bof, .true.)) then
-      write(message%lines(1),'(3a)') 'In ', TOSTRING(X(geneigensolve)), ', LAPACK '
+      write(message_g%lines(1),'(3a)') 'In ', TOSTRING(X(geneigensolve)), ', LAPACK '
 #ifdef R_TCOMPLEX
-      write(message%lines(1),'(3a,i5)') trim(message%lines(1)), TOSTRING(X(hegv)), ' returned error message ', info
+      write(message_g%lines(1),'(3a,i5)') trim(message_g%lines(1)), TOSTRING(X(hegv)), ' returned error message ', info
 #else
-      write(message%lines(1),'(3a,i5)') trim(message%lines(1)), TOSTRING(X(sygv)), ' returned error message ', info
+      write(message_g%lines(1),'(3a,i5)') trim(message_g%lines(1)), TOSTRING(X(sygv)), ' returned error message ', info
 #endif
 !*  INFO    (output) INTEGER
 !*          = 0:  successful exit
@@ -136,13 +136,13 @@ subroutine X(geneigensolve)(n, a, b, e, bof, err_code)
 !*                    The factorization of B could not be completed and
 !*                    no eigenvalues or eigenvectors were computed.      
       if(info < 0) then
-        write(message%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
+        write(message_g%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
       else if(info <= n) then
-        write(message%lines(2), '(i5,a)') info, ' off-diagonal elements of an intermediate tridiagonal did not converge to zero.'
+        write(message_g%lines(2), '(i5,a)') info, ' off-diagonal elements of an intermediate tridiagonal did not converge to zero.'
       else
-        write(message%lines(2), '(a,i5,a)') 'The leading minor of order ', info - n, ' of B is not positive definite.'
+        write(message_g%lines(2), '(a,i5,a)') 'The leading minor of order ', info - n, ' of B is not positive definite.'
       end if
-      call message%fatal(2)
+      call message_g%fatal(2)
     else
       if(present(bof)) then
         bof = .true.
@@ -205,9 +205,9 @@ subroutine X(eigensolve_nonh)(n, a, e, err_code, side, sort_eigenvectors)
   call lapack_geev('N', 'V', n, a, lead_dim(a), e, vl, lead_dim(vl), vr, lead_dim(vr), &
     work, lwork, rwork, info)
   if(info /= 0) then
-    write(message%lines(1),'(5a,i5)') 'In ', TOSTRING(X(eigensolve_nonh)), &
+    write(message_g%lines(1),'(5a,i5)') 'In ', TOSTRING(X(eigensolve_nonh)), &
       ', LAPACK ', TOSTRING(X(geev)), ' workspace query returned error message ', info
-    call message%fatal(1)
+    call message_g%fatal(1)
   end if
 
   lwork = int(work(1))
@@ -237,7 +237,7 @@ subroutine X(eigensolve_nonh)(n, a, e, err_code, side, sort_eigenvectors)
   SAFE_DEALLOCATE_A(vl)
 
   if(info /= 0) then
-    write(message%lines(1),'(5a,i5)') 'In ', TOSTRING(X(eigensolve_nonh)), &
+    write(message_g%lines(1),'(5a,i5)') 'In ', TOSTRING(X(eigensolve_nonh)), &
       ', LAPACK ', TOSTRING(X(geev)), ' returned error message ', info
 !*  INFO    (output) INTEGER
 !*          = 0:  successful exit
@@ -247,11 +247,11 @@ subroutine X(eigensolve_nonh)(n, a, e, err_code, side, sort_eigenvectors)
 !*                elements i+1:N of WR and WI contain eigenvalues which
 !*                have converged.
     if(info < 0) then
-      write(message%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
+      write(message_g%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
     else
-      write(message%lines(2), '(a,i5,a,i5,a)') 'Only eigenvalues ', info + 1, ' to ', n, ' could be computed.'
+      write(message_g%lines(2), '(a,i5,a,i5,a)') 'Only eigenvalues ', info + 1, ' to ', n, ' could be computed.'
     end if
-    call message%fatal(2)
+    call message_g%fatal(2)
   end if
   if(present(err_code)) then
     err_code = info
@@ -308,9 +308,9 @@ subroutine dlowest_geneigensolve(k, n, a, b, e, v, bof, err_code)
   call X(sygvx)(1, 'V', 'I', 'U', n, a(1, 1), lead_dim(a), b(1, 1), lead_dim(b), M_ZERO, M_ZERO, &
     1, k, abstol, m, e(1), v(1, 1), lead_dim(v), work(1), -1, iwork(1), ifail(1), info)
   if(info /= 0) then
-    write(message%lines(1),'(3a,i5)') 'In dlowest_geneigensolve, LAPACK ', &
+    write(message_g%lines(1),'(3a,i5)') 'In dlowest_geneigensolve, LAPACK ', &
       TOSTRING(X(sygvx)), ' workspace query returned error message ', info
-    call message%fatal(1)
+    call message_g%fatal(1)
   end if  
   lwork = int(work(1))
   SAFE_DEALLOCATE_A(work)
@@ -324,7 +324,7 @@ subroutine dlowest_geneigensolve(k, n, a, b, e, v, bof, err_code)
 
   if(info /= 0) then
     if(optional_default(bof, .true.)) then
-      write(message%lines(1),'(3a,i5)') 'In dlowest_geneigensolve, LAPACK ', &
+      write(message_g%lines(1),'(3a,i5)') 'In dlowest_geneigensolve, LAPACK ', &
         TOSTRING(X(sygvx)), ' returned error message ', info
 !        INFO    (output) INTEGER
 !*          = 0:  successful exit
@@ -338,13 +338,13 @@ subroutine dlowest_geneigensolve(k, n, a, b, e, v, bof, err_code)
 !*                    The factorization of B could not be completed and
 !*                    no eigenvalues or eigenvectors were computed.
       if(info < 0) then
-        write(message%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
+        write(message_g%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
       else if(info <= n) then
-        write(message%lines(2), *) info, ' eigenvectors failed to converge: ', ifail(1:info)
+        write(message_g%lines(2), *) info, ' eigenvectors failed to converge: ', ifail(1:info)
       else
-        write(message%lines(2), '(a,i5,a)') 'The leading minor of order ', info - n, ' of B is not positive definite.'
+        write(message_g%lines(2), '(a,i5,a)') 'The leading minor of order ', info - n, ' of B is not positive definite.'
       end if
-      call message%fatal(2)
+      call message_g%fatal(2)
     else
       if(present(bof)) then
         bof = .true.
@@ -393,9 +393,9 @@ subroutine zlowest_geneigensolve(k, n, a, b, e, v, bof, err_code)
   call X(hegvx)(1, 'V', 'I', 'U', n, a(1, 1), lead_dim(a), b(1, 1), lead_dim(b), M_ZERO, M_ZERO, &
     1, k, abstol, m, e(1), v(1, 1), lead_dim(v), work(1), -1, rwork(1), iwork(1), ifail(1), info)
   if(info /= 0) then
-    write(message%lines(1),'(3a,i5)') 'In zlowest_geneigensolve, LAPACK ', &
+    write(message_g%lines(1),'(3a,i5)') 'In zlowest_geneigensolve, LAPACK ', &
       TOSTRING(X(hegvx)), ' workspace query returned error message ', info
-    call message%fatal(1)
+    call message_g%fatal(1)
   end if  
   lwork = int(real(work(1)))
   SAFE_DEALLOCATE_A(work)
@@ -407,7 +407,7 @@ subroutine zlowest_geneigensolve(k, n, a, b, e, v, bof, err_code)
 
   if(info /= 0) then
     if(optional_default(bof, .true.)) then
-      write(message%lines(1),'(3a,i5)') 'In zlowest_geneigensolve, LAPACK ', &
+      write(message_g%lines(1),'(3a,i5)') 'In zlowest_geneigensolve, LAPACK ', &
         TOSTRING(X(hegvx)), ' returned error message ', info
 !        INFO    (output) INTEGER
 !*          = 0:  successful exit
@@ -421,13 +421,13 @@ subroutine zlowest_geneigensolve(k, n, a, b, e, v, bof, err_code)
 !*                    The factorization of B could not be completed and
 !*                    no eigenvalues or eigenvectors were computed.
       if(info < 0) then
-        write(message%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
+        write(message_g%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
       else if(info <= n) then
-        write(message%lines(2), *) info, ' eigenvectors failed to converge: ', ifail(1:info)
+        write(message_g%lines(2), *) info, ' eigenvectors failed to converge: ', ifail(1:info)
       else
-        write(message%lines(2), '(a,i5,a)') 'The leading minor of order ', info - n, ' of B is not positive definite.'
+        write(message_g%lines(2), '(a,i5,a)') 'The leading minor of order ', info - n, ' of B is not positive definite.'
       end if
-      call message%fatal(2)      
+      call message_g%fatal(2)      
     else
       if(present(bof)) then
         bof = .true.
@@ -471,7 +471,7 @@ subroutine deigensolve(n, a, e, bof, err_code)
 
   if(info /= 0) then
     if(optional_default(bof, .true.)) then
-      write(message%lines(1),'(3a,i5)') 'In deigensolve, LAPACK ', TOSTRING(X(syev)), ' returned error message ', info
+      write(message_g%lines(1),'(3a,i5)') 'In deigensolve, LAPACK ', TOSTRING(X(syev)), ' returned error message ', info
 !*  INFO    (output) INTEGER
 !*          = 0:  successful exit
 !*          < 0:  if INFO = -i, the i-th argument had an illegal value
@@ -479,11 +479,11 @@ subroutine deigensolve(n, a, e, bof, err_code)
 !*                off-diagonal elements of an intermediate tridiagonal
 !*                form did not converge to zero.
       if(info < 0) then
-        write(message%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
+        write(message_g%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
       else
-        write(message%lines(2), '(i5,a)') info, ' off-diagonal elements of an intermediate tridiagonal did not converge to zero.'
+        write(message_g%lines(2), '(i5,a)') info, ' off-diagonal elements of an intermediate tridiagonal did not converge to zero.'
       end if
-      call message%fatal(2)
+      call message_g%fatal(2)
     else
       if(present(bof)) then
         bof = .true.
@@ -531,7 +531,7 @@ subroutine zeigensolve(n, a, e, bof, err_code)
 
   if(info /= 0) then
     if(optional_default(bof, .true.)) then
-      write(message%lines(1),'(3a,i5)') 'In zeigensolve, LAPACK ', TOSTRING(X(heev)), ' returned error message ', info
+      write(message_g%lines(1),'(3a,i5)') 'In zeigensolve, LAPACK ', TOSTRING(X(heev)), ' returned error message ', info
 !*  INFO    (output) INTEGER
 !*          = 0:  successful exit
 !*          < 0:  if INFO = -i, the i-th argument had an illegal value
@@ -539,11 +539,11 @@ subroutine zeigensolve(n, a, e, bof, err_code)
 !*                off-diagonal elements of an intermediate tridiagonal
 !*                form did not converge to zero.
       if(info < 0) then
-        write(message%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
+        write(message_g%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
       else
-        write(message%lines(2), '(i5,a)') info, ' off-diagonal elements of an intermediate tridiagonal did not converge to zero.'
+        write(message_g%lines(2), '(i5,a)') info, ' off-diagonal elements of an intermediate tridiagonal did not converge to zero.'
       end if
-      call message%fatal(2)
+      call message_g%fatal(2)
     else
       if(present(bof)) then
         bof = .true.
@@ -589,9 +589,9 @@ subroutine dlowest_eigensolve(k, n, a, e, v)
   call X(syevx)('V', 'I', 'U', n, a(1, 1), n, M_ZERO, M_ZERO, &
     1, k, abstol, m, e(1), v(1, 1), n, work(1), -1, iwork(1), ifail(1), info)
   if(info /= 0) then
-    write(message%lines(1),'(3a,i5)') 'In dlowest_eigensolve, LAPACK ', &
+    write(message_g%lines(1),'(3a,i5)') 'In dlowest_eigensolve, LAPACK ', &
       TOSTRING(X(syevx)), ' workspace query returned error message ', info
-    call message%fatal(1)
+    call message_g%fatal(1)
   end if
   lwork = int(work(1))
   SAFE_DEALLOCATE_A(work)
@@ -602,7 +602,7 @@ subroutine dlowest_eigensolve(k, n, a, e, v)
   SAFE_DEALLOCATE_A(work)
 
   if(info /= 0) then
-    write(message%lines(1),'(3a,i5)') &
+    write(message_g%lines(1),'(3a,i5)') &
       'In dlowest_eigensolve, LAPACK ', TOSTRING(X(syevx)), ' returned error message ', info
 !    http://www.netlib.org/lapack/explore-3.1.1-html/dsyevx.f.html
 !*  INFO    (output) INTEGER
@@ -611,11 +611,11 @@ subroutine dlowest_eigensolve(k, n, a, e, v)
 !*          > 0:  if INFO = i, then i eigenvectors failed to converge.
 !*                Their indices are stored in array IFAIL.
     if(info < 0) then
-      write(message%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
+      write(message_g%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
     else
-      write(message%lines(2), *) info, ' eigenvectors failed to converge: ', ifail(1:info)
+      write(message_g%lines(2), *) info, ' eigenvectors failed to converge: ', ifail(1:info)
     end if
-    call message%fatal(2)
+    call message_g%fatal(2)
   end if
 
   POP_SUB(dlowest_eigensolve)
@@ -648,9 +648,9 @@ subroutine zlowest_eigensolve(k, n, a, e, v)
   call X(heevx)('V', 'I', 'U', n, a(1, 1), n, M_ZERO, M_ZERO, &
     1, k, abstol, m, e(1), v(1, 1), n, work(1), -1, iwork(1), ifail(1), info)
   if(info /= 0) then
-    write(message%lines(1),'(3a,i5)') 'In zlowest_eigensolve, LAPACK ', &
+    write(message_g%lines(1),'(3a,i5)') 'In zlowest_eigensolve, LAPACK ', &
       TOSTRING(X(heevx)), ' workspace query returned error message ', info
-    call message%fatal(1)
+    call message_g%fatal(1)
   end if  
   lwork = int(work(1))
   SAFE_DEALLOCATE_A(work)
@@ -661,7 +661,7 @@ subroutine zlowest_eigensolve(k, n, a, e, v)
   SAFE_DEALLOCATE_A(work)
 
   if(info /= 0) then
-    write(message%lines(1),'(3a,i5)') &
+    write(message_g%lines(1),'(3a,i5)') &
       'In zlowest_eigensolve, LAPACK ', TOSTRING(X(heevx)), ' returned error message ', info
 !    http://www.netlib.org/lapack/explore-3.1.1-html/zheevx.f.html
 !*  INFO    (output) INTEGER
@@ -670,11 +670,11 @@ subroutine zlowest_eigensolve(k, n, a, e, v)
 !*          > 0:  if INFO = i, then i eigenvectors failed to converge.
 !*                Their indices are stored in array IFAIL.
     if(info < 0) then
-      write(message%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
+      write(message_g%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
     else
-      write(message%lines(2), *) info, ' eigenvectors failed to converge: ', ifail(1:info)
+      write(message_g%lines(2), *) info, ' eigenvectors failed to converge: ', ifail(1:info)
     end if
-    call message%fatal(2)
+    call message_g%fatal(2)
   end if
 
   POP_SUB(zlowest_eigensolve)
@@ -720,8 +720,8 @@ R_TYPE function X(determinant)(n, a, invert) result(d)
 
   call X(getrf)(n, n, a(1, 1), n, ipiv(1), info)
   if(info < 0) then
-    write(message%lines(1), '(5a, i5)') 'In ', TOSTRING(X(determinant)), ', LAPACK ', TOSTRING(X(getrf)), ' returned info = ', info
-    call message%fatal(1)
+    write(message_g%lines(1), '(5a, i5)') 'In ', TOSTRING(X(determinant)), ', LAPACK ', TOSTRING(X(getrf)), ' returned info = ', info
+    call message_g%fatal(1)
   end if
 
   d = M_ONE
@@ -736,7 +736,7 @@ R_TYPE function X(determinant)(n, a, invert) result(d)
   if(optional_default(invert, .true.)) then
     call X(getri)(n, a(1, 1), n, ipiv(1), work(1), n, info)
     if(info /= 0) then
-      write(message%lines(1), '(5a, i5)') 'In ', TOSTRING(X(determinant)), ', LAPACK ', TOSTRING(X(getri)), ' returned info = ', info
+      write(message_g%lines(1), '(5a, i5)') 'In ', TOSTRING(X(determinant)), ', LAPACK ', TOSTRING(X(getri)), ' returned info = ', info
 !    http://www.netlib.org/lapack/explore-3.1.1-html/zgetri.f.html
 !*  INFO    (output) INTEGER
 !*          = 0:  successful exit
@@ -744,11 +744,11 @@ R_TYPE function X(determinant)(n, a, invert) result(d)
 !*          > 0:  if INFO = i, U(i,i) is exactly zero; the matrix is
 !*                singular and its inverse could not be computed.
     if(info < 0) then
-      write(message%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
+      write(message_g%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
     else
-      write(message%lines(2), '(a,i5,a)') 'Diagonal element ', info, ' of U is 0; matrix is singular.'
+      write(message_g%lines(2), '(a,i5,a)') 'Diagonal element ', info, ' of U is 0; matrix is singular.'
     end if
-    call message%fatal(2)
+    call message_g%fatal(2)
     end if
   end if
 
@@ -800,13 +800,13 @@ subroutine X(sym_inverter)(uplo, n, a)
 
   call X(sytrf)(uplo, n, a(1, 1), lead_dim(a), ipiv(1), work(1), n, info)
   if(info < 0) then
-    write(message%lines(1), '(5a, i5)') 'In ', TOSTRING(X(sym_inverter)), ', LAPACK ', TOSTRING(X(sytrf)), ' returned info = ', info
-    call message%fatal(1)
+    write(message_g%lines(1), '(5a, i5)') 'In ', TOSTRING(X(sym_inverter)), ', LAPACK ', TOSTRING(X(sytrf)), ' returned info = ', info
+    call message_g%fatal(1)
   end if
 
   call X(sytri)(uplo, n, a(1, 1), lead_dim(a), ipiv(1), work(1), info)
   if(info /= 0) then
-    write(message%lines(1), '(5a, i5)') 'In ', TOSTRING(X(sym_inverter)), ', LAPACK ', TOSTRING(X(sytri)), ' returned info = ', info
+    write(message_g%lines(1), '(5a, i5)') 'In ', TOSTRING(X(sym_inverter)), ', LAPACK ', TOSTRING(X(sytri)), ' returned info = ', info
 !    http://www.netlib.org/lapack/explore-3.1.1-html/dsytri.f.html
 !*  INFO    (output) INTEGER
 !*          = 0:  successful exit
@@ -814,11 +814,11 @@ subroutine X(sym_inverter)(uplo, n, a)
 !*          > 0:  if INFO = i, U(i,i) is exactly zero; the matrix is
 !*                singular and its inverse could not be computed.
     if(info < 0) then
-      write(message%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
+      write(message_g%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
     else
-      write(message%lines(2), '(a,i5,a)') 'Diagonal element ', info, ' of D is 0; matrix is singular.'
+      write(message_g%lines(2), '(a,i5,a)') 'Diagonal element ', info, ' of D is 0; matrix is singular.'
     end if
-    call message%fatal(2)
+    call message_g%fatal(2)
   end if
 
   SAFE_DEALLOCATE_A(work)
@@ -861,7 +861,7 @@ subroutine dlinsyssolve(n, nrhs, a, b, x)
     rcond, ferr(1), berr(1), work(1), iwork(1), info)
 
   if(info /= 0) then
-    write(message%lines(1), '(3a, i5)') 'In dlinsyssolve, LAPACK ', TOSTRING(X(gesvx)), ' returned info = ', info
+    write(message_g%lines(1), '(3a, i5)') 'In dlinsyssolve, LAPACK ', TOSTRING(X(gesvx)), ' returned info = ', info
 !*  INFO    (output) INTEGER
 !*          = 0:  successful exit
 !*          < 0:  if INFO = -i, the i-th argument had an illegal value
@@ -878,14 +878,14 @@ subroutine dlinsyssolve(n, nrhs, a, b, x)
 !*                       computed solution can be more accurate than the
 !*                       value of RCOND would suggest.
     if(info < 0) then
-      write(message%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
-      call message%fatal(2)      
+      write(message_g%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
+      call message_g%fatal(2)      
     else if(info == n+1) then
-      message%lines(2) = '(reciprocal of the condition number is less than machine precision)'
-      call message%warning(2)
+      message_g%lines(2) = '(reciprocal of the condition number is less than machine precision)'
+      call message_g%warning(2)
     else
-      write(message%lines(2), '(a,i5,a)') 'Diagonal element ', info, ' of U is 0; matrix is singular.'
-      call message%fatal(2)
+      write(message_g%lines(2), '(a,i5,a)') 'Diagonal element ', info, ' of U is 0; matrix is singular.'
+      call message_g%fatal(2)
     end if
   end if
 
@@ -936,7 +936,7 @@ subroutine zlinsyssolve(n, nrhs, a, b, x)
   call X(gesvx) ("N", "N", n, nrhs, a(1, 1), n, af(1, 1), n, ipiv(1), equed, r(1), c(1), b(1, 1), n, x(1, 1), n, &
     rcond, ferr(1), berr(1), work(1), rwork(1), info)
   if(info /= 0) then
-    write(message%lines(1), '(3a, i5)') 'In zlinsyssolve, LAPACK ', TOSTRING(X(gesvx)), ' returned info = ', info
+    write(message_g%lines(1), '(3a, i5)') 'In zlinsyssolve, LAPACK ', TOSTRING(X(gesvx)), ' returned info = ', info
 !    http://www.netlib.org/lapack/explore-3.1.1-html/zgesvx.f.html
 !*  INFO    (output) INTEGER
 !*          = 0:  successful exit
@@ -954,14 +954,14 @@ subroutine zlinsyssolve(n, nrhs, a, b, x)
 !*                       computed solution can be more accurate than the
 !*                       value of RCOND would suggest.
     if(info < 0) then
-      write(message%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
-      call message%fatal(2)      
+      write(message_g%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
+      call message_g%fatal(2)      
     else if(info == n+1) then
-      message%lines(2) = '(reciprocal of the condition number is less than machine precision)'
-      call message%warning(2)
+      message_g%lines(2) = '(reciprocal of the condition number is less than machine precision)'
+      call message_g%warning(2)
     else
-      write(message%lines(2), '(a,i5,a)') 'Diagonal element ', info, ' of U is 0; matrix is singular.'
-      call message%fatal(2)
+      write(message_g%lines(2), '(a,i5,a)') 'Diagonal element ', info, ' of U is 0; matrix is singular.'
+      call message_g%fatal(2)
     end if
   end if
 
@@ -1019,7 +1019,7 @@ subroutine dsingular_value_decomp(m, n, a, u, vt, sg_values)
     'A', 'A', m, n, a(1, 1), m, sg_values(1), u(1, 1), m, vt(1, 1), n, work(1), lwork, info )
 
   if(info /= 0) then
-    write(message%lines(1), '(3a, i7)') 'In dsingular_value_decomp, LAPACK ', TOSTRING(X(gesvd)), ' returned info = ', info
+    write(message_g%lines(1), '(3a, i7)') 'In dsingular_value_decomp, LAPACK ', TOSTRING(X(gesvd)), ' returned info = ', info
 !    http://www.netlib.org/lapack/explore-3.1.1-html/dgesvd.f.html
 !*  INFO    (output) INTEGER
 !*          = 0:  successful exit.
@@ -1029,11 +1029,11 @@ subroutine dsingular_value_decomp(m, n, a, u, vt, sg_values)
 !*                did not converge to zero. See the description of WORK
 !*                above for details.
     if(info < 0) then
-      write(message%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
+      write(message_g%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
     else
-      write(message%lines(2), '(i5,a)') info, ' superdiagonal elements of an intermediate bidiagonal did not converge to zero.'
+      write(message_g%lines(2), '(i5,a)') info, ' superdiagonal elements of an intermediate bidiagonal did not converge to zero.'
     end if
-    call message%fatal(2)
+    call message_g%fatal(2)
   end if
 
   SAFE_DEALLOCATE_A(work)
@@ -1075,8 +1075,8 @@ subroutine dsvd_inverse(m, n, a, threshold)
       tmp = M_ZERO
       do l = 1, minmn
         if (sg_values(l) < threshold_) then
-          !write(message%lines(1), '(a)') 'In dsvd_inverse: singular value below threshold.'
-          !call message%warning(1)
+          !write(message_g%lines(1), '(a)') 'In dsvd_inverse: singular value below threshold.'
+          !call message_g%warning(1)
           sg_inverse = M_ZERO
         else
           sg_inverse = M_ONE/sg_values(l)
@@ -1136,7 +1136,7 @@ subroutine zsingular_value_decomp(m, n, a, u, vt, sg_values)
     'A', 'A', m, n, a(1, 1), m, sg_values(1), u(1, 1), m, vt(1, 1), n, work(1), lwork, rwork(1), info )
 
   if(info /= 0) then
-    write(message%lines(1), '(3a, i5)') 'In zsingular_value_decomp, LAPACK ', TOSTRING(X(gesvd)), ' returned info = ', info
+    write(message_g%lines(1), '(3a, i5)') 'In zsingular_value_decomp, LAPACK ', TOSTRING(X(gesvd)), ' returned info = ', info
 !    http://www.netlib.org/lapack/explore-3.1.1-html/zgesvd.f.html
 !*  INFO    (output) INTEGER
 !*          = 0:  successful exit.
@@ -1146,11 +1146,11 @@ subroutine zsingular_value_decomp(m, n, a, u, vt, sg_values)
 !*                did not converge to zero. See the description of RWORK
 !*                above for details.
     if(info < 0) then
-      write(message%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
+      write(message_g%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
     else
-      write(message%lines(2), '(i5,a)') info, ' superdiagonal elements of an intermediate bidiagonal did not converge to zero.'
+      write(message_g%lines(2), '(i5,a)') info, ' superdiagonal elements of an intermediate bidiagonal did not converge to zero.'
     end if
-    call message%fatal(2)
+    call message_g%fatal(2)
   end if
 
   SAFE_DEALLOCATE_A(rwork)
@@ -1193,8 +1193,8 @@ subroutine zsvd_inverse(m, n, a, threshold)
       tmp = M_ZERO
       do l = 1, minmn
         if (sg_values(l) < threshold_) then
-          write(message%lines(1), '(a)') 'In zsvd_inverse: singular value below threshold.'
-          call message%warning(1)
+          write(message_g%lines(1), '(a)') 'In zsvd_inverse: singular value below threshold.'
+          call message_g%warning(1)
           sg_inverse = M_ZERO
         else
           sg_inverse = M_ONE/sg_values(l)
@@ -1240,7 +1240,7 @@ subroutine X(invert_upper_triangular)(n, a)
   call X(trtri)('U', 'N', n, a(1, 1), n, info)
 
   if(info /= 0) then
-    write(message%lines(1), '(5a,i5)') &
+    write(message_g%lines(1), '(5a,i5)') &
       'In ', TOSTRING(Xinvert_upper_triangular), ', LAPACK ', TOSTRING(X(trtri)), ' returned error message ', info
 !http://www.netlib.org/lapack/explore-3.1.1-html/dtrtri.f.html
 !*  INFO    (output) INTEGER
@@ -1249,11 +1249,11 @@ subroutine X(invert_upper_triangular)(n, a)
 !*          > 0: if INFO = i, A(i,i) is exactly zero.  The triangular
 !*               matrix is singular and its inverse can not be computed.
     if(info < 0) then
-      write(message%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
+      write(message_g%lines(2), '(a,i5,a)') 'Argument number ', -info, ' had an illegal value.'
     else
-      write(message%lines(2), '(a,i5,a)') 'Diagonal element ', info, ' is 0; matrix is singular.'
+      write(message_g%lines(2), '(a,i5,a)') 'Diagonal element ', info, ' is 0; matrix is singular.'
     end if
-    call message%fatal(2)
+    call message_g%fatal(2)
   end if
 
   POP_SUB(X(invert_upper_triangular))

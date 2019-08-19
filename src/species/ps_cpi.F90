@@ -67,8 +67,8 @@ contains
 
     inquire(file = filename, exist = found)
     if(.not.found) then
-      call message%write("Pseudopotential file '" // trim(filename) // "' not found")
-      call message%fatal()
+      call message_g%write("Pseudopotential file '" // trim(filename) // "' not found")
+      call message_g%fatal()
     end if
     
     iunit = io_open(filename, namespace, action='read', form='formatted', status='old')

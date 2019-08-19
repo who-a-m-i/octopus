@@ -54,7 +54,7 @@ subroutine X(oct_exchange_operator)(this, der, hpsi, ist, ik)
      end do
 
   case(SPINORS)
-    call message%not_implemented("Function oct_exchange_operator_all for spin_polarized or spinors")
+    call message_g%not_implemented("Function oct_exchange_operator_all for spin_polarized or spinors")
   end select
 
   SAFE_DEALLOCATE_A(psi)

@@ -121,9 +121,9 @@ contains
       end if
 
       if(l /= ndown-1) then
-        message%lines(1) = 'Unexpected angular momentum'
-        message%lines(2) = 'Pseudopotential should be ordered by increasing l'
-        call message%warning(2)
+        message_g%lines(1) = 'Unexpected angular momentum'
+        message_g%lines(2) = 'Pseudopotential should be ordered by increasing l'
+        call message_g%warning(2)
       end if
       
       psf%vps(2:, ndown) = psf%vps(2:, ndown) / psf%rofi(2:)
@@ -141,9 +141,9 @@ contains
       end if
 
       if( (l /= nup) .and. (psf%irel == 'rel') ) then
-        message%lines(1) = 'Unexpected angular momentum'
-        message%lines(2) = 'Pseudopotential should be ordered by increasing l'
-        call message%warning(2)
+        message_g%lines(1) = 'Unexpected angular momentum'
+        message_g%lines(2) = 'Pseudopotential should be ordered by increasing l'
+        call message_g%warning(2)
       end if
 
       psf%vso(2:, nup) = psf%vso(2:, nup) / psf%rofi(2:)

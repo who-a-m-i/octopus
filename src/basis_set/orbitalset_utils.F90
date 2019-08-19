@@ -100,7 +100,7 @@ contains
 
     PUSH_SUB(orbitalset_init_intersite)
 
-    call message%print_stress(stdout, "Intersite Coulomb integrals")
+    call message_g%print_stress(stdout, "Intersite Coulomb integrals")
 
     !From the formula and the coding point of view, it is interesting to split the intersite terms
     !into the neighbors (between two different atoms) and periodic copies (same atom).
@@ -159,8 +159,8 @@ contains
         call periodic_copy_end(pc)
       end do
 
-      write(message%lines(1),'(a, i3, a)')    'Intersite interaction will be computed for ', this%nneighbors, ' neighboring atoms.'
-      call message%info(1)
+      write(message_g%lines(1),'(a, i3, a)')    'Intersite interaction will be computed for ', this%nneighbors, ' neighboring atoms.'
+      call message_g%info(1)
 
 
       SAFE_ALLOCATE(this%coulomb_IIJJ(1:this%norbs,1:this%norbs,1:maxnorbs,1:maxnorbs,1:this%nneighbors))
@@ -179,9 +179,9 @@ contains
         call submesh_merge(sm, sb, der%mesh, this%sphere, os(ios)%sphere, &
                        shift = this%V_ij(inn, 1:sb%dim))
 
-        write(message%lines(1),'(a, i3, a, f6.3, a, i5, a)') 'Neighbor ', inn, ' is located at ', &
+        write(message_g%lines(1),'(a, i3, a, f6.3, a, i5, a)') 'Neighbor ', inn, ' is located at ', &
                              this%V_ij(inn, sb%dim+1), ' Bohr and has ', sm%np, ' grid points.'
-        call message%info(1)
+        call message_g%info(1)
 
         SAFE_ALLOCATE(orb(1:sm%np, 1:max(this%norbs,os(ios)%norbs),1:2))
         SAFE_ALLOCATE(nn(1:sm%np))
@@ -250,7 +250,7 @@ contains
 
     end if
 
-    call message%print_stress(stdout)
+    call message_g%print_stress(stdout)
 
     POP_SUB(orbitalset_init_intersite)
   end subroutine orbitalset_init_intersite

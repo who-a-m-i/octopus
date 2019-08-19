@@ -94,17 +94,17 @@
       end do
       call parse_block_end(blk)
     else
-      message%lines(1) = 'If OCTTargetOperator = oct_tg_velocity, then you must give the shape'
-      message%lines(2) = 'of this target in the block "OCTVelocityTarget".'
-      call message%fatal(2)
+      message_g%lines(1) = 'If OCTTargetOperator = oct_tg_velocity, then you must give the shape'
+      message_g%lines(2) = 'of this target in the block "OCTVelocityTarget".'
+      call message_g%fatal(2)
     end if
        
     tg%move_ions = ion_dynamics_ions_move(td%ions)
     if(tg%move_ions) then
-      message%lines(1) = 'If OCTTargetOperator = oct_tg_velocity, then you must not allow the ions'
-      message%lines(2) = 'to move. If you want to move the ions, then you can get the same functionality'
-      message%lines(3) = 'with OCTTargetOperator = oct_tg_classical.'
-      call message%fatal(3)
+      message_g%lines(1) = 'If OCTTargetOperator = oct_tg_velocity, then you must not allow the ions'
+      message_g%lines(2) = 'to move. If you want to move the ions, then you can get the same functionality'
+      message_g%lines(3) = 'with OCTTargetOperator = oct_tg_classical.'
+      call message_g%fatal(3)
     end if
        
     if(oct%algorithm  ==  OPTION__OCTSCHEME__OCT_CG .or. oct%algorithm == OPTION__OCTSCHEME__OCT_BFGS) then
@@ -117,10 +117,10 @@
         end do
         call parse_block_end(blk)
       else
-        message%lines(1) = 'If OCTTargetOperator = oct_tg_velocity, and'
-        message%lines(2) = 'OCTScheme = oct_cg, or OCTScheme = oct_bfgs then you must define the'
-        message%lines(3) = 'blocks "OCTVelocityTarget" AND "OCTVelocityDerivatives"'
-        call message%fatal(3)
+        message_g%lines(1) = 'If OCTTargetOperator = oct_tg_velocity, and'
+        message_g%lines(2) = 'OCTScheme = oct_cg, or OCTScheme = oct_bfgs then you must define the'
+        message_g%lines(3) = 'blocks "OCTVelocityTarget" AND "OCTVelocityDerivatives"'
+        call message_g%fatal(3)
       end if
     end if
           

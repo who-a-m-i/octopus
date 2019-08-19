@@ -136,7 +136,7 @@ contains
     !%End
     call parse_variable(namespace, 'TDDeltaKickTime', M_ZERO, kick%time, units_inp%time)
     if(kick%time > M_ZERO) then
-      call message%experimental('TDDeltaKickTime > 0')
+      call message_g%experimental('TDDeltaKickTime > 0')
     end if
 
     !%Variable TDDeltaStrength
@@ -202,9 +202,9 @@ contains
     select case (kick%delta_strength_mode)
     case (KICK_DENSITY_MODE)
     case (KICK_SPIN_MODE, KICK_SPIN_DENSITY_MODE)
-      if (nspin == UNPOLARIZED) call message%input_error('TDDeltaStrengthMode')
+      if (nspin == UNPOLARIZED) call message_g%input_error('TDDeltaStrengthMode')
     case default
-      call message%input_error('TDDeltaStrengthMode')
+      call message_g%input_error('TDDeltaStrengthMode')
     end select
 
     if(parse_is_defined(namespace, 'TDDeltaUserDefined')) then
@@ -251,7 +251,7 @@ contains
         call parse_block_integer(blk, irow - 1, 0, kick%l(irow))
         call parse_block_integer(blk, irow - 1, 1, kick%m(irow))
         call parse_block_float(blk, irow - 1, 2, kick%weight(irow))
-        if( (kick%l(irow) < 0) .or. (abs(kick%m(irow)) > abs(kick%l(irow))) ) call message%input_error('TDkickFunction')
+        if( (kick%l(irow) < 0) .or. (abs(kick%m(irow)) > abs(kick%l(irow))) ) call message_g%input_error('TDkickFunction')
       end do
 
     else
@@ -288,7 +288,7 @@ contains
 
       call parse_variable(namespace, 'TDPolarizationDirection', 0, kick%pol_dir)
 
-      if(kick%pol_dir < 1 .or. kick%pol_dir > dim) call message%input_error('TDPolarizationDirection')
+      if(kick%pol_dir < 1 .or. kick%pol_dir > dim) call message_g%input_error('TDPolarizationDirection')
       
       !%Variable TDPolarization
       !%Type block
@@ -329,7 +329,7 @@ contains
       if(parse_block(namespace, 'TDPolarization', blk)==0) then
         n_rows = parse_block_n(blk)
         
-        if(n_rows < dim) call message%input_error('TDPolarization')
+        if(n_rows < dim) call message_g%input_error('TDPolarization')
         
         do irow = 1, n_rows
           do idir = 1, 3
@@ -353,8 +353,8 @@ contains
       end do
 
       if(any(abs(kick%pol(1:periodic_dim, :)) > M_EPSILON)) then
-        message%lines(1) = "Kick cannot be applied in a periodic direction. Use GaugeVectorField instead."
-        call message%fatal(1)
+        message_g%lines(1) = "Kick cannot be applied in a periodic direction. Use GaugeVectorField instead."
+        call message_g%fatal(1)
       end if
 
       !%Variable TDPolarizationWprime
@@ -385,8 +385,8 @@ contains
 
     ! for non-dipole, it is more complicated to check whether it is actually in the periodic direction
     if(periodic_dim > 0) then
-      message%lines(1) = "Kicks cannot be applied correctly in periodic directions."
-      call message%warning(1)
+      message_g%lines(1) = "Kicks cannot be applied correctly in periodic directions."
+      call message_g%warning(1)
     end if
 
     !%Variable TDMomentumTransfer
@@ -561,8 +561,8 @@ contains
     end if
 
     if(kick%function_mode < 0) then
-      message%lines(1) = "No kick could be read from file."
-      call message%fatal(1)
+      message_g%lines(1) = "No kick could be read from file."
+      call message_g%fatal(1)
     end if
 
     POP_SUB(kick_read)
@@ -677,20 +677,20 @@ contains
 
       select case (kick%qkick_mode)
         case (QKICKMODE_COS)
-          write(message%lines(1), '(a,3F9.5,a)') 'Info: Using cos(q.r) field with q = (', kick%qvector(:), ')'
+          write(message_g%lines(1), '(a,3F9.5,a)') 'Info: Using cos(q.r) field with q = (', kick%qvector(:), ')'
         case (QKICKMODE_SIN)
-          write(message%lines(1), '(a,3F9.5,a)') 'Info: Using sin(q.r) field with q = (', kick%qvector(:), ')'
+          write(message_g%lines(1), '(a,3F9.5,a)') 'Info: Using sin(q.r) field with q = (', kick%qvector(:), ')'
         case (QKICKMODE_SIN + QKICKMODE_COS)
-          write(message%lines(1), '(a,3F9.5,a)') 'Info: Using sin(q.r)+cos(q.r) field with q = (', kick%qvector(:), ')'
+          write(message_g%lines(1), '(a,3F9.5,a)') 'Info: Using sin(q.r)+cos(q.r) field with q = (', kick%qvector(:), ')'
         case (QKICKMODE_EXP)
-          write(message%lines(1), '(a,3F9.5,a)') 'Info: Using exp(iq.r) field with q = (', kick%qvector(:), ')'
+          write(message_g%lines(1), '(a,3F9.5,a)') 'Info: Using exp(iq.r) field with q = (', kick%qvector(:), ')'
         case (QKICKMODE_BESSEL)
-          write(message%lines(1), '(a,I2,a,I2,a,F9.5)') 'Info: Using j_l(qr)*Y_lm(r) field with (l,m)= (', &
+          write(message_g%lines(1), '(a,I2,a,I2,a,F9.5)') 'Info: Using j_l(qr)*Y_lm(r) field with (l,m)= (', &
             kick%qbessel_l, ",", kick%qbessel_m,') and q = ', kick%qlength
         case default
-           write(message%lines(1), '(a,3F9.6,a)') 'Info: Unknown field type!'
+           write(message_g%lines(1), '(a,3F9.6,a)') 'Info: Unknown field type!'
       end select
-      call message%info(1)
+      call message_g%info(1)
 
       kick_function = M_z0
       do ip = 1, np
@@ -819,24 +819,24 @@ contains
         kick_function = kick_function + kick_pcm_function
       end if
 
-      write(message%lines(1),'(a,f11.6)') 'Info: Applying delta kick: k = ', kick%delta_strength
+      write(message_g%lines(1),'(a,f11.6)') 'Info: Applying delta kick: k = ', kick%delta_strength
       select case (kick%function_mode)
       case (KICK_FUNCTION_DIPOLE)
-        message%lines(2) = "Info: kick function: dipole."
+        message_g%lines(2) = "Info: kick function: dipole."
       case (KICK_FUNCTION_MULTIPOLE)
-        message%lines(2) = "Info: kick function: multipoles."
+        message_g%lines(2) = "Info: kick function: multipoles."
       case (KICK_FUNCTION_USER_DEFINED)
-        message%lines(2) = "Info: kick function: user defined function."
+        message_g%lines(2) = "Info: kick function: user defined function."
       end select
       select case (kick%delta_strength_mode)
       case (KICK_DENSITY_MODE)
-        message%lines(3) = "Info: Delta kick mode: Density mode"
+        message_g%lines(3) = "Info: Delta kick mode: Density mode"
       case (KICK_SPIN_MODE)
-        message%lines(3) = "Info: Delta kick mode: Spin mode"
+        message_g%lines(3) = "Info: Delta kick mode: Spin mode"
       case (KICK_SPIN_DENSITY_MODE)
-        message%lines(3) = "Info: Delta kick mode: Density + Spin modes"
+        message_g%lines(3) = "Info: Delta kick mode: Density + Spin modes"
       end select
-      call message%info(3)
+      call message_g%info(3)
 
       SAFE_ALLOCATE(psi(1:mesh%np, 1:st%d%dim))
 

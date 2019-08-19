@@ -402,9 +402,9 @@ contains
     PUSH_SUB(states_elec_freeze_orbitals)
 
     if(n >= st%nst) then
-      write(message%lines(1),'(a)') 'Attempting to freeze a number of orbitals which is larger or equal to'
-      write(message%lines(2),'(a)') 'the total number. The program has to stop.'
-      call message%fatal(2)
+      write(message_g%lines(1),'(a)') 'Attempting to freeze a number of orbitals which is larger or equal to'
+      write(message_g%lines(2),'(a)') 'the total number. The program has to stop.'
+      call message_g%fatal(2)
     end if
 
     ASSERT(states_are_complex(st))

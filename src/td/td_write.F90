@@ -294,33 +294,33 @@ contains
 
     call parse_variable(namespace, 'TDOutput', default, flags)
 
-    if(.not.varinfo_valid_option('TDOutput', flags, is_flag = .true.)) call message%input_error('TDOutput')
+    if(.not.varinfo_valid_option('TDOutput', flags, is_flag = .true.)) call message_g%input_error('TDOutput')
 
     do iout = 1, OUT_MAX
       writ%out(iout)%write = (bitand(flags, 2**(iout - 1)) /= 0)
     end do
 
     ! experimental stuff
-    if(writ%out(OUT_SPIN)%write) call message%experimental('TDOutput = spin')
-    if(writ%out(OUT_POPULATIONS)%write) call message%experimental('TDOutput = populations')
-    if(writ%out(OUT_PROJ)%write) call message%experimental('TDOutput = td_occup')
-    if(writ%out(OUT_ION_CH)%write) call message%experimental('TDOutput = ionization_channels')
-    if(writ%out(OUT_PARTIAL_CHARGES)%write) call message%experimental('TDOutput = partial_charges')
-    if(writ%out(OUT_KP_PROJ)%write) call message%experimental('TDOutput = td_kpoint_occup')
-    if(writ%out(OUT_FLOQUET)%write) call message%experimental('TDOutput = td_floquet')
-    if(writ%out(OUT_N_EX)%write) call message%experimental('TDOutput = n_excited_el')
+    if(writ%out(OUT_SPIN)%write) call message_g%experimental('TDOutput = spin')
+    if(writ%out(OUT_POPULATIONS)%write) call message_g%experimental('TDOutput = populations')
+    if(writ%out(OUT_PROJ)%write) call message_g%experimental('TDOutput = td_occup')
+    if(writ%out(OUT_ION_CH)%write) call message_g%experimental('TDOutput = ionization_channels')
+    if(writ%out(OUT_PARTIAL_CHARGES)%write) call message_g%experimental('TDOutput = partial_charges')
+    if(writ%out(OUT_KP_PROJ)%write) call message_g%experimental('TDOutput = td_kpoint_occup')
+    if(writ%out(OUT_FLOQUET)%write) call message_g%experimental('TDOutput = td_floquet')
+    if(writ%out(OUT_N_EX)%write) call message_g%experimental('TDOutput = n_excited_el')
 
     !See comment in zstates_elec_mpdotp
     if(simul_box_is_periodic(gr%sb) .and. writ%out(OUT_POPULATIONS)%write) then
-      call message%not_implemented("TDOutput populations for periodic systems")
+      call message_g%not_implemented("TDOutput populations for periodic systems")
     end if
 
 
     if(writ%out(OUT_KP_PROJ)%write.or.writ%out(OUT_FLOQUET)%write) then
       ! make sure this is not domain distributed
       if(gr%mesh%np /= gr%mesh%np_global) then
-        message%lines(1) = "TDOutput option td_kpoint_occup and td_floquet do not work with domain parallelization"
-        call message%fatal(1)
+        message_g%lines(1) = "TDOutput option td_kpoint_occup and td_floquet do not work with domain parallelization"
+        call message_g%fatal(1)
       end if
     end if
 
@@ -334,16 +334,16 @@ contains
     !%End
     call parse_variable(namespace, 'TDMultipoleLmax', 1, writ%lmax)
     if (writ%lmax < 0) then
-      write(message%lines(1), '(a,i6,a)') "Input: '", writ%lmax, "' is not a valid TDMultipoleLmax."
-      message%lines(2) = '(Must be TDMultipoleLmax >= 0 )'
-      call message%fatal(2)
+      write(message_g%lines(1), '(a,i6,a)') "Input: '", writ%lmax, "' is not a valid TDMultipoleLmax."
+      message_g%lines(2) = '(Must be TDMultipoleLmax >= 0 )'
+      call message_g%fatal(2)
     end if
-    call message%obsolete_variable(namespace, 'TDDipoleLmax', 'TDMultipoleLmax')
+    call message_g%obsolete_variable(namespace, 'TDDipoleLmax', 'TDMultipoleLmax')
 
     ! Compatibility test
     if( (writ%out(OUT_ACC)%write) .and. ions_move ) then
-      message%lines(1) = 'If harmonic spectrum is to be calculated, atoms should not be allowed to move.'
-      call message%fatal(1)
+      message_g%lines(1) = 'If harmonic spectrum is to be calculated, atoms should not be allowed to move.'
+      call message_g%fatal(1)
     end if
 
     rmin = geometry_min_distance(geo)
@@ -362,13 +362,13 @@ contains
       .or.writ%out(OUT_KP_PROJ)%write .or. writ%out(OUT_N_EX)%write) then
 
       if(st%parallel_in_states .and. writ%out(OUT_POPULATIONS)%write) then
-        message%lines(1) = "Options TDOutput = populations are not implemented for parallel in states."
-        call message%fatal(1)
+        message_g%lines(1) = "Options TDOutput = populations are not implemented for parallel in states."
+        call message_g%fatal(1)
       end if
 
       if (writ%out(OUT_N_EX)%write .and. st%parallel_in_states ) then
-        message%lines(1) = "Options TDOutput = n_excited_el is not implemented for parallel in states."
-        call message%fatal(1)
+        message_g%lines(1) = "Options TDOutput = n_excited_el is not implemented for parallel in states."
+        call message_g%fatal(1)
       end if
       
       if(.not.writ%out(OUT_KP_PROJ)%write.and..not.writ%out(OUT_N_EX)%write) then
@@ -388,8 +388,8 @@ contains
           call states_elec_look(restart_gs, ii, jj, writ%gs_st%nst, ierr)
           writ%gs_st%st_end = writ%gs_st%nst
         if(ierr /= 0) then
-          message%lines(1) = "Unable to read states information."
-          call message%fatal(1)
+          message_g%lines(1) = "Unable to read states information."
+          call message_g%fatal(1)
         end if
  
         ! do this only when not calculating populations, since all states are needed then
@@ -440,8 +440,8 @@ contains
 
       if(ierr /= 0 .and. ierr /= (writ%gs_st%st_end-writ%gs_st%st_start+1)*writ%gs_st%d%nik &
                                       *writ%gs_st%d%dim*writ%gs_st%mpi_grp%size) then
-        message%lines(1) = "Unable to read wavefunctions for TDOutput."
-        call message%fatal(1)
+        message_g%lines(1) = "Unable to read wavefunctions for TDOutput."
+        call message_g%fatal(1)
       end if
       call restart_end(restart_gs)
     end if
@@ -510,8 +510,8 @@ contains
     !%End
     call parse_variable(namespace, 'TDOutputComputeInterval', 50, writ%compute_interval)
     if(writ%compute_interval < 0) then
-      message%lines(1) = "TDOutputComputeInterval must be >= 0."
-      call message%fatal(1)
+      message_g%lines(1) = "TDOutputComputeInterval must be >= 0."
+      call message_g%fatal(1)
     end if
 
 
@@ -705,7 +705,7 @@ contains
     call parse_variable(namespace, 'TDOutputDFTU', default, flags)
 
     if(.not.varinfo_valid_option('TDOutputDFTU', flags, is_flag = .true.)) &
-      call message%input_error('TDOutputDFTU')
+      call message_g%input_error('TDOutputDFTU')
 
     do iout = 1, OUT_DFTU_MAX
       writ%out_dftu(iout)%write = (iand(flags, 2**(iout - 1)) /= 0)
@@ -2655,10 +2655,10 @@ contains
     !% 
     !%End
     call parse_variable(namespace, 'TDFloquetFrequency', M_ZERO, omega, units_inp%energy)
-    call message%print_var_value(stdout,'Frequency used for Floquet analysis', omega)
+    call message_g%print_var_value(stdout,'Frequency used for Floquet analysis', omega)
     if(abs(omega)<=M_EPSILON) then
-       message%lines(1) = "Please give a non-zero value for TDFloquetFrequency"
-       call message%fatal(1)
+       message_g%lines(1) = "Please give a non-zero value for TDFloquetFrequency"
+       call message_g%fatal(1)
     endif
 
     ! get time of one cycle
@@ -2673,7 +2673,7 @@ contains
     !%
     !%End 
     call parse_variable(namespace, 'TDFloquetSample',20 ,nt)
-    call message%print_var_value(stdout,'Number of Floquet time-sampling points', nT)
+    call message_g%print_var_value(stdout,'Number of Floquet time-sampling points', nT)
     dt = Tcycle/real(nT)
 
     !%Variable TDFloquetDimension
@@ -2685,12 +2685,12 @@ contains
     !%End
     call parse_variable(namespace, 'TDFloquetDimension',-1,Forder)
     if(Forder.ge.0) then
-       call message%print_var_value(stdout,'Order of multiphoton Floquet-Hamiltonian', Forder)
+       call message_g%print_var_value(stdout,'Order of multiphoton Floquet-Hamiltonian', Forder)
        !Dimension of multiphoton Floquet-Hamiltonian
        Fdim = 2*Forder+1
     else
-       message%lines(1) = 'Floquet-Hamiltonian is downfolded'
-       call message%info(1)
+       message_g%lines(1) = 'Floquet-Hamiltonian is downfolded'
+       call message_g%info(1)
        downfolding = .true.
        Forder = 1
        Fdim = 3

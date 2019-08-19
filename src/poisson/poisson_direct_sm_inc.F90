@@ -53,9 +53,9 @@ subroutine dpoisson_solve_direct_sm(this, sm, pot, rho)
   case(2)
     prefactor = M_TWO*sqrt(M_PI)
   case default
-    message%lines(1) = "Internal error: poisson_solve_direct can only be called for 2D or 3D."
+    message_g%lines(1) = "Internal error: poisson_solve_direct can only be called for 2D or 3D."
     ! why not? all that is needed is the appropriate prefactors to be defined above, actually. then 1D, 4D etc. can be done
-    call message%fatal(1)
+    call message_g%fatal(1)
   end select
 
   if(.not. sm%mesh%use_curvilinear) then

@@ -516,8 +516,8 @@ contains
     end if
 
     if (debug%info) then
-      message%lines(1) = "Debug: Writing LDA+U restart."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Writing LDA+U restart."
+      call message_g%info(1)
     end if
 
     occsize = this%maxnorbs*this%maxnorbs*this%nspins*this%norbsets
@@ -550,8 +550,8 @@ contains
     end if
 
     if (debug%info) then
-      message%lines(1) = "Debug: Writing LDA+U restart done."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Writing LDA+U restart done."
+      call message_g%info(1)
     end if
 
     POP_SUB(lda_u_dump)
@@ -582,8 +582,8 @@ contains
     end if
 
     if (debug%info) then
-      message%lines(1) = "Debug: Reading LDA+U restart."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Reading LDA+U restart."
+      call message_g%info(1)
     end if
 
     !We have to read the effective U first, as we call lda_u_uptade_potential latter
@@ -622,8 +622,8 @@ contains
     end if
 
     if (debug%info) then
-      message%lines(1) = "Debug: Reading LDA+U restart done."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Reading LDA+U restart done."
+      call message_g%info(1)
     end if
 
     POP_SUB(lda_u_load)
@@ -656,8 +656,8 @@ contains
     ierr = 0
 
     if (debug%info) then
-      message%lines(1) = "Debug: Loading LDA+U basis from states."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Loading LDA+U basis from states."
+      call message_g%info(1)
     end if
 
     call restart_init(restart_gs, namespace, RESTART_PROJ, RESTART_TYPE_LOAD, mc, err, mesh=mesh)
@@ -670,11 +670,11 @@ contains
     else if (states_are_real(st)) then
       read(lines(2), '(a)') str
       if (str(2:8) == 'Complex') then
-        message%lines(1) = "Cannot read real states from complex wavefunctions."
-        call message%fatal(1)
+        message_g%lines(1) = "Cannot read real states from complex wavefunctions."
+        call message_g%fatal(1)
       else if (str(2:5) /= 'Real') then
-        message%lines(1) = "Restart file 'wfns' does not specify real/complex; cannot check compatibility."
-        call message%warning(1)
+        message_g%lines(1) = "Restart file 'wfns' does not specify real/complex; cannot check compatibility."
+        call message_g%warning(1)
       end if
     end if
     ! complex can be restarted from real, so there is no problem.
@@ -727,8 +727,8 @@ contains
       do idim = 1, st%d%dim
 
         if (.not. restart_file_present(idim, ist)) then
-          write(message%lines(1), '(a,i3,a)') "Cannot read states ", ist, "from the projection folder"
-          call message%fatal(1)            
+          write(message_g%lines(1), '(a,i3,a)') "Cannot read states ", ist, "from the projection folder"
+          call message_g%fatal(1)            
         end if
 
         if (states_are_real(st)) then
@@ -754,8 +754,8 @@ contains
     call restart_end(restart_gs)
 
     if (debug%info) then
-      message%lines(1) = "Debug: Loading LDA+U basis from states done."
-      call message%info(1)
+      message_g%lines(1) = "Debug: Loading LDA+U basis from states done."
+      call message_g%info(1)
     end if
 
     POP_SUB(lda_u_loadbasis)

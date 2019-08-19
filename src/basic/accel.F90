@@ -287,7 +287,7 @@ contains
     !% try to initialize and use an accelerator device. By setting this
     !% variable to <tt>yes</tt> you force Octopus not to use an accelerator even it is available.
     !%End
-    call message%obsolete_variable(namespace, 'DisableOpenCL', 'DisableAccel')
+    call message_g%obsolete_variable(namespace, 'DisableOpenCL', 'DisableAccel')
 #ifdef HAVE_ACCEL
     default = .false.
 #else
@@ -298,8 +298,8 @@ contains
     
 #ifndef HAVE_ACCEL
     if(accel%enabled) then
-      message%lines(1) = 'Octopus was compiled without OpenCL or Cuda support.'
-      call message%fatal(1)
+      message_g%lines(1) = 'Octopus was compiled without OpenCL or Cuda support.'
+      call message_g%fatal(1)
     end if
 #endif
 
@@ -330,7 +330,7 @@ contains
     !%End
     call parse_variable(namespace, 'AccelPlatform', 0, iplatform)
 
-    call message%obsolete_variable(namespace, 'OpenCLPlatform', 'AccelPlatform')
+    call message_g%obsolete_variable(namespace, 'OpenCLPlatform', 'AccelPlatform')
     
     !%Variable AccelDevice
     !%Type integer
@@ -355,21 +355,21 @@ contains
     !%End
     call parse_variable(namespace, 'AccelDevice', OPENCL_GPU, idevice)
 
-    call message%obsolete_variable(namespace, 'OpenCLDevice', 'AccelDevice')
+    call message_g%obsolete_variable(namespace, 'OpenCLDevice', 'AccelDevice')
     
     if(idevice < OPENCL_DEFAULT) then
-      call message%write('Invalid AccelDevice')
-      call message%fatal()
+      call message_g%write('Invalid AccelDevice')
+      call message_g%fatal()
     end if
 
-    call message%print_stress(stdout, "GPU acceleration")
+    call message_g%print_stress(stdout, "GPU acceleration")
 
 #ifdef HAVE_CUDA
     if(idevice<0) idevice = 0
     call cuda_init(accel%context%cuda_context, accel%device%cuda_device, idevice, base_grp%rank)
 #ifdef HAVE_MPI
-    write(message%lines(1), '(A, I5.5, A, I5.5)') "Rank ", base_grp%rank, " uses device number ", idevice
-    call message%info(1, all_nodes = .true.)
+    write(message_g%lines(1), '(A, I5.5, A, I5.5)') "Rank ", base_grp%rank, " uses device number ", idevice
+    call message_g%info(1, all_nodes = .true.)
 #endif
 
     ! no shared mem support in our cuda interface (for the moment)
@@ -389,9 +389,9 @@ contains
     call clGetPlatformIDs(allplatforms, iplat, cl_status)
     if(cl_status /= CL_SUCCESS) call opencl_print_error(cl_status, "GetPlatformIDs")
 
-    call message%write('Info: Available CL platforms: ')
-    call message%write(nplatforms)
-    call message%info()
+    call message_g%write('Info: Available CL platforms: ')
+    call message_g%write(nplatforms)
+    call message_g%info()
 
     do iplat = 1, nplatforms
 
@@ -402,28 +402,28 @@ contains
       end if
 
       if(iplatform == iplat - 1) then
-        call message%write('    * Platform ')
+        call message_g%write('    * Platform ')
       else
-        call message%write('      Platform ')
+        call message_g%write('      Platform ')
       end if
 
-      call message%write(iplat - 1)
-      call message%write(' : '//device_name)
+      call message_g%write(iplat - 1)
+      call message_g%write(' : '//device_name)
       call clGetPlatformInfo(allplatforms(iplat), CL_PLATFORM_VERSION, device_name, cl_status)
-      call message%write(' ('//trim(device_name)//')')
-      call message%info()
+      call message_g%write(' ('//trim(device_name)//')')
+      call message_g%info()
     end do
 
-    call message%info()
+    call message_g%info()
 
     if(iplatform >= nplatforms .or. iplatform < 0) then
-      call message%write('Requested CL platform does not exist')
+      call message_g%write('Requested CL platform does not exist')
       if(iplatform > 0) then 
-        call message%write('(platform = ')
-        call message%write(iplatform)
-        call message%write(').')
+        call message_g%write('(platform = ')
+        call message_g%write(iplatform)
+        call message_g%write(').')
       end if
-      call message%fatal()
+      call message_g%fatal()
     end if
 
     platform_id = allplatforms(iplatform + 1)
@@ -432,9 +432,9 @@ contains
 
     call clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_ALL, ndevices, cl_status)
 
-    call message%write('Info: Available CL devices: ')
-    call message%write(ndevices)
-    call message%info()
+    call message_g%write('Info: Available CL devices: ')
+    call message_g%write(ndevices)
+    call message_g%info()
 
     SAFE_ALLOCATE(alldevices(1:ndevices))
 
@@ -443,11 +443,11 @@ contains
     call clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_ALL, alldevices, ret_devices, cl_status)
 
     do idev = 1, ndevices
-      call message%write('      Device ')
-      call message%write(idev - 1)
+      call message_g%write('      Device ')
+      call message_g%write(idev - 1)
       call clGetDeviceInfo(alldevices(idev), CL_DEVICE_NAME, device_name, cl_status)
-      call message%write(' : '//device_name)
-      call message%info()
+      call message_g%write(' : '//device_name)
+      call message_g%info()
     end do
 
     select case(idevice)
@@ -476,8 +476,8 @@ contains
       end if
 
       if(ret_devices < 1) then
-        call message%write('Cannot find an OpenCL device')
-        call message%fatal()
+        call message_g%write('Cannot find an OpenCL device')
+        call message_g%fatal()
       end if
     end if
 
@@ -495,12 +495,12 @@ contains
     end if
 
     if(idevice >= ndevices) then
-      call message%write('Requested CL device does not exist (device = ')
-      call message%write(idevice)
-      call message%write(', platform = ')
-      call message%write(iplatform)
-      call message%write(').')
-      call message%fatal()
+      call message_g%write('Requested CL device does not exist (device = ')
+      call message_g%write(idevice)
+      call message_g%write(', platform = ')
+      call message_g%write(iplatform)
+      call message_g%write(').')
+      call message_g%fatal()
     end if
 
     accel%device%cl_device = alldevices(idevice + 1)
@@ -591,13 +591,13 @@ contains
     !%End
     call parse_variable(namespace, 'AccelBenchmark', .false., run_benchmark)
 
-    call message%obsolete_variable(namespace, 'OpenCLBenchmark', 'AccelBenchmark')
+    call message_g%obsolete_variable(namespace, 'OpenCLBenchmark', 'AccelBenchmark')
     
     if(run_benchmark) then
       call opencl_check_bandwidth()
     end if
 
-    call message%print_stress(stdout)
+    call message_g%print_stress(stdout)
 
     POP_SUB(accel_init)
 
@@ -614,17 +614,17 @@ contains
       idevice = mod(base_grp%rank, ndevices)
 
       call MPI_Barrier(base_grp%comm, mpi_err)
-      call message%write('Info: CL device distribution:')
-      call message%info()
+      call message_g%write('Info: CL device distribution:')
+      call message_g%info()
       do irank = 0, base_grp%size - 1
         if(irank == base_grp%rank) then
           call clGetDeviceInfo(alldevices(idevice + 1), CL_DEVICE_NAME, device_name, cl_status)
-          call message%write('      MPI node ')
-          call message%write(base_grp%rank)
-          call message%write(' -> CL device ')
-          call message%write(idevice)
-          call message%write(' : '//device_name)
-          call message%info(all_nodes = .true.)
+          call message_g%write('      MPI node ')
+          call message_g%write(base_grp%rank)
+          call message_g%write(' -> CL device ')
+          call message_g%write(idevice)
+          call message_g%write(' : '//device_name)
+          call message_g%info(all_nodes = .true.)
         end if
         call MPI_Barrier(base_grp%comm, mpi_err)
       end do
@@ -645,39 +645,39 @@ contains
       
       PUSH_SUB(accel_init.device_info)
 
-      call message%new_line()
-      call message%write('Selected device:')
-      call message%new_line()
+      call message_g%new_line()
+      call message_g%write('Selected device:')
+      call message_g%new_line()
 
 #ifdef HAVE_OPENCL
-      call message%write('      Framework              : OpenCL')
+      call message_g%write('      Framework              : OpenCL')
 #endif
 #ifdef HAVE_CUDA
-      call message%write('      Framework              : CUDA')
+      call message_g%write('      Framework              : CUDA')
 #endif
-      call message%info()
+      call message_g%info()
 
 #ifdef HAVE_CUDA
-      call message%write('      Device type            : GPU', new_line = .true.)
-      call message%write('      Device vendor          : NVIDIA Corporation', new_line = .true.)
+      call message_g%write('      Device type            : GPU', new_line = .true.)
+      call message_g%write('      Device vendor          : NVIDIA Corporation', new_line = .true.)
 #endif
 
 #ifdef HAVE_OPENCL
       call clGetDeviceInfo(accel%device%cl_device, CL_DEVICE_TYPE, val, cl_status)
-      call message%write('      Device type            :')
+      call message_g%write('      Device type            :')
       select case(int(val, 4))
       case(CL_DEVICE_TYPE_GPU)
-        call message%write(' GPU')
+        call message_g%write(' GPU')
       case(CL_DEVICE_TYPE_CPU)
-        call message%write(' CPU')
+        call message_g%write(' CPU')
       case(CL_DEVICE_TYPE_ACCELERATOR)
-        call message%write(' accelerator')
+        call message_g%write(' accelerator')
       end select
-      call message%new_line()
+      call message_g%new_line()
 
       call clGetDeviceInfo(accel%device%cl_device, CL_DEVICE_VENDOR, val_str, cl_status)
-      call message%write('      Device vendor          : '//trim(val_str))
-      call message%new_line()
+      call message_g%write('      Device vendor          : '//trim(val_str))
+      call message_g%new_line()
 #endif
       
 #ifdef HAVE_OPENCL
@@ -686,86 +686,86 @@ contains
 #ifdef HAVE_CUDA
       call cuda_device_name(accel%device%cuda_device, val_str)
 #endif
-      call message%write('      Device name            : '//trim(val_str))
-      call message%new_line()
+      call message_g%write('      Device name            : '//trim(val_str))
+      call message_g%new_line()
       
 #ifdef HAVE_CUDA
       call cuda_device_capability(accel%device%cuda_device, major, minor)
 #endif
-      call message%write('      Cuda capabilities      :')
-      call message%write(major, fmt = '(i2)')
-      call message%write('.')
-      call message%write(minor, fmt = '(i1)')
-      call message%new_line()
+      call message_g%write('      Cuda capabilities      :')
+      call message_g%write(major, fmt = '(i2)')
+      call message_g%write('.')
+      call message_g%write(minor, fmt = '(i1)')
+      call message_g%new_line()
 
       ! VERSION
 #ifdef HAVE_OPENCL
       call clGetDeviceInfo(accel%device%cl_device, CL_DRIVER_VERSION, val_str, cl_status)
-      call message%write('      Driver version         : '//trim(val_str))
+      call message_g%write('      Driver version         : '//trim(val_str))
 #endif
 #ifdef HAVE_CUDA
       call cuda_driver_version(version)
-      call message%write('      Driver version         : ')
-      call message%write(version)
+      call message_g%write('      Driver version         : ')
+      call message_g%write(version)
 #endif
-      call message%new_line()
+      call message_g%new_line()
 
       
 #ifdef HAVE_OPENCL
       call clGetDeviceInfo(accel%device%cl_device, CL_DEVICE_MAX_COMPUTE_UNITS, val, cl_status)
-      call message%write('      Compute units          :')
-      call message%write(val)
-      call message%new_line()
+      call message_g%write('      Compute units          :')
+      call message_g%write(val)
+      call message_g%new_line()
 
       call clGetDeviceInfo(accel%device%cl_device, CL_DEVICE_MAX_CLOCK_FREQUENCY, val, cl_status)
-      call message%write('      Clock frequency        :')
-      call message%write(val)
-      call message%write(' GHz')
-      call message%new_line()
+      call message_g%write('      Clock frequency        :')
+      call message_g%write(val)
+      call message_g%write(' GHz')
+      call message_g%new_line()
 #endif
 
-      call message%write('      Device memory          :')
-      call message%write(accel%global_memory_size, units = unit_megabytes)
-      call message%new_line()
+      call message_g%write('      Device memory          :')
+      call message_g%write(accel%global_memory_size, units = unit_megabytes)
+      call message_g%new_line()
 
-      call message%write('      Local/shared memory    :')
-      call message%write(accel%local_memory_size, units = unit_kilobytes)
-      call message%new_line()
+      call message_g%write('      Local/shared memory    :')
+      call message_g%write(accel%local_memory_size, units = unit_kilobytes)
+      call message_g%new_line()
       
     
 #ifdef HAVE_OPENCL
       call clGetDeviceInfo(accel%device%cl_device, CL_DEVICE_MAX_MEM_ALLOC_SIZE, val, cl_status)
-      call message%write('      Max alloc size         :')
-      call message%write(val, units = unit_megabytes)
-      call message%new_line()
+      call message_g%write('      Max alloc size         :')
+      call message_g%write(val, units = unit_megabytes)
+      call message_g%new_line()
 
       call clGetDeviceInfo(accel%device%cl_device, CL_DEVICE_GLOBAL_MEM_CACHE_SIZE, val, cl_status)
-      call message%write('      Device cache           :')
-      call message%write(val, units = unit_kilobytes)
-      call message%new_line()
+      call message_g%write('      Device cache           :')
+      call message_g%write(val, units = unit_kilobytes)
+      call message_g%new_line()
 
       call clGetDeviceInfo(accel%device%cl_device, CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE, val, cl_status)
-      call message%write('      Constant memory        :')
-      call message%write(val, units = unit_kilobytes)
-      call message%new_line()
+      call message_g%write('      Constant memory        :')
+      call message_g%write(val, units = unit_kilobytes)
+      call message_g%new_line()
 #endif
 
-      call message%write('      Max. group/block size  :')
-      call message%write(accel%max_workgroup_size)
-      call message%new_line()
+      call message_g%write('      Max. group/block size  :')
+      call message_g%write(accel%max_workgroup_size)
+      call message_g%new_line()
       
 
 #ifdef HAVE_OPENCL
-      call message%write('      Extension cl_khr_fp64  :')
-      call message%write(f90_cl_device_has_extension(accel%device%cl_device, "cl_khr_fp64"))
-      call message%new_line()
+      call message_g%write('      Extension cl_khr_fp64  :')
+      call message_g%write(f90_cl_device_has_extension(accel%device%cl_device, "cl_khr_fp64"))
+      call message_g%new_line()
 
-      call message%write('      Extension cl_amd_fp64  :')
-      call message%write(f90_cl_device_has_extension(accel%device%cl_device, "cl_amd_fp64"))
-      call message%new_line()
+      call message_g%write('      Extension cl_amd_fp64  :')
+      call message_g%write(f90_cl_device_has_extension(accel%device%cl_device, "cl_amd_fp64"))
+      call message_g%new_line()
 #endif
       
-      call message%info()
+      call message_g%info()
 
 
       POP_SUB(accel_init.device_info)
@@ -815,24 +815,24 @@ contains
 
       call alloc_cache_end(memcache, hits, misses, volume_hits, volume_misses)
 
-      call message%print_stress(stdout, "Acceleration-device allocation cache")
+      call message_g%print_stress(stdout, "Acceleration-device allocation cache")
 
-      call message%new_line()
-      call message%write('    Number of allocations    =')
-      call message%write(hits + misses, new_line = .true.)
-      call message%write('    Volume of allocations    =')
-      call message%write(volume_hits + volume_misses, fmt = 'f18.1', units = unit_gigabytes, align_left = .true., &
+      call message_g%new_line()
+      call message_g%write('    Number of allocations    =')
+      call message_g%write(hits + misses, new_line = .true.)
+      call message_g%write('    Volume of allocations    =')
+      call message_g%write(volume_hits + volume_misses, fmt = 'f18.1', units = unit_gigabytes, align_left = .true., &
         new_line = .true.)
-      call message%write('    Hit ratio                =')
-      call message%write(hits/dble(hits + misses)*100, fmt='(f6.1)', align_left = .true.)
-      call message%write('%', new_line = .true.)
-      call message%write('    Volume hit ratio         =')
-      call message%write(volume_hits/(volume_hits + volume_misses)*100, fmt='(f6.1)', align_left = .true.)
-      call message%write('%')
-      call message%new_line()
-      call message%info()
+      call message_g%write('    Hit ratio                =')
+      call message_g%write(hits/dble(hits + misses)*100, fmt='(f6.1)', align_left = .true.)
+      call message_g%write('%', new_line = .true.)
+      call message_g%write('    Volume hit ratio         =')
+      call message_g%write(volume_hits/(volume_hits + volume_misses)*100, fmt='(f6.1)', align_left = .true.)
+      call message_g%write('%')
+      call message_g%new_line()
+      call message_g%info()
 
-      call message%print_stress(stdout)
+      call message_g%print_stress(stdout)
     end if
     
     call accel_kernel_global_end()
@@ -859,12 +859,12 @@ contains
 #endif
       
       if(buffer_alloc_count /= 0) then
-        call message%write('Accel:')
-        call message%write(real(allocated_mem, REAL_PRECISION), fmt = 'f12.1', units = unit_megabytes, align_left = .true.)
-        call message%write(' in ')
-        call message%write(buffer_alloc_count)
-        call message%write(' buffers were not deallocated.')
-        call message%fatal()
+        call message_g%write('Accel:')
+        call message_g%write(real(allocated_mem, REAL_PRECISION), fmt = 'f12.1', units = unit_megabytes, align_left = .true.)
+        call message_g%write(' in ')
+        call message_g%write(buffer_alloc_count)
+        call message_g%write(' buffers were not deallocated.')
+        call message_g%fatal()
       end if
 
     end if
@@ -1088,12 +1088,12 @@ contains
     size_in_bytes = int(size, 8)*types_get_size(type)
 
     if(size_in_bytes > accel%local_memory_size) then
-      write(message%lines(1), '(a,f12.6,a)') "CL Error: requested local memory: ", dble(size_in_bytes)/1024.0, " Kb"
-      write(message%lines(2), '(a,f12.6,a)') "          available local memory: ", dble(accel%local_memory_size)/1024.0, " Kb"
-      call message%fatal(2)
+      write(message_g%lines(1), '(a,f12.6,a)') "CL Error: requested local memory: ", dble(size_in_bytes)/1024.0, " Kb"
+      write(message_g%lines(2), '(a,f12.6,a)') "          available local memory: ", dble(accel%local_memory_size)/1024.0, " Kb"
+      call message_g%fatal(2)
     else if(size_in_bytes <= 0) then
-      write(message%lines(1), '(a,i10)') "CL Error: invalid local memory size: ", size_in_bytes
-      call message%fatal(1)
+      write(message_g%lines(1), '(a,i10)') "CL Error: invalid local memory size: ", size_in_bytes
+      call message_g%fatal(1)
     end if
 
 #ifdef HAVE_CUDA
@@ -1205,8 +1205,8 @@ contains
     string = '#include "'//trim(filename)//'"'
 
     if(debug%info) then
-      call message%write("Building CL program '"//trim(filename)//"'.")
-      call message%info()
+      call message_g%write("Building CL program '"//trim(filename)//"'.")
+      call message_g%info()
     end if
 
     prog = clCreateProgramWithSource(accel%context%cl_context, trim(string), ierr)
@@ -1230,8 +1230,8 @@ contains
     else if(f90_cl_device_has_extension(accel%device%cl_device, "cl_amd_fp64")) then
       string = trim(string)//' -DEXT_AMD_FP64'
     else
-      call message%write('Octopus requires an OpenCL device with double-precision support.')
-      call message%fatal()
+      call message_g%write('Octopus requires an OpenCL device with double-precision support.')
+      call message_g%fatal()
     end if
 
     if(accel_use_shared_mem()) then
@@ -1243,9 +1243,9 @@ contains
     end if
 
     if(debug%info) then
-      call message%write("Debug info: compilation flags '"//trim(string), new_line = .true.)
-      call message%write('  '//trim(share_string)//"'.")
-      call message%info()
+      call message_g%write("Debug info: compilation flags '"//trim(string), new_line = .true.)
+      call message_g%write('  '//trim(share_string)//"'.")
+      call message_g%info()
     end if
 
     string = trim(string)//' '//trim(share_string)
@@ -1391,8 +1391,8 @@ contains
     end select
 #endif
     
-    message%lines(1) = 'OpenCL '//trim(name)//' '//trim(errcode)
-    call message%fatal(1)
+    message_g%lines(1) = 'OpenCL '//trim(name)//' '//trim(errcode)
+    call message_g%fatal(1)
 
     POP_SUB(opencl_print_error)
   end subroutine opencl_print_error
@@ -1444,8 +1444,8 @@ contains
     end select
 #endif
 
-    message%lines(1) = 'clblas '//trim(name)//' '//trim(errcode)
-    call message%fatal(1)
+    message_g%lines(1) = 'clblas '//trim(name)//' '//trim(errcode)
+    call message_g%fatal(1)
 
     POP_SUB(clblas_print_error)
   end subroutine clblas_print_error
@@ -1521,8 +1521,8 @@ contains
     end select
 #endif
 
-    message%lines(1) = 'clfft '//trim(name)//' '//trim(errcode)
-    call message%fatal(1)
+    message_g%lines(1) = 'clfft '//trim(name)//' '//trim(errcode)
+    call message_g%fatal(1)
 
     POP_SUB(clfft_print_error)
   end subroutine clfft_print_error
@@ -1609,15 +1609,15 @@ contains
     type(accel_mem_t) :: buff
     FLOAT, allocatable :: data(:)
 
-    call message%new_line()
-    call message%write('Info: Benchmarking the bandwidth between main memory and device memory')
-    call message%new_line()
-    call message%info()
+    call message_g%new_line()
+    call message_g%write('Info: Benchmarking the bandwidth between main memory and device memory')
+    call message_g%new_line()
+    call message_g%info()
 
-    call message%write(' Buffer size   Read bw  Write bw')
-    call message%new_line()
-    call message%write('       [MiB]   [MiB/s]   [MiB/s]')
-    call message%info()
+    call message_g%write(' Buffer size   Read bw  Write bw')
+    call message_g%new_line()
+    call message_g%write('       [MiB]   [MiB/s]   [MiB/s]')
+    call message_g%info()
 
     size = 15000
     do 
@@ -1642,10 +1642,10 @@ contains
       time = (loct_clock() - stime)/dble(times)
       read_bw = dble(size)*8.0_8/time
 
-      call message%write(size*8.0_8/1024.0**2)
-      call message%write(write_bw/1024.0**2, fmt = '(f10.1)')
-      call message%write(read_bw/1024.0**2, fmt = '(f10.1)')
-      call message%info()
+      call message_g%write(size*8.0_8/1024.0**2)
+      call message_g%write(write_bw/1024.0**2, fmt = '(f10.1)')
+      call message_g%write(read_bw/1024.0**2, fmt = '(f10.1)')
+      call message_g%info()
 
       call accel_release_buffer(buff)
 

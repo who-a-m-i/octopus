@@ -95,16 +95,16 @@ program oct_unfold
   default_namespace = namespace_t("")
   call calc_mode_par_init()
 
-  call message%init(default_namespace)
+  call message_g%init(default_namespace)
 
   call io_init(default_namespace)
   call profiling_init(default_namespace)
 
   call print_header()
-  call message%print_stress(stdout, "Unfolding Band-structure")
-  call message%print_stress(stdout)
+  call message_g%print_stress(stdout, "Unfolding Band-structure")
+  call message_g%print_stress(stdout)
 
-  call message%experimental("oct-unfold utility")
+  call message_g%experimental("oct-unfold utility")
   call fft_all_init(default_namespace)
   call unit_system_init(default_namespace)
   call restart_module_init(default_namespace)
@@ -114,16 +114,16 @@ program oct_unfold
   call simul_box_init(sb, default_namespace, sys%geo, sys%space)
 
   if(sb%periodic_dim == 0) then
-    message%lines(1) = "oct-unfold can only be used for periodic ystems."
-    call message%fatal(1)
+    message_g%lines(1) = "oct-unfold can only be used for periodic ystems."
+    call message_g%fatal(1)
   end if
 
   if(sys%st%parallel_in_states) then
-    call message%not_implemented("oct-unfold with states parallelization.")
+    call message_g%not_implemented("oct-unfold with states parallelization.")
   end if 
 
   if(sys%st%d%ispin == SPINORS) then
-    call message%not_implemented("oct-unfold for spinors")
+    call message_g%not_implemented("oct-unfold for spinors")
   end if
 
 
@@ -142,7 +142,7 @@ program oct_unfold
   !%End
   call parse_variable(default_namespace, 'UnfoldMode', 0, run_mode)
   if( .not. varinfo_valid_option('UnfoldMode', run_mode)) then
-    call message%input_error("UnfoldMode must be set to a value different from 0.")
+    call message_g%input_error("UnfoldMode must be set to a value different from 0.")
   end if
 
   !%Variable UnfoldLatticeParameters
@@ -158,8 +158,8 @@ program oct_unfold
       call parse_block_float(blk, 0, idim-1, lparams(idim))
     end do
   else
-    message%lines(1) = "UnfoldLatticeParameters is not specified"
-    call message%fatal(1)
+    message_g%lines(1) = "UnfoldLatticeParameters is not specified"
+    call message_g%fatal(1)
   end if
 
   !%Variable UnfoldLatticeVectors
@@ -180,8 +180,8 @@ program oct_unfold
     end do
     call parse_block_end(blk)
   else
-    message%lines(1) = "UnfoldLatticeVectors is not specified"
-    call message%fatal(1)
+    message_g%lines(1) = "UnfoldLatticeVectors is not specified"
+    call message_g%fatal(1)
   end if
 
   do idim = 1, sb%dim
@@ -202,17 +202,17 @@ program oct_unfold
   !% The syntax is identical to <tt>KPointsPath</tt>.
   !%End
   if(parse_block(default_namespace, 'UnfoldKPointsPath', blk) /= 0) then
-    write(message%lines(1),'(a)') 'Error while reading UnfoldPointsPath.'
-    call message%fatal(1)
+    write(message_g%lines(1),'(a)') 'Error while reading UnfoldPointsPath.'
+    call message_g%fatal(1)
   end if
 
   ! There is one high symmetry k-point per line
   nsegments = parse_block_cols(blk, 0)
   nhighsympoints = parse_block_n(blk) - 1
   if( nhighsympoints /= nsegments+1) then
-    write(message%lines(1),'(a,i3,a,i3)') 'The first row of UnfoldPointsPath is not compatible '//&
+    write(message_g%lines(1),'(a,i3,a,i3)') 'The first row of UnfoldPointsPath is not compatible '//&
       'with the number of specified k-points.'
-    call message%fatal(1)
+    call message_g%fatal(1)
   end if
 
   SAFE_ALLOCATE(resolution(1:nsegments))
@@ -227,8 +227,8 @@ program oct_unfold
     !Sanity check
     ncols = parse_block_cols(blk, ik)
     if(ncols /= sb%dim) then
-      write(message%lines(1),'(a,i3,a,i3)') 'UnfoldPointsPath row ', ik, ' has ', ncols, ' columns but must have ', sb%dim
-      call message%fatal(1)
+      write(message_g%lines(1),'(a,i3,a,i3)') 'UnfoldPointsPath row ', ik, ' has ', ncols, ' columns but must have ', sb%dim
+      call message_g%fatal(1)
     end if
 
     do idir = 1, sb%dim
@@ -265,8 +265,8 @@ program oct_unfold
     read(file_gvec, *)
     read(file_gvec, *) ik
     if(ik /= path_kpoints_grid%npoints) then
-      message%lines(1) = 'There is an inconsistency between unfold_gvec.dat and the input file'
-      call message%fatal(1)
+      message_g%lines(1) = 'There is an inconsistency between unfold_gvec.dat and the input file'
+      call message_g%fatal(1)
     end if
     call io_close(file_gvec)
  
@@ -275,8 +275,8 @@ program oct_unfold
     call restart_init(restart, default_namespace, RESTART_UNOCC, RESTART_TYPE_LOAD, sys%mc, ierr, mesh=sys%gr%mesh, exact=.true.)
     if(ierr == 0) call states_elec_load(restart, default_namespace, sys%st, sys%gr, ierr, label = ": unfold")
     if(ierr /= 0) then
-      message%lines(1) = 'Unable to read unocc wavefunctions.'
-      call message%fatal(1)
+      message_g%lines(1) = 'Unable to read unocc wavefunctions.'
+      call message_g%fatal(1)
     end if
     call restart_end(restart)  
 
@@ -293,8 +293,8 @@ program oct_unfold
     call cube_end(zcube)
 
   else
-    message%lines(1) = "Unsupported or incorrect value of UnfoldMode." 
-    call message%fatal(1)
+    message_g%lines(1) = "Unsupported or incorrect value of UnfoldMode." 
+    call message_g%fatal(1)
   end if
 
   SAFE_DEALLOCATE_A(coord_along_path)
@@ -307,7 +307,7 @@ program oct_unfold
   call profiling_end(default_namespace)
   call io_end()
   call print_date("Calculation ended on ")
-  call message%end()
+  call message_g%end()
   call parser_end()
   call global_end()
 
@@ -379,8 +379,8 @@ contains
     !%End
     call parse_variable(default_namespace, 'UnfoldEnergyStep', M_ZERO, de)
     if(de < M_ZERO) then
-      message%lines(1) = "UnfoldEnergyStep must be positive"
-      call message%fatal(1)
+      message_g%lines(1) = "UnfoldEnergyStep must be positive"
+      call message_g%fatal(1)
     end if
 
     !%Variable UnfoldMinEnergy
@@ -476,7 +476,7 @@ contains
         end do !ig
 
       case default
-        call message%not_implemented("Unfolding for periodic dimensions other than 2 or 3") 
+        call message_g%not_implemented("Unfolding for periodic dimensions other than 2 or 3") 
       end select
 
       if(mpi_grp_is_root(gr%mesh%mpi_grp)) then

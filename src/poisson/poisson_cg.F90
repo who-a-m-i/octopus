@@ -94,10 +94,10 @@ contains
     iter = maxiter
     call dconjugate_gradients(der%mesh%np, pk, zk, internal_laplacian_op, internal_dotp, iter, res, threshold)
     if(res >= threshold) then
-      message%lines(1) = 'Conjugate-gradients Poisson solver did not converge.'
-      write(message%lines(2), '(a,i8)')    '  Iter = ',iter
-      write(message%lines(3), '(a,e14.6)') '  Res = ', res
-      call message%warning(3)
+      message_g%lines(1) = 'Conjugate-gradients Poisson solver did not converge.'
+      write(message_g%lines(2), '(a,i8)')    '  Iter = ',iter
+      write(message_g%lines(3), '(a,e14.6)') '  Res = ', res
+      call message_g%warning(3)
     end if
     nullify(der_pointer, mesh_pointer)
     pot(1:der%mesh%np) = pot(1:der%mesh%np) + pk(1:der%mesh%np)
@@ -133,10 +133,10 @@ contains
     call dconjugate_gradients(der%mesh%np, potc, rhs, internal_laplacian_op, internal_dotp, iter, res, threshold)
 
     if(res >= threshold) then
-      message%lines(1) = 'Conjugate-gradients Poisson solver did not converge.'
-      write(message%lines(2), '(a,i8)')    '  Iter = ', iter
-      write(message%lines(3), '(a,e14.6)') '  Res = ', res
-      call message%warning(3)
+      message_g%lines(1) = 'Conjugate-gradients Poisson solver did not converge.'
+      write(message_g%lines(2), '(a,i8)')    '  Iter = ', iter
+      write(message_g%lines(3), '(a,e14.6)') '  Res = ', res
+      call message_g%warning(3)
     end if
 
     call lalg_copy(der%mesh%np, potc, pot)

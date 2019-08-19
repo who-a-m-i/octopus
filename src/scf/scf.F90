@@ -242,8 +242,8 @@ contains
     !%End
     call parse_variable(namespace, 'ConvRelEv', M_ZERO, scf%conv_rel_ev, unit = units_inp%energy)
 
-    call message%obsolete_variable(namespace, 'ConvAbsForce', 'ConvForce')
-    call message%obsolete_variable(namespace, 'ConvRelForce', 'ConvForce')
+    call message_g%obsolete_variable(namespace, 'ConvAbsForce', 'ConvForce')
+    call message_g%obsolete_variable(namespace, 'ConvRelForce', 'ConvForce')
 
     !%Variable ConvForce
     !%Type float
@@ -264,19 +264,19 @@ contains
       scf%conv_abs_force > M_ZERO
 
     if(.not. scf%check_conv .and. scf%max_iter < 0) then
-      call message%write("All convergence criteria are disabled. Octopus is cowardly refusing")
-      call message%new_line()
-      call message%write("to enter an infinite loop.")
-      call message%new_line()
-      call message%new_line()
-      call message%write("Please set one of the following variables to a positive value:")
-      call message%new_line()
-      call message%new_line()
-      call message%write(" | MaximumIter | ConvEnergy | ConvAbsDens | ConvRelDens |")
-      call message%new_line()
-      call message%write(" |  ConvAbsEv  | ConvRelEv  |  ConvForce  |")
-      call message%new_line()
-      call message%fatal()
+      call message_g%write("All convergence criteria are disabled. Octopus is cowardly refusing")
+      call message_g%new_line()
+      call message_g%write("to enter an infinite loop.")
+      call message_g%new_line()
+      call message_g%new_line()
+      call message_g%write("Please set one of the following variables to a positive value:")
+      call message_g%new_line()
+      call message_g%new_line()
+      call message_g%write(" | MaximumIter | ConvEnergy | ConvAbsDens | ConvRelDens |")
+      call message_g%new_line()
+      call message_g%write(" |  ConvAbsEv  | ConvRelEv  |  ConvForce  |")
+      call message_g%new_line()
+      call message_g%fatal()
     end if
 
     !%Variable ConvEigenError
@@ -291,7 +291,7 @@ contains
 
     if(scf%max_iter < 0) scf%max_iter = huge(scf%max_iter)
 
-    call message%obsolete_variable(namespace, 'What2Mix', 'MixField')
+    call message_g%obsolete_variable(namespace, 'What2Mix', 'MixField')
 
     !%Variable MixField
     !%Type integer
@@ -319,31 +319,31 @@ contains
     if(hm%theory_level == INDEPENDENT_PARTICLES) mixdefault = OPTION__MIXFIELD__NONE
 
     call parse_variable(namespace, 'MixField', mixdefault, scf%mix_field)
-    if(.not.varinfo_valid_option('MixField', scf%mix_field)) call message%input_error('MixField')
-    call message%print_var_option(stdout, 'MixField', scf%mix_field, "what to mix during SCF cycles")
+    if(.not.varinfo_valid_option('MixField', scf%mix_field)) call message_g%input_error('MixField')
+    call message_g%print_var_option(stdout, 'MixField', scf%mix_field, "what to mix during SCF cycles")
 
     if (scf%mix_field == OPTION__MIXFIELD__POTENTIAL .and. hm%theory_level == INDEPENDENT_PARTICLES) then
-      call message%write('Input: Cannot mix the potential for non-interacting particles.')
-      call message%fatal()
+      call message_g%write('Input: Cannot mix the potential for non-interacting particles.')
+      call message_g%fatal()
     end if
 
     if (scf%mix_field == OPTION__MIXFIELD__POTENTIAL .and. hm%pcm%run_pcm) then
-      call message%write('Input: You have selected to mix the potential.', new_line = .true.)
-      call message%write('       This might produce convergence problems for solvated systems.', new_line = .true.)
-      call message%write('       Mix the Density instead.')
-      call message%warning()
+      call message_g%write('Input: You have selected to mix the potential.', new_line = .true.)
+      call message_g%write('       This might produce convergence problems for solvated systems.', new_line = .true.)
+      call message_g%write('       Mix the Density instead.')
+      call message_g%warning()
     end if
 
     if(scf%mix_field == OPTION__MIXFIELD__DENSITY &
       .and. bitand(hm%xc_family, XC_FAMILY_OEP + XC_FAMILY_MGGA + XC_FAMILY_HYB_MGGA) /= 0) then
 
-      call message%write('Input: You have selected to mix the density with OEP or MGGA XC functionals.', new_line = .true.)
-      call message%write('       This might produce convergence problems. Mix the potential instead.')
-      call message%warning()
+      call message_g%write('Input: You have selected to mix the density with OEP or MGGA XC functionals.', new_line = .true.)
+      call message_g%write('       This might produce convergence problems. Mix the potential instead.')
+      call message_g%warning()
     end if
 
     if(scf%mix_field == OPTION__MIXFIELD__STATES) then
-      call message%experimental('MixField = states')
+      call message_g%experimental('MixField = states')
     end if
     
     ! Handle mixing now...
@@ -375,8 +375,8 @@ contains
     if(hm%lda_u_level /= DFT_U_NONE .and. hm%lda_u%basisfromstates) then
       call lda_u_loadbasis(hm%lda_u, namespace, st, gr%mesh, mc, ierr)
       if (ierr /= 0) then
-        message%lines(1) = "Unable to load LDA+U basis from selected states."
-        call message%fatal(1)
+        message_g%lines(1) = "Unable to load LDA+U basis from selected states."
+        call message_g%fatal(1)
       end if
       call lda_u_periodic_coulomb_integrals(hm%lda_u, namespace, st, gr%der, mc, associated(hm%hm_base%phase))
     end if
@@ -401,13 +401,13 @@ contains
     !%End
     call parse_variable(namespace, 'SCFinLCAO', .false., scf%lcao_restricted)
     if(scf%lcao_restricted) then
-      call message%experimental('SCFinLCAO')
-      message%lines(1) = 'Info: SCF restricted to LCAO subspace.'
-      call message%info(1)
+      call message_g%experimental('SCFinLCAO')
+      message_g%lines(1) = 'Info: SCF restricted to LCAO subspace.'
+      call message_g%info(1)
 
       if(scf%conv_eigen_error) then
-        message%lines(1) = "ConvEigenError cannot be used with SCFinLCAO, since error is unknown."
-        call message%fatal(1)
+        message_g%lines(1) = "ConvEigenError cannot be used with SCFinLCAO, since error is unknown."
+        call message_g%fatal(1)
       end if
     end if
 
@@ -458,7 +458,7 @@ contains
     !% are calculated at the end of a self-consistent iteration.
     !%End
     call parse_variable(namespace, 'SCFCalculatePartialCharges', .false., scf%calc_partial_charges)
-    if(scf%calc_partial_charges) call message%experimental('SCFCalculatePartialCharges')
+    if(scf%calc_partial_charges) call message_g%experimental('SCFCalculatePartialCharges')
 
     rmin = geometry_min_distance(geo)
     if(geo%natoms == 1) then
@@ -561,8 +561,8 @@ contains
     PUSH_SUB(scf_run)
 
     if(scf%forced_finish) then
-      message%lines(1) = "Previous clean stop, not doing SCF and quitting."
-      call message%fatal(1, only_root_writes = .true.)
+      message_g%lines(1) = "Previous clean stop, not doing SCF and quitting."
+      call message_g%fatal(1, only_root_writes = .true.)
     end if
 
     gs_run_ = .true.
@@ -574,8 +574,8 @@ contains
     if(scf%lcao_restricted) then
       call lcao_init(lcao, namespace, gr, geo, st)
       if(.not. lcao_is_available(lcao)) then
-        message%lines(1) = 'LCAO is not available. Cannot do SCF in LCAO.'
-        call message%fatal(1)
+        message_g%lines(1) = 'LCAO is not available. Cannot do SCF in LCAO.'
+        call message_g%fatal(1)
       end if
     end if
 
@@ -586,8 +586,8 @@ contains
         ! Load density and used it to recalculated the KS potential.
         call states_elec_load_rho(restart_load, st, gr, ierr)
         if (ierr /= 0) then
-          message%lines(1) = 'Unable to read density. Density will be calculated from states.'
-          call message%warning(1)
+          message_g%lines(1) = 'Unable to read density. Density will be calculated from states.'
+          call message_g%warning(1)
         else
           if(bitand(ks%xc_family, XC_FAMILY_OEP) == 0) then
             call v_ks_calc(ks, namespace, hm, st, geo)
@@ -602,8 +602,8 @@ contains
       if (restart_has_flag(restart_load, RESTART_FLAG_VHXC)) then
         call hamiltonian_elec_load_vhxc(restart_load, hm, gr%mesh, ierr)
         if (ierr /= 0) then
-          message%lines(1) = 'Unable to read Vhxc. Vhxc will be calculated from states.'
-          call message%warning(1)
+          message_g%lines(1) = 'Unable to read Vhxc. Vhxc will be calculated from states.'
+          call message_g%warning(1)
         else
           call hamiltonian_elec_update(hm, gr%mesh, namespace)
           if(bitand(ks%xc_family, XC_FAMILY_OEP) /= 0) then
@@ -625,16 +625,16 @@ contains
           call mix_load(restart_load, scf%smix, gr%mesh, ierr)
         end select
         if (ierr /= 0) then
-          message%lines(1) = "Unable to read mixing information. Mixing will start from scratch."
-          call message%warning(1)
+          message_g%lines(1) = "Unable to read mixing information. Mixing will start from scratch."
+          call message_g%warning(1)
         end if
       end if
 
       if(hm%lda_u_level /= DFT_U_NONE) then
         call lda_u_load(restart_load, hm%lda_u, st, ierr) 
         if (ierr /= 0) then
-          message%lines(1) = "Unable to read LDA+U information. LDA+U data will be calculated from states."
-          call message%warning(1)
+          message_g%lines(1) = "Unable to read LDA+U information. LDA+U data will be calculated from states."
+          call message_g%warning(1)
         end if
       end if 
     end if
@@ -692,13 +692,13 @@ contains
     
     if ( verbosity_ /= VERB_NO ) then
       if(scf%max_iter > 0) then
-        write(message%lines(1),'(a)') 'Info: Starting SCF iteration.'
+        write(message_g%lines(1),'(a)') 'Info: Starting SCF iteration.'
       else
-        write(message%lines(1),'(a)') 'Info: No SCF iterations will be done.'
+        write(message_g%lines(1),'(a)') 'Info: No SCF iterations will be done.'
         ! we cannot tell whether it is converged.
         finish = .false.
       end if
-      call message%info(1)
+      call message_g%info(1)
     end if
 
     ! SCF cycle
@@ -735,8 +735,8 @@ contains
 
             dipole_prev = dipole
             call calc_dipole(dipole)
-            write(message%lines(1),'(a,9f12.6)') 'Dipole = ', dipole(1:gr%sb%dim)
-            call message%info(1)
+            write(message_g%lines(1),'(a,9f12.6)') 'Dipole = ', dipole(1:gr%sb%dim)
+            call message_g%info(1)
 
             berry_conv = .true.
             do idir = 1, gr%sb%periodic_dim
@@ -850,9 +850,9 @@ contains
         call mixfield_get_vnew(scf%mixfield, st%rho)
         ! for spinors, having components 3 or 4 be negative is not unphysical
         if(minval(st%rho(1:gr%fine%mesh%np, 1:st%d%spin_channels)) < -CNST(1e-6)) then
-          write(message%lines(1),*) 'Negative density after mixing. Minimum value = ', &
+          write(message_g%lines(1),*) 'Negative density after mixing. Minimum value = ', &
             minval(st%rho(1:gr%fine%mesh%np, 1:st%d%spin_channels))
-          call message%warning(1)
+          call message_g%warning(1)
         end if
         call lda_u_mixer_get_vnew(hm%lda_u, scf%lda_u_mix, st)
         call v_ks_calc(ks, namespace, hm, st, geo, calc_current=outp%duringscf)
@@ -900,21 +900,21 @@ contains
 
           call states_elec_dump(restart_dump, st, gr, ierr, iter=iter) 
           if (ierr /= 0) then
-            message%lines(1) = 'Unable to write states wavefunctions.'
-            call message%warning(1)
+            message_g%lines(1) = 'Unable to write states wavefunctions.'
+            call message_g%warning(1)
           end if
 
           call states_elec_dump_rho(restart_dump, st, gr, ierr, iter=iter)
           if (ierr /= 0) then
-            message%lines(1) = 'Unable to write density.'
-            call message%warning(1)
+            message_g%lines(1) = 'Unable to write density.'
+            call message_g%warning(1)
           end if
 
           if(hm%lda_u_level /= DFT_U_NONE) then
             call lda_u_dump(restart_dump, hm%lda_u, st, ierr, iter=iter)
             if (ierr /= 0) then
-              message%lines(1) = 'Unable to write LDA+U information.'
-              call message%warning(1)
+              message_g%lines(1) = 'Unable to write LDA+U information.'
+              call message_g%warning(1)
             end if
           end if
 
@@ -922,20 +922,20 @@ contains
           case (OPTION__MIXFIELD__DENSITY)
             call mix_dump(restart_dump, scf%smix, gr%fine%mesh, ierr)
             if (ierr /= 0) then
-              message%lines(1) = 'Unable to write mixing information.'
-              call message%warning(1)
+              message_g%lines(1) = 'Unable to write mixing information.'
+              call message_g%warning(1)
             end if
           case (OPTION__MIXFIELD__POTENTIAL)
             call hamiltonian_elec_dump_vhxc(restart_dump, hm, gr%mesh, ierr)
             if (ierr /= 0) then
-              message%lines(1) = 'Unable to write Vhxc.'
-              call message%warning(1)
+              message_g%lines(1) = 'Unable to write Vhxc.'
+              call message_g%warning(1)
             end if
 
             call mix_dump(restart_dump, scf%smix, gr%mesh, ierr)
             if (ierr /= 0) then
-              message%lines(1) = 'Unable to write mixing information.'
-              call message%warning(1)
+              message_g%lines(1) = 'Unable to write mixing information.'
+              call message_g%warning(1)
             end if
           end select
         end if
@@ -946,9 +946,9 @@ contains
       if(finish) then
         if(present(iters_done)) iters_done = iter
         if(verbosity_ >= VERB_COMPACT) then
-          write(message%lines(1), '(a, i4, a)') 'Info: SCF converged in ', iter, ' iterations'
-          write(message%lines(2), '(a)')        '' 
-          call message%info(2)
+          write(message_g%lines(1), '(a, i4, a)') 'Info: SCF converged in ', iter, ' iterations'
+          write(message_g%lines(2), '(a)')        '' 
+          call message_g%info(2)
         end if
         call profiling_out(prof)
         exit
@@ -1010,13 +1010,13 @@ contains
     SAFE_DEALLOCATE_A(rhoin)
 
     if(scf%max_iter > 0 .and. any(scf%eigens%converged < st%nst) .and. .not. scf%lcao_restricted) then
-      write(message%lines(1),'(a)') 'Some of the states are not fully converged!'
-      call message%warning(1)
+      write(message_g%lines(1),'(a)') 'Some of the states are not fully converged!'
+      call message_g%warning(1)
     end if
 
     if(.not.finish) then
-      write(message%lines(1), '(a,i4,a)') 'SCF *not* converged after ', iter - 1, ' iterations.'
-      call message%warning(1)
+      write(message_g%lines(1), '(a,i4,a)') 'SCF *not* converged after ', iter - 1, ' iterations.'
+      call message_g%warning(1)
     end if
 
     ! calculate forces
@@ -1071,24 +1071,24 @@ contains
       if ( verbosity_ == VERB_FULL ) then
 
         write(str, '(a,i5)') 'SCF CYCLE ITER #' ,iter
-        call message%print_stress(stdout, trim(str))
-        write(message%lines(1),'(a,es15.8,2(a,es9.2))') ' etot  = ', units_from_atomic(units_out%energy, hm%energy%total), &
+        call message_g%print_stress(stdout, trim(str))
+        write(message_g%lines(1),'(a,es15.8,2(a,es9.2))') ' etot  = ', units_from_atomic(units_out%energy, hm%energy%total), &
           ' abs_ev   = ', units_from_atomic(units_out%energy, scf%abs_ev), ' rel_ev   = ', scf%rel_ev
-        write(message%lines(2),'(a,es15.2,2(a,es9.2))') &
+        write(message_g%lines(2),'(a,es15.2,2(a,es9.2))') &
           ' ediff = ', scf%energy_diff, ' abs_dens = ', scf%abs_dens, ' rel_dens = ', scf%rel_dens
         ! write info about forces only if they are used as convergence criteria
         if (scf%conv_abs_force > M_ZERO) then
-          write(message%lines(3),'(23x,a,es9.2)') &
+          write(message_g%lines(3),'(23x,a,es9.2)') &
             ' force    = ', units_from_atomic(units_out%force, scf%abs_force)
-          call message%info(3)
+          call message_g%info(3)
         else
-          call message%info(2)
+          call message_g%info(2)
         end if
 
         if(.not.scf%lcao_restricted) then
-          write(message%lines(1),'(a,i6)') 'Matrix vector products: ', scf%eigens%matvec
-          write(message%lines(2),'(a,i6)') 'Converged eigenvectors: ', sum(scf%eigens%converged(1:st%d%nik))
-          call message%info(2)
+          write(message_g%lines(1),'(a,i6)') 'Matrix vector products: ', scf%eigens%matvec
+          write(message_g%lines(2),'(a,i6)') 'Converged eigenvectors: ', sum(scf%eigens%converged(1:st%d%nik))
+          call message_g%info(2)
           call states_elec_write_eigenvalues(stdout, st%nst, st, gr%sb, scf%eigens%diff, compact = .true.)
         else
           call states_elec_write_eigenvalues(stdout, st%nst, st, gr%sb, compact = .true.)
@@ -1108,9 +1108,9 @@ contains
           call lda_u_write_V(hm%lda_u, stdout)
         end if
 
-        write(message%lines(1),'(a)') ''
-        write(message%lines(2),'(a,i5,a,f14.2)') 'Elapsed time for SCF step ', iter,':', etime
-        call message%info(2)
+        write(message_g%lines(1),'(a)') ''
+        write(message_g%lines(2),'(a,i5,a,f14.2)') 'Elapsed time for SCF step ', iter,':', etime
+        call message_g%info(2)
 
         if(conf%report_memory) then
           mem = loct_get_memory_usage()/(CNST(1024.0)**2)
@@ -1118,31 +1118,31 @@ contains
           call MPI_Allreduce(mem, mem_tmp, 1, MPI_FLOAT, MPI_SUM, mpi_world%comm, mpi_err)
           mem = mem_tmp
 #endif
-          write(message%lines(1),'(a,f14.2)') 'Memory usage [Mbytes]     :', mem
-          call message%info(1)
+          write(message_g%lines(1),'(a,f14.2)') 'Memory usage [Mbytes]     :', mem
+          call message_g%info(1)
         end if
 
-        call message%print_stress(stdout)
+        call message_g%print_stress(stdout)
 
       end if
 
       if ( verbosity_ == VERB_COMPACT ) then
         ! write info about forces only if they are used as convergence criteria
         if (scf%conv_abs_force > M_ZERO) then
-          write(message%lines(1),'(a,i4,a,es15.8, 2(a,es9.2), a, f7.1, a)') &
+          write(message_g%lines(1),'(a,i4,a,es15.8, 2(a,es9.2), a, f7.1, a)') &
             'iter ', iter, &
             ' : etot ', units_from_atomic(units_out%energy, hm%energy%total), &
             ' : abs_dens', scf%abs_dens, &
             ' : force ', units_from_atomic(units_out%force, scf%abs_force), &
             ' : etime ', etime, 's'
         else
-          write(message%lines(1),'(a,i4,a,es15.8, a,es9.2, a, f7.1, a)') &
+          write(message_g%lines(1),'(a,i4,a,es15.8, a,es9.2, a, f7.1, a)') &
             'iter ', iter, &
             ' : etot ', units_from_atomic(units_out%energy, hm%energy%total), &
             ' : abs_dens', scf%abs_dens, &
             ' : etime ', etime, 's'
         end if
-        call message%info(1)
+        call message_g%info(1)
       end if
 
       POP_SUB(scf_run.scf_write_iter)

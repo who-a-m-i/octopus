@@ -162,8 +162,8 @@ contains
       if(ps%kbc == 2) then
         p%type = PROJ_RKB
       else
-        call message%write("Spin-orbit coupling for species '"//trim(species_label(atm%species))//" is not available.")
-        call message%warning()
+        call message_g%write("Spin-orbit coupling for species '"//trim(species_label(atm%species))//" is not available.")
+        call message_g%warning()
       end if
     end if
     

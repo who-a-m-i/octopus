@@ -244,10 +244,10 @@ contains
     !%End
     call parse_variable(namespace, 'PCMCalculation', .false., pcm%run_pcm)
     if (pcm%run_pcm) then
-      call message%print_stress(stdout, trim('PCM'))
+      call message_g%print_stress(stdout, trim('PCM'))
       if ( (grid%sb%box_shape /= MINIMUM) .or. (grid%sb%dim /= PCM_DIM_SPACE) ) then
-        message%lines(1) = "PCM is only available for BoxShape = minimum and 3d calculations"
-        call message%fatal(1)
+        message_g%lines(1) = "PCM is only available for BoxShape = minimum and 3d calculations"
+        call message_g%fatal(1)
       end if
     else
       POP_SUB(pcm_init)
@@ -268,7 +268,7 @@ contains
     !% Alvarez S., Dalton Trans., 2013, 42, 8617-8636. Values can be changed in the <tt>Species</tt> block.
     !%End
     call parse_variable(namespace, 'PCMVdWRadii', PCM_VDW_OPTIMIZED, pcm_vdw_type)
-    call message%print_var_option(stdout, "PCMVdWRadii", pcm_vdw_type)
+    call message_g%print_var_option(stdout, "PCMVdWRadii", pcm_vdw_type)
 
     select case (pcm_vdw_type)
     case (PCM_VDW_OPTIMIZED)
@@ -286,7 +286,7 @@ contains
     !% 1.2 for <tt>pcm_vdw_optimized</tt> and 1.0 for <tt>pcm_vdw_species</tt>.
     !%End
     call parse_variable(namespace, 'PCMRadiusScaling', default_value, pcm%scale_r)
-    call message%print_var_value(stdout, "PCMRadiusScaling", pcm%scale_r)
+    call message_g%print_var_value(stdout, "PCMRadiusScaling", pcm%scale_r)
 
     !%Variable PCMTDLevel
     !%Type integer
@@ -307,13 +307,13 @@ contains
     !% The equation of motion used here depends on the value of PCMEpsilonModel.
     !%End
     call parse_variable(namespace, 'PCMTDLevel', PCM_TD_EQ, pcm%tdlevel)
-    call message%print_var_value(stdout, "PCMTDLevel", pcm%tdlevel)
+    call message_g%print_var_value(stdout, "PCMTDLevel", pcm%tdlevel)
 
     if (pcm%tdlevel /= PCM_TD_EQ .and. (.not. pcm%run_pcm)) then
-      call message%write('Sorry, you have set PCMTDLevel /= eq, but PCMCalculation = no.')
-      call message%new_line()
-      call message%write('To spare you some time, Octopus will proceed as if PCMCalculation = yes.')       
-      call message%warning()
+      call message_g%write('Sorry, you have set PCMTDLevel /= eq, but PCMCalculation = no.')
+      call message_g%new_line()
+      call message_g%write('To spare you some time, Octopus will proceed as if PCMCalculation = yes.')       
+      call message_g%warning()
     endif
     
     !%Variable PCMStaticEpsilon
@@ -324,7 +324,7 @@ contains
     !% Static dielectric constant of the solvent (<math>\varepsilon_0</math>). 1.0 indicates gas phase.
     !%End
     call parse_variable(namespace, 'PCMStaticEpsilon', M_ONE, pcm%epsilon_0)
-    call message%print_var_value(stdout, "PCMStaticEpsilon", pcm%epsilon_0)
+    call message_g%print_var_value(stdout, "PCMStaticEpsilon", pcm%epsilon_0)
 
     !%Variable PCMDynamicEpsilon
     !%Type float
@@ -335,7 +335,7 @@ contains
     !% <math>\varepsilon_d=\varepsilon_0</math> indicate equilibrium with solvent. 
     !%End
     call parse_variable(namespace, 'PCMDynamicEpsilon', pcm%epsilon_0, pcm%epsilon_infty)
-    call message%print_var_value(stdout, "PCMDynamicEpsilon", pcm%epsilon_infty)
+    call message_g%print_var_value(stdout, "PCMDynamicEpsilon", pcm%epsilon_infty)
     
     !%Variable PCMEpsilonModel
     !%Type integer
@@ -349,28 +349,28 @@ contains
     !% Drude-Lorentz model: <math>\varepsilon(\omega)=1+\frac{A}{\omega_0^2-\omega^2+i\gamma\omega}</math>
     !%End
     call parse_variable(namespace, 'PCMEpsilonModel', PCM_DEBYE_MODEL, pcm%which_eps)
-    call message%print_var_value(stdout, "PCMEpsilonModel", pcm%which_eps)
-    if (.not. varinfo_valid_option('PCMEpsilonModel', pcm%which_eps)) call message%input_error('PCMEpsilonModel')
+    call message_g%print_var_value(stdout, "PCMEpsilonModel", pcm%which_eps)
+    if (.not. varinfo_valid_option('PCMEpsilonModel', pcm%which_eps)) call message_g%input_error('PCMEpsilonModel')
 
     if (pcm%tdlevel == PCM_TD_EOM .and. pcm%which_eps == PCM_DRUDE_MODEL) &
-      call message%experimental("Drude-Lorentz EOM-PCM is experimental")
+      call message_g%experimental("Drude-Lorentz EOM-PCM is experimental")
 
     if (pcm%which_eps /= PCM_DEBYE_MODEL .and. pcm%which_eps /= PCM_DRUDE_MODEL) then
-      call message%write('Sorry, only Debye or Drude-Lorentz dielectric models are available.')
-      call message%new_line()
-      call message%write('To spare you some time, Octopus will proceed with the default choice (Debye).')
-      call message%new_line()
-      call message%write('You may change PCMEpsilonModel value for a Drude-Lorentz run.')
-      call message%warning()
+      call message_g%write('Sorry, only Debye or Drude-Lorentz dielectric models are available.')
+      call message_g%new_line()
+      call message_g%write('To spare you some time, Octopus will proceed with the default choice (Debye).')
+      call message_g%new_line()
+      call message_g%write('You may change PCMEpsilonModel value for a Drude-Lorentz run.')
+      call message_g%warning()
     end if
 
     if (pcm%tdlevel /= PCM_TD_EQ .and. pcm%which_eps == PCM_DEBYE_MODEL .and. pcm%epsilon_0 == pcm%epsilon_infty) then
-      call message%write('Sorry, inertial/dynamic polarization splitting scheme for TD-PCM or Debye equation-of-motion TD-PCM')
-      call message%new_line()
-      call message%write('require both static and dynamic dielectric constants, and they must be different.')
-      call message%new_line()
-      call message%write('Octopus will run using TD-PCM version in equilibrium with solvent at each time.')        
-      call message%warning()
+      call message_g%write('Sorry, inertial/dynamic polarization splitting scheme for TD-PCM or Debye equation-of-motion TD-PCM')
+      call message_g%new_line()
+      call message_g%write('require both static and dynamic dielectric constants, and they must be different.')
+      call message_g%new_line()
+      call message_g%write('Octopus will run using TD-PCM version in equilibrium with solvent at each time.')        
+      call message_g%warning()
       pcm%tdlevel = PCM_TD_EQ
     end if
 
@@ -389,15 +389,15 @@ contains
     !% The latter files are generated after any PCM run and contain the last values of the polarization charges.
     !%End
     call parse_variable(namespace, 'PCMEoMInitialCharges', 0, pcm%initial_asc)
-    call message%print_var_value(stdout, "PCMEoMInitialCharges", pcm%initial_asc)
+    call message_g%print_var_value(stdout, "PCMEoMInitialCharges", pcm%initial_asc)
 
     if (pcm%initial_asc /= 0) then
-      call message%experimental("The use of external initialization for the EOM-PCM charges is experimental")
+      call message_g%experimental("The use of external initialization for the EOM-PCM charges is experimental")
       if ((pcm%tdlevel /= PCM_TD_EOM .or. (pcm%tdlevel == PCM_TD_EOM .and. pcm%which_eps /= PCM_DEBYE_MODEL))) then
-        call message%write('Sorry, initial polarization charges can only be read from input file for a Debye EOM-PCM run.')
-        call message%new_line()
-        call message%write('To spare you some time, Octopus will proceed as if PCMEoMInitialCharges = 0.')
-        call message%warning()
+        call message_g%write('Sorry, initial polarization charges can only be read from input file for a Debye EOM-PCM run.')
+        call message_g%new_line()
+        call message_g%write('To spare you some time, Octopus will proceed as if PCMEoMInitialCharges = 0.')
+        call message_g%warning()
         pcm%initial_asc = 0
       endif
     endif
@@ -418,23 +418,23 @@ contains
     !% <math>\varepsilon(\omega)=\varepsilon_d+\frac{\varepsilon_0-\varepsilon_d}{1-i\omega\tau}</math>    
     !%End
     call parse_variable(namespace, 'PCMDebyeRelaxTime', M_ZERO, pcm%deb%tau)
-    call message%print_var_value(stdout, "PCMDebyeRelaxTime", pcm%deb%tau)
+    call message_g%print_var_value(stdout, "PCMDebyeRelaxTime", pcm%deb%tau)
 
     if (pcm%tdlevel == PCM_TD_EOM .and. pcm%which_eps == PCM_DEBYE_MODEL .and. &
       (abs(pcm%deb%tau) <= M_EPSILON .or. pcm%deb%eps_0 == pcm%deb%eps_d)) then
-      call message%write('Sorry, you have set PCMTDLevel = eom, but you have not included all required Debye model parameters.')
-      call message%new_line()
-      call message%write('You need PCMEpsilonStatic, PCMEpsilonDynamic and PCMDebyeRelaxTime for an EOM TD-PCM run.')
-      call message%new_line()
-      call message%write('Octopus will run using TD-PCM version in equilibrium with solvent at each time.')        
-      call message%warning()
+      call message_g%write('Sorry, you have set PCMTDLevel = eom, but you have not included all required Debye model parameters.')
+      call message_g%new_line()
+      call message_g%write('You need PCMEpsilonStatic, PCMEpsilonDynamic and PCMDebyeRelaxTime for an EOM TD-PCM run.')
+      call message_g%new_line()
+      call message_g%write('Octopus will run using TD-PCM version in equilibrium with solvent at each time.')        
+      call message_g%warning()
       pcm%tdlevel = PCM_TD_EQ
     end if
 
     if (abs(pcm%epsilon_0 - M_ONE) <= M_EPSILON ) then
       if (pcm%tdlevel == PCM_TD_EOM .and. pcm%which_eps == PCM_DRUDE_MODEL) then
-        message%lines(1) = "PCMEpsilonStatic = 1 is incompatible with a Drude-Lorentz EOM-PCM run."
-        call message%fatal(1)
+        message_g%lines(1) = "PCMEpsilonStatic = 1 is incompatible with a Drude-Lorentz EOM-PCM run."
+        call message_g%fatal(1)
       end if
     else
       !%Variable PCMDrudeLOmega
@@ -447,19 +447,19 @@ contains
       !% Default values of <math>\omega_0</math> guarantee to recover static dielectric constant.   
       !%End
       call parse_variable(namespace, 'PCMDrudeLOmega', sqrt(M_ONE/(pcm%epsilon_0 - M_ONE)), pcm%drl%w0)
-      call message%print_var_value(stdout, "PCMDrudeLOmega", pcm%drl%w0)
+      call message_g%print_var_value(stdout, "PCMDrudeLOmega", pcm%drl%w0)
     end if    
 
     if (pcm%tdlevel == PCM_TD_EOM .and. pcm%which_eps == PCM_DRUDE_MODEL .and. pcm%drl%w0 == M_ZERO) then
-      call message%write('Sorry, you have set PCMDrudeLOmega = 0 but this is incompatible with a Drude-Lorentz EOM-PCM run.')
-      call message%new_line()
+      call message_g%write('Sorry, you have set PCMDrudeLOmega = 0 but this is incompatible with a Drude-Lorentz EOM-PCM run.')
+      call message_g%new_line()
       if (pcm%epsilon_0 /= M_ONE) then
-        call message%write('Octopus will run using the default value of PCMDrudeLOmega.')        
-        call message%warning()
+        call message_g%write('Octopus will run using the default value of PCMDrudeLOmega.')        
+        call message_g%warning()
         pcm%drl%w0 = sqrt(M_ONE/(pcm%epsilon_0 - M_ONE))
       else
-        message%lines(1) = "PCMEpsilonStatic = 1 is incompatible with a Drude-Lorentz EOM-PCM run."
-        call message%fatal(1)
+        message_g%lines(1) = "PCMEpsilonStatic = 1 is incompatible with a Drude-Lorentz EOM-PCM run."
+        call message_g%fatal(1)
       end if
     end if
 
@@ -472,7 +472,7 @@ contains
     !% Recall Drude-Lorentz dielectric function: <math>\varepsilon(\omega)=1+\frac{A}{\omega_0^2-\omega^2+i\gamma\omega}</math>   
     !%End
     call parse_variable(namespace, 'PCMDrudeLDamping', M_ZERO, pcm%drl%gm)
-    call message%print_var_value(stdout, "PCMDrudeLDamping", pcm%drl%gm)
+    call message_g%print_var_value(stdout, "PCMDrudeLDamping", pcm%drl%gm)
 
     !< Parameter (<math>A</math>) interpolating Drude-Lorentz dielectric function to its static value (<math>\varepsilon_0</math>).
     pcm%drl%aa = (pcm%epsilon_0 - M_ONE)*pcm%drl%w0**2
@@ -488,11 +488,11 @@ contains
     !% See [G. Gil, et al., J. Chem. Theory Comput., 2019, 15 (4), pp 2306–2319].
     !%End
     call parse_variable(namespace, 'PCMLocalField', .false., pcm%localf)
-    call message%print_var_value(stdout, "PCMLocalField", pcm%localf)
+    call message_g%print_var_value(stdout, "PCMLocalField", pcm%localf)
 
     if (pcm%localf .and. ((.not.external_potentials_present) .and. (.not.pcm%kick_is_present))) then
-      message%lines(1) = "Sorry, you have set PCMLocalField = yes, but you have not included any external potentials."
-      call message%fatal(1)
+      message_g%lines(1) = "Sorry, you have set PCMLocalField = yes, but you have not included any external potentials."
+      call message_g%fatal(1)
     end if
 
     !%Variable PCMSolute
@@ -505,14 +505,14 @@ contains
     !% activating the solvent polarization due to the applied field (PCMLocalField=yes) allows to include only local field effects. 
     !%End
     call parse_variable(namespace, 'PCMSolute', .true., pcm%solute)
-    call message%print_var_value(stdout, "PCMSolute", pcm%solute)
+    call message_g%print_var_value(stdout, "PCMSolute", pcm%solute)
 
     if (pcm%run_pcm .and. (.not. pcm%solute)) then
-      call message%write('N.B. This PCM run do not consider the polarization effects due to the solute.')        
-      call message%warning()
+      call message_g%write('N.B. This PCM run do not consider the polarization effects due to the solute.')        
+      call message_g%warning()
       if (.not. pcm%localf) then
-        message%lines(1) = "You have activated a PCM run without polarization effects. Octopus will halt."
-        call message%fatal(1)
+        message_g%lines(1) = "You have activated a PCM run without polarization effects. Octopus will halt."
+        call message_g%fatal(1)
       end if
     end if
 
@@ -528,27 +528,27 @@ contains
     !%  following an equation of motion. When Debye dielectric model is used, just a part of the potential behaves as another kick.
     !%End
     call parse_variable(namespace, 'PCMKick', .false., pcm%kick_like)
-    call message%print_var_value(stdout, "PCMKick", pcm%kick_like)
+    call message_g%print_var_value(stdout, "PCMKick", pcm%kick_like)
 
     if (pcm%kick_like .and. (.not. pcm%run_pcm)) then
-      message%lines(1) = "PCMKick option can only be activated when PCMCalculation = yes. Octopus will halt."
-      call message%fatal(1)
+      message_g%lines(1) = "PCMKick option can only be activated when PCMCalculation = yes. Octopus will halt."
+      call message_g%fatal(1)
     end if
 
     if (pcm%kick_like .and. (.not. pcm%localf)) then
-      message%lines(1) = "PCMKick option can only be activated when a PCMLocalField = yes. Octopus will halt."
-      call message%fatal(1)
+      message_g%lines(1) = "PCMKick option can only be activated when a PCMLocalField = yes. Octopus will halt."
+      call message_g%fatal(1)
     endif
 
     if (pcm%kick_like .and. (.not. pcm%kick_is_present)) then
-      message%lines(1) = "Sorry, you have set PCMKick = yes, but you have not included any kick."
-      call message%fatal(1)
+      message_g%lines(1) = "Sorry, you have set PCMKick = yes, but you have not included any kick."
+      call message_g%fatal(1)
     endif
 
     if (pcm%kick_is_present .and. pcm%run_pcm .and. (.not. pcm%localf)) then
-      message%lines(1) = "You have set up a PCM calculation with a kick without local field effects."
-      message%lines(2) = "Please, reconsider if you want the kick to be relevant for the PCM run."
-      call message%warning(2)
+      message_g%lines(1) = "You have set up a PCM calculation with a kick without local field effects."
+      message_g%lines(2) = "Please, reconsider if you want the kick to be relevant for the PCM run."
+      call message_g%warning(2)
     end if
     
     !%Variable PCMUpdateIter
@@ -559,7 +559,7 @@ contains
     !% Defines how often the PCM potential is updated during time propagation.
     !%End
     call parse_variable(namespace, 'PCMUpdateIter', 1, pcm%update_iter)
-    call message%print_var_value(stdout, "PCMUpdateIter", pcm%update_iter)
+    call message_g%print_var_value(stdout, "PCMUpdateIter", pcm%update_iter)
 
     !%Variable PCMGamessBenchmark
     !%Type logical
@@ -599,9 +599,9 @@ contains
     call parse_variable(namespace, 'PCMQtotTol', CNST(0.5), pcm%q_tot_tol)
 
     if (pcm%renorm_charges) then
-      message%lines(1) = "Info: Polarization charges will be renormalized"
-      message%lines(2) = "      if |Q_tot_PCM - Q_M| > PCMQtotTol"
-      call message%info(2)
+      message_g%lines(1) = "Info: Polarization charges will be renormalized"
+      message_g%lines(2) = "      if |Q_tot_PCM - Q_M| > PCMQtotTol"
+      call message_g%info(2)
     end if
 
     !%Variable PCMSmearingFactor
@@ -614,14 +614,14 @@ contains
     !% reaction potential in real-space is defined by using point charges.
     !%End
     call parse_variable(namespace, 'PCMSmearingFactor', M_ONE, pcm%gaussian_width)
-    call message%print_var_value(stdout, "PCMSmearingFactor", pcm%gaussian_width)
+    call message_g%print_var_value(stdout, "PCMSmearingFactor", pcm%gaussian_width)
 
     if (abs(pcm%gaussian_width) <= M_EPSILON) then
-      message%lines(1) = "Info: PCM potential will be defined in terms of polarization point charges"
-      call message%info(1)
+      message_g%lines(1) = "Info: PCM potential will be defined in terms of polarization point charges"
+      call message_g%info(1)
     else
-      message%lines(1) = "Info: PCM potential is regularized to avoid Coulomb singularity"
-      call message%info(1)        
+      message_g%lines(1) = "Info: PCM potential is regularized to avoid Coulomb singularity"
+      call message_g%info(1)        
     end if
 
     call io_mkdir('pcm', namespace)
@@ -729,7 +729,7 @@ contains
       !% Any two tesserae having smaller distance in the starting tesselation will be merged together. 
       !%End
       call parse_variable(namespace, 'PCMTessMinDistance', CNST(0.1), min_distance)
-      call message%print_var_value(stdout, "PCMTessMinDistance", min_distance)
+      call message_g%print_var_value(stdout, "PCMTessMinDistance", min_distance)
 
       !> Counting the number of tesserae and generating the Van der Waals discretized surface of the solute system
       call cav_gen(subdivider, min_distance, pcm%n_spheres, pcm%spheres, pcm%n_tesserae, dum2, pcm%info_unit)
@@ -747,8 +747,8 @@ contains
 
       SAFE_DEALLOCATE_A(dum2)
 
-      message%lines(1) = "Info: van der Waals surface has been calculated"
-      call message%info(1)
+      message_g%lines(1) = "Info: van der Waals surface has been calculated"
+      call message_g%info(1)
 
     else
 
@@ -757,8 +757,8 @@ contains
       read(iunit,*) pcm%n_tesserae
 
       if (pcm%n_tesserae > MXTS) then
-        write(message%lines(1),'(a,I5,a,I5)') "total number of tesserae", pcm%n_tesserae, ">", MXTS
-        call message%warning(1)
+        write(message_g%lines(1),'(a,I5,a,I5)') "total number of tesserae", pcm%n_tesserae, ">", MXTS
+        call message_g%warning(1)
       end if
 
       SAFE_ALLOCATE(pcm%tess(1:pcm%n_tesserae))
@@ -795,8 +795,8 @@ contains
       end do
 
       call io_close(iunit)
-      message%lines(1) = "Info: van der Waals surface has been read from " // trim(pcm%input_cavity)
-      call message%info(1)
+      message_g%lines(1) = "Info: van der Waals surface has been read from " // trim(pcm%input_cavity)
+      call message_g%info(1)
     end if
 
     if (mpi_grp_is_root(mpi_world)) then
@@ -968,8 +968,8 @@ contains
 
     end if
 
-    message%lines(1) = "Info: PCM response matrices has been evaluated"
-    call message%info(1)
+    message_g%lines(1) = "Info: PCM response matrices has been evaluated"
+    call message_g%info(1)
     
     !%Variable PCMCalcMethod
     !%Type integer
@@ -984,7 +984,7 @@ contains
     !% Solving the Poisson equation for the polarization charge density.
     !%End
     call parse_variable(namespace, 'PCMCalcMethod', PCM_CALC_DIRECT, pcm%calc_method)
-    call message%print_var_option(stdout, "PCMCalcMethod", pcm%calc_method)
+    call message_g%print_var_option(stdout, "PCMCalcMethod", pcm%calc_method)
 
 
     if (pcm%calc_method == PCM_CALC_POISSON) then
@@ -1008,15 +1008,15 @@ contains
         end if
       end do
       if (changed_default_nn) then
-        call message%write('PCM nearest neighbors have been reduced from ')
-        call message%write(default_nn)
-        call message%write(' to ')
-        call message%write(pcm%tess_nn)
-        call message%new_line()
-        call message%write('in order to fit them into the mesh.')        
-        call message%new_line()
-        call message%write('This may produce unexpected results. ')        
-        call message%warning()
+        call message_g%write('PCM nearest neighbors have been reduced from ')
+        call message_g%write(default_nn)
+        call message_g%write(' to ')
+        call message_g%write(pcm%tess_nn)
+        call message_g%new_line()
+        call message_g%write('in order to fit them into the mesh.')        
+        call message_g%new_line()
+        call message_g%write('This may produce unexpected results. ')        
+        call message_g%warning()
       end if
 
 
@@ -1033,13 +1033,13 @@ contains
       !% equal to the width used for the gaussian smearing.
       !%End
       call parse_variable(namespace, 'PCMChargeSmearNN', pcm%tess_nn, pcm%tess_nn)
-      call message%print_var_value(stdout, "PCMChargeSmearNN", pcm%tess_nn)
+      call message_g%print_var_value(stdout, "PCMChargeSmearNN", pcm%tess_nn)
       
       call pcm_poisson_sanity_check(pcm, grid%mesh)
       
     end if
     
-    if (pcm%run_pcm) call message%print_stress(stdout)
+    if (pcm%run_pcm) call message_g%print_stress(stdout)
 
     if (pcm%calc_method == PCM_CALC_POISSON) then
       SAFE_ALLOCATE(pcm%rho_n(1:grid%mesh%np_part))
@@ -1451,8 +1451,8 @@ contains
     
     if (pcm%localf .and. ( (.not.present(E_int_e_ext)) .or. &
                            (.not.present(E_int_n_ext))      ) ) then
-      message%lines(1) = "pcm_elect_energy: There are lacking terms in subroutine call."
-      call message%fatal(1)
+      message_g%lines(1) = "pcm_elect_energy: There are lacking terms in subroutine call."
+      call message_g%fatal(1)
     else if (pcm%localf .and. ( present(E_int_e_ext) .and. &
                                 present(E_int_n_ext)       ) ) then
       E_int_e_ext = M_ZERO
@@ -1706,10 +1706,10 @@ contains
     PUSH_SUB(pcm_poisson_sanity_check)
 
     if (.not. pcm_nn_in_mesh(pcm, mesh)) then 
-      message%lines(1) = 'The simulation box is too small to contain all the requested'
-      message%lines(2) = 'nearest neighbors for each tessera.'
-      message%lines(3) = 'Consider using a larger box or reduce PCMChargeSmearNN.'
-      call message%warning(3)
+      message_g%lines(1) = 'The simulation box is too small to contain all the requested'
+      message_g%lines(2) = 'nearest neighbors for each tessera.'
+      message_g%lines(3) = 'Consider using a larger box or reduce PCMChargeSmearNN.'
+      call message_g%warning(3)
     end if
 
     POP_SUB(pcm_poisson_sanity_check)
@@ -1834,12 +1834,12 @@ contains
 
     if (debug%info) then  
       qtot = dmf_integrate(mesh, rho)
-      call message%write(' PCM charge density integrates to q = ')
-      call message%write(qtot)
-      call message%write(' (qtot = ')
-      call message%write(q_pcm_tot)
-      call message%write(')')
-      call message%info()
+      call message_g%write(' PCM charge density integrates to q = ')
+      call message_g%write(qtot)
+      call message_g%write(' (qtot = ')
+      call message_g%write(q_pcm_tot)
+      call message_g%write(')')
+      call message_g%info()
       
       ! Keep this here for debug purposes.    
       call dio_function_output(io_function_fill_how("VTK"), ".", "rho_pcm", pcm%namespace, &
@@ -1881,8 +1881,8 @@ contains
       call pcm_pot_rs_poisson(v_pcm, psolver, rho)
 
     case default
-      message%lines(1) = "BAD BAD BAD"
-      call message%fatal(1,only_root_writes = .true.)
+      message_g%lines(1) = "BAD BAD BAD"
+      call message_g%fatal(1,only_root_writes = .true.)
 
     end select
     
@@ -2459,8 +2459,8 @@ contains
         nn = nn + 1
 
         if (nn > MXTS) then !> check the total number of tessera
-          write(message%lines(1),'(a,I5,a,I5)') "total number of tesserae", nn, ">",MXTS
-          call message%warning(1)     
+          write(message_g%lines(1),'(a,I5,a,I5)') "total number of tesserae", nn, ">",MXTS
+          call message_g%warning(1)     
         end if
 
           cts(nn)%point(1)  = xctst(its)
@@ -2800,8 +2800,8 @@ contains
 
       nv = na - 1
       if (nv > 10) then
-        message%lines(1) = "Too many vertices on the tessera"
-        call message%fatal(1)
+        message_g%lines(1) = "Too many vertices on the tessera"
+        call message_g%fatal(1)
       end if
     end do
 
@@ -2847,8 +2847,8 @@ contains
     band_iter = .false.
     do while(.not.(band_iter))
       if (m_iter > 1000) then
-        message%lines(1) = "Too many iterations inside subrotuine inter"
-        call message%fatal(1)     
+        message_g%lines(1) = "Too many iterations inside subrotuine inter"
+        call message_g%fatal(1)     
       end if
 
       band_iter = .true.
@@ -3149,11 +3149,11 @@ contains
     update = this%iter <= 6 .or. mod(this%iter, this%update_iter) == 0
 
     if (debug%info .and. update) then
-      call message%write(' PCM potential updated')
-      call message%new_line()
-      call message%write(' PCM update iteration counter: ')
-      call message%write(this%iter)
-      call message%info()
+      call message_g%write(' PCM potential updated')
+      call message_g%new_line()
+      call message_g%write(' PCM update iteration counter: ')
+      call message_g%write(this%iter)
+      call message_g%info()
     end if
 
   end function pcm_update
@@ -3198,9 +3198,9 @@ contains
     select case (pcm_vdw_type)
     case (PCM_VDW_OPTIMIZED)
       if (species_z(species) > UPTO_XE) then
-        write(message%lines(1),'(a,a)') "The van der Waals radius is missing for element ", trim(species_label(species))
-        write(message%lines(2),'(a)') "Use PCMVdWRadii = pcm_vdw_species, for other vdw radii values" 
-        call message%fatal(2)
+        write(message_g%lines(1),'(a,a)') "The van der Waals radius is missing for element ", trim(species_label(species))
+        write(message_g%lines(2),'(a)') "Use PCMVdWRadii = pcm_vdw_species, for other vdw radii values" 
+        call message_g%fatal(2)
       end if
       ia = species_z(species)
       vdw_r = vdw_radii(ia)*P_Ang
@@ -3208,10 +3208,10 @@ contains
     case (PCM_VDW_SPECIES)
       vdw_r = species_vdw_radius(species)
       if(vdw_r < M_ZERO) then
-        call message%write('The default vdW radius for species '//trim(species_label(species))//':')
-        call message%write(' is not defined. ')
-        call message%write(' Add a positive vdW radius value in %Species block. ')
-        call message%fatal()
+        call message_g%write('The default vdW radius for species '//trim(species_label(species))//':')
+        call message_g%write(' is not defined. ')
+        call message_g%write(' Add a positive vdW radius value in %Species block. ')
+        call message_g%fatal()
       end if
     end select
 
@@ -3298,44 +3298,44 @@ contains
 
     ! re-parsing PCM keywords
     call parse_variable(namespace, 'PCMCalculation', .false., pcm%run_pcm)
-    call message%print_stress(stdout, trim('PCM'))
+    call message_g%print_stress(stdout, trim('PCM'))
     call parse_variable(namespace, 'PCMLocalField', .false., pcm%localf)
-    call message%print_var_value(stdout, "PCMLocalField", pcm%localf)
+    call message_g%print_var_value(stdout, "PCMLocalField", pcm%localf)
     if ( pcm%localf ) then
-      call message%experimental("PCM local field effects in the optical spectrum")
-      call message%write('Beware of possible numerical errors in the optical spectrum due to PCM local field effects,')
-      call message%new_line()
-      call message%write('particularly, when static and high-frequency values of the dielectric functions are large')
-      call message%write(' (>~10 in units of the vacuum permittivity \epsilon_0).')
-      call message%new_line()
-      call message%write('However, PCM local field effects in the optical spectrum work well for polar or non-polar solvents')
-      call message%new_line()
-      call message%write('in the nonequilibrium or equation-of-motion TD-PCM propagation schemes.')
-      call message%warning()
+      call message_g%experimental("PCM local field effects in the optical spectrum")
+      call message_g%write('Beware of possible numerical errors in the optical spectrum due to PCM local field effects,')
+      call message_g%new_line()
+      call message_g%write('particularly, when static and high-frequency values of the dielectric functions are large')
+      call message_g%write(' (>~10 in units of the vacuum permittivity \epsilon_0).')
+      call message_g%new_line()
+      call message_g%write('However, PCM local field effects in the optical spectrum work well for polar or non-polar solvents')
+      call message_g%new_line()
+      call message_g%write('in the nonequilibrium or equation-of-motion TD-PCM propagation schemes.')
+      call message_g%warning()
     end if
     call parse_variable(namespace, 'PCMTDLevel' , PCM_TD_EQ, pcm%tdlevel)
-    call message%print_var_value(stdout, "PCMTDLevel", pcm%tdlevel)
+    call message_g%print_var_value(stdout, "PCMTDLevel", pcm%tdlevel)
 
     ! reading dielectric function model parameters
     call parse_variable(namespace, 'PCMStaticEpsilon' , M_ONE, pcm%deb%eps_0)
-    call message%print_var_value(stdout, "PCMStaticEpsilon", pcm%deb%eps_0)
+    call message_g%print_var_value(stdout, "PCMStaticEpsilon", pcm%deb%eps_0)
     if (pcm%tdlevel == PCM_TD_EOM) then
       call parse_variable(namespace, 'PCMEpsilonModel', PCM_DEBYE_MODEL, pcm%which_eps)
-      call message%print_var_value(stdout, "PCMEpsilonModel", pcm%which_eps)
+      call message_g%print_var_value(stdout, "PCMEpsilonModel", pcm%which_eps)
       if (pcm%which_eps == PCM_DEBYE_MODEL) then
         call parse_variable(namespace, 'PCMDynamicEpsilon', pcm%deb%eps_0, pcm%deb%eps_d)
-        call message%print_var_value(stdout, "PCMDynamicEpsilon", pcm%deb%eps_d)
+        call message_g%print_var_value(stdout, "PCMDynamicEpsilon", pcm%deb%eps_d)
         call parse_variable(namespace, 'PCMDebyeRelaxTime', M_ZERO, pcm%deb%tau)
-        call message%print_var_value(stdout, "PCMDebyeRelaxTime", pcm%deb%tau)
+        call message_g%print_var_value(stdout, "PCMDebyeRelaxTime", pcm%deb%tau)
       else if (pcm%which_eps == PCM_DRUDE_MODEL) then
         call parse_variable(namespace, 'PCMDrudeLOmega', sqrt(M_ONE/(pcm%deb%eps_0-M_ONE)), pcm%drl%w0)
-        call message%print_var_value(stdout, "PCMDrudeLOmega", pcm%drl%w0)
+        call message_g%print_var_value(stdout, "PCMDrudeLOmega", pcm%drl%w0)
         call parse_variable(namespace, 'PCMDrudeLDamping', M_ZERO, pcm%drl%gm)
-        call message%print_var_value(stdout, "PCMDrudeLDamping", pcm%drl%gm)
+        call message_g%print_var_value(stdout, "PCMDrudeLDamping", pcm%drl%gm)
       end if
     else if (pcm%tdlevel == PCM_TD_NEQ) then
       call parse_variable(namespace, 'PCMDynamicEpsilon', pcm%deb%eps_0, pcm%deb%eps_d)
-      call message%print_var_value(stdout, "PCMDynamicEpsilon", pcm%deb%eps_d)
+      call message_g%print_var_value(stdout, "PCMDynamicEpsilon", pcm%deb%eps_d)
     end if
 
     POP_SUB(pcm_min_input_parsing_for_spectrum)

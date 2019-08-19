@@ -37,8 +37,8 @@ subroutine X(bgw_vxc_dat)(bgw, dir, st, gr, hm, psolver, namespace, vxc)
 
 #ifdef HAVE_BERKELEYGW
 
-  if(st%parallel_in_states) call message%not_implemented("BerkeleyGW output parallel in states")
-  if(st%d%kpt%parallel) call message%not_implemented("BerkeleyGW output parallel in k-points")
+  if(st%parallel_in_states) call message_g%not_implemented("BerkeleyGW output parallel in states")
+  if(st%d%kpt%parallel) call message_g%not_implemented("BerkeleyGW output parallel in k-points")
 
   if(mpi_grp_is_root(mpi_world)) iunit = io_open(trim(dir) // 'vxc.dat', namespace, action='write')
   SAFE_ALLOCATE(psi(1:gr%mesh%np, 1))
@@ -159,8 +159,8 @@ subroutine X(bgw_vxc_dat)(bgw, dir, st, gr, hm, psolver, namespace, vxc)
   end if
 
 #else
-    message%lines(1) = "Cannot do BerkeleyGW output: the library was not linked."
-    call message%fatal(1)
+    message_g%lines(1) = "Cannot do BerkeleyGW output: the library was not linked."
+    call message_g%fatal(1)
 #endif
 
   POP_SUB(X(bgw_vxc_dat))
@@ -310,8 +310,8 @@ subroutine X(bgw_write_fs)(iunit, field_r, field_g, shell, nspin, gr, cube, cf, 
     if(is_wfn) then
       field_g(:,:) = field_g(:,:) / sqrt(norm)
       if(abs(norm - M_ONE) > CNST(0.01)) then
-        write(message%lines(1), '(a,f12.6)') 'Wavefunction norm within G-sphere (before renormalization) is only ', norm
-        call message%warning(1)
+        write(message_g%lines(1), '(a,f12.6)') 'Wavefunction norm within G-sphere (before renormalization) is only ', norm
+        call message_g%warning(1)
       end if
     end if
 

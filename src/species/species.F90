@@ -251,7 +251,7 @@ contains
     !%End
     call parse_variable(namespace, 'PseudopotentialAutomaticParameters', .false., automatic)
     
-    if(automatic) call message%experimental('PseudopotentialAutomaticParameters')
+    if(automatic) call message_g%experimental('PseudopotentialAutomaticParameters')
     
     !%Variable PseudopotentialEnergyTolerance
     !%Type float
@@ -326,28 +326,28 @@ contains
     !%End
 
     call parse_variable(namespace, 'PseudopotentialSet', OPTION__PSEUDOPOTENTIALSET__STANDARD, default_pseudopotential_set_id)
-    call message%print_var_option(stdout, 'PseudopotentialSet', default_pseudopotential_set_id)
+    call message_g%print_var_option(stdout, 'PseudopotentialSet', default_pseudopotential_set_id)
     select case (default_pseudopotential_set_id)
     case (OPTION__PSEUDOPOTENTIALSET__NONE)
-      call message%experimental('PseudopotentialSet = none')
+      call message_g%experimental('PseudopotentialSet = none')
     case (OPTION__PSEUDOPOTENTIALSET__SG15)
-      call message%experimental('PseudopotentialSet = sg15')
+      call message_g%experimental('PseudopotentialSet = sg15')
     case (OPTION__PSEUDOPOTENTIALSET__HSCV_LDA)
-      call message%experimental('PseudopotentialSet = hscv_lda')
+      call message_g%experimental('PseudopotentialSet = hscv_lda')
     case (OPTION__PSEUDOPOTENTIALSET__HSCV_PBE)
-      call message%experimental('PseudopotentialSet = hscv_pbe')
+      call message_g%experimental('PseudopotentialSet = hscv_pbe')
     case (OPTION__PSEUDOPOTENTIALSET__PSEUDODOJO_LDA)
-      call message%experimental('PseudopotentialSet = pseudodojo_lda')
+      call message_g%experimental('PseudopotentialSet = pseudodojo_lda')
     case (OPTION__PSEUDOPOTENTIALSET__PSEUDODOJO_LDA_STRINGENT)
-      call message%experimental('PseudopotentialSet = pseudodojo_lda_stringent')
+      call message_g%experimental('PseudopotentialSet = pseudodojo_lda_stringent')
     case (OPTION__PSEUDOPOTENTIALSET__PSEUDODOJO_PBE)
-      call message%experimental('PseudopotentialSet = pseudodojo_pbe')
+      call message_g%experimental('PseudopotentialSet = pseudodojo_pbe')
     case (OPTION__PSEUDOPOTENTIALSET__PSEUDODOJO_PBE_STRINGENT)
-      call message%experimental('PseudopotentialSet = pseudodojo_pbe_stringent')
+      call message_g%experimental('PseudopotentialSet = pseudodojo_pbe_stringent')
     case (OPTION__PSEUDOPOTENTIALSET__PSEUDODOJO_PBESOL)
-      call message%experimental('PseudopotentialSet = pseudodojo_pbesol')
+      call message_g%experimental('PseudopotentialSet = pseudodojo_pbesol')
     case (OPTION__PSEUDOPOTENTIALSET__PSEUDODOJO_PBESOL_STRINGENT)
-      call message%experimental('PseudopotentialSet = pseudodojo_pbesol_stringent')
+      call message_g%experimental('PseudopotentialSet = pseudodojo_pbesol_stringent')
     end select
     if(default_pseudopotential_set_id /= OPTION__PSEUDOPOTENTIALSET__NONE) then
       call pseudo_set_init(default_pseudopotential_set, get_set_directory(default_pseudopotential_set_id), ierr, automatic)
@@ -603,8 +603,8 @@ contains
     !% as defined in PRB 71, 035105 (2005)
     !%End
 
-    call message%obsolete_variable(namespace, 'SpecieAllElectronSigma', 'Species')
-    call message%obsolete_variable(namespace, 'SpeciesAllElectronSigma', 'Species')
+    call message_g%obsolete_variable(namespace, 'SpecieAllElectronSigma', 'Species')
+    call message_g%obsolete_variable(namespace, 'SpeciesAllElectronSigma', 'Species')
 
     ! First, find out if there is a Species block.
     n_spec_block = 0
@@ -642,8 +642,8 @@ contains
     call read_from_set(spec, read_data)
 
    if(read_data == 0) then
-      message%lines(1) = 'Species '//trim(spec%label)//' not found.'
-      call message%fatal(1)
+      message_g%lines(1) = 'Species '//trim(spec%label)//' not found.'
+      call message_g%fatal(1)
     end if
 
     POP_SUB(species_read)
@@ -751,8 +751,8 @@ contains
     select case(spec%type)
     case(SPECIES_SOFT_COULOMB)
       if(print_info_) then
-        write(message%lines(1),'(a,a,a)')    'Species "',trim(spec%label),'" is a soft-Coulomb potential.'
-        call message%info(1)
+        write(message_g%lines(1),'(a,a,a)')    'Species "',trim(spec%label),'" is a soft-Coulomb potential.'
+        call message_g%info(1)
       end if
       spec%niwfs = species_closed_shell_size(2*nint(spec%z_val+M_HALF))
       spec%omega = CNST(0.1)
@@ -776,13 +776,13 @@ contains
 
     case(SPECIES_USDEF)
       if(print_info_) then
-        write(message%lines(1),'(a,a,a)')    'Species "',trim(spec%label),'" is a user-defined potential.'
+        write(message_g%lines(1),'(a,a,a)')    'Species "',trim(spec%label),'" is a user-defined potential.'
         i = min(237, len_trim(spec%potential_formula)-1) ! I subtract 1 to avoid the non-printable C "end-of-string" character.
-        write(message%lines(2),'(a,a)')      '   Potential = ', trim(spec%potential_formula(1:i))
+        write(message_g%lines(2),'(a,a)')      '   Potential = ', trim(spec%potential_formula(1:i))
         if(len(trim(spec%potential_formula)) > 237) then
-          message%lines(2) = trim(message%lines(2))//'...'
+          message_g%lines(2) = trim(message_g%lines(2))//'...'
         end if
-        call message%info(2)
+        call message_g%info(2)
       end if
       spec%niwfs = int(max(2*spec%z_val, CNST(1.0)))
 
@@ -796,32 +796,32 @@ contains
 
     case(SPECIES_FROM_FILE)
       if(print_info_) then
-        write(message%lines(1),'(a)') 'Species read from file "'//trim(spec%filename)//'".'
-        call message%info(1)
+        write(message_g%lines(1),'(a)') 'Species read from file "'//trim(spec%filename)//'".'
+        call message_g%info(1)
       end if
       spec%niwfs = 2*nint(spec%z_val+M_HALF)
       spec%omega = CNST(0.1)
 
     case(SPECIES_JELLIUM)
       if(print_info_) then
-        write(message%lines(1),'(a,a,a)')    'Species "', trim(spec%label), &
+        write(message_g%lines(1),'(a,a,a)')    'Species "', trim(spec%label), &
                                        '" is a jellium sphere / approximated point particle.'
-        write(message%lines(2),'(a,f11.6)')  '   Valence charge = ', spec%z_val
-        write(message%lines(3),'(a,f11.6)')  '   Radius [a.u]   = ', spec%jradius
-        write(message%lines(4),'(a,f11.6)')  '   Rs [a.u]       = ', spec%jradius * spec%z_val ** (-M_ONE/M_THREE)
-        call message%info(4)
+        write(message_g%lines(2),'(a,f11.6)')  '   Valence charge = ', spec%z_val
+        write(message_g%lines(3),'(a,f11.6)')  '   Radius [a.u]   = ', spec%jradius
+        write(message_g%lines(4),'(a,f11.6)')  '   Rs [a.u]       = ', spec%jradius * spec%z_val ** (-M_ONE/M_THREE)
+        call message_g%info(4)
       end if
       spec%niwfs = species_closed_shell_size(2*nint(spec%z_val+M_HALF))
       spec%omega = CNST(0.1)
 
     case(SPECIES_JELLIUM_SLAB)
       if(print_info_) then
-        write(message%lines(1),'(a,a,a)')    'Species "',trim(spec%label),'" is a jellium slab.'
-        write(message%lines(2),'(a,f11.6)')  '   Valence charge  = ', spec%z_val
-        write(message%lines(3),'(a,f11.6)')  '   Thickness [a.u] = ', spec%jthick
-        !write(message%lines(4),'(a,f11.6)')  '   Rs [a.u]       = ', ( M_THREE /( M_FOUR *M_PI ) &
+        write(message_g%lines(1),'(a,a,a)')    'Species "',trim(spec%label),'" is a jellium slab.'
+        write(message_g%lines(2),'(a,f11.6)')  '   Valence charge  = ', spec%z_val
+        write(message_g%lines(3),'(a,f11.6)')  '   Thickness [a.u] = ', spec%jthick
+        !write(message_g%lines(4),'(a,f11.6)')  '   Rs [a.u]       = ', ( M_THREE /( M_FOUR *M_PI ) &
         !& *spec%z_val /( *sb%lsize(1) *sb%lsize(2) ) )**(1.0/3.0) 
-        call message%info(3)
+        call message_g%info(3)
       end if
       spec%niwfs = 2*nint(spec%z_val+M_HALF)
       spec%omega = CNST(0.1)
@@ -829,11 +829,11 @@ contains
     case(SPECIES_FULL_DELTA, SPECIES_FULL_GAUSSIAN)
       spec%has_density = .true.
       if(print_info_) then
-        write(message%lines(1),'(a,a,a)')    'Species "',trim(spec%label),'" is an all-electron atom.'
-        write(message%lines(2),'(a,f11.6)')  '   Z = ', spec%z_val
-        write(message%lines(3),'(a)')  '   Potential will be calculated solving the Poisson equation'
-        write(message%lines(4),'(a)')  '   for a delta density distribution.'
-        call message%info(4)
+        write(message_g%lines(1),'(a,a,a)')    'Species "',trim(spec%label),'" is an all-electron atom.'
+        write(message_g%lines(2),'(a,f11.6)')  '   Z = ', spec%z_val
+        write(message_g%lines(3),'(a)')  '   Potential will be calculated solving the Poisson equation'
+        write(message_g%lines(4),'(a)')  '   for a delta density distribution.'
+        call message_g%info(4)
       end if
       spec%niwfs = species_closed_shell_size(2*nint(spec%z_val+M_HALF))
       spec%omega = spec%z_val
@@ -843,18 +843,18 @@ contains
       spec%omega = spec%z_val
       spec%has_density = .true.
       if(print_info_) then
-        write(message%lines(1),'(a,a,a)')    'Species "', trim(spec%label), '" is a distribution of charge:'
+        write(message_g%lines(1),'(a,a,a)')    'Species "', trim(spec%label), '" is a distribution of charge:'
         if(spec%type == SPECIES_CHARGE_DENSITY) then
-          write(message%lines(2),'(a,a)')   '   rho = ', trim(spec%density_formula)
+          write(message_g%lines(2),'(a,a)')   '   rho = ', trim(spec%density_formula)
         else
-          write(message%lines(2),'(a,a,a)') '   rho is enclosed in volume defined by the "', &
+          write(message_g%lines(2),'(a,a,a)') '   rho is enclosed in volume defined by the "', &
                                       trim(spec%density_formula), '" block'
         end if
-        write(message%lines(3),'(a,f11.6)')  '   Z = ', spec%z_val
-        call message%info(3)
+        write(message_g%lines(3),'(a,f11.6)')  '   Z = ', spec%z_val
+        call message_g%info(3)
       end if
     case default
-      call message%input_error('Species', 'Unknown species type')
+      call message_g%input_error('Species', 'Unknown species type')
     end select
 
     if(.not. species_is_ps(spec)) then
@@ -871,8 +871,8 @@ contains
     call species_iwf_fix_qn(spec, ispin, dim)
 
     if(.not. species_is_ps(spec)) then
-      write(message%lines(1),'(a,i6,a,i6)') 'Number of orbitals: ', spec%niwfs
-      if(print_info_) call message%info(1)
+      write(message_g%lines(1),'(a,i6,a,i6)') 'Number of orbitals: ', spec%niwfs
+      if(print_info_) call message_g%info(1)
       nullify(spec%ps)
     end if
 
@@ -952,26 +952,26 @@ contains
         orbital_radius = max(orbital_radius, species_get_iwf_radius(this, this%iwf_i(iorb, 1), is = 1))
       end do
 
-      call message%write('Info: Pseudopotential for '//trim(this%label), new_line = .true.)
-      call message%write('  Radii for localized parts:', new_line = .true.)
-      call message%write('    local part     = ')
-      call message%write(local_radius, fmt = 'f5.1', units = units_out%length, new_line = .true.)
-      call message%write('    non-local part = ')
-      call message%write(this%ps%rc_max, fmt = 'f5.1', units = units_out%length, new_line = .true.)
-      call message%write('    orbitals       = ')
-      call message%write(orbital_radius, fmt = 'f5.1', units = units_out%length, new_line = .true.)
-      call message%info()
+      call message_g%write('Info: Pseudopotential for '//trim(this%label), new_line = .true.)
+      call message_g%write('  Radii for localized parts:', new_line = .true.)
+      call message_g%write('    local part     = ')
+      call message_g%write(local_radius, fmt = 'f5.1', units = units_out%length, new_line = .true.)
+      call message_g%write('    non-local part = ')
+      call message_g%write(this%ps%rc_max, fmt = 'f5.1', units = units_out%length, new_line = .true.)
+      call message_g%write('    orbitals       = ')
+      call message_g%write(orbital_radius, fmt = 'f5.1', units = units_out%length, new_line = .true.)
+      call message_g%info()
 
       if(max(local_radius, this%ps%rc_max) > CNST(6.0)) then
-        call message%write("One of the radii of your pseudopotential's localized parts seems", new_line = .true.)
-        call message%write("unusually large; check that your pseudopotential is correct.")
-        call message%warning()
+        call message_g%write("One of the radii of your pseudopotential's localized parts seems", new_line = .true.)
+        call message_g%write("unusually large; check that your pseudopotential is correct.")
+        call message_g%warning()
       end if
 
       if(orbital_radius > CNST(20.0)) then
-        call message%write("The radius of the atomic orbitals given by your pseudopotential seems", new_line = .true.)
-        call message%write("unusually large; check that your pseudopotential is correct.")
-        call message%warning()
+        call message_g%write("The radius of the atomic orbitals given by your pseudopotential seems", new_line = .true.)
+        call message_g%write("unusually large; check that your pseudopotential is correct.")
+        call message_g%warning()
       end if
 
       if(debug%info) then
@@ -1590,7 +1590,7 @@ contains
     logical :: bool
 
     if(.not.mpi_grp_is_root(mpi_world)) then
-      call message%debug_newlines(4)
+      call message_g%debug_newlines(4)
       return
     end if
 
@@ -1709,10 +1709,10 @@ contains
     ! as negative values. If we get a non-negative value we know we
     ! are reading a mass.
     if(spec%type >= 0) then
-      call message%write('Found  a species  with the old format.  Please update', new_line = .true.)
-      call message%write('the Species block to the new format, where the second', new_line = .true.)
-      call message%write('column indicates the type of the species.')
-      call message%fatal()
+      call message_g%write('Found  a species  with the old format.  Please update', new_line = .true.)
+      call message_g%write('the Species block to the new format, where the second', new_line = .true.)
+      call message_g%write('column indicates the type of the species.')
+      call message_g%fatal()
     end if
 
     ! now we convert back to positive
@@ -1745,7 +1745,7 @@ contains
     case(SPECIES_PSPIO) ! a pseudopotential file to be handled by the pspio library
 
     case default
-      call message%input_error('Species', "Unknown type for species '"//trim(spec%label)//"'")
+      call message_g%input_error('Species', "Unknown type for species '"//trim(spec%label)//"'")
     end select
 
     spec%mass = -CNST(1.0)
@@ -1777,12 +1777,12 @@ contains
         call parse_block_integer(blk, row, icol + 1, spec%user_lmax)
 
         if(spec%type /= SPECIES_PSEUDO .and. spec%type /= SPECIES_PSPIO) then
-          call message%input_error('Species', &
+          call message_g%input_error('Species', &
             "The 'lmax' parameter in species "//trim(spec%label)//" can only be used with pseudopotential species")
         end if
         
         if(spec%user_lmax < 0) then
-          call message%input_error('Species', &
+          call message_g%input_error('Species', &
                                     "The 'lmax' parameter in species "//trim(spec%label)//" cannot be negative")
         end if
 
@@ -1791,12 +1791,12 @@ contains
         call parse_block_integer(blk, row, icol + 1, spec%user_llocal)
 
         if(spec%type /= SPECIES_PSEUDO .and. spec%type /= SPECIES_PSPIO) then
-          call message%input_error('Species', &
+          call message_g%input_error('Species', &
             "The 'lloc' parameter in species "//trim(spec%label)//" can only be used with pseudopotential species")
         end if
 
         if(spec%user_llocal < 0) then
-          call message%input_error('Species', &
+          call message_g%input_error('Species', &
                                     "The 'lloc' parameter in species "//trim(spec%label)//" cannot be negative")
         end if
 
@@ -1805,12 +1805,12 @@ contains
         call parse_block_integer(blk, row, icol + 1, spec%hubbard_l)
 
         if(spec%type /= SPECIES_PSEUDO .and. spec%type /= SPECIES_PSPIO) then
-          call message%input_error('Species', &
+          call message_g%input_error('Species', &
             "The 'hubbard_l' parameter in species "//trim(spec%label)//" can only be used with pseudopotential species")
         end if
 
         if(spec%hubbard_l < 0) then
-          call message%input_error('Species', &
+          call message_g%input_error('Species', &
                                     "The 'hubbard_l' parameter in species "//trim(spec%label)//" cannot be negative")
         end if
 
@@ -1827,7 +1827,7 @@ contains
         call parse_block_float(blk, row, icol + 1, spec%hubbard_j)
 
         if(abs(spec%hubbard_j-spec%hubbard_l) /= M_HALF) then
-          call message%input_error('Species', "The 'hubbard_j' parameter in species "// &
+          call message_g%input_error('Species', "The 'hubbard_j' parameter in species "// &
                                     trim(spec%label)//" can only be hubbard_l +/- 1/2")
         end if
 
@@ -1845,17 +1845,17 @@ contains
         call check_duplication(OPTION__SPECIES__JELLIUM_RADIUS)
         call parse_block_float(blk, row, icol + 1, spec%jradius)
         spec%jradius = units_to_atomic(units_inp%length, spec%jradius)
-        if(spec%jradius <= M_ZERO) call message%input_error('Species', 'jellium_radius must be positive')
+        if(spec%jradius <= M_ZERO) call message_g%input_error('Species', 'jellium_radius must be positive')
         if(spec%type /= SPECIES_JELLIUM) then
-          call message%input_error('Species', 'jellium_radius can only be used with species_jellium')
+          call message_g%input_error('Species', 'jellium_radius can only be used with species_jellium')
         end if
         
       case(OPTION__SPECIES__GAUSSIAN_WIDTH)
         call check_duplication(OPTION__SPECIES__GAUSSIAN_WIDTH)
         call parse_block_float(blk, row, icol + 1, spec%sigma)
-        if(spec%sigma <= M_ZERO) call message%input_error('Species', 'gaussian_width must be positive')
+        if(spec%sigma <= M_ZERO) call message_g%input_error('Species', 'gaussian_width must be positive')
         if(spec%type /= SPECIES_FULL_GAUSSIAN) then
-          call message%input_error('Species', 'gaussian_width can only be used with species_full_gaussian')
+          call message_g%input_error('Species', 'gaussian_width can only be used with species_full_gaussian')
         end if
 
       case(OPTION__SPECIES__SOFTENING)
@@ -1863,7 +1863,7 @@ contains
         call parse_block_float(blk, row, icol + 1, spec%sc_alpha)
         spec%sc_alpha = units_to_atomic(units_inp%length, spec%sc_alpha)**2
         if(spec%type /= SPECIES_SOFT_COULOMB) then
-          call message%input_error('Species', 'softening can only be used with species_soft_coulomb')
+          call message_g%input_error('Species', 'softening can only be used with species_soft_coulomb')
         end if
 
       case(OPTION__SPECIES__FILE)
@@ -1871,9 +1871,9 @@ contains
         call parse_block_string(blk, row, icol + 1, spec%filename)
 
       case(OPTION__SPECIES__DB_FILE)
-        call message%write("The 'db_file' option for 'Species' block is obsolete. Please use", new_line = .true.)
-        call message%write("the option 'set' or the variable 'PseudopotentialSet' instead.")
-        call message%fatal()
+        call message_g%write("The 'db_file' option for 'Species' block is obsolete. Please use", new_line = .true.)
+        call message_g%write("the option 'set' or the variable 'PseudopotentialSet' instead.")
+        call message_g%fatal()
 
       case(OPTION__SPECIES__SET)
         call check_duplication(OPTION__SPECIES__SET)
@@ -1887,7 +1887,7 @@ contains
         call conv_to_C_string(spec%potential_formula)
 
         if(spec%type /= SPECIES_USDEF) then
-          call message%input_error('Species', 'potential_formula can only be used with species_user_defined')
+          call message_g%input_error('Species', 'potential_formula can only be used with species_user_defined')
         end if
 
       case(OPTION__SPECIES__VOLUME)
@@ -1896,7 +1896,7 @@ contains
         call conv_to_C_string(spec%density_formula)
 
         if(spec%type /= SPECIES_JELLIUM_CHARGE_DENSITY) then
-          call message%input_error('Species', 'volume can only be used with species_jellium_charge_density')
+          call message_g%input_error('Species', 'volume can only be used with species_jellium_charge_density')
         end if
 
       case(OPTION__SPECIES__DENSITY_FORMULA)
@@ -1905,20 +1905,20 @@ contains
         call conv_to_C_string(spec%density_formula)
               
         if(spec%type /= SPECIES_CHARGE_DENSITY) then
-          call message%input_error('Species', 'density_formula can only be used with species_charge_density')
+          call message_g%input_error('Species', 'density_formula can only be used with species_charge_density')
         end if
 
       case(OPTION__SPECIES__THICKNESS)
         call check_duplication(OPTION__SPECIES__THICKNESS)
         call parse_block_float(blk, row, icol + 1, spec%jthick) ! thickness of the jellium slab
 
-        if(spec%jthick <= M_ZERO) call message%input_error('Species', &
+        if(spec%jthick <= M_ZERO) call message_g%input_error('Species', &
           'the value of the thickness parameter in species '//trim(spec%label)//' must be positive.')
 
         spec%jthick = units_to_atomic(units_inp%length, spec%jthick) ! units conversion
 
         if(spec%type /= SPECIES_JELLIUM_SLAB) then
-          call message%input_error('Species', 'thickness can only be used with species_jellium_slab')
+          call message_g%input_error('Species', 'thickness can only be used with species_jellium_slab')
         end if
         
       case(OPTION__SPECIES__VDW_RADIUS)
@@ -1926,7 +1926,7 @@ contains
         call parse_block_float(blk, row, icol + 1, spec%vdw_radius, unit = units_inp%length)
 
       case default
-        call message%input_error('Species', "Unknown parameter in species '"//trim(spec%label)//"'")
+        call message_g%input_error('Species', "Unknown parameter in species '"//trim(spec%label)//"'")
         
       end select
 
@@ -1935,39 +1935,39 @@ contains
     ! CHECK THAT WHAT WE PARSED MAKES SENSE
     
     if(spec%type == SPECIES_SOFT_COULOMB .and. .not. parameter_defined(OPTION__SPECIES__SOFTENING)) then
-      call message%input_error('Species', &
+      call message_g%input_error('Species', &
         "The 'softening' parameter is missing for species "//trim(spec%label))
     end if
 
     if(spec%type == SPECIES_USDEF .and. .not. parameter_defined(OPTION__SPECIES__POTENTIAL_FORMULA)) then
-      call message%input_error('Species', &
+      call message_g%input_error('Species', &
         "The 'potential_formula' parameter is missing for species '"//trim(spec%label)//"'")
     end if
 
     if(spec%type == SPECIES_CHARGE_DENSITY .and. .not. parameter_defined(OPTION__SPECIES__DENSITY_FORMULA)) then
-      call message%input_error('Species', &
+      call message_g%input_error('Species', &
         "The 'density_formula' parameter is missing for species '"//trim(spec%label)//"'")
     end if
     
     if(spec%type == SPECIES_FROM_FILE &
       .and. .not. (parameter_defined(OPTION__SPECIES__FILE) .or. parameter_defined(OPTION__SPECIES__DB_FILE))) then
-      call message%input_error('Species', &
+      call message_g%input_error('Species', &
         "The 'file' or 'db_file' parameter is missing for species '"//trim(spec%label)//"'")
     end if
 
     if(spec%type == SPECIES_JELLIUM_SLAB .and. .not. parameter_defined(OPTION__SPECIES__THICKNESS)) then
-      call message%input_error('Species', &
+      call message_g%input_error('Species', &
         "The 'thickness' parameter is missing for species '"//trim(spec%label)//"'")
     end if
 
     if(spec%type == SPECIES_JELLIUM_CHARGE_DENSITY .and. .not. parameter_defined(OPTION__SPECIES__VOLUME)) then
-      call message%input_error('Species', &
+      call message_g%input_error('Species', &
         "The 'volume' parameter is missing for species '"//trim(spec%label)//"'")
     end if
 
     if(parameter_defined(OPTION__SPECIES__LMAX) .and. parameter_defined(OPTION__SPECIES__LLOC)) then
       if(spec%user_llocal > spec%user_lmax) then
-        call message%input_error('Species', &
+        call message_g%input_error('Species', &
           "the 'lloc' parameter cannot be larger than the 'lmax' parameter in species "//trim(spec%label))
       end if
     end if
@@ -1988,8 +1988,8 @@ contains
         call read_from_set(spec, set_read_data)
 
         if(set_read_data == 0) then
-          call message%write('Species '//trim(spec%label)//' is not defined in the requested pseudopotential set.')
-          call message%fatal()
+          call message_g%write('Species '//trim(spec%label)//' is not defined in the requested pseudopotential set.')
+          call message_g%fatal()
         end if
         
       end if
@@ -1997,8 +1997,8 @@ contains
       call element_init(element, get_symbol(spec%label))
       
       if(.not. element_valid(element)) then
-        call message%write('Cannot determine the element for species '//trim(spec%label)//'.')
-        call message%fatal()
+        call message_g%write('Cannot determine the element for species '//trim(spec%label)//'.')
+        call message_g%fatal()
       end if
 
       spec%z = element_atomic_number(element)
@@ -2009,25 +2009,25 @@ contains
         
       if(spec%mass < CNST(0.0)) then
         spec%mass = element_mass(element)
-        call message%write('Info: default mass for species '//trim(spec%label)//':')
-        call message%write(spec%mass)
-        call message%write(' amu.')
-        call message%info()
+        call message_g%write('Info: default mass for species '//trim(spec%label)//':')
+        call message_g%write(spec%mass)
+        call message_g%write(' amu.')
+        call message_g%info()
       end if
         
       if(spec%vdw_radius < CNST(0.0)) then
         spec%vdw_radius = element_vdw_radius(element)
         if(spec%vdw_radius < CNST(0.0)) then
           spec%vdw_radius = CNST(0.0)
-          call message%write("The default vdW radius for species '"//trim(spec%label)//"' is not defined.", &
+          call message_g%write("The default vdW radius for species '"//trim(spec%label)//"' is not defined.", &
                               new_line = .true.)
-          call message%write("You can specify the vdW radius in %Species block.")
-          call message%warning()
+          call message_g%write("You can specify the vdW radius in %Species block.")
+          call message_g%warning()
         end if
-        call message%write('Info: default vdW radius for species '//trim(spec%label)//':')
-        call message%write(spec%vdw_radius)
-        call message%write(' [b]')
-        call message%info()
+        call message_g%write('Info: default vdW radius for species '//trim(spec%label)//':')
+        call message_g%write(spec%vdw_radius)
+        call message_g%write(' [b]')
+        call message_g%info()
       end if
 
       call element_end(element)
@@ -2035,18 +2035,18 @@ contains
     case default
       if(.not. parameter_defined(OPTION__SPECIES__MASS)) then
         spec%mass = M_ONE
-        call message%write('Info: default mass for species '//trim(spec%label)//':')
-        call message%write(spec%mass)
-        call message%write(' amu.')
-        call message%info()
+        call message_g%write('Info: default mass for species '//trim(spec%label)//':')
+        call message_g%write(spec%mass)
+        call message_g%write(' amu.')
+        call message_g%info()
       end if
 
       if(.not. parameter_defined(OPTION__SPECIES__VDW_RADIUS)) then
         spec%vdw_radius = M_ZERO
-        call message%write('Info: default mass for species '//trim(spec%label)//':')
-        call message%write(spec%vdw_radius)
-        call message%write(' [b]')
-        call message%info()
+        call message_g%write('Info: default mass for species '//trim(spec%label)//':')
+        call message_g%write(spec%vdw_radius)
+        call message_g%write(' [b]')
+        call message_g%info()
       end if
 
       if(.not. parameter_defined(OPTION__SPECIES__VALENCE)) then
@@ -2054,7 +2054,7 @@ contains
           spec%type == SPECIES_FROM_FILE) then
           spec%z_val = CNST(0.0)
         else
-          call message%input_error('Species', &
+          call message_g%input_error('Species', &
             "The 'valence' parameter is missing for species '"//trim(spec%label)//"'")
         end if
       end if
@@ -2087,7 +2087,7 @@ contains
       PUSH_SUB(read_from_block.check_duplication)
 
       if(parameter_defined(param)) then
-        call message%input_error('Species', "Duplicated parameter in species '"//trim(spec%label)//"'")
+        call message_g%input_error('Species', "Duplicated parameter in species '"//trim(spec%label)//"'")
       end if
 
       call iihash_insert(read_parameters, int(-param), 1)

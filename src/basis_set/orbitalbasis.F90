@@ -120,7 +120,7 @@ contains
   !% of the corresponding atom.
   !%End
   call parse_variable(namespace, 'AOTruncation', OPTION__AOTRUNCATION__AO_FULL, this%truncation)
-  call message%print_var_option(stdout, 'AOTruncation', this%truncation)
+  call message_g%print_var_option(stdout, 'AOTruncation', this%truncation)
 
   !%Variable AOThreshold
   !%Type float
@@ -134,8 +134,8 @@ contains
   !% However increasing this value increases the number of grid points covered by the orbitals and directly affect performances.
   !%End
   call parse_variable(namespace, 'AOThreshold', CNST(0.01), this%threshold)
-  if(this%threshold <= M_ZERO) call message%input_error('AOThreshold')
-  call message%print_var_value(stdout, 'AOThreshold', this%threshold)
+  if(this%threshold <= M_ZERO) call message_g%input_error('AOThreshold')
+  call message_g%print_var_value(stdout, 'AOThreshold', this%threshold)
 
   !%Variable AONormalize
   !%Type logical
@@ -145,7 +145,7 @@ contains
   !% If set to yes, Octopus will normalize the atomic orbitals
   !%End
   call parse_variable(namespace, 'AONormalize', .true., this%normalize)
-  call message%print_var_value(stdout, 'AONormalize', this%normalize)
+  call message_g%print_var_value(stdout, 'AONormalize', this%normalize)
 
   !%Variable AOSubmeshForPeriodic
   !%Type logical
@@ -158,7 +158,7 @@ contains
   !% At the moment this option is not compatible with Loewdin orthogonalization
   !%End
   call parse_variable(namespace, 'AOSubmeshForPeriodic', .false., this%submeshforperiodic)
-  call message%print_var_value(stdout, 'AOSubmeshForPeriodic', this%submeshforperiodic)
+  call message_g%print_var_value(stdout, 'AOSubmeshForPeriodic', this%submeshforperiodic)
 
   !%Variable AOLoewdin
   !%Type logical
@@ -171,11 +171,11 @@ contains
   !% not yet implemented for isolated systems, and seems to lead to important egg-box effect
   !%End
   call parse_variable(namespace, 'AOLoewdin', .false., this%orthogonalization)
-  call message%print_var_value(stdout, 'AOLoewdin', this%orthogonalization)
-  if(this%orthogonalization) call message%experimental("AOLoewdin")
+  call message_g%print_var_value(stdout, 'AOLoewdin', this%orthogonalization)
+  if(this%orthogonalization) call message_g%experimental("AOLoewdin")
 
   if(this%orthogonalization .and. this%submeshforperiodic) &
-    call message%not_implemented("AOLoewdin=yes with AOSubmeshForPeriodic=yes.") 
+    call message_g%not_implemented("AOLoewdin=yes with AOSubmeshForPeriodic=yes.") 
 
   if(debug%info) then
     write(this%debugdir, '(a)') 'debug/ao_basis'

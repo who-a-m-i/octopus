@@ -84,8 +84,8 @@ contains
 
 #ifndef HAVE_SPARSKIT
     if(use_sparskit) then
-      message%lines(1) = "Cannot use SPARSKIT in Crank-Nicolson propagator: not compiled with SPARSKIT support."
-      call message%fatal(1)
+      message_g%lines(1) = "Cannot use SPARSKIT in Crank-Nicolson propagator: not compiled with SPARSKIT support."
+      call message_g%fatal(1)
     end if
 #endif
 
@@ -157,9 +157,9 @@ contains
             propagator_qmr_prec, iter, dres, cgtol, showprogress = .false., converged = converged)
 
           if(.not.converged) then
-            write(message%lines(1),'(a)')        'The linear solver used for the Crank-Nicolson'
-            write(message%lines(2),'(a,es14.4)') 'propagator did not converge: Residual = ', dres
-            call message%warning(2)
+            write(message_g%lines(1),'(a)')        'The linear solver used for the Crank-Nicolson'
+            write(message_g%lines(2),'(a,es14.4)') 'propagator did not converge: Residual = ', dres
+            call message_g%warning(2)
           end if
 
         end if

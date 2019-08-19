@@ -112,22 +112,22 @@
           call numder_ridders(x(j), dx, dfn(j), abserr(j), opt_control_function_forward)
         end do
 
-        write(message%lines(1), '(70(''#''))')
-        write(message%lines(2), *) &
+        write(message_g%lines(1), '(70(''#''))')
+        write(message_g%lines(2), *) &
           'GRADIENT (FORWARD-BACKWARD) |         GRADIENT (NUMERICAL)          |'
-        call message%info(2)
+        call message_g%info(2)
         do j = 1, n
-          write(message%lines(1), '(4x,es18.8,7x,a,3x,es18.8,a4,es8.1,6x,a)') &
+          write(message_g%lines(1), '(4x,es18.8,7x,a,3x,es18.8,a4,es8.1,6x,a)') &
             df(j), '|', dfn(j), ' +/-', abserr(j), '|'
-          call message%info(1)
+          call message_g%info(1)
         end do
-        write(message%lines(1), '(70(''-''))')
-        write(message%lines(2), '(a,es18.8,''                                        |'')') 'ABS DIFF = ', &
+        write(message_g%lines(1), '(70(''-''))')
+        write(message_g%lines(2), '(a,es18.8,''                                        |'')') 'ABS DIFF = ', &
           sqrt(dot_product(df-dfn,df-dfn))
-        write(message%lines(3), '(a,es18.8,''                                        |'')') 'REL DIFF = ', &
+        write(message_g%lines(3), '(a,es18.8,''                                        |'')') 'REL DIFF = ', &
           sqrt(dot_product(df-dfn,df-dfn))/sqrt(dot_product(dfn, dfn))
-        write(message%lines(4), '(70(''#''))')
-        call message%info(4)
+        write(message_g%lines(4), '(70(''#''))')
+        call message_g%info(4)
 
         SAFE_DEALLOCATE_A(dfn)
         SAFE_DEALLOCATE_A(x_)
@@ -169,16 +169,16 @@
     j2 = controlfunction_j2(par_)
     j1 = j - j2
 
-    write(message%lines(1), '(a,i5)') 'CG optimization iteration #', iter
-    call message%print_stress(stdout, trim(message%lines(1)))
+    write(message_g%lines(1), '(a,i5)') 'CG optimization iteration #', iter
+    call message_g%print_stress(stdout, trim(message_g%lines(1)))
 
-    write(message%lines(1), '(6x,a,f12.5)')    " => J1       = ", j1
-    write(message%lines(2), '(6x,a,f12.5)')    " => J        = ", j
-    write(message%lines(3), '(6x,a,f12.5)')    " => J2       = ", j2
-    write(message%lines(4), '(6x,a,f12.5)')    " => Fluence  = ", fluence
-    write(message%lines(5), '(6x,a,f12.5)')    " => Delta    = ", maxdx
-    call message%info(5)
-    call message%print_stress(stdout)
+    write(message_g%lines(1), '(6x,a,f12.5)')    " => J1       = ", j1
+    write(message_g%lines(2), '(6x,a,f12.5)')    " => J        = ", j
+    write(message_g%lines(3), '(6x,a,f12.5)')    " => J2       = ", j2
+    write(message_g%lines(4), '(6x,a,f12.5)')    " => Fluence  = ", fluence
+    write(message_g%lines(5), '(6x,a,f12.5)')    " => Delta    = ", maxdx
+    call message_g%info(5)
+    call message_g%print_stress(stdout)
 
     call iteration_manager_main(iterator, j, j1, j2, real(maxdx, REAL_PRECISION))
 
@@ -250,16 +250,16 @@
     j2 = controlfunction_j2(par_)
     j1 = j - j2
 
-    write(message%lines(1), '(a,i5)') 'Direct optimization iteration #', iter
-    call message%print_stress(stdout, trim(message%lines(1)))
+    write(message_g%lines(1), '(a,i5)') 'Direct optimization iteration #', iter
+    call message_g%print_stress(stdout, trim(message_g%lines(1)))
 
-    write(message%lines(1), '(6x,a,f12.5)')    " => J1       = ", j1
-    write(message%lines(2), '(6x,a,f12.5)')    " => J        = ", j
-    write(message%lines(3), '(6x,a,f12.5)')    " => J2       = ", j2
-    write(message%lines(4), '(6x,a,f12.5)')    " => Fluence  = ", fluence
-    write(message%lines(5), '(6x,a,f12.5)')    " => Delta    = ", maxdx
-    call message%info(5)
-    call message%print_stress(stdout)
+    write(message_g%lines(1), '(6x,a,f12.5)')    " => J1       = ", j1
+    write(message_g%lines(2), '(6x,a,f12.5)')    " => J        = ", j
+    write(message_g%lines(3), '(6x,a,f12.5)')    " => J2       = ", j2
+    write(message_g%lines(4), '(6x,a,f12.5)')    " => Fluence  = ", fluence
+    write(message_g%lines(5), '(6x,a,f12.5)')    " => Delta    = ", maxdx
+    call message_g%info(5)
+    call message_g%print_stress(stdout)
 
     call iteration_manager_main(iterator, j, j1, j2, real(maxdx, REAL_PRECISION))
 

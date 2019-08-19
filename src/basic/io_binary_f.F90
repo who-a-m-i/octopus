@@ -125,8 +125,8 @@ contains
 #else
     ierr = -1
     file_handle = -1
-    message%lines(1) = "Internal error: cannot call io_binary parallel routines without MPI2."
-    call message%fatal(1)
+    message_g%lines(1) = "Internal error: cannot call io_binary parallel routines without MPI2."
+    call message_g%fatal(1)
 #endif
 
     POP_SUB(io_binary_parallel_start)
@@ -142,8 +142,8 @@ contains
 #ifdef HAVE_MPI2
       call MPI_File_close(file_handle, mpi_err)
 #else
-    message%lines(1) = "Internal error: cannot call io_binary parallel routines without MPI2."
-    call message%fatal(1)
+    message_g%lines(1) = "Internal error: cannot call io_binary parallel routines without MPI2."
+    call message_g%fatal(1)
 #endif
 
     POP_SUB(io_binary_parallel_end)
@@ -168,8 +168,8 @@ contains
     ! if the type of the file is real, then read real numbers and convert to complex
     if (number_type /= TYPE_DOUBLE_COMPLEX) then
       if (debug%info) then
-        write(message%lines(1),'(a,i2,a,i2)') "Debug: Found type = ", number_type, " instead of ", TYPE_DOUBLE_COMPLEX
-        call message%info(1)
+        write(message_g%lines(1),'(a,i2,a,i2)') "Debug: Found type = ", number_type, " instead of ", TYPE_DOUBLE_COMPLEX
+        call message_g%info(1)
       end if
 
       SAFE_ALLOCATE(read_ff(1:np))
@@ -203,8 +203,8 @@ contains
     ! if the type of the file is real, then read real numbers and convert to complex
     if (number_type /= TYPE_DOUBLE_COMPLEX) then
       if (debug%info) then
-        write(message%lines(1),'(a,i2,a,i2)') "Debug: Found type = ", number_type, " instead of ", TYPE_DOUBLE_COMPLEX
-        call message%info(1)
+        write(message_g%lines(1),'(a,i2,a,i2)') "Debug: Found type = ", number_type, " instead of ", TYPE_DOUBLE_COMPLEX
+        call message_g%info(1)
       end if
       SAFE_ALLOCATE(read_ff(1:np))
       call dread_parallel(fname, comm, xlocal, np, read_ff, ierr)

@@ -116,7 +116,7 @@ contains
         case(OPTION__VOLUME__VOL_SLAB)
           n_par = 1 ! thickness of the slab
         case default
-          call message%input_error('Species', "Unknown type for volume")
+          call message_g%input_error('Species', "Unknown type for volume")
         end select
 
         do j = 1, n_par
@@ -125,7 +125,7 @@ contains
 
       end do
     else
-      call message%input_error('Volume')
+      call message_g%input_error('Volume')
     end if
   end subroutine volume_read_from_block
 

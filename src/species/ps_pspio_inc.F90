@@ -36,7 +36,7 @@
 
     PUSH_SUB(ps_pspio_init)
 
-    call message%experimental("Reading pseudopotential file using PSPIO library")
+    call message_g%experimental("Reading pseudopotential file using PSPIO library")
 
     ! Find out the file
     filename2 = trim(filename)
@@ -50,15 +50,15 @@
         if(found) exit
 
         if (idir == size(psp_dir)) then
-          message%lines(1) = "Pseudopotential file '" // trim(filename) // " not found"
-          call message%fatal(1)
+          message_g%lines(1) = "Pseudopotential file '" // trim(filename) // " not found"
+          call message_g%fatal(1)
         end if
       end do
     end if
 
-    message%lines(1) = "Reading pseudopotential from file:"
-    write(message%lines(2), '(6x,3a)') "'", trim(filename2), "'"
-    call message%info(2)
+    message_g%lines(1) = "Reading pseudopotential from file:"
+    write(message_g%lines(2), '(6x,3a)') "'", trim(filename2), "'"
+    call message_g%info(2)
 
     ! Init pspio data structure and parse file
     call check_error(fpspio_pspdata_alloc(pspdata))
@@ -72,8 +72,8 @@
     ps%conf%z = nint(z)
     call ps_pspio_read_info(ps, pspdata)
     lmax = ps%lmax
-    write(message%lines(1), '(a,i2,a)') "Info: l = ", ps%lmax, " is maximum angular momentum considered."
-    call message%info(1)
+    write(message_g%lines(1), '(a,i2,a)') "Info: l = ", ps%lmax, " is maximum angular momentum considered."
+    call message_g%info(1)
 
     ! Mesh
     call ps_pspio_read_mesh(ps, pspdata)
@@ -97,7 +97,7 @@
 
     !No variable description, as it is already in ps.F90
     call parse_variable(namespace, 'SpeciesProjectorSphereThreshold', CNST(0.001), ps%projectors_sphere_threshold)
-    if(ps%projectors_sphere_threshold <= M_ZERO) call message%input_error('SpeciesProjectorSphereThreshold')
+    if(ps%projectors_sphere_threshold <= M_ZERO) call message_g%input_error('SpeciesProjectorSphereThreshold')
     ps%has_long_range = .true.
     ps%is_separated = .false.
 
@@ -107,8 +107,8 @@
     call fpspio_pspdata_free(pspdata)
 
 #else
-    message%lines(1) = 'PSPIO selected for pseudopotential parsing, but the code was compiled witout PSPIO support.'
-    call message%fatal(1)
+    message_g%lines(1) = 'PSPIO selected for pseudopotential parsing, but the code was compiled witout PSPIO support.'
+    call message_g%fatal(1)
 #endif
 
     POP_SUB(ps_pspio_init)
@@ -148,8 +148,8 @@
     r_tmp => fpspio_mesh_get_r(mesh)
     if(any(abs(r_tmp(2:ps%g%nrval)) < M_EPSILON)) then
       ! only the first point is allowed to be zero
-      message%lines(1) = "Illegal zero values in PSPIO radial grid"
-      call message%fatal(1)
+      message_g%lines(1) = "Illegal zero values in PSPIO radial grid"
+      call message_g%fatal(1)
     end if
     if (abs(r_tmp(1)) <= M_EPSILON) then
       ip = 1
@@ -362,8 +362,8 @@
 
     PUSH_SUB(ps_pspio_read_potentials)
 
-    message%lines(1) = "Not yet implemented"
-    call message%fatal(1)
+    message_g%lines(1) = "Not yet implemented"
+    call message_g%fatal(1)
 
     POP_SUB(ps_pspio_read_potentials)
   end subroutine ps_pspio_read_potentials
@@ -416,8 +416,8 @@
 
     if (ierr /= PSPIO_SUCCESS) then
       call fpspio_error_flush()
-      message%lines(1) = "PSPIO error"
-      call message%fatal(1)
+      message_g%lines(1) = "PSPIO error"
+      call message_g%fatal(1)
     end if
 
   end subroutine check_error

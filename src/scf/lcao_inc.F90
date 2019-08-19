@@ -114,8 +114,8 @@ subroutine X(lcao_simple)(this, st, gr, geo, start)
 
   lcao_start = optional_default(start, 1)
 
-  call message%write('Info: Initializing states using atomic orbitals.')
-  call message%info()
+  call message_g%write('Info: Initializing states using atomic orbitals.')
+  call message_g%info()
 
   SAFE_ALLOCATE(orbital(1:gr%mesh%np, 1:st%d%dim))
 
@@ -181,9 +181,9 @@ subroutine X(lcao_wf)(this, st, gr, geo, hm, psolver, namespace, start)
 
   PUSH_SUB(X(lcao_wf))
   
-  write(message%lines(1),'(a,i6,a)') 'Info: Performing initial LCAO calculation with ', &
+  write(message_g%lines(1),'(a,i6,a)') 'Info: Performing initial LCAO calculation with ', &
        this%norbs,' orbitals.'
-  call message%info(1)
+  call message_g%info(1)
           
 
   nst = min(st%nst, this%norbs)
@@ -203,8 +203,8 @@ subroutine X(lcao_wf)(this, st, gr, geo, hm, psolver, namespace, start)
   ie = 0
   maxmtxel = this%norbs * (this%norbs + 1)/2
 
-  message%lines(1) = "Info: Getting Hamiltonian matrix elements."
-  call message%info(1)
+  message_g%lines(1) = "Info: Getting Hamiltonian matrix elements."
+  call message_g%info(1)
 
   if(mpi_grp_is_root(mpi_world)) call loct_progress_bar(-1, maxmtxel)
 
@@ -430,8 +430,8 @@ subroutine X(init_orbitals)(this, st, gr, geo, start)
   if(iorb <= this%norbs) then
 
     size = (this%norbs - iorb + 1) * st%d%spin_channels
-    write(message%lines(1), '(a, i5, a)') "Info: Single-precision storage for ", size, " extra orbitals will be allocated."
-    call message%info(1)
+    write(message_g%lines(1), '(a, i5, a)') "Info: Single-precision storage for ", size, " extra orbitals will be allocated."
+    call message_g%info(1)
 
     SAFE_ALLOCATE(this%X(buff)(1:gr%mesh%np, 1:st%d%dim, iorb:this%norbs, 1:st%d%spin_channels))
 
@@ -497,19 +497,19 @@ subroutine X(lcao_alt_init_orbitals)(this, st, gr, geo, start)
     ASSERT(start == 1)
   end if
 
-  write(message%lines(1), '(a,i6,a)') 'Info: Performing LCAO calculation with ', this%norbs, ' orbitals.'
-  write(message%lines(2), '(a)') ' '
-  call message%info(2)
+  write(message_g%lines(1), '(a,i6,a)') 'Info: Performing LCAO calculation with ', this%norbs, ' orbitals.'
+  write(message_g%lines(2), '(a)') ' '
+  call message_g%info(2)
 
   if (this%norbs < st%nst) then
-    write(message%lines(1), '(a)') 'Not enough atomic orbitals to initialize all states,'
-    write(message%lines(2), '(i6,a)') st%nst - this%norbs, ' states will be randomized.'
+    write(message_g%lines(1), '(a)') 'Not enough atomic orbitals to initialize all states,'
+    write(message_g%lines(2), '(i6,a)') st%nst - this%norbs, ' states will be randomized.'
     if(this%derivative) then
-      call message%warning(2)
+      call message_g%warning(2)
     else
-      write(message%lines(3), '(a)') 'You can double the number of atomic orbitals by setting'
-      write(message%lines(4), '(a)') 'LCAOExtraOrbitals to yes.'
-      call message%warning(4)
+      write(message_g%lines(3), '(a)') 'You can double the number of atomic orbitals by setting'
+      write(message_g%lines(4), '(a)') 'LCAOExtraOrbitals to yes.'
+      call message_g%warning(4)
     end if
   end if
 
@@ -525,10 +525,10 @@ subroutine X(lcao_alt_init_orbitals)(this, st, gr, geo, start)
   end do
 
   if(this%keep_orb) then
-    call message%write('Info: LCAO requires')
-    call message%write(dof*CNST(8.0), units = unit_megabytes, fmt = '(f10.1)')
-    call message%write(' of memory for atomic orbitals.')
-    call message%info()
+    call message_g%write('Info: LCAO requires')
+    call message_g%write(dof*CNST(8.0), units = unit_megabytes, fmt = '(f10.1)')
+    call message_g%write(' of memory for atomic orbitals.')
+    call message_g%info()
   end if
 
   POP_SUB(X(lcao_alt_init_orbitals))
@@ -597,10 +597,10 @@ subroutine X(lcao_alt_wf) (this, st, gr, geo, hm, psolver, namespace, start)
   do ispin = 1, st%d%spin_channels
 
     if(st%d%spin_channels > 1) then
-      write(message%lines(1), '(a)') ' '
-      write(message%lines(2), '(a,i1)') 'LCAO for spin channel ', ispin
-      write(message%lines(3), '(a)') ' '
-      call message%info(3)
+      write(message_g%lines(1), '(a)') ' '
+      write(message_g%lines(2), '(a,i1)') 'LCAO for spin channel ', ispin
+      write(message_g%lines(3), '(a)') ' '
+      call message_g%info(3)
     end if
 
     if(ispin > 1) then
@@ -615,14 +615,14 @@ subroutine X(lcao_alt_wf) (this, st, gr, geo, hm, psolver, namespace, start)
       if(ispin /= states_elec_dim_get_spin_index(st%d, ik)) cycle
 
       if(st%d%nik > st%d%spin_channels) then
-        write(message%lines(1), '(a)') ' '
-        write(message%lines(2), '(a,i5)') 'LCAO for k-point ', states_elec_dim_get_kpoint_index(st%d, ik)
-        write(message%lines(3), '(a)') ' '
-        call message%info(3)
+        write(message_g%lines(1), '(a)') ' '
+        write(message_g%lines(2), '(a,i5)') 'LCAO for k-point ', states_elec_dim_get_kpoint_index(st%d, ik)
+        write(message_g%lines(3), '(a)') ' '
+        call message_g%info(3)
       end if
 
-      call message%write('Calculating matrix elements.')
-      call message%info()
+      call message_g%write('Calculating matrix elements.')
+      call message_g%info()
 
       call profiling_in(prof_matrix, "LCAO_MATRIX")
 
@@ -744,8 +744,8 @@ subroutine X(lcao_alt_wf) (this, st, gr, geo, hm, psolver, namespace, start)
 
       if(mpi_grp_is_root(mpi_world)) write(stdout, '(1x)')
 
-      call message%write('Diagonalizing Hamiltonian.')
-      call message%info()
+      call message_g%write('Diagonalizing Hamiltonian.')
+      call message_g%info()
 
       call profiling_out(prof_matrix)
       ! the number of eigenvectors we need
@@ -766,8 +766,8 @@ subroutine X(lcao_alt_wf) (this, st, gr, geo, hm, psolver, namespace, start)
 
       call profiling_in(prof_wavefunction, "LCAO_WAVEFUNCTIONS")
 
-      call message%write('Generating wavefunctions.')
-      call message%info()
+      call message_g%write('Generating wavefunctions.')
+      call message_g%info()
 
       ! set the eigenvalues
       st%eigenval(1:nev, ik) = eval(1:nev)
@@ -947,9 +947,9 @@ contains
 #endif
 
       if(info /= 0) then
-        write(message%lines(1), '(a,i4,a)') &
+        write(message_g%lines(1), '(a,i4,a)') &
           'Workspace query for LCAO parallel diagonalization failed. ScaLAPACK returned info code ', info, '.'
-        call message%warning(1)
+        call message_g%warning(1)
       end if
 
       lwork = nint(R_REAL(tmp(1)))
@@ -982,8 +982,8 @@ contains
 #endif
 
       if(info /= 0) then
-        write(message%lines(1), '(a,i4,a)') 'LCAO parallel diagonalization failed. ScaLAPACK returned info code ', info, '.'
-        call message%warning(1)
+        write(message_g%lines(1), '(a,i4,a)') 'LCAO parallel diagonalization failed. ScaLAPACK returned info code ', info, '.'
+        call message_g%warning(1)
       end if
 
       SAFE_DEALLOCATE_A(ifail)
@@ -1122,9 +1122,9 @@ contains
           work = tmp(1), lwork = -1, rwork = rwork(1), iwork = iwork(1), ifail = ifail(1), info = info)
 #endif
         if(info /= 0) then
-          write(message%lines(1), '(a,i4,a)') 'Workspace query for LCAO diagonalization failed. '//&
+          write(message_g%lines(1), '(a,i4,a)') 'Workspace query for LCAO diagonalization failed. '//&
             'LAPACK returned info code ', info, '.'
-          call message%warning(1)
+          call message_g%warning(1)
         end if
         
         lwork = nint(R_REAL(tmp(1)))
@@ -1147,8 +1147,8 @@ contains
 #endif
 
         if(info /= 0) then
-          write(message%lines(1), '(a,i4,a)') 'LCAO diagonalization failed. LAPACK returned info code ', info, '.'
-          call message%warning(1)
+          write(message_g%lines(1), '(a,i4,a)') 'LCAO diagonalization failed. LAPACK returned info code ', info, '.'
+          call message_g%warning(1)
         end if
         
         SAFE_DEALLOCATE_A(ifail)

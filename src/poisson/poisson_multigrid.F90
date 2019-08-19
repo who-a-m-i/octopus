@@ -126,8 +126,8 @@ contains
     !%End
     call parse_variable(namespace, 'PoissonSolverMGRestrictionMethod', 2, this%restriction_method)
     if(.not.varinfo_valid_option('PoissonSolverMGRestrictionMethod', this%restriction_method)) &
-       call message%input_error('PoissonSolverMGRestrictionMethod')
-    call message%print_var_option(stdout, "PoissonSolverMGRestrictionMethod", this%restriction_method)
+       call message_g%input_error('PoissonSolverMGRestrictionMethod')
+    call message_g%print_var_option(stdout, "PoissonSolverMGRestrictionMethod", this%restriction_method)
 
     !%Variable PoissonSolverMGRelaxationMethod
     !%Type integer
@@ -150,8 +150,8 @@ contains
     end if
 
     if(.not.varinfo_valid_option('PoissonSolverMGRelaxationMethod', this%relaxation_method)) &
-      call message%input_error('PoissonSolverMGRelaxationMethod')
-    call message%print_var_option(stdout, "PoissonSolverMGRelaxationMethod", this%relaxation_method)
+      call message_g%input_error('PoissonSolverMGRelaxationMethod')
+    call message_g%print_var_option(stdout, "PoissonSolverMGRelaxationMethod", this%relaxation_method)
 
     !%Variable PoissonSolverMGRelaxationFactor
     !%Type float
@@ -218,16 +218,16 @@ contains
       if(resnorm < this%threshold) exit
 
       if(debug%info) then
-        write(message%lines(1), '(a,i5,a,e13.6)') "Multigrid: base level: iter ", iter, " res ", resnorm
-        call message%info(1)
+        write(message_g%lines(1), '(a,i5,a,e13.6)') "Multigrid: base level: iter ", iter, " res ", resnorm
+        call message_g%info(1)
       end if
 
     end do
 
     if(resnorm >= this%threshold) then
-      message%lines(1) = 'Multigrid Poisson solver did not converge.'
-      write(message%lines(2), '(a,e14.6)') '  Res = ', resnorm
-      call message%warning(2)
+      message_g%lines(1) = 'Multigrid Poisson solver did not converge.'
+      write(message_g%lines(2), '(a,e14.6)') '  Res = ', resnorm
+      call message_g%warning(2)
     end if
 
     forall (ip = 1:der%mesh%np) pot(ip) = cor(ip) + vh_correction(ip)

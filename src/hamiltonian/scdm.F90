@@ -133,9 +133,9 @@ subroutine scdm_init(st, namespace, der, fullcube, scdm, operate_on_scdm)
     return
   end if
   
-  if (st%d%nik > 1) call message%not_implemented("SCDM with k-point sampling")
+  if (st%d%nik > 1) call message_g%not_implemented("SCDM with k-point sampling")
   if (der%mesh%sb%periodic_dim > 0 .and. der%mesh%sb%periodic_dim /= 3) &
-       call message%not_implemented("SCDM with mixed-periodicity")  
+       call message_g%not_implemented("SCDM with mixed-periodicity")  
   
   ! determine whether we are applying the scdm exchange operator to scdm states
   ! NOTE: this should be always the case, but for now only in td
@@ -185,7 +185,7 @@ subroutine scdm_init(st, namespace, der, fullcube, scdm, operate_on_scdm)
   !% Controls the size of the box on which the SCDM states are defined (box size = 2*radius).
   !%End  
   call parse_variable(namespace, 'SCDMCutoffRadius', 3._8, rcut, units_inp%length)
-  if (scdm%root.and.scdm%verbose) call message%print_var_value(stdout, 'SCDM cutoff', rcut)
+  if (scdm%root.and.scdm%verbose) call message_g%print_var_value(stdout, 'SCDM cutoff', rcut)
   ! box_size is half the size of the  box
   scdm%box_size = 0
   do ii = 1, 3
@@ -193,17 +193,17 @@ subroutine scdm_init(st, namespace, der, fullcube, scdm, operate_on_scdm)
   end do
   
   if (scdm%root .and. scdm%verbose) then
-    call message%print_var_value(stdout,'SCDM box_size', scdm%box_size)
-    call message%print_var_value(stdout,'SCDM box_size[Ang]', scdm%box_size*der%mesh%spacing(1)*0.529177249)
+    call message_g%print_var_value(stdout,'SCDM box_size', scdm%box_size)
+    call message_g%print_var_value(stdout,'SCDM box_size[Ang]', scdm%box_size*der%mesh%spacing(1)*0.529177249)
   end if
   scdm%full_box = (2*scdm%box_size+1)**3
   !check if scdm is not bigger than fft-grid of full simualtion cell  
   if (scdm%full_box > der%mesh%np_global) then
-    message%lines(1) = 'SCDM box larger than mesh, no point in using it'
-    call message%fatal(1,only_root_writes = .true.)
+    message_g%lines(1) = 'SCDM box larger than mesh, no point in using it'
+    call message_g%fatal(1,only_root_writes = .true.)
   end if
   dummy = 2*(2*scdm%box_size+1)*der%mesh%spacing(1)*0.529177249
-  if (scdm%root .and. scdm%verbose) call message%print_var_value(stdout, 'SCDM fullbox[Ang]', dummy)
+  if (scdm%root .and. scdm%verbose) call message_g%print_var_value(stdout, 'SCDM fullbox[Ang]', dummy)
   SAFE_ALLOCATE(scdm%box(1:scdm%box_size*2+1,1:scdm%box_size*2+1,1:scdm%box_size*2+1,1:scdm%st%nst))
   
   ! the localzied states defined in the box are distributed over state index for the exchange operator
@@ -307,7 +307,7 @@ subroutine scdm_init(st, namespace, der, fullcube, scdm, operate_on_scdm)
   ! set flag to do this only once
   scdm_is_init = .true.
   
-  call message%write('done SCDM init')
+  call message_g%write('done SCDM init')
   
   POP_SUB(scdm_init)
 end subroutine scdm_init

@@ -100,32 +100,32 @@ contains
       ns = 1
       if(st%d%nspin == 2) ns = 2
       
-      message%lines(1) = 'Eigenvalues [' // trim(units_abbrev(units_out%energy)) // ']'
-      call message%info(1, iunit)
+      message_g%lines(1) = 'Eigenvalues [' // trim(units_abbrev(units_out%energy)) // ']'
+      call message_g%info(1, iunit)
 
       if(st%d%ispin  ==  SPINORS) then
-        write(message%lines(1), '(a4,1x,a5,1x,a12,1x,a12,2x,a4,4x,a4,4x,a4)')   &
+        write(message_g%lines(1), '(a4,1x,a5,1x,a12,1x,a12,2x,a4,4x,a4,4x,a4)')   &
           '#st',' Spin',' Eigenvalue', 'Occupation ', '<Sx>', '<Sy>', '<Sz>'
       else
-        write(message%lines(1), '(a4,1x,a5,1x,a12,4x,a12)')       &
+        write(message_g%lines(1), '(a4,1x,a5,1x,a12,4x,a12)')       &
           '#st',' Spin',' Eigenvalue', 'Occupation'
       end if
       if(present(error)) &
-        write(message%lines(1),'(a,a10)') trim(message%lines(1)), ' Error'
-      call message%info(1, iunit)
+        write(message_g%lines(1),'(a,a10)') trim(message_g%lines(1)), ' Error'
+      call message_g%info(1, iunit)
 
       do ik = 1, st%d%nik, ns
         if(simul_box_is_periodic(sb)) then
           ikk = states_elec_dim_get_kpoint_index(st%d, ik)
           kpoint(1:sb%dim) = kpoints_get_point(sb%kpoints, ikk, absolute_coordinates = .false.)
-          write(message%lines(1), '(a,i4,a)') '#k =', ikk, ', k = ('
+          write(message_g%lines(1), '(a,i4,a)') '#k =', ikk, ', k = ('
           do idir = 1, sb%dim
             write(tmp_str(1), '(f10.6)') kpoint(idir)
-            message%lines(1) = trim(message%lines(1))//trim(tmp_str(1))
-            if(idir < sb%dim) message%lines(1) = trim(message%lines(1))//','
+            message_g%lines(1) = trim(message_g%lines(1))//trim(tmp_str(1))
+            if(idir < sb%dim) message_g%lines(1) = trim(message_g%lines(1))//','
           end do
-          message%lines(1) = trim(message%lines(1))//')'
-          call message%info(1, iunit)
+          message_g%lines(1) = trim(message_g%lines(1))//')'
+          call message_g%info(1, iunit)
         end if
 
         do ist = st_start_, nst
@@ -145,18 +145,18 @@ contains
               if(present(error)) write(tmp_str(3), '(a7,es7.1,a1)')'      (', error(ist, ik+is), ')'
             end if
             if(present(error)) then
-              message%lines(1) = trim(tmp_str(1))//trim(tmp_str(2))//trim(tmp_str(3))
+              message_g%lines(1) = trim(tmp_str(1))//trim(tmp_str(2))//trim(tmp_str(3))
             else
-              message%lines(1) = trim(tmp_str(1))//trim(tmp_str(2))
+              message_g%lines(1) = trim(tmp_str(1))//trim(tmp_str(2))
             end if
-            call message%info(1, iunit)
+            call message_g%info(1, iunit)
           end do
         end do
       end do
 
     else
 
-      call message%info(1, iunit)
+      call message_g%info(1, iunit)
 
       SAFE_ALLOCATE(flat_eigenval(1:st%d%nik*nst))
       SAFE_ALLOCATE(flat_indices(1:2, 1:st%d%nik*nst))
@@ -200,8 +200,8 @@ contains
       
       if(present(error)) tmp_str(1) = trim(tmp_str(1))//'    Error'
 
-      call message%write(tmp_str(1))
-      call message%info(iunit = iunit)
+      call message_g%write(tmp_str(1))
+      call message_g%info(iunit = iunit)
 
       not_printed = 0
       max_error = CNST(0.0)
@@ -218,19 +218,19 @@ contains
         if(print_eigenval) then
           
           if(not_printed > 0) then
-            call message%write('')
-            call message%new_line()
-            call message%write('  [output of ')
-            call message%write(not_printed)
-            call message%write(' eigenvalues skipped')
+            call message_g%write('')
+            call message_g%new_line()
+            call message_g%write('  [output of ')
+            call message_g%write(not_printed)
+            call message_g%write(' eigenvalues skipped')
             if(present(error)) then
-              call message%write(': maximum error =')
-              call message%write(max_error, fmt = '(es7.1)', align_left = .true.)
+              call message_g%write(': maximum error =')
+              call message_g%write(max_error, fmt = '(es7.1)', align_left = .true.)
             end if
-            call message%write(']')
-            call message%new_line()
-            call message%write('')
-            call message%info(iunit = iunit)
+            call message_g%write(']')
+            call message_g%new_line()
+            call message_g%write('')
+            call message_g%info(iunit = iunit)
 
             not_printed = 0
             max_error = CNST(0.0)
@@ -266,8 +266,8 @@ contains
             write(tmp_str(1), '(2a,es7.1,a)') trim(tmp_str(1)), '   (', error(ist, iqn), ')'
           end if
 
-          call message%write(tmp_str(1))
-          call message%info(iunit = iunit)
+          call message_g%write(tmp_str(1))
+          call message_g%info(iunit = iunit)
 
         else
           
@@ -289,9 +289,9 @@ contains
     end if
 
     if(st%smear%method /= SMEAR_SEMICONDUCTOR .and. st%smear%method /= SMEAR_FIXED_OCC) then
-      write(message%lines(1), '(a,f12.6,1x,a)') "Fermi energy = ", &
+      write(message_g%lines(1), '(a,f12.6,1x,a)') "Fermi energy = ", &
         units_from_atomic(units_out%energy, st%smear%e_fermi), units_abbrev(units_out%energy)
-      call message%info(1, iunit)
+      call message_g%info(1, iunit)
     end if
 
     POP_SUB(states_elec_write_eigenvalues)
@@ -336,28 +336,28 @@ contains
         end do
       end if
 
-      call message%new_line()
-      call message%write('Density of states:')
-      call message%new_line()
-      call message%info()
+      call message_g%new_line()
+      call message_g%write('Density of states:')
+      call message_g%new_line()
+      call message_g%info()
       
       !print histogram
       do iline = height, 1, -1
         do ien = 1, ndiv
           if(histogram(ien) >= iline) then
-            call message%write('%')
+            call message_g%write('%')
           else
-            call message%write('-')
+            call message_g%write('-')
           end if
         end do
-        call message%info()
+        call message_g%info()
       end do
 
       line(1:ndiv) = ' '
       line(ife:ife) = '^'
-      call message%write(line)
-      call message%new_line()
-      call message%info()
+      call message_g%write(line)
+      call message_g%new_line()
+      call message_g%info()
 
       POP_SUB(states_elec_write_eigenvalues.print_dos)
     end subroutine print_dos
@@ -415,14 +415,14 @@ contains
     egindir = lumo-homo
 
     if(lumo == -1 .or. egdir <= M_EPSILON) then
-      write(message%lines(1),'(a)') 'The system seems to have no gap.'
-      call message%info(1, iunit)
+      write(message_g%lines(1),'(a)') 'The system seems to have no gap.'
+      call message_g%info(1, iunit)
     else
-      write(message%lines(1),'(a,i5,a,f7.4,a)') 'Direct gap at ik=', egdirk, ' of ', &
+      write(message_g%lines(1),'(a,i5,a,f7.4,a)') 'Direct gap at ik=', egdirk, ' of ', &
               units_from_atomic(units_out%energy, egdir),  ' ' // trim(units_abbrev(units_out%energy))
-      write(message%lines(2),'(a,i5,a,i5,a,f7.4,a)') 'Indirect gap between ik=', homok, ' and ik=', lumok, &
+      write(message_g%lines(2),'(a,i5,a,i5,a,f7.4,a)') 'Indirect gap between ik=', homok, ' and ik=', lumok, &
             ' of ', units_from_atomic(units_out%energy, egindir),  ' ' // trim(units_abbrev(units_out%energy))
-      call message%info(2, iunit)
+      call message_g%info(2, iunit)
     end if
 
 
@@ -467,8 +467,8 @@ contains
     if(tpa_initialst == -1) then
       if(mpi_grp_is_root(mpi_world)) then
 
-        call message%write('No orbital with half-occupancy found. TPA output is not written.')
-        call message%warning()
+        call message_g%write('No orbital with half-occupancy found. TPA output is not written.')
+        call message_g%warning()
 
         POP_SUB(states_elec_write_tpa)
         return
@@ -499,8 +499,8 @@ contains
       if(ncols /= gr%mesh%sb%dim ) then ! wrong size
 
         if(mpi_grp_is_root(mpi_world)) then
-          call message%write('Inconsistent size of momentum-transfer vector. It will not be used in the TPA calculation.')
-          call message%warning()
+          call message_g%write('Inconsistent size of momentum-transfer vector. It will not be used in the TPA calculation.')
+          call message_g%warning()
         end if
 
       else ! correct size
@@ -533,21 +533,21 @@ contains
 
       ! header
       if(use_qvector) then
-        write (message%lines(1),'(a1,a30,3(es14.5,1x),a1)') '#', ' momentum-transfer vector : (', &
+        write (message_g%lines(1),'(a1,a30,3(es14.5,1x),a1)') '#', ' momentum-transfer vector : (', &
           (units_from_atomic(unit_one / units_out%length, qvector(icoord)), icoord=1, gr%mesh%sb%dim),')'
         select case(gr%mesh%sb%dim)
-          case(1); write(message%lines(2), '(a1,4(a15,1x))') '#', 'E' , '<x>', '<f>', 'S(q,omega)'
-          case(2); write(message%lines(2), '(a1,5(a15,1x))') '#', 'E' , '<x>', '<y>', '<f>', 'S(q,omega)'
-          case(3); write(message%lines(2), '(a1,6(a15,1x))') '#', 'E' , '<x>', '<y>', '<z>', '<f>', 'S(q,omega)'
+          case(1); write(message_g%lines(2), '(a1,4(a15,1x))') '#', 'E' , '<x>', '<f>', 'S(q,omega)'
+          case(2); write(message_g%lines(2), '(a1,5(a15,1x))') '#', 'E' , '<x>', '<y>', '<f>', 'S(q,omega)'
+          case(3); write(message_g%lines(2), '(a1,6(a15,1x))') '#', 'E' , '<x>', '<y>', '<z>', '<f>', 'S(q,omega)'
         end select
-        call message%info(2,iunit)
+        call message_g%info(2,iunit)
       else
         select case(gr%mesh%sb%dim)
-          case(1); write(message%lines(1), '(a1,3(a15,1x))') '#', 'E' , '<x>', '<f>'
-          case(2); write(message%lines(1), '(a1,4(a15,1x))') '#', 'E' , '<x>', '<y>', '<f>'
-          case(3); write(message%lines(1), '(a1,5(a15,1x))') '#', 'E' , '<x>', '<y>', '<z>', '<f>'
+          case(1); write(message_g%lines(1), '(a1,3(a15,1x))') '#', 'E' , '<x>', '<f>'
+          case(2); write(message_g%lines(1), '(a1,4(a15,1x))') '#', 'E' , '<x>', '<y>', '<f>'
+          case(3); write(message_g%lines(1), '(a1,5(a15,1x))') '#', 'E' , '<x>', '<y>', '<z>', '<f>'
         end select
-        call message%info(1,iunit)
+        call message_g%info(1,iunit)
       end if
 
     end if
@@ -594,14 +594,14 @@ contains
         if(mpi_grp_is_root(mpi_world)) then
 
           if(use_qvector) then
-            write(message%lines(1), '(1x,6(es15.8,1x))') units_from_atomic(units_out%energy, transition_energy), &
+            write(message_g%lines(1), '(1x,6(es15.8,1x))') units_from_atomic(units_out%energy, transition_energy), &
               osc(:), osc_strength, units_from_atomic(unit_one/units_out%energy, dsf)
           else
-            write(message%lines(1), '(1x,6(es15.8,1x))') units_from_atomic(units_out%energy, transition_energy), &
+            write(message_g%lines(1), '(1x,6(es15.8,1x))') units_from_atomic(units_out%energy, transition_energy), &
               osc(:), osc_strength
           end if
 
-          call message%info(1,iunit)
+          call message_g%info(1,iunit)
 
         end if
 

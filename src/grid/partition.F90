@@ -251,8 +251,8 @@ contains
     full_filename = trim(dir)//'/'//trim(filename)
     
     ! This is a writing to avoid an optimization of gfortran with -O3
-    write(message%lines(1),'(a,i8)') "Info: number of points in the partition (in root process) =", size(partition%part)
-    call message%info(1)
+    write(message_g%lines(1),'(a,i8)') "Info: number of points in the partition (in root process) =", size(partition%part)
+    call message_g%info(1)
     
     ! Check if the file exists and has the proper size (only world root)
     if (mpi_world%rank == 0) then
@@ -333,13 +333,13 @@ contains
 #endif /* HAVE_MPI2 */
 
     if(any(partition%part(:) <= 0)) then
-      write(message%lines(1),'(a)') 'Internal error: some elements of partition are <= 0.'
-      write(message%lines(2),*) 'filename = ', full_filename
-      write(message%lines(3),*) 'scounts = ', scounts(:)
-      write(message%lines(4),*) 'sdispls = ', sdispls(:)
-      write(message%lines(5),*) 'partition%remainder = ', partition%remainder
-      write(message%lines(6),*) 'partition%np_local = ', partition%np_local
-      call message%fatal(6)
+      write(message_g%lines(1),'(a)') 'Internal error: some elements of partition are <= 0.'
+      write(message_g%lines(2),*) 'filename = ', full_filename
+      write(message_g%lines(3),*) 'scounts = ', scounts(:)
+      write(message_g%lines(4),*) 'sdispls = ', sdispls(:)
+      write(message_g%lines(5),*) 'partition%remainder = ', partition%remainder
+      write(message_g%lines(6),*) 'partition%np_local = ', partition%np_local
+      call message_g%fatal(6)
     endif
 
     SAFE_DEALLOCATE_A(scounts)

@@ -194,22 +194,22 @@ contains
     
     PUSH_SUB(mesh_write_info)
     
-    write(message%lines(1),'(3a)') '  Spacing [', trim(units_abbrev(units_out%length)), '] = ('
+    write(message_g%lines(1),'(3a)') '  Spacing [', trim(units_abbrev(units_out%length)), '] = ('
     do ii = 1, this%sb%dim
-      if(ii > 1) write(message%lines(1), '(2a)') trim(message%lines(1)), ','
-      write(message%lines(1), '(a,f6.3)') trim(message%lines(1)), units_from_atomic(units_out%length, this%spacing(ii))
+      if(ii > 1) write(message_g%lines(1), '(2a)') trim(message_g%lines(1)), ','
+      write(message_g%lines(1), '(a,f6.3)') trim(message_g%lines(1)), units_from_atomic(units_out%length, this%spacing(ii))
     end do
-    write(message%lines(1), '(5a,f12.5)') trim(message%lines(1)), ') ', &
+    write(message_g%lines(1), '(5a,f12.5)') trim(message_g%lines(1)), ') ', &
          '   volume/point [', trim(units_abbrev(units_out%length**this%sb%dim)), '] = ',      &
          units_from_atomic(units_out%length**this%sb%dim, this%vol_pp(1))
     
-    write(message%lines(2),'(a, i10)') '  # inner mesh = ', this%np_global
-    write(message%lines(3),'(a, i10)') '  # total mesh = ', this%np_part_global
+    write(message_g%lines(2),'(a, i10)') '  # inner mesh = ', this%np_global
+    write(message_g%lines(3),'(a, i10)') '  # total mesh = ', this%np_part_global
     
     cutoff = mesh_gcutoff(this)**2 / M_TWO
-    write(message%lines(4),'(3a,f12.6,a,f12.6)') '  Grid Cutoff [', trim(units_abbrev(units_out%energy)),'] = ', &
+    write(message_g%lines(4),'(3a,f12.6,a,f12.6)') '  Grid Cutoff [', trim(units_abbrev(units_out%energy)),'] = ', &
       units_from_atomic(units_out%energy, cutoff), '    Grid Cutoff [Ry] = ', cutoff * M_TWO
-    call message%info(4, unit)
+    call message_g%info(4, unit)
     
     POP_SUB(mesh_write_info)
   end subroutine mesh_write_info
@@ -422,8 +422,8 @@ contains
       position="append", die=.false., grp=mpi_grp)
     if (iunit <= 0) then
       ierr = ierr + 1
-      message%lines(1) = "Unable to open file '"//io_workpath(trim(dir)//"/"//trim(filename), namespace)//"'."
-      call message%warning(1)
+      message_g%lines(1) = "Unable to open file '"//io_workpath(trim(dir)//"/"//trim(filename), namespace)//"'."
+      call message_g%warning(1)
     else
       if (mpi_grp_is_root(mpi_grp)) then
         write(iunit, '(a)') dump_tag
@@ -464,8 +464,8 @@ contains
       status="old", die=.false., grp=mpi_grp)
     if (iunit <= 0) then
       ierr = ierr + 1
-      message%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
-      call message%warning(1)
+      message_g%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
+      call message_g%warning(1)
     else
       ! Find the dump tag.
       call iopar_find_line(mpi_grp, iunit, dump_tag, err)
@@ -510,8 +510,8 @@ contains
     iunit = io_open(trim(dir)//"/"//trim(filename), namespace, action='write', &
       die=.false., grp=mpi_grp)
     if (iunit <= 0) then
-      message%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
-      call message%warning(1)
+      message_g%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
+      call message_g%warning(1)
       ierr = ierr + 1
     else
       if (mpi_grp_is_root(mpi_grp)) then
@@ -561,8 +561,8 @@ contains
       status='old', die=.false., grp=mpi_grp)
     if (iunit <= 0) then
       ierr = ierr + 1
-      message%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
-      call message%warning(1)
+      message_g%lines(1) = "Unable to open file '"//trim(dir)//"/"//trim(filename)//"'."
+      call message_g%warning(1)
     else
       box_shape = 0
       call iopar_read(mpi_grp, iunit, lines, 1, err)
@@ -574,8 +574,8 @@ contains
 
       if (box_shape == HYPERCUBE) then
         ! We have a hypercube: we will assume everything is OK...
-        message%lines(1) = "Simulation box is a hypercube: unable to check mesh compatibility."
-        call message%warning(1)
+        message_g%lines(1) = "Simulation box is a hypercube: unable to check mesh compatibility."
+        call message_g%warning(1)
 
       else
         call iopar_read(mpi_grp, iunit, lines, 4, err)
@@ -633,8 +633,8 @@ contains
     call mesh_read_fingerprint(mesh, dir, filename, mpi_grp, namespace, read_np_part, read_np, err)
     if (err /= 0) then
       ierr = ierr + 1
-      message%lines(1) = "Unable to read mesh fingerprint from '"//trim(dir)//"/"//trim(filename)//"'."
-      call message%warning(1)
+      message_g%lines(1) = "Unable to read mesh fingerprint from '"//trim(dir)//"/"//trim(filename)//"'."
+      call message_g%warning(1)
 
     else if (read_np > 0) then
       if (.not. associated(mesh%sb)) then
@@ -656,8 +656,8 @@ contains
         call io_binary_read(trim(io_workpath(dir, namespace))//'/lxyz.obf', read_np_part*mesh%sb%dim, read_lxyz, err)
         if (err /= 0) then
           ierr = ierr + 4
-          message%lines(1) = "Unable to read index map from '"//trim(dir)//"'."
-          call message%warning(1)
+          message_g%lines(1) = "Unable to read index map from '"//trim(dir)//"'."
+          call message_g%warning(1)
         else
           ! generate the map
           SAFE_ALLOCATE(map(1:read_np))
@@ -834,8 +834,8 @@ contains
 
     PUSH_SUB(mesh_check_symmetries)
 
-    message%lines(1) = "Checking if the real-space grid is symmetric";
-    call message%info(1)
+    message_g%lines(1) = "Checking if the real-space grid is symmetric";
+    call message_g%info(1)
 
     lsize(1:3) = real(mesh%idx%ll(1:3), REAL_PRECISION)
     offset(1:3) = real(mesh%idx%nr(1, 1:3) + mesh%idx%enlarge(1:3), REAL_PRECISION)
@@ -884,9 +884,9 @@ contains
         srcpoint(1:3) = srcpoint(1:3) + offset(1:3)
  
         if(any(srcpoint-anint(srcpoint)> SYMPREC*M_TWO)) then
-          message%lines(1) = "The real-space grid breaks at least one of the symmetries of the system."
-          message%lines(2) = "Change your spacing or use SymmetrizeDensity=no."
-          call message%fatal(2)
+          message_g%lines(1) = "The real-space grid breaks at least one of the symmetries of the system."
+          message_g%lines(2) = "Change your spacing or use SymmetrizeDensity=no."
+          call message_g%fatal(2)
         end if
       end do
     end do

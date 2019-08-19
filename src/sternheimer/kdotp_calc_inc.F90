@@ -147,7 +147,7 @@ subroutine X(kdotp_add_occ)(sys, pert, kdotp_lr, degen_thres)
   PUSH_SUB(X(kdotp_add_occ))
 
   if(sys%st%parallel_in_states) then
-    call message%not_implemented("kdotp_add_occ parallel in states")
+    call message_g%not_implemented("kdotp_add_occ parallel in states")
   end if
 
   SAFE_ALLOCATE(psi1(1:sys%gr%mesh%np_part, 1:sys%st%d%dim))

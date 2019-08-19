@@ -38,8 +38,8 @@ subroutine xc_get_kxc(xcs, mesh, rho, ispin, kxc)
   end if
 
   if(bitand(xcs%kernel_family, XC_FAMILY_LDA) == 0) then
-    message%lines(1) = "Only LDA functionals are authorized for now in XCKernel."
-    call message%fatal(1)
+    message_g%lines(1) = "Only LDA functionals are authorized for now in XCKernel."
+    call message_g%fatal(1)
   end if
 
   if(ispin == UNPOLARIZED) then
@@ -50,8 +50,8 @@ subroutine xc_get_kxc(xcs, mesh, rho, ispin, kxc)
 
   do ixc = 1, 2
     if(bitand(functl(ixc)%flags, XC_FLAGS_HAVE_KXC) == 0) then
-      message%lines(1) = "Cannot calculate kernel derivative. This functional does not have Kxc available."
-      call message%fatal(1)
+      message_g%lines(1) = "Cannot calculate kernel derivative. This functional does not have Kxc available."
+      call message_g%fatal(1)
     end if
   end do
 
@@ -121,8 +121,8 @@ contains
         dens(i, 1) = max(d(1), M_ZERO)
         dens(i, 2) = max(d(2), M_ZERO)
       case(SPINORS)
-        message%lines(1) = 'Do not know how to handle spinors.'
-        call message%fatal(1)
+        message_g%lines(1) = 'Do not know how to handle spinors.'
+        call message_g%fatal(1)
       end select
     end do
 

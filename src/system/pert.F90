@@ -150,7 +150,7 @@ contains
       
       call parse_variable(namespace, 'MagneticGaugeCorrection', GAUGE_GIPAW, this%gauge)
       if(.not.varinfo_valid_option('MagneticGaugeCorrection', this%gauge)) &
-           call message%input_error('MagneticGaugeCorrection')
+           call message_g%input_error('MagneticGaugeCorrection')
 
     end if
 
@@ -168,7 +168,7 @@ contains
       !% For testing purposes, set to false to ignore the term <math>-i \left[\vec{r}, V\right]</math> in
       !% the <math>\vec{k} \cdot \vec{p}</math> perturbation, which is due to non-local pseudopotentials.
       !%End
-      call message%obsolete_variable(namespace, 'KdotP_UseNonLocalPseudopotential', 'KdotPUseNonLocalPseudopotential')
+      call message_g%obsolete_variable(namespace, 'KdotP_UseNonLocalPseudopotential', 'KdotPUseNonLocalPseudopotential')
       call parse_variable(namespace, 'KdotPUseNonLocalPseudopotential', .true., this%use_nonlocalpps)
 
       !%Variable KdotPVelMethod
@@ -210,8 +210,8 @@ contains
 
     if(this%pert_type == PERTURBATION_KDOTP) then
       if (.not. this%use_nonlocalpps) then
-        write(message%lines(1), '(a)') 'Ignoring non-local pseudopotential term.'
-        call message%info(1)
+        write(message_g%lines(1), '(a)') 'Ignoring non-local pseudopotential term.'
+        call message_g%info(1)
       end if
     end if
    

@@ -72,11 +72,11 @@ contains
 
     PUSH_SUB(ground_state_run)
 
-    call message%write('Info: Allocating ground state wave-functions')
-    call message%info()
+    call message_g%write('Info: Allocating ground state wave-functions')
+    call message_g%info()
 
     if(sys%st%parallel_in_states) then
-      call message%experimental('State parallelization for ground state calculations')
+      call message_g%experimental('State parallelization for ground state calculations')
     end if
     
     call states_elec_allocate_wfns(sys%st, sys%gr%mesh)
@@ -85,8 +85,8 @@ contains
     ! sometimes a deadlock can occur here (if some nodes can allocate and other cannot)
     if(sys%st%dom_st_kpt_mpi_grp%comm > 0) call MPI_Barrier(sys%st%dom_st_kpt_mpi_grp%comm, mpi_err)
 #endif
-    call message%write('Info: Ground-state allocation done.')
-    call message%info()
+    call message_g%write('Info: Ground-state allocation done.')
+    call message_g%info()
 
     if(.not. fromScratch) then
       ! load wavefunctions
@@ -97,10 +97,10 @@ contains
         call states_elec_load(restart_load, sys%namespace, sys%st, sys%gr, ierr)
 
       if(ierr /= 0) then
-        call message%write("Unable to read wavefunctions.")
-        call message%new_line()
-        call message%write("Starting from scratch!")
-        call message%warning()
+        call message_g%write("Unable to read wavefunctions.")
+        call message_g%new_line()
+        call message_g%write("Starting from scratch!")
+        call message_g%warning()
         fromScratch = .true.
       end if
     end if
@@ -113,8 +113,8 @@ contains
       call lcao_run(sys, lmm_r = scfv%lmm_r)
     else
       ! setup Hamiltonian
-      call message%write('Info: Setting up Hamiltonian.')
-      call message%info()
+      call message_g%write('Info: Setting up Hamiltonian.')
+      call message_g%info()
       call system_h_setup(sys, calc_eigenval = .false.)
     end if
 
@@ -122,11 +122,11 @@ contains
 
     ! run self-consistency
     if (states_are_real(sys%st)) then
-      call message%write('Info: SCF using real wavefunctions.')
+      call message_g%write('Info: SCF using real wavefunctions.')
     else
-      call message%write('Info: SCF using complex wavefunctions.')
+      call message_g%write('Info: SCF using complex wavefunctions.')
     end if
-    call message%info()
+    call message_g%info()
 
     if(sys%st%d%pack_states .and. hamiltonian_elec_apply_packed(sys%hm, sys%gr%mesh)) call sys%st%pack()
     

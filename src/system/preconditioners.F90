@@ -113,8 +113,8 @@ contains
     end if
 
     call parse_variable(namespace, 'Preconditioner', default, this%which)
-    if(.not.varinfo_valid_option('Preconditioner', this%which)) call message%input_error('Preconditioner')
-    call message%print_var_option(stdout, 'Preconditioner', this%which)
+    if(.not.varinfo_valid_option('Preconditioner', this%which)) call message_g%input_error('Preconditioner')
+    call message_g%print_var_option(stdout, 'Preconditioner', this%which)
 
     select case(this%which)
     case(PRE_FILTER)
@@ -146,11 +146,11 @@ contains
 
       call parse_variable(namespace, 'PreconditionerFilterFactor', default_alpha, alpha)
 
-      call message%print_var_value(stdout, 'PreconditionerFilterFactor', alpha)
+      call message_g%print_var_value(stdout, 'PreconditionerFilterFactor', alpha)
 
       ! check for correct interval of alpha
       if (alpha < CNST(0.5) .or. alpha > CNST(1.0)) then
-        call message%input_error('PreconditionerFilterFactor')
+        call message_g%input_error('PreconditionerFilterFactor')
       end if
 
       ns = this%op%stencil%size
@@ -261,7 +261,7 @@ contains
     character(len=*),    intent(in)    :: old_prefix
     character(len=*),    intent(in)    :: new_prefix
 
-    call message%obsolete_variable(namespace, trim(old_prefix)//'Preconditioner', trim(new_prefix)//'Preconditioner')
+    call message_g%obsolete_variable(namespace, trim(old_prefix)//'Preconditioner', trim(new_prefix)//'Preconditioner')
   end subroutine preconditioner_obsolete_variables
 
 #include "undef.F90"

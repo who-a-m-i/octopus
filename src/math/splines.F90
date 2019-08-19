@@ -196,6 +196,7 @@
 !
 !----------------------------------------------------------------------------*/!
 module splines_oct_m
+  use debug_oct_m
   use global_oct_m
   use iso_c_binding
   use loct_math_oct_m

@@ -21,6 +21,7 @@
 module matrix_ops_oct_m
   use blacs_oct_m
   use blacs_proc_grid_oct_m
+  use debug_oct_m
   use global_oct_m
   use lapack_oct_m
   use matrix_oct_m

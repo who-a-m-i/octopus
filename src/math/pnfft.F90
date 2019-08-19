@@ -33,6 +33,7 @@ end module pnfft_params_oct_m
 !> The low level module to work with the PNFFT library.
 !! http://www-user.tu-chemnitz.de/~mpip/software.php?lang=en
 module pnfft_oct_m
+  use debug_oct_m
   use global_oct_m
   use io_oct_m
   use loct_math_oct_m

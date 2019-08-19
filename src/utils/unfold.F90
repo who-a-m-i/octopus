@@ -28,6 +28,7 @@ program oct_unfold
   use cube_oct_m
   use comm_oct_m
   use command_line_oct_m
+  use debug_oct_m
   use fft_oct_m
   use fftw_params_oct_m
   use fourier_space_oct_m
@@ -96,6 +97,7 @@ program oct_unfold
   call calc_mode_par_init()
 
   call message_g%init(default_namespace)
+  call debug_init(debug, default_namespace)
 
   call io_init(default_namespace)
   call profiling_init(default_namespace)
@@ -306,6 +308,7 @@ program oct_unfold
   call system_end(sys)
   call profiling_end(default_namespace)
   call io_end()
+  call debug_end(debug)
   call print_date("Calculation ended on ")
   call message_g%end()
   call parser_end()

@@ -22,6 +22,7 @@
 module poisson_isf_oct_m
   use cube_function_oct_m
   use cube_oct_m
+  use debug_oct_m
   use global_oct_m
   use io_oct_m
   use messages_oct_m

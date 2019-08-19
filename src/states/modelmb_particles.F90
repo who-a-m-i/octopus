@@ -21,6 +21,7 @@
 !>  general module for modelmb particles (e.g. 4 electrons in 1D equiv to
 !!  1 in 4D). Also calculate different densities on request.
 module modelmb_particles_oct_m
+  use debug_oct_m
   use global_oct_m
   use grid_oct_m
   use loct_pointer_oct_m

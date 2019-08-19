@@ -29,6 +29,7 @@
 !! 1 au_[mass] = 5.485799110e-4 u
 !!
 module unit_system_oct_m
+  use debug_oct_m
   use global_oct_m
   use io_oct_m
   use messages_oct_m

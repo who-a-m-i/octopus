@@ -19,6 +19,7 @@
 #include "global.h"
 
 module lda_u_mixer_oct_m
+  use debug_oct_m
   use global_oct_m
   use lda_u_oct_m
   use messages_oct_m

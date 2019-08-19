@@ -9,6 +9,7 @@
 module libvdwxc_oct_m
   use cube_oct_m
   use cube_function_oct_m
+  use debug_oct_m
   use derivatives_oct_m
   use fft_oct_m
   use global_oct_m

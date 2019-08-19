@@ -74,6 +74,7 @@ module fftw_params_oct_m
 end module fftw_params_oct_m
 
 module fftw_oct_m
+  use debug_oct_m
   use fftw_params_oct_m
   use global_oct_m
   use, intrinsic :: iso_c_binding

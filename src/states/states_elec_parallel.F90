@@ -20,6 +20,7 @@
 
 module states_elec_parallel_oct_m
   use batch_oct_m
+  use debug_oct_m
   use global_oct_m
   use mesh_oct_m
   use messages_oct_m

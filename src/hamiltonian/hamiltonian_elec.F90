@@ -25,6 +25,7 @@ module hamiltonian_elec_oct_m
   use boundaries_oct_m
   use boundary_op_oct_m
   use comm_oct_m
+  use debug_oct_m
   use derivatives_oct_m
   use energy_oct_m
   use hamiltonian_elec_base_oct_m

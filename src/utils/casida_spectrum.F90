@@ -21,6 +21,7 @@
 
 program casida_spectrum
   use command_line_oct_m
+  use debug_oct_m
   use geometry_oct_m
   use global_oct_m
   use io_oct_m
@@ -59,6 +60,7 @@ program casida_spectrum
   call parser_init()
   default_namespace = namespace_t("")
   call message_g%init(default_namespace)
+  call debug_init(debug, default_namespace)
   call io_init(default_namespace)
   call unit_system_init(default_namespace)
   call space_init(cs%space, default_namespace)
@@ -167,6 +169,7 @@ program casida_spectrum
 
   call space_end(cs%space)
   call io_end()
+  call debug_end(debug)
   call message_g%end()
 
   call parser_end()

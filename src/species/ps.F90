@@ -20,6 +20,7 @@
 
 module ps_oct_m
   use atomic_oct_m
+  use debug_oct_m
   use global_oct_m
   use io_oct_m
   use lalg_adv_oct_m

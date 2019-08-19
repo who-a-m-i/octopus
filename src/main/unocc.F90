@@ -19,6 +19,7 @@
 #include "global.h"
 
 module unocc_oct_m
+  use debug_oct_m
   use density_oct_m
   use eigensolver_oct_m
   use global_oct_m

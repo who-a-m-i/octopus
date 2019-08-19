@@ -19,9 +19,10 @@
 #include "global.h"
 
 module xc_oct_m
-  use distributed_oct_m
   use comm_oct_m
+  use debug_oct_m
   use derivatives_oct_m
+  use distributed_oct_m
   use global_oct_m
   use io_oct_m
   use io_function_oct_m

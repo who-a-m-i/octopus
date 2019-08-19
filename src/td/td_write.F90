@@ -22,6 +22,7 @@ module td_write_oct_m
   use blas_oct_m
   use comm_oct_m
   use current_oct_m
+  use debug_oct_m
   use excited_states_oct_m
   use gauge_field_oct_m
   use geometry_oct_m

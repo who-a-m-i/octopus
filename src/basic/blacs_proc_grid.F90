@@ -19,6 +19,7 @@
 #include "global.h"
 
 module blacs_proc_grid_oct_m
+  use debug_oct_m
   use global_oct_m
   use blacs_oct_m
   use mpi_oct_m

@@ -21,6 +21,7 @@
 !> This module is intended to contain "only mathematical" functions
 !! and procedures.
 module math_oct_m
+  use debug_oct_m
   use global_oct_m
   use lalg_basic_oct_m
   use loct_math_oct_m

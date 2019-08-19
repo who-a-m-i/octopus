@@ -23,6 +23,7 @@ module accel_blas_oct_m
   use clblas
 #endif
   use accel_oct_m
+  use debug_oct_m
   use global_oct_m
   use iso_c_binding
   use messages_oct_m

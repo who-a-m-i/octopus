@@ -23,6 +23,7 @@ module ps_hgh_oct_m
   !!  (1) S. Goedecker, M. Teter and J. Hutter, Phys. Rev. B 54, 1703 (1996).
   !!  (2) C. Hartwinger, S. Goedecker and J. Hutter, Phys. Rev. B 58, 3641 (1998).
   use atomic_oct_m
+  use debug_oct_m
   use global_oct_m
   use io_oct_m
   use loct_math_oct_m

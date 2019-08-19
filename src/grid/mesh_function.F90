@@ -21,6 +21,7 @@
 module mesh_function_oct_m
   use blas_oct_m
   use comm_oct_m
+  use debug_oct_m
   use global_oct_m
   use lalg_basic_oct_m
   use loct_math_oct_m

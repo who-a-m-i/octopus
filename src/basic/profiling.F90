@@ -53,6 +53,7 @@
   !!think this is necessary.
   !*/
 module profiling_oct_m
+  use debug_oct_m
   use global_oct_m
   use io_oct_m
   use loct_oct_m

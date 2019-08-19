@@ -19,6 +19,7 @@
 #include "global.h"
 
 module kdotp_calc_oct_m
+  use debug_oct_m
   use global_oct_m
   use hamiltonian_elec_oct_m
   use linear_response_oct_m

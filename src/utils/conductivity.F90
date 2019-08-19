@@ -21,6 +21,7 @@
   program conductivity
     use batch_oct_m
     use command_line_oct_m
+    use debug_oct_m
     use geometry_oct_m
     use global_oct_m
     use grid_oct_m
@@ -67,6 +68,8 @@
     default_namespace = namespace_t("")
 
     call message_g%init(default_namespace)
+
+    call debug_init(debug, default_namespace)
 
     call message_g%experimental('oct-conductivity')
 
@@ -455,6 +458,7 @@
     SAFE_DEALLOCATE_A(time)
 
     call io_end()
+    call debug_end(debug)
     call message_g%end()
 
     call parser_end()

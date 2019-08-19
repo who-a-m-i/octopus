@@ -21,6 +21,7 @@
 module modelmb_density_matrix_oct_m
   use batch_oct_m
   use comm_oct_m
+  use debug_oct_m
   use global_oct_m
   use grid_oct_m
   use hypercube_oct_m

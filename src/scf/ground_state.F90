@@ -20,6 +20,7 @@
 
 module ground_state_oct_m
   use calc_mode_par_oct_m
+  use debug_oct_m
   use global_oct_m
   use grid_oct_m
   use hamiltonian_elec_oct_m

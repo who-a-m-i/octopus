@@ -20,6 +20,7 @@
 
 module mesh_interpolation_oct_m
   use comm_oct_m
+  use debug_oct_m
   use iso_c_binding
   use global_oct_m
   use loct_math_oct_m

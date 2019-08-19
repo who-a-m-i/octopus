@@ -21,6 +21,7 @@
 module derivatives_oct_m
   use batch_oct_m
   use boundaries_oct_m
+  use debug_oct_m
   use global_oct_m
   use lalg_adv_oct_m
   use loct_oct_m

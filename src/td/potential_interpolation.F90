@@ -19,6 +19,7 @@
 #include "global.h"
 
 module potential_interpolation_oct_m
+  use debug_oct_m
   use grid_oct_m
   use global_oct_m
   use lalg_basic_oct_m

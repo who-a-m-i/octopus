@@ -19,6 +19,7 @@
 
 module species_oct_m
   use element_oct_m
+  use debug_oct_m
   use global_oct_m
   use iihash_oct_m
   use io_oct_m

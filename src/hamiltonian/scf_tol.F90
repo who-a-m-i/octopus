@@ -19,6 +19,7 @@
 #include "global.h"
 
 module scf_tol_oct_m
+  use debug_oct_m
   use global_oct_m
   use messages_oct_m
   use namespace_oct_m

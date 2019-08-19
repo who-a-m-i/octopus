@@ -20,6 +20,7 @@
 
 module opt_control_iter_oct_m
   use controlfunction_oct_m
+  use debug_oct_m
   use global_oct_m
   use grid_oct_m
   use io_oct_m

@@ -26,6 +26,7 @@
 !! for me to sort out.
 
 module curv_modine_oct_m
+  use debug_oct_m
   use geometry_oct_m
   use global_oct_m
   use loct_pointer_oct_m

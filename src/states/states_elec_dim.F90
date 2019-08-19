@@ -19,6 +19,7 @@
 #include "global.h"
 
 module states_elec_dim_oct_m
+  use debug_oct_m
   use distributed_oct_m
   use global_oct_m
   use io_oct_m

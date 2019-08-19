@@ -21,6 +21,7 @@
   program vibrational
     use batch_oct_m
     use command_line_oct_m
+    use debug_oct_m
     use geometry_oct_m
     use global_oct_m
     use io_oct_m
@@ -58,6 +59,8 @@
     default_namespace = namespace_t("")
     
     call message_g%init(default_namespace)
+
+    call debug_init(debug, default_namespace)
 
     call io_init(default_namespace)
 
@@ -265,6 +268,7 @@
     SAFE_DEALLOCATE_A(time)
 
     call io_end()
+    call debug_end(debug)
     call message_g%end()
 
     call parser_end()

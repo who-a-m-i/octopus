@@ -25,6 +25,7 @@ module forces_oct_m
   use born_charges_oct_m
   use boundaries_oct_m
   use comm_oct_m
+  use debug_oct_m
   use density_oct_m
   use derivatives_oct_m
   use epot_oct_m

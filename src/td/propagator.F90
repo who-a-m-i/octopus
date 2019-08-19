@@ -19,6 +19,7 @@
 #include "global.h"
 
 module propagator_oct_m
+  use debug_oct_m
   use energy_calc_oct_m
   use exponential_oct_m
   use forces_oct_m

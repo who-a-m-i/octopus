@@ -22,6 +22,7 @@ module io_function_oct_m
   use comm_oct_m
   use cube_function_oct_m
   use cube_oct_m
+  use debug_oct_m
   use distributed_oct_m
   use geometry_oct_m
   use global_oct_m

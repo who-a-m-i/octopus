@@ -25,6 +25,7 @@
 !! OCT module, opt_control_oct_m (as a module variable). It is initialized
 !! by calling oct_read_inp, defined below in this module.
 module opt_control_global_oct_m
+  use debug_oct_m
   use global_oct_m
   use messages_oct_m
   use namespace_oct_m

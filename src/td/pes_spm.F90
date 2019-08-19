@@ -20,6 +20,7 @@
 
 module pes_spm_oct_m
   use comm_oct_m
+  use debug_oct_m
   use global_oct_m
   use hamiltonian_elec_oct_m
   use io_oct_m

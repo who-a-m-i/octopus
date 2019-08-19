@@ -22,6 +22,7 @@ module nl_operator_oct_m
   use accel_oct_m
   use batch_oct_m
   use boundaries_oct_m
+  use debug_oct_m
   use global_oct_m
   use index_oct_m
   use iso_c_binding

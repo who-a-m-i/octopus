@@ -21,6 +21,7 @@
 module fourier_shell_oct_m
   use cube_oct_m
   use fft_oct_m
+  use debug_oct_m
   use global_oct_m
   use mesh_oct_m
   use messages_oct_m

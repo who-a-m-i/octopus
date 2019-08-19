@@ -19,6 +19,7 @@
 #include "global.h"
 
 module oct_exchange_oct_m
+  use debug_oct_m
   use derivatives_oct_m
   use global_oct_m
   use mesh_oct_m

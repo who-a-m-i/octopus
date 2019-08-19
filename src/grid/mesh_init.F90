@@ -21,6 +21,7 @@
 module mesh_init_oct_m
   use checksum_interface_oct_m
   use curvilinear_oct_m
+  use debug_oct_m
   use geometry_oct_m
   use global_oct_m
   use hypercube_oct_m
@@ -855,6 +856,7 @@ contains
       call print_date("Calculation ended on ")
       write(message_g%lines(1),'(a)') "Execution has ended."
       write(message_g%lines(2),'(a)') "If you want to run your system, do not use MeshPartitionVirtualSize."
+      call debug_end(debug)
       call message_g%warning(2)
       call message_g%end()
       call global_end()

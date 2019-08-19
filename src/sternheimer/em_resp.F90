@@ -21,6 +21,7 @@
 module em_resp_oct_m
   use born_charges_oct_m
   use em_resp_calc_oct_m
+  use debug_oct_m
   use forces_oct_m
   use geometry_oct_m
   use global_oct_m

@@ -25,6 +25,7 @@
 !! of the calculation modes themselves, to avoid writing code explicitly
 !! dependent on the calculation mode elsewhere.
 module calc_mode_par_oct_m
+  use debug_oct_m
   use global_oct_m
   use messages_oct_m
   use multicomm_oct_m

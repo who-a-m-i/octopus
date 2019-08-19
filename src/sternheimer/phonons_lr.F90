@@ -20,6 +20,7 @@
 
 module phonons_lr_oct_m
   use born_charges_oct_m
+  use debug_oct_m
   use epot_oct_m
   use forces_oct_m
   use geometry_oct_m

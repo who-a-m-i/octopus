@@ -21,6 +21,7 @@
 module grid_oct_m
   use cube_oct_m
   use curvilinear_oct_m
+  use debug_oct_m
   use derivatives_oct_m
   use double_grid_oct_m
   use geometry_oct_m

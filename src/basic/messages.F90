@@ -41,8 +41,7 @@ module messages_oct_m
     alloc_error,                &
     dealloc_error,              &
     push_sub,                   &
-    pop_sub,                    &
-    debug
+    pop_sub
 
   
   integer, parameter :: max_lines = 20
@@ -118,8 +117,6 @@ module messages_oct_m
   integer :: experimentals
   integer :: current_line
 
-  type(debug_t), save :: debug
-  
 contains
 
   ! ---------------------------------------------------------
@@ -144,8 +141,6 @@ contains
     
     call this%obsolete_variable(namespace, 'DebugLevel', 'Debug')
 
-    call debug_init(debug, namespace)
-    
     warnings = 0
     experimentals = 0
 
@@ -208,8 +203,6 @@ contains
  
     end if
 
-    call debug_end(debug)
-  
   end subroutine messages_end
 
   ! ---------------------------------------------------------

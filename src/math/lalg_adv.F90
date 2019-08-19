@@ -19,6 +19,7 @@
 #include "global.h"
 
 module lalg_adv_oct_m
+  use debug_oct_m
   use global_oct_m
   use lapack_oct_m
   use messages_oct_m

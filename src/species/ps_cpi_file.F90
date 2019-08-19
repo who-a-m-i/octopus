@@ -19,6 +19,7 @@
 #include "global.h"
 
 module ps_cpi_file_oct_m
+  use debug_oct_m
   use global_oct_m
   use messages_oct_m
   use profiling_oct_m

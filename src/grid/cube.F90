@@ -21,6 +21,7 @@
 
 module cube_oct_m
   use accel_oct_m
+  use debug_oct_m
   use fft_oct_m
   use global_oct_m
   use io_oct_m

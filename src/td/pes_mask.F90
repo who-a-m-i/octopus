@@ -24,6 +24,7 @@ module pes_mask_oct_m
   use comm_oct_m
   use cube_function_oct_m
   use cube_oct_m
+  use debug_oct_m
   use density_oct_m
   use fft_oct_m
   use fourier_space_oct_m

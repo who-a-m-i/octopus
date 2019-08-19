@@ -19,6 +19,7 @@
 #include "global.h"
 
 module index_oct_m
+  use debug_oct_m
   use global_oct_m
   use hypercube_oct_m
   use io_oct_m

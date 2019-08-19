@@ -23,6 +23,7 @@ module casida_oct_m
   use batch_oct_m
   use calc_mode_par_oct_m
   use comm_oct_m
+  use debug_oct_m
   use density_oct_m
   use excited_states_oct_m
   use forces_oct_m

@@ -21,6 +21,7 @@
 module mesh_oct_m
   use basis_set_abst_oct_m
   use curvilinear_oct_m
+  use debug_oct_m
   use geometry_oct_m
   use global_oct_m
   use hypercube_oct_m

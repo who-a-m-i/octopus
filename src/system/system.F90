@@ -21,6 +21,7 @@
 module system_oct_m
   use accel_oct_m
   use calc_mode_par_oct_m
+  use debug_oct_m
   use density_oct_m
   use elf_oct_m
   use energy_calc_oct_m

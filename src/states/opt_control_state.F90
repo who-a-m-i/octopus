@@ -22,6 +22,7 @@
 !> This module holds the "opt_control_state_t" datatype, which contains a quantum-classical
 !! state.
 module opt_control_state_oct_m
+  use debug_oct_m
   use geometry_oct_m
   use global_oct_m
   use messages_oct_m

@@ -38,6 +38,7 @@ module accel_oct_m
 #ifdef HAVE_CLFFT
   use clfft
 #endif
+  use debug_oct_m
   use global_oct_m
   use iso_c_binding
   use loct_oct_m

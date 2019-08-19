@@ -22,6 +22,7 @@ module spectrum_oct_m
   use batch_oct_m
   use iso_c_binding
   use compressed_sensing_oct_m
+  use debug_oct_m
   use fft_oct_m
   use global_oct_m
   use io_oct_m

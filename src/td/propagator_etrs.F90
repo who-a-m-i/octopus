@@ -21,6 +21,7 @@
 module propagator_etrs_oct_m
   use accel_oct_m
   use batch_oct_m
+  use debug_oct_m
   use density_oct_m
   use exponential_oct_m
   use grid_oct_m

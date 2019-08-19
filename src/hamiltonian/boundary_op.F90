@@ -20,6 +20,7 @@
 module boundary_op_oct_m
   use io_function_oct_m
   use cube_function_oct_m
+  use debug_oct_m
   use geometry_oct_m
   use global_oct_m
   use mesh_oct_m

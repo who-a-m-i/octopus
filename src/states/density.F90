@@ -24,6 +24,7 @@ module density_oct_m
   use batch_ops_oct_m
   use iso_c_binding
   use comm_oct_m
+  use debug_oct_m
   use derivatives_oct_m
   use global_oct_m
   use grid_oct_m

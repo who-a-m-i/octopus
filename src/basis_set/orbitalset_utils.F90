@@ -19,6 +19,7 @@
 module orbitalset_utils_oct_m
   use atomic_orbital_oct_m
   use comm_oct_m
+  use debug_oct_m
   use derivatives_oct_m
   use distributed_oct_m
   use geometry_oct_m

@@ -19,6 +19,7 @@
 #include "global.h"
 
 module vdw_oct_m
+  use debug_oct_m
   use em_resp_calc_oct_m
   use gauss_legendre_oct_m
   use global_oct_m

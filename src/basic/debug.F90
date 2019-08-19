@@ -43,6 +43,8 @@ module debug_oct_m
     integer :: bits    
   end type debug_t
 
+  type(debug_t), save, public :: debug
+
 contains
   
   subroutine debug_init(this, namespace)

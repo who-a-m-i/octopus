@@ -21,6 +21,7 @@
 #include "global.h"
 
 module smear_oct_m
+  use debug_oct_m
   use global_oct_m
   use kpoints_oct_m
   use loct_math_oct_m

@@ -19,6 +19,7 @@
 #include "global.h"
 
 module states_mxll_restart_oct_m
+  use debug_oct_m
   use global_oct_m
   use grid_oct_m
   use io_function_oct_m

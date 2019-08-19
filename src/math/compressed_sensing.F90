@@ -19,6 +19,7 @@
 module compressed_sensing_oct_m
   use blas_oct_m
   use bpdn_oct_m
+  use debug_oct_m
   use global_oct_m
   use messages_oct_m
   use profiling_oct_m

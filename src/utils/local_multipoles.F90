@@ -25,6 +25,7 @@ program oct_local_multipoles
   use box_union_oct_m
   use calc_mode_par_oct_m
   use comm_oct_m
+  use debug_oct_m
   use geometry_oct_m
   use global_oct_m
   use hamiltonian_elec_oct_m
@@ -79,6 +80,7 @@ program oct_local_multipoles
   default_namespace = namespace_t("")
   
   call message_g%init(default_namespace)
+  call debug_init(debug, default_namespace)
 
   call io_init(default_namespace)
   call profiling_init(default_namespace)
@@ -102,6 +104,7 @@ program oct_local_multipoles
   call system_end(sys)
   call profiling_end(default_namespace)
   call io_end()
+  call debug_end(debug)
   call print_date("Calculation ended on ")
   call message_g%end()
   call parser_end()

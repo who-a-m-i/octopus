@@ -21,6 +21,7 @@
 module species_pot_oct_m
   use atom_oct_m
   use curvilinear_oct_m
+  use debug_oct_m
   use global_oct_m
   use io_function_oct_m
   use mesh_function_oct_m

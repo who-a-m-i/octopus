@@ -20,6 +20,7 @@
 #include "global.h"
 
 module rdmft_oct_m
+  use debug_oct_m
   use density_oct_m
   use eigen_cg_oct_m
   use eigensolver_oct_m

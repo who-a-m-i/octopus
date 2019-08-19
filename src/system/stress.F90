@@ -23,6 +23,7 @@ module stress_oct_m
   use comm_oct_m
   use cube_oct_m
   use cube_function_oct_m
+  use debug_oct_m
   use density_oct_m
   use derivatives_oct_m
   use double_grid_oct_m

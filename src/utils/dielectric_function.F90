@@ -21,6 +21,7 @@
 program dielectric_function
   use batch_oct_m
   use command_line_oct_m
+  use debug_oct_m
   use geometry_oct_m
   use global_oct_m
   use io_oct_m
@@ -65,6 +66,7 @@ program dielectric_function
   default_namespace = namespace_t("")
 
   call message_g%init(default_namespace)
+  call debug_init(debug, default_namespace)
 
   call io_init(default_namespace)
 
@@ -300,6 +302,7 @@ program dielectric_function
   call geometry_end(geo)
   call space_end(space)
   call io_end()
+  call debug_end(debug)
   call message_g%end()
 
   call parser_end()

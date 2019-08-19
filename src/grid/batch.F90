@@ -21,6 +21,7 @@
 module batch_oct_m
   use accel_oct_m
   use blas_oct_m
+  use debug_oct_m
   use iso_c_binding
   use global_oct_m
   use hardware_oct_m

@@ -21,6 +21,7 @@
 
 module linear_response_oct_m
   use comm_oct_m
+  use debug_oct_m
   use global_oct_m
   use lalg_basic_oct_m
   use mesh_oct_m

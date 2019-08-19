@@ -22,6 +22,7 @@
 module scissor_oct_m
   use batch_oct_m
   use batch_ops_oct_m
+  use debug_oct_m
   use global_oct_m
   use grid_oct_m
   use kpoints_oct_m

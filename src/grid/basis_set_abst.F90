@@ -23,6 +23,7 @@
 !! essential quantities and functions
 
 module basis_set_abst_oct_m
+  use debug_oct_m
   use global_oct_m
   use messages_oct_m
   use mpi_oct_m

@@ -20,6 +20,7 @@
 
 module eigensolver_oct_m
   use batch_oct_m
+  use debug_oct_m
   use derivatives_oct_m
   use eigen_cg_oct_m
   use eigen_lobpcg_oct_m

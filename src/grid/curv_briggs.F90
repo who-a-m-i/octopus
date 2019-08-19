@@ -24,6 +24,7 @@
 !! It assumes that the Oxygen atom is located at x0=0 (see Eq. (12))
 
 module curv_briggs_oct_m
+  use debug_oct_m
   use global_oct_m
   use messages_oct_m
   use namespace_oct_m

@@ -22,6 +22,7 @@
 !! F. Gygi and G. Galli, PRB 52 R2229 (1996).
 
 module curv_gygi_oct_m
+  use debug_oct_m
   use geometry_oct_m
   use global_oct_m
   use loct_pointer_oct_m

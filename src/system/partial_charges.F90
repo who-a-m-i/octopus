@@ -19,6 +19,7 @@
 #include "global.h"
 
 module partial_charges_oct_m
+  use debug_oct_m
   use geometry_oct_m
   use global_oct_m
   use hirshfeld_oct_m

@@ -19,6 +19,7 @@
 #include "global.h"
 
 module xc_ks_inversion_oct_m
+  use debug_oct_m
   use density_oct_m
   use derivatives_oct_m
   use eigensolver_oct_m

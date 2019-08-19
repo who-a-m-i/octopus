@@ -19,6 +19,7 @@
 #include "global.h"
 
 module propagator_magnus_oct_m
+  use debug_oct_m
   use density_oct_m
   use exponential_oct_m
   use gauge_field_oct_m

@@ -21,6 +21,7 @@
 
 module static_pol_oct_m
   use born_charges_oct_m
+  use debug_oct_m
   use elf_oct_m
   use em_resp_oct_m
   use geometry_oct_m

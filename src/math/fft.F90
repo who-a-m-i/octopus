@@ -30,6 +30,7 @@ module fft_oct_m
   use clfft
 #endif
 #endif
+  use debug_oct_m
   use fftw_oct_m
   use fftw_params_oct_m
   use global_oct_m

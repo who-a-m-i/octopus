@@ -22,6 +22,7 @@ module curvilinear_oct_m
   use curv_briggs_oct_m
   use curv_gygi_oct_m
   use curv_modine_oct_m
+  use debug_oct_m
   use geometry_oct_m
   use global_oct_m
   use lalg_adv_oct_m

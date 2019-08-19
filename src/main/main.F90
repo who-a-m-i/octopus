@@ -21,6 +21,7 @@
 program octopus
   use calc_mode_par_oct_m
   use command_line_oct_m
+  use debug_oct_m
   use io_oct_m
   use global_oct_m
   use loct_oct_m
@@ -53,6 +54,8 @@ program octopus
   default_namespace = namespace_t("")
   
   call message_g%init(default_namespace)
+
+  call debug_init(debug, default_namespace)
 
   call walltimer_init(default_namespace)
   
@@ -160,6 +163,8 @@ program octopus
   
   call print_date("Calculation ended on ")
   call print_walltime()
+
+  call debug_end(debug)
 
   call message_g%end()
 

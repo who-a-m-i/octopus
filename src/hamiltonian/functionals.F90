@@ -19,6 +19,7 @@
 #include "global.h"
 
 module xc_functl_oct_m
+  use debug_oct_m
   use global_oct_m
   use libvdwxc_oct_m
   use messages_oct_m

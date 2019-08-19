@@ -23,6 +23,7 @@
 !!
 !! In addition, the module also contains the necessary procedures to manipulate these objects.
 module controlfunction_oct_m
+  use debug_oct_m
   use epot_oct_m
   use filter_oct_m
   use global_oct_m

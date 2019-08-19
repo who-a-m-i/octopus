@@ -19,6 +19,7 @@
 
 module lda_u_io_oct_m
   use atomic_orbital_oct_m
+  use debug_oct_m
   use geometry_oct_m
   use global_oct_m
   use io_oct_m

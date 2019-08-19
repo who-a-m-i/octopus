@@ -23,6 +23,7 @@ module v_ks_oct_m
   use berry_oct_m
   use comm_oct_m
   use current_oct_m
+  use debug_oct_m
   use density_oct_m
   use derivatives_oct_m
   use energy_oct_m

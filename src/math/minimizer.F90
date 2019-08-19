@@ -19,6 +19,7 @@
 #include "global.h"
 
 module minimizer_oct_m
+  use debug_oct_m
   use global_oct_m
   use iso_c_binding
   use lalg_basic_oct_m

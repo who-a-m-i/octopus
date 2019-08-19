@@ -49,6 +49,7 @@ module messages_oct_m
   type message_t
     private
     character(len=256), dimension(max_lines), public :: lines    !< to be output by fatal, warning
+    type(namespace_t), pointer :: namespace
   contains
     procedure :: init => messages_init
     procedure :: end => messages_end
@@ -121,8 +122,8 @@ contains
 
   ! ---------------------------------------------------------
   subroutine messages_init(this, namespace)
-    class(message_t),  intent(inout) :: this
-    type(namespace_t), intent(in)    :: namespace
+    class(message_t),          intent(inout) :: this
+    type(namespace_t), target, intent(in)    :: namespace
     
     call this%obsolete_variable(namespace, 'DevelVersion', 'ExperimentalFeatures')
 
@@ -146,12 +147,16 @@ contains
 
     call this%reset_lines()
 
+    this%namespace => namespace
+
   end subroutine messages_init
 
   ! ---------------------------------------------------------
 
   subroutine messages_end(this)
     class(message_t), intent(inout) :: this
+
+    nullify(this%namespace)
 
     if(mpi_grp_is_root(mpi_world)) then
   

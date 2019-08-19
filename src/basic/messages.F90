@@ -127,8 +127,6 @@ contains
     class(message_t),  intent(inout) :: this
     type(namespace_t), intent(in)    :: namespace
     
-    logical :: trap_signals
-
     call this%obsolete_variable(namespace, 'DevelVersion', 'ExperimentalFeatures')
 
     !%Variable ExperimentalFeatures
@@ -150,21 +148,6 @@ contains
     
     warnings = 0
     experimentals = 0
-
-    !%Variable DebugTrapSignals
-    !%Type logical
-    !%Section Execution::Debug
-    !%Description
-    !% If true, trap signals to handle them in octopus itself and
-    !% print a custom backtrace. If false, do not trap signals; then,
-    !% core dumps can be produced or gdb can be used to stop at the
-    !% point a signal was produced (e.g. a segmentation fault). This
-    !% variable is enabled if <tt>Debug</tt> is set to trace mode
-    !% (<tt>trace</tt>, <tt>trace_term</tt> or <tt>trace_file</tt>).
-    !%End
-    call parse_variable(namespace, 'DebugTrapSignals', debug%trace, trap_signals)
-
-    if (trap_signals) call trap_segfault()
 
     call this%reset_lines()
 

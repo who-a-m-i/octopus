@@ -69,6 +69,7 @@ program centergeom
 
   call io_end()
   call debug_end(debug)
+  call message_g%summary()
   call message_g%end()
 
   call parser_end()

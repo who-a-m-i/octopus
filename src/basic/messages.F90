@@ -53,6 +53,7 @@ module messages_oct_m
   contains
     procedure :: init => messages_init
     procedure :: end => messages_end
+    procedure :: summary => messages_summary
     procedure :: fatal => messages_fatal
     procedure :: warning => messages_warning
     procedure :: info => messages_info
@@ -151,12 +152,19 @@ contains
 
   end subroutine messages_init
 
-  ! ---------------------------------------------------------
 
+  ! ---------------------------------------------------------
   subroutine messages_end(this)
     class(message_t), intent(inout) :: this
 
     nullify(this%namespace)
+
+  end subroutine messages_end
+
+
+  ! ---------------------------------------------------------
+  subroutine messages_summary(this)
+    class(message_t), intent(inout) :: this
 
     if(mpi_grp_is_root(mpi_world)) then
   
@@ -208,7 +216,7 @@ contains
  
     end if
 
-  end subroutine messages_end
+  end subroutine messages_summary
 
   ! ---------------------------------------------------------
   subroutine messages_fatal(this, no_lines, only_root_writes)

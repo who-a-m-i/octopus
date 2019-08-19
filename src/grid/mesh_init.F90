@@ -858,6 +858,7 @@ contains
       write(message_g%lines(2),'(a)') "If you want to run your system, do not use MeshPartitionVirtualSize."
       call debug_end(debug)
       call message_g%warning(2)
+      call message_g%summary()
       call message_g%end()
       call global_end()
       stop

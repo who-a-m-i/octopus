@@ -310,6 +310,7 @@ program oct_unfold
   call io_end()
   call debug_end(debug)
   call print_date("Calculation ended on ")
+  call message_g%summary()
   call message_g%end()
   call parser_end()
   call global_end()

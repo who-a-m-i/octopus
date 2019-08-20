@@ -815,6 +815,7 @@ contains
 
     integer :: ii, jj, length
     character(len=70) :: str
+    character(len=70) :: msg_combined
 
     if(.not.mpi_grp_is_root(mpi_world)) return
 
@@ -824,7 +825,20 @@ contains
     end if
 
     if(present(msg)) then
-      length = len(msg)
+      if(len_trim(msg) > max_len) then
+        this%lines(1) = 'Message too long for printing.'
+        call this%fatal(1)
+      end if
+
+      ! combine msg and namespace if both are given
+      msg_combined = trim(msg)
+      if(len_trim(this%namespace%get()) > 0) then
+        if(len_trim(this%namespace%get()) + len_trim(msg) + 1 < max_len) then
+          write(msg_combined, '(3a)') trim(msg), " ", trim(this%namespace%get())
+        end if
+      end if
+
+      length = len(msg_combined)
 
       str = ''
       jj = 1
@@ -838,7 +852,7 @@ contains
       jj = jj + 1
      
       do ii = 1, length
-        str(jj:jj) = msg(ii:ii)
+        str(jj:jj) = msg_combined(ii:ii)
         jj = jj + 1
       end do
 

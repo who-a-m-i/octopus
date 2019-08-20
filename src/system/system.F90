@@ -66,6 +66,7 @@ module system_oct_m
     type(output_t)               :: outp  !< the output
     type(multicomm_t)            :: mc    !< index and domain communicators
     type(namespace_t)            :: namespace
+    type(message_t)              :: message
     type(hamiltonian_elec_t)     :: hm
     type(poisson_t)              :: psolver
   end type system_t
@@ -86,10 +87,11 @@ contains
     SAFE_ALLOCATE(sys%st)
 
     sys%namespace = namespace
+    call sys%message%init(namespace)
 
     call accel_init(mpi_world, sys%namespace)
 
-    call message_g%obsolete_variable(sys%namespace, 'SystemName')
+    call sys%message%obsolete_variable(sys%namespace, 'SystemName')
 
     call space_init(sys%space, sys%namespace, sys%message)
     
@@ -178,6 +180,8 @@ contains
 
     call accel_end()
 
+    call sys%message%end()
+
     SAFE_DEALLOCATE_P(sys%gr)
 
     POP_SUB(system_end)
@@ -203,7 +207,7 @@ contains
 
     if(sys%st%restart_reorder_occs .and. .not. sys%st%fromScratch) then
       messages(1) = "Reordering occupations for restart."
-      call message_g%info(1)
+      call sys%message%info(1)
 
       SAFE_ALLOCATE(ind(1:sys%st%nst))
       SAFE_ALLOCATE(copy_occ(1:sys%st%nst))

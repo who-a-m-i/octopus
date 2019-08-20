@@ -294,6 +294,11 @@ contains
     write(msg, '(a)') '*** Fatal Error (description follows)'
     call flush_msg(stderr, msg)
 
+    if(len_trim(this%namespace%get()) > 0) then
+      write(msg, '(2a)') '* In namespace ', this%namespace%get()
+      call flush_msg(stderr, msg)
+    end if
+
 #ifdef HAVE_MPI
     if(.not. only_root_writes_ .or. .not. mpi_grp_is_root(mpi_world)) then
       call flush_msg(stderr, shyphens)
@@ -376,6 +381,11 @@ contains
       call flush_msg(stderr, '')
       write(msg, '(a)') '** Warning:'
       call flush_msg(stderr, msg)
+
+      if(len_trim(this%namespace%get()) > 0) then
+        write(msg, '(2a)') '** In namespace ', this%namespace%get()
+        call flush_msg(stderr, msg)
+      end if
 
 #ifdef HAVE_MPI
       if(all_nodes_) then

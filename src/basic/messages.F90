@@ -50,6 +50,9 @@ module messages_oct_m
     private
     character(len=256), dimension(max_lines), public :: lines    !< to be output by fatal, warning
     type(namespace_t), pointer :: namespace
+    integer :: warnings
+    integer :: experimentals
+    integer :: current_line
   contains
     procedure :: init => messages_init
     procedure :: end => messages_end
@@ -111,13 +114,8 @@ module messages_oct_m
   integer, parameter, public :: iunit_err = 9
   !> max_lun is currently 99, i.e. we can hardwire unit_offset above 1000
   integer, parameter, private :: unit_offset = 1000
-  character(len=512), private :: msg
   integer, parameter, private :: SLEEPYTIME_ALL = 1, SLEEPYTIME_NONWRITERS = 60 !< seconds
 
-
-  integer :: warnings
-  integer :: experimentals
-  integer :: current_line
 
 contains
 
@@ -143,8 +141,8 @@ contains
     
     call this%obsolete_variable(namespace, 'DebugLevel', 'Debug')
 
-    warnings = 0
-    experimentals = 0
+    this%warnings = 0
+    this%experimentals = 0
 
     call this%reset_lines()
 
@@ -168,28 +166,28 @@ contains
 
     if(mpi_grp_is_root(mpi_world)) then
   
-      if(experimentals > 0 .or. warnings > 0) then
+      if(this%experimentals > 0 .or. this%warnings > 0) then
         this%lines(1) = ''
         call this%info(1)      
       end if
 
       
-      if(warnings > 0) then
+      if(this%warnings > 0) then
         call this%write('Octopus emitted ')
-        call this%write(warnings)
-        if(warnings > 1) then
-          call this%write(' warnings.')
+        call this%write(this%warnings)
+        if(this%warnings > 1) then
+          call this%write(' this%warnings.')
         else
           call this%write(' warning.')
         end if
         call this%info()
       end if
       
-      if(experimentals > 0) then
+      if(this%experimentals > 0) then
         call this%new_line()
         call this%write('Octopus used ')
-        call this%write(experimentals)
-        if(experimentals > 1) then
+        call this%write(this%experimentals)
+        if(this%experimentals > 1) then
           call this%write(' experimental features:')
         else
           call this%write(' experimental feature:')
@@ -210,8 +208,8 @@ contains
       end if
       
       open(unit = iunit_out, file = 'exec/messages', action = 'write')
-      write(iunit_out, '(a, i9)') "warnings          = ", warnings
-      write(iunit_out, '(a, i9)') "experimental      = ", experimentals
+      write(iunit_out, '(a, i9)') "this%warnings          = ", this%warnings
+      write(iunit_out, '(a, i9)') "experimental      = ", this%experimentals
       close(iunit_out)
  
     end if
@@ -224,6 +222,7 @@ contains
     integer, optional, intent(in)    :: no_lines
     logical, optional, intent(in)    :: only_root_writes
 
+    character(len=512) :: msg
     integer :: ii, no_lines_
     logical :: only_root_writes_, should_write
     integer, allocatable :: recv_buf(:), recv_req(:)
@@ -233,7 +232,7 @@ contains
     integer :: send_req
 #endif
     
-    no_lines_ = current_line
+    no_lines_ = this%current_line
     if(present(no_lines)) no_lines_ = no_lines
 
     if(present(only_root_writes)) then
@@ -348,16 +347,17 @@ contains
     integer, optional, intent(in)    :: no_lines
     logical, optional, intent(in)    :: all_nodes
 
+    character(len=512) :: msg
     integer :: il, no_lines_
     logical :: have_to_write
 #ifdef HAVE_MPI
     logical :: all_nodes_
 #endif
     
-    no_lines_ = current_line
+    no_lines_ = this%current_line
     if(present(no_lines)) no_lines_ = no_lines
 
-    INCR(warnings, 1)
+    INCR(this%warnings, 1)
 
     have_to_write = mpi_grp_is_root(mpi_world)
 
@@ -419,7 +419,7 @@ contains
       return
     end if
 
-    no_lines_ = current_line
+    no_lines_ = this%current_line
     if(present(no_lines)) no_lines_ = no_lines
 
     if(flush_messages) then
@@ -439,8 +439,7 @@ contains
 
     do il = 1, no_lines_
       if(.not. present(verbose_limit) .or. debug%info) then
-        write(msg, '(a)') trim(this%lines(il))
-        call flush_msg(iu, msg)
+        call flush_msg(iu, trim(this%lines(il)))
       end if
     end do
     if(present(stress)) then
@@ -474,8 +473,7 @@ contains
 
     call open_debug_trace(iunit)
     do il = 1, no_lines
-      write(msg, '(a)') trim(this%lines(il))
-      call flush_msg(iunit, msg)
+      call flush_msg(iunit, trim(this%lines(il)))
     end do
     close(iunit)
 
@@ -503,8 +501,7 @@ contains
 
     call open_debug_trace(iunit)
     do il = 1, no_lines
-      write(msg, '(a)') '* -'
-      call flush_msg(iunit, msg)
+      call flush_msg(iunit, '* -')
     end do
     close(iunit)
 
@@ -1116,7 +1113,7 @@ contains
     class(message_t), intent(inout) :: this
     character(len=*), intent(in)    :: name
     
-    INCR(experimentals, 1)
+    INCR(this%experimentals, 1)
 
     if(.not. conf%devel_version) then
       call this%write(trim(name)//' is an experimental feature.')
@@ -1134,7 +1131,7 @@ contains
       call this%warning(2)
 
       ! remove this warning from the count
-      INCR(warnings, -1)
+      INCR(this%warnings, -1)
     end if
 
   end subroutine messages_experimental
@@ -1195,7 +1192,7 @@ contains
   subroutine messages_reset_lines(this)
     class(message_t), intent(inout) :: this
 
-    current_line = 1
+    this%current_line = 1
     this%lines(1) = ''
     
   end subroutine messages_reset_lines
@@ -1205,10 +1202,10 @@ contains
   subroutine messages_new_line(this)
     class(message_t), intent(inout) :: this
     
-    current_line = current_line + 1
-    this%lines(current_line) = ''
+    this%current_line = this%current_line + 1
+    this%lines(this%current_line) = ''
 
-    if(current_line > max_lines) stop 'Too many message lines.'
+    if(this%current_line > max_lines) stop 'Too many message lines.'
    
   end subroutine messages_new_line
 
@@ -1237,10 +1234,10 @@ contains
 
     if(optional_default(align_left, .false.)) number = ' '//adjustl(number)
 
-    write(this%lines(current_line), '(a, a)') trim(this%lines(current_line)), trim(number)
+    write(this%lines(this%current_line), '(a, a)') trim(this%lines(this%current_line)), trim(number)
 
     if(present(units) .and. optional_default(print_units, .true.)) then
-      write(this%lines(current_line), '(a, a, a)') trim(this%lines(current_line)), ' ', trim(units_abbrev(units))
+      write(this%lines(this%current_line), '(a, a, a)') trim(this%lines(this%current_line)), ' ', trim(units_abbrev(units))
     end if
 
     if(optional_default(new_line, .false.)) call this%new_line()
@@ -1264,15 +1261,15 @@ contains
     if(present(units)) val_conv = int(nint(units_from_atomic(units, dble(val))), 8)
 
     if(present(fmt)) then
-      write(this%lines(current_line), '(a, '//trim(fmt)//')') trim(this%lines(current_line)), val_conv
+      write(this%lines(this%current_line), '(a, '//trim(fmt)//')') trim(this%lines(this%current_line)), val_conv
     else
       write(number, '(i10)') val_conv
-      write(this%lines(current_line), '(3a)') trim(this%lines(current_line)), ' ', trim(adjustl(number))
+      write(this%lines(this%current_line), '(3a)') trim(this%lines(this%current_line)), ' ', trim(adjustl(number))
     end if
 
 
     if(present(units) .and. optional_default(print_units, .true.)) then
-      write(this%lines(current_line), '(a, a, a)') trim(this%lines(current_line)), ' ', trim(units_abbrev(units))
+      write(this%lines(this%current_line), '(a, a, a)') trim(this%lines(this%current_line)), ' ', trim(units_abbrev(units))
     end if
 
     if(present(new_line)) then
@@ -1305,13 +1302,13 @@ contains
 
     character(len=100) :: fmt_
 
-    if(len(trim(this%lines(current_line))) + len(trim(val)) > len(this%lines(current_line))) then
+    if(len(trim(this%lines(this%current_line))) + len(trim(val)) > len(this%lines(this%current_line))) then
       ! cannot use normal message approach without interfering with message we are trying to write
       ! write directly in case trim(val) is itself too long
       write(0, *) "Exceeded message line length limit, to write string:", trim(val)
     else
       fmt_ = optional_default(fmt, '(a)')
-      write(this%lines(current_line), '(a, '//trim(fmt_)//')') trim(this%lines(current_line)), trim(val)
+      write(this%lines(this%current_line), '(a, '//trim(fmt_)//')') trim(this%lines(this%current_line)), trim(val)
     end if
 
     if(present(new_line)) then
@@ -1335,12 +1332,13 @@ contains
       text = 'no'
     end if
 
-    if(len(trim(this%lines(current_line))) + len(trim(text)) > len(this%lines(current_line))) then
-      write(this%lines(current_line + 1), '(3a)') "Exceeded message line length limit, to write logical value '", trim(text), "'"
-      call this%fatal(current_line + 1)
+    if(len(trim(this%lines(this%current_line))) + len(trim(text)) > len(this%lines(this%current_line))) then
+      write(this%lines(this%current_line + 1), '(3a)') "Exceeded message line length limit, "//&
+        "to write logical value '", trim(text), "'"
+      call this%fatal(this%current_line + 1)
     end if
 
-    write(this%lines(current_line), '(a,1x,a)') trim(this%lines(current_line)), trim(text)
+    write(this%lines(this%current_line), '(a,1x,a)') trim(this%lines(this%current_line)), trim(text)
 
     if(present(new_line)) then
       if(new_line) call this%new_line()
@@ -1375,6 +1373,7 @@ contains
 
     integer :: ii
     character(len=300) :: description
+    character(len=512) :: msg
 
     call get_signal_description(isignal, description)
 

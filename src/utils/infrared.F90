@@ -47,6 +47,7 @@
     integer :: ifreq, idir
     integer, parameter :: max_freq = 10000
     type(namespace_t) :: default_namespace
+    type(message_t) :: message
 
     ! Initialize stuff
     call global_init(is_serial = .true.)
@@ -58,7 +59,7 @@
     call parser_init()
     default_namespace = namespace_t("")
     
-    call message_g%init(default_namespace)
+    call message%init(default_namespace)
     call debug_init(debug, default_namespace)
 
     call io_init(default_namespace)
@@ -76,7 +77,7 @@
 
     if (end_time < M_ZERO) end_time = huge(end_time)
 
-    call space_init(space, default_namespace)
+    call space_init(space, default_namespace, message)
     call geometry_init(geo, default_namespace, space)
     call simul_box_init(sb, default_namespace, geo, space)
 
@@ -121,8 +122,8 @@
 
     call io_end()
     call debug_end(debug)
-    call message_g%summary()
-    call message_g%end()
+    call message%summary()
+    call message%end()
 
     call parser_end()
     call global_end()
@@ -178,9 +179,9 @@
       if(ini_iter == 0 ) ini_iter = 1
       end_iter = iter - 1
 
-      write (message_g%lines(1), '(a)') "Read dipole moment from '"// &
+      write (message%lines(1), '(a)') "Read dipole moment from '"// &
         trim(io_workpath('td.general/multipoles', default_namespace))//"'."
-      call message_g%info(1)
+      call message%info(1)
 
       POP_SUB(read_dipole)
     end subroutine read_dipole
@@ -216,8 +217,8 @@
         fi(jj) = fi(jj) - av/(dt*count) 
       end do
 
-      write (message_g%lines(1), '(a)') "Taking the Fourier transform."
-      call message_g%info(1)
+      write (message%lines(1), '(a)') "Taking the Fourier transform."
+      call message%info(1)
 
       !now calculate the FT
       !$omp parallel do private(ww, jj)
@@ -231,8 +232,8 @@
       end do
       !$omp end parallel do
 
-      write (message_g%lines(1), '(a)') "Done."
-      call message_g%info(1)
+      write (message%lines(1), '(a)') "Done."
+      call message%info(1)
 
       POP_SUB(fourier)
     end subroutine fourier

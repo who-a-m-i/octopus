@@ -42,6 +42,7 @@ program xyzanim
   type(geometry_t)  :: geo
   type(space_t)     :: space
   type(namespace_t) :: default_namespace
+  type(message_t)   :: message
   
   ! Initialize stuff
   call global_init(is_serial = .true.)
@@ -53,7 +54,7 @@ program xyzanim
   call parser_init()
   default_namespace = namespace_t("")
   
-  call message_g%init(default_namespace)
+  call message%init(default_namespace)
   call debug_init(debug, default_namespace)
   call io_init(default_namespace)
   call unit_system_init(default_namespace)
@@ -71,8 +72,8 @@ program xyzanim
   !%End
   call parse_variable(default_namespace, 'AnimationSampling', 100, sampling)
   if(sampling < 1) then
-    message_g%lines(1) = 'Sampling rate (AnimationSampling) should be bigger than 0'
-    call message_g%fatal(1)
+    message%lines(1) = 'Sampling rate (AnimationSampling) should be bigger than 0'
+    call message%fatal(1)
   end if
 
   !%Variable AnimationMultiFiles
@@ -84,7 +85,7 @@ program xyzanim
   !%End
   call parse_variable(default_namespace, 'AnimationMultiFiles', .false., multifiles)
 
-  call space_init(space, default_namespace)
+  call space_init(space, default_namespace, message)
   call geometry_init(geo, default_namespace, space)
   call simul_box_init(sb, default_namespace, geo, space)
 
@@ -126,8 +127,8 @@ program xyzanim
 
   call io_end()
   call debug_end(debug)
-  call message_g%summary()
-  call message_g%end()
+  call message%summary()
+  call message%end()
 
   call parser_end()
   call global_end()

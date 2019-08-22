@@ -40,6 +40,7 @@ program centergeom
   type(geometry_t)  :: geo
   type(space_t)     :: space
   type(namespace_t) :: default_namespace
+  type(message_t)   :: message
   
   call global_init(is_serial = .true.)
 
@@ -50,13 +51,13 @@ program centergeom
   call parser_init()
   default_namespace = namespace_t("")
 
-  call message_g%init(default_namespace)
+  call message%init(default_namespace)
   call debug_init(debug, default_namespace)
 
   call io_init(default_namespace)
   call unit_system_init(default_namespace)
 
-  call space_init(space, default_namespace)
+  call space_init(space, default_namespace, message)
   call geometry_init(geo, default_namespace, space)
   call simul_box_init(sb, default_namespace, geo, space)
 
@@ -69,8 +70,8 @@ program centergeom
 
   call io_end()
   call debug_end(debug)
-  call message_g%summary()
-  call message_g%end()
+  call message%summary()
+  call message%end()
 
   call parser_end()
 

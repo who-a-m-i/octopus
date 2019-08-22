@@ -83,20 +83,24 @@ module geometry_oct_m
     !> variables for passing info from XSF input to simul_box_init
     integer :: periodic_dim
     FLOAT :: lsize(MAX_DIM)
+    type(message_t), pointer :: message
   end type geometry_t
 
 contains
 
   ! ---------------------------------------------------------
-  subroutine geometry_init(geo, namespace, space, print_info)
+  subroutine geometry_init(geo, namespace, space, message, print_info)
     type(geometry_t),           intent(inout) :: geo
     type(namespace_t),          intent(in)    :: namespace
     type(space_t),    target,   intent(in)    :: space
+    type(message_t),  target,   intent(inout) :: message
     logical,          optional, intent(in)    :: print_info
 
     PUSH_SUB(geometry_init)
 
     geo%space => space
+
+    geo%message => message
 
     call species_init_global(namespace)
     
@@ -128,7 +132,7 @@ contains
 
     if(xyz%n < 1) then
       messages(1) = "Coordinates have not been defined."
-      call message_g%fatal(1)
+      call geo%message%fatal(1)
     end if
 
     ! copy information from xyz to geo
@@ -158,11 +162,11 @@ contains
       if(.not. bitand(xyz%flags, XYZ_FLAGS_CHARGE) /= 0) then
         messages(1) = "Need to know charge for the classical atoms."
         messages(2) = "Please use a .pdb"
-        call message_g%fatal(2)
+        call geo%message%fatal(2)
       end if
       geo%ncatoms = xyz%n
       write(messages(1), '(a,i8)') 'Info: Number of classical atoms = ', geo%ncatoms
-      call message_g%info(1)
+      call geo%message%info(1)
       if(geo%ncatoms>0)then
         SAFE_ALLOCATE(geo%catom(1:geo%ncatoms))
         do ia = 1, geo%ncatoms
@@ -218,24 +222,24 @@ contains
       
       if(species_is_ps(geo%species(k)) .and. geo%space%dim /= 3) then
         messages(1) = "Pseudopotentials may only be used with Dimensions = 3."
-        call message_g%fatal(1)
+        call geo%message%fatal(1)
       end if
     end do atoms2
 
     ! Reads the spin components. This is read here, as well as in states_init,
     ! to be able to pass it to the pseudopotential initializations subroutine.
     call parse_variable(namespace, 'SpinComponents', 1, ispin)
-    if(.not.varinfo_valid_option('SpinComponents', ispin)) call message_g%input_error('SpinComponents')
+    if(.not.varinfo_valid_option('SpinComponents', ispin)) call geo%message%input_error('SpinComponents')
     ispin = min(2, ispin)
 
     if(print_info_) then
-      call message_g%print_stress(stdout, "Species")
+      call geo%message%print_stress(stdout, "Species")
     end if
     do i = 1, geo%nspecies
       call species_build(geo%species(i), namespace, ispin, geo%space%dim, print_info=print_info_)
     end do
     if(print_info_) then
-      call message_g%print_stress(stdout)
+      call geo%message%print_stress(stdout)
     end if
 
     !%Variable SpeciesTimeDependent
@@ -255,7 +259,7 @@ contains
       end if
     end do
     if (geo%species_time_dependent .and. .not. spec_user_defined) then
-      call message_g%input_error('SpeciesTimeDependent')
+      call geo%message%input_error('SpeciesTimeDependent')
     end if
 
     !  assign species
@@ -568,21 +572,21 @@ contains
     PUSH_SUB(geometry_grid_defaults_info)
 
     do ispec = 1, geo%nspecies
-      call message_g%write("Species '"//trim(species_label(geo%species(ispec)))//"': spacing = ")
+      call geo%message%write("Species '"//trim(species_label(geo%species(ispec)))//"': spacing = ")
       if(species_def_h(geo%species(ispec)) > CNST(0.0)) then
-        call message_g%write(species_def_h(geo%species(ispec)), fmt = '(f7.3)')
-        call message_g%write(" b")
+        call geo%message%write(species_def_h(geo%species(ispec)), fmt = '(f7.3)')
+        call geo%message%write(" b")
       else
-        call message_g%write(" unknown")
+        call geo%message%write(" unknown")
       end if
-      call message_g%write(", radius = ")
+      call geo%message%write(", radius = ")
       if(species_def_rsize(geo%species(ispec)) > CNST(0.0)) then
-        call message_g%write(species_def_rsize(geo%species(ispec)), fmt = '(f5.1)')
-        call message_g%write(" b.")
+        call geo%message%write(species_def_rsize(geo%species(ispec)), fmt = '(f5.1)')
+        call geo%message%write(" b.")
       else
-        call message_g%write(" unknown.")
+        call geo%message%write(" unknown.")
       end if
-      call message_g%info()
+      call geo%message%info()
     end do
 
     POP_SUB(geometry_grid_defaults_info)

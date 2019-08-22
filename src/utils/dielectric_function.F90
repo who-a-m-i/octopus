@@ -74,8 +74,8 @@ program dielectric_function
 
   call spectrum_init(spectrum, default_namespace)
 
-  call space_init(space, default_namespace)
-  call geometry_init(geo, default_namespace, space)
+  call space_init(space, default_namespace, message)
+  call geometry_init(geo, default_namespace, space, message)
   call simul_box_init(sb, default_namespace, geo, space)
     
   SAFE_ALLOCATE(vecpot0(1:space%dim))

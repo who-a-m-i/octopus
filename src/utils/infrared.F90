@@ -76,8 +76,8 @@
 
     if (end_time < M_ZERO) end_time = huge(end_time)
 
-    call space_init(space, default_namespace)
-    call geometry_init(geo, default_namespace, space)
+    call space_init(space, default_namespace, message)
+    call geometry_init(geo, default_namespace, space, message)
     call simul_box_init(sb, default_namespace, geo, space)
 
       SAFE_ALLOCATE(dipole(0:max_iter+1, 1:3))

@@ -84,8 +84,8 @@ program xyzanim
   !%End
   call parse_variable(default_namespace, 'AnimationMultiFiles', .false., multifiles)
 
-  call space_init(space, default_namespace)
-  call geometry_init(geo, default_namespace, space)
+  call space_init(space, default_namespace, message)
+  call geometry_init(geo, default_namespace, space, message)
   call simul_box_init(sb, default_namespace, geo, space)
 
   record_length = 100 + geo%space%dim*geo%natoms*3*20

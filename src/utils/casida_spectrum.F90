@@ -150,7 +150,7 @@ program casida_spectrum
     end if
 
     ! apply rotation to geometry
-    call geometry_init(geo, default_namespace, cs%space)
+    call geometry_init(geo, default_namespace, cs%space, message)
     do iatom = 1, geo%natoms
       coord(1:cs%space%dim) = geo%atom(iatom)%x(1:cs%space%dim)
       geo%atom(iatom)%x(1:cs%space%dim) = matmul(rotation(1:cs%space%dim, 1:cs%space%dim), coord(1:cs%space%dim))

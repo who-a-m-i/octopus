@@ -92,7 +92,7 @@
     if (spectrum%end_time < M_ZERO) spectrum%end_time = huge(spectrum%end_time)
 
     call space_init(space, default_namespace, message)
-    call geometry_init(geo, default_namespace, space)
+    call geometry_init(geo, default_namespace, space, message)
     call simul_box_init(sb, default_namespace, geo, space)
 
     ! Opens the coordinates files.

@@ -67,6 +67,7 @@ module grid_oct_m
     type(double_grid_t)         :: dgrid
     logical                     :: have_fine_mesh
     type(stencil_t)             :: stencil
+    type(message_t), pointer    :: message
   end type grid_t
 
 
@@ -75,13 +76,16 @@ contains
   !-------------------------------------------------------------------
   !>
   !! "Zero-th" stage of grid initialization. It initializes the simulation box.
-  subroutine grid_init_stage_0(gr, namespace, geo, space)
-    type(grid_t),          intent(inout) :: gr
-    type(namespace_t),     intent(in)    :: namespace
-    type(geometry_t),      intent(inout) :: geo
-    type(space_t),         intent(in)    :: space
+  subroutine grid_init_stage_0(gr, namespace, geo, space, message)
+    type(grid_t),            intent(inout) :: gr
+    type(namespace_t),       intent(in)    :: namespace
+    type(geometry_t),        intent(inout) :: geo
+    type(space_t),           intent(in)    :: space
+    type(message_t), target, intent(inout) :: message
 
     PUSH_SUB(grid_init_stage_0)
+
+    gr%message => message
 
     call simul_box_init(gr%sb, namespace, geo, space)
       
@@ -119,7 +123,7 @@ contains
       gr%have_fine_mesh = .false.
     end if
 
-    if(gr%have_fine_mesh) call message_g%experimental("UseFineMesh")
+    if(gr%have_fine_mesh) call gr%message%experimental("UseFineMesh")
 
     call geometry_grid_defaults(geo, def_h, def_rsize)
     
@@ -153,16 +157,16 @@ contains
     !%End
 
     if(parse_block(namespace, 'Spacing', blk) == 0) then
-      if(parse_block_cols(blk,0) < gr%sb%dim) call message_g%input_error('Spacing')
+      if(parse_block_cols(blk,0) < gr%sb%dim) call gr%message%input_error('Spacing')
       do idir = 1, gr%sb%dim
         call parse_block_float(blk, 0, idir - 1, grid_spacing(idir), units_inp%length)
-        if(def_h > M_ZERO) call message_g%check_def(grid_spacing(idir), .true., def_h, 'Spacing', units_out%length)
+        if(def_h > M_ZERO) call gr%message%check_def(grid_spacing(idir), .true., def_h, 'Spacing', units_out%length)
       end do
       call parse_block_end(blk)
     else
       call parse_variable(namespace, 'Spacing', -M_ONE, grid_spacing(1), units_inp%length)
       grid_spacing(1:gr%sb%dim) = grid_spacing(1)
-      if(def_h > M_ZERO) call message_g%check_def(grid_spacing(1), .true., def_h, 'Spacing', units_out%length)
+      if(def_h > M_ZERO) call gr%message%check_def(grid_spacing(1), .true., def_h, 'Spacing', units_out%length)
     end if
 
 #if defined(HAVE_GDLIB)
@@ -184,15 +188,15 @@ contains
           write(messages(1), '(a,i1,3a,f6.3)') "Info: Using default spacing(", idir, &
             ") [", trim(units_abbrev(units_out%length)), "] = ",                        &
             units_from_atomic(units_out%length, grid_spacing(idir))
-          call message_g%info(1)
+          call gr%message%info(1)
         end do
-        ! Note: the default automatically matches the 'recommended' value compared by message_g%check_def above.
+        ! Note: the default automatically matches the 'recommended' value compared by gr%message%check_def above.
       else
         messages(1) = 'Either:'
         messages(2) = "   *) variable 'Spacing' is not defined and"
         messages(3) = "      I can't find a suitable default"
         messages(4) = "   *) your input for 'Spacing' is negative or zero"
-        call message_g%fatal(4)
+        call gr%message%fatal(4)
       end if
     end if
 
@@ -239,7 +243,7 @@ contains
     call nl_operator_global_init(namespace)
     if(gr%have_fine_mesh) then
       messages(1) = "Info: coarse mesh"
-      call message_g%info(1)
+      call gr%message%info(1)
     end if
     call derivatives_build(gr%der, gr%mesh)
 
@@ -250,7 +254,7 @@ contains
 
       if(gr%mesh%parallel_in_domains) then
         messages(1) = 'UseFineMesh does not work with domain parallelization.'
-        call message_g%fatal(1)
+        call gr%message%fatal(1)
       end if
 
       SAFE_ALLOCATE(gr%fine%mesh)
@@ -265,7 +269,7 @@ contains
       call multigrid_get_transfer_tables(gr%fine%tt, gr%fine%mesh, gr%mesh)
       
       messages(1) = "Info: fine mesh"
-      call message_g%info(1)
+      call gr%message%info(1)
       call derivatives_build(gr%fine%der, gr%fine%mesh)
 
       gr%fine%der%coarser => gr%der
@@ -335,30 +339,30 @@ contains
     PUSH_SUB(grid_write_info)
 
     if(.not.mpi_grp_is_root(mpi_world)) then
-      if(debug%info) call message_g%debug_newlines(6)
+      if(debug%info) call gr%message%debug_newlines(6)
       POP_SUB(grid_write_info)
       return
     end if
 
-    call message_g%print_stress(iunit, "Grid")
+    call gr%message%print_stress(iunit, "Grid")
     call simul_box_write_info(gr%sb, geo, iunit)
 
     if(gr%have_fine_mesh) then
       messages(1) = "Wave-functions mesh:"
-      call message_g%info(1, iunit)
+      call gr%message%info(1, iunit)
       call mesh_write_info(gr%mesh, iunit)
       messages(1) = "Density mesh:"
     else
       messages(1) = "Main mesh:"
     end if
-    call message_g%info(1, iunit)
+    call gr%message%info(1, iunit)
     call mesh_write_info(gr%fine%mesh, iunit)
 
     if (gr%mesh%use_curvilinear) then
       call curvilinear_write_info(gr%cv, iunit)
     end if
     
-    call message_g%print_stress(iunit)
+    call gr%message%print_stress(iunit)
 
     POP_SUB(grid_write_info)
   end subroutine grid_write_info

@@ -106,7 +106,8 @@ program photoelectron_spectrum
   call parser_init()
   default_namespace = namespace_t("")
 
-  call message_g%init(default_namespace)  
+  call message_g%init(default_namespace) ! to be deleted
+  call message%init(default_namespace)  
   call debug_init(debug, default_namespace)
   call io_init(default_namespace)
 

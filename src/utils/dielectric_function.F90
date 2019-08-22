@@ -54,6 +54,7 @@ program dielectric_function
   FLOAT :: start_time
   character(len=MAX_PATH_LEN) :: ref_filename
   type(namespace_t) :: default_namespace
+  type(message_t) :: message
   
   ! Initialize stuff
   call global_init(is_serial = .true.)
@@ -93,7 +94,7 @@ program dielectric_function
     
     if(in_file < 0) then 
       messages(1) = "Cannot find the GaugeVectorField in the input file"
-      call message_g%fatal(1)
+      call message%fatal(1)
     end if
 
   end if
@@ -102,7 +103,7 @@ program dielectric_function
   messages(2) = "direction, and that the 'y' and 'z' directions are equivalent."
   messages(3) = "If this is not the case the dielectric function and the"
   messages(4) = "susceptibility will be wrong."
-  call message_g%warning(4)
+  call message%warning(4)
 
   start_time = spectrum%start_time
   call parse_variable(default_namespace, 'GaugeFieldDelay', start_time, spectrum%start_time )
@@ -110,7 +111,7 @@ program dielectric_function
   in_file = io_open('td.general/gauge_field', default_namespace, action='read', status='old', die=.false.)
   if(in_file < 0) then 
     messages(1) = "Cannot open file '"//trim(io_workpath('td.general/gauge_field', default_namespace))//"'"
-    call message_g%fatal(1)
+    call message%fatal(1)
   end if
   call io_skip_header(in_file)
   call spectrum_count_time_steps(in_file, time_steps, dt)
@@ -134,18 +135,18 @@ program dielectric_function
     if(ref_file < 0) then
       messages(1) = "Cannot open reference file '"// &
         trim(io_workpath(trim(ref_filename)//'/gauge_field', default_namespace))//"'"
-      call message_g%fatal(1)
+      call message%fatal(1)
     end if
     call io_skip_header(ref_file)
     call spectrum_count_time_steps(ref_file, time_steps_ref, dt_ref)
     if(time_steps_ref < time_steps) then
       messages(1) = "The reference calculation does not contain enought time steps"
-      call message_g%fatal(1)
+      call message%fatal(1)
     end if
  
     if(dt_ref /= dt) then
       messages(1) = "The time step of the reference calculation is different from the current calculation"
-      call message_g%fatal(1)
+      call message%fatal(1)
     end if
 
   end if
@@ -180,7 +181,7 @@ program dielectric_function
 
   write(messages(1), '(a, i7, a)') "Info: Read ", time_steps, " steps from file '"// &
     trim(io_workpath('td.general/gauge_field', default_namespace))//"'"
-  call message_g%info(1)
+  call message%info(1)
 
 
   ! Find out the iteration numbers corresponding to the time limits.
@@ -304,8 +305,8 @@ program dielectric_function
   call space_end(space)
   call io_end()
   call debug_end(debug)
-  call message_g%summary()
-  call message_g%end()
+  call message%summary()
+  call message%end()
 
   call parser_end()
   call global_end()

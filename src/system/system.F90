@@ -91,7 +91,7 @@ contains
 
     call message_g%obsolete_variable(sys%namespace, 'SystemName')
 
-    call space_init(sys%space, sys%namespace)
+    call space_init(sys%space, sys%namespace, sys%message)
     
     call geometry_init(sys%geo, sys%namespace, sys%space, sys%message)
     call grid_init_stage_0(sys%gr, sys%namespace, sys%geo, sys%space, sys%message)

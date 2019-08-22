@@ -47,6 +47,7 @@
     integer :: ifreq, idir
     integer, parameter :: max_freq = 10000
     type(namespace_t) :: default_namespace
+    type(message_t) :: message
 
     ! Initialize stuff
     call global_init(is_serial = .true.)
@@ -122,8 +123,8 @@
 
     call io_end()
     call debug_end(debug)
-    call message_g%summary()
-    call message_g%end()
+    call message%summary()
+    call message%end()
 
     call parser_end()
     call global_end()
@@ -181,7 +182,7 @@
 
       write (messages(1), '(a)') "Read dipole moment from '"// &
         trim(io_workpath('td.general/multipoles', default_namespace))//"'."
-      call message_g%info(1)
+      call message%info(1)
 
       POP_SUB(read_dipole)
     end subroutine read_dipole
@@ -218,7 +219,7 @@
       end do
 
       write (messages(1), '(a)') "Taking the Fourier transform."
-      call message_g%info(1)
+      call message%info(1)
 
       !now calculate the FT
       !$omp parallel do private(ww, jj)
@@ -233,7 +234,7 @@
       !$omp end parallel do
 
       write (messages(1), '(a)') "Done."
-      call message_g%info(1)
+      call message%info(1)
 
       POP_SUB(fourier)
     end subroutine fourier

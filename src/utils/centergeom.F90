@@ -40,6 +40,7 @@ program centergeom
   type(geometry_t)  :: geo
   type(space_t)     :: space
   type(namespace_t) :: default_namespace
+  type(message_t)   :: message
   
   call global_init(is_serial = .true.)
 
@@ -70,8 +71,8 @@ program centergeom
 
   call io_end()
   call debug_end(debug)
-  call message_g%summary()
-  call message_g%end()
+  call message%summary()
+  call message%end()
 
   call parser_end()
 

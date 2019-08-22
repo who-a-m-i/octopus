@@ -56,9 +56,10 @@ module space_oct_m
 contains
 
   ! ---------------------------------------------------------
-  subroutine space_init(this, namespace, dim)
+  subroutine space_init(this, namespace, message, dim)
     type(space_t),     intent(inout) :: this
     type(namespace_t), intent(in)    :: namespace
+    type(message_t),   intent(inout) :: message
     integer, optional, intent(in)    :: dim
 
     PUSH_SUB(space_init_simple)
@@ -77,7 +78,7 @@ contains
       !%End
       call parse_variable(namespace, 'Dimensions', default_ndim, this%dim)
     end if
-    if((this%dim>MAX_DIM).or.(this%dim<1)) call message_g%input_error('Dimensions')
+    if((this%dim>MAX_DIM).or.(this%dim<1)) call message%input_error('Dimensions')
 
     POP_SUB(space_init_simple)
   end subroutine space_init

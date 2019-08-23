@@ -24,7 +24,7 @@ subroutine X(batch_axpy_const)(np, aa, xx, yy)
   type(batch_t),     intent(in)    :: xx
   type(batch_t),     intent(inout) :: yy
 
-  integer :: ist, dim2, dim3
+  integer :: ist, ip, dim2, dim3
   integer :: localsize
   CMPLX :: zaa
 
@@ -79,23 +79,37 @@ subroutine X(batch_axpy_const)(np, aa, xx, yy)
     
   case(BATCH_PACKED)
     if(batch_type(yy) == TYPE_CMPLX) then
-      call lalg_axpy(xx%pack%size(1), np, aa, xx%pack%zpsi, yy%pack%zpsi)
+      !$omp parallel do simd schedule(static) shared(aa)
+      do ip = 1, np
+        do ist = 1, xx%pack%size(1)
+          yy%pack%zpsi(ist, ip) = aa * xx%pack%zpsi(ist, ip) + yy%pack%zpsi(ist, ip)
+        end do
+      end do
     else
 #ifdef R_TREAL
-      call lalg_axpy(xx%pack%size(1), np, aa, xx%pack%dpsi, yy%pack%dpsi)
+      !$omp parallel do simd schedule(static) shared(aa)
+      do ip = 1, np
+        do ist = 1, xx%pack%size(1)
+          yy%pack%dpsi(ist, ip) = aa * xx%pack%dpsi(ist, ip) + yy%pack%dpsi(ist, ip)
+        end do
+      end do
 #endif
     end if
 
   case(BATCH_NOT_PACKED)
-    do ist = 1, yy%nst_linear
-      if(batch_type(yy) == TYPE_CMPLX) then
+    if(batch_type(yy) == TYPE_CMPLX) then
+      !$omp parallel do
+      do ist = 1, yy%nst_linear
         call lalg_axpy(np, aa, xx%states_linear(ist)%zpsi, yy%states_linear(ist)%zpsi)
-      else
+      end do
+    else
 #ifdef R_TREAL
+      !$omp parallel do
+      do ist = 1, yy%nst_linear
         call lalg_axpy(np, aa, xx%states_linear(ist)%dpsi, yy%states_linear(ist)%dpsi)
+      end do
 #endif
-      end if
-    end do
+    end if
   end select
 
   call profiling_count_operations(xx%nst*np*(R_ADD + R_MUL)*types_get_size(batch_type(xx))/types_get_size(TYPE_FLOAT))

@@ -1049,7 +1049,7 @@ subroutine batch_copy_data(np, xx, yy)
   type(batch_t),     intent(in)    :: xx
   type(batch_t),     intent(inout) :: yy
 
-  integer :: ist, dim2, dim3
+  integer :: ist, ip, dim2, dim3
   type(profile_t), save :: prof
   integer :: localsize
 
@@ -1078,10 +1078,22 @@ subroutine batch_copy_data(np, xx, yy)
     call accel_finish()
 
   case(BATCH_PACKED)
-    if(batch_type(yy) == TYPE_FLOAT) then
-      call blas_copy(np*xx%pack%size(1), xx%pack%dpsi(1, 1), 1, yy%pack%dpsi(1, 1), 1)
+    if(batch_type(yy) == TYPE_CMPLX) then
+      !$omp parallel do simd schedule(static)
+      do ip = 1, np
+        do ist = 1, xx%pack%size(1)
+          yy%pack%zpsi(ist, ip) = xx%pack%zpsi(ist, ip)
+        end do
+      end do
     else
-      call blas_copy(np*xx%pack%size(1), xx%pack%zpsi(1, 1), 1, yy%pack%zpsi(1, 1), 1)
+#ifdef R_TREAL
+      !$omp parallel do simd schedule(static)
+      do ip = 1, np
+        do ist = 1, xx%pack%size(1)
+          yy%pack%dpsi(ist, ip) = xx%pack%dpsi(ist, ip)
+        end do
+      end do
+#endif
     end if
 
   case(BATCH_NOT_PACKED)

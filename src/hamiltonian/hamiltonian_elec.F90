@@ -807,9 +807,9 @@ contains
           SAFE_ALLOCATE(vp(1:mesh%np, 1:mesh%sb%dim))
           vp(1:mesh%np, 1:mesh%sb%dim) = M_ZERO
           call laser_vector_potential(this%ep%lasers(ilaser), mesh, vp, time_)
-          do idir = 1, mesh%sb%dim
-            !$omp parallel do schedule(static)
-            do ip = 1, mesh%np
+          !$omp parallel do schedule(static)
+          do ip = 1, mesh%np
+            do idir = 1, mesh%sb%dim
               this%hm_base%vector_potential(idir, ip) = this%hm_base%vector_potential(idir, ip) - vp(ip, idir)/P_C
             end do
           end do
@@ -845,9 +845,9 @@ contains
     ! the vector potential of a static magnetic field
     if(associated(this%ep%a_static)) then
       call hamiltonian_elec_base_allocate(this%hm_base, mesh, FIELD_VECTOR_POTENTIAL, .false.)
-      do idir = 1, mesh%sb%dim
-        !$omp parallel do schedule(static)
-        do ip = 1, mesh%np
+      !$omp parallel do schedule(static)
+      do ip = 1, mesh%np
+        do idir = 1, mesh%sb%dim
           this%hm_base%vector_potential(idir, ip) = this%hm_base%vector_potential(idir, ip) + this%ep%a_static(ip, idir)
         end do
       end do

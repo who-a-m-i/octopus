@@ -79,7 +79,7 @@ subroutine X(batch_axpy_const)(np, aa, xx, yy)
     
   case(BATCH_PACKED)
     if(batch_type(yy) == TYPE_CMPLX) then
-      !$omp parallel do simd schedule(static) shared(aa)
+      !$omp parallel do simd schedule(static)
       do ip = 1, np
         do ist = 1, xx%pack%size(1)
           yy%pack%zpsi(ist, ip) = aa * xx%pack%zpsi(ist, ip) + yy%pack%zpsi(ist, ip)
@@ -87,7 +87,7 @@ subroutine X(batch_axpy_const)(np, aa, xx, yy)
       end do
     else
 #ifdef R_TREAL
-      !$omp parallel do simd schedule(static) shared(aa)
+      !$omp parallel do simd schedule(static)
       do ip = 1, np
         do ist = 1, xx%pack%size(1)
           yy%pack%dpsi(ist, ip) = aa * xx%pack%dpsi(ist, ip) + yy%pack%dpsi(ist, ip)

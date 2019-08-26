@@ -1086,14 +1086,12 @@ subroutine batch_copy_data(np, xx, yy)
         end do
       end do
     else
-#ifdef R_TREAL
       !$omp parallel do simd schedule(static)
       do ip = 1, np
         do ist = 1, xx%pack%size(1)
           yy%pack%dpsi(ist, ip) = xx%pack%dpsi(ist, ip)
         end do
       end do
-#endif
     end if
 
   case(BATCH_NOT_PACKED)

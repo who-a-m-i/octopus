@@ -175,7 +175,7 @@ contains
 
   ! ---------------------------------------------------------
   subroutine messages_summary(this)
-    class(message_t), intent(inout) :: this
+    class(message_t), intent(in) :: this
 
     if(mpi_grp_is_root(mpi_world)) then
   
@@ -231,9 +231,9 @@ contains
 
   ! ---------------------------------------------------------
   subroutine messages_fatal(this, no_lines, only_root_writes)
-    class(message_t),  intent(inout) :: this
-    integer, optional, intent(in)    :: no_lines
-    logical, optional, intent(in)    :: only_root_writes
+    class(message_t),  intent(in) :: this
+    integer, optional, intent(in) :: no_lines
+    logical, optional, intent(in) :: only_root_writes
 
     character(len=512) :: msg
     integer :: ii, no_lines_
@@ -361,9 +361,9 @@ contains
 
   ! ---------------------------------------------------------
   subroutine messages_warning(this, no_lines, all_nodes)
-    class(message_t),  intent(inout) :: this
-    integer, optional, intent(in)    :: no_lines
-    logical, optional, intent(in)    :: all_nodes
+    class(message_t),  intent(in) :: this
+    integer, optional, intent(in) :: no_lines
+    logical, optional, intent(in) :: all_nodes
 
     character(len=512) :: msg
     integer :: il, no_lines_
@@ -428,12 +428,12 @@ contains
   ! ---------------------------------------------------------
 
   subroutine messages_info(this, no_lines, iunit, verbose_limit, stress, all_nodes)
-    class(message_t),  intent(inout) :: this
-    integer, optional, intent(in)    :: no_lines
-    integer, optional, intent(in)    :: iunit
-    logical, optional, intent(in)    :: verbose_limit
-    logical, optional, intent(in)    :: stress
-    logical, optional, intent(in)    :: all_nodes
+    class(message_t),  intent(in) :: this
+    integer, optional, intent(in) :: no_lines
+    integer, optional, intent(in) :: iunit
+    logical, optional, intent(in) :: verbose_limit
+    logical, optional, intent(in) :: stress
+    logical, optional, intent(in) :: all_nodes
 
     integer :: il, iu, no_lines_
 
@@ -482,8 +482,8 @@ contains
 
   ! ---------------------------------------------------------
   subroutine messages_debug(this, no_lines)
-    class(message_t), intent(inout) :: this
-    integer,          intent(in)    :: no_lines
+    class(message_t), intent(in) :: this
+    integer,          intent(in) :: no_lines
 
     integer             :: il, iunit
 
@@ -509,8 +509,8 @@ contains
 
   ! ---------------------------------------------------------
   subroutine messages_debug_newlines(this, no_lines)
-    class(message_t), intent(inout) :: this
-    integer,          intent(in)    :: no_lines
+    class(message_t), intent(in) :: this
+    integer,          intent(in) :: no_lines
 
     integer             :: il, iunit
 
@@ -535,13 +535,18 @@ contains
 
   ! ---------------------------------------------------------
   subroutine messages_debug_marker(this, no)
-    class(message_t), intent(inout) :: this
-    integer,          intent(in)    :: no
+    class(message_t), intent(in) :: this
+    integer,          intent(in) :: no
+    class(message_t), allocatable :: that
+
+    allocate(that, source=this)
 
     if(.not. debug%info) return
 
-    write(this%lines(1), '(a,i3)') 'debug marker #', no
-    call this%debug(1)
+    write(that%lines(1), '(a,i3)') 'debug marker #', no
+    call that%debug(1)
+
+    deallocate(that)
 
   end subroutine messages_debug_marker
 
@@ -549,8 +554,8 @@ contains
   ! ---------------------------------------------------------
   !> create status file for asynchronous communication
   subroutine messages_switch_status(this, status)
-    class(message_t), intent(inout) :: this
-    character(len=*), intent(in)    :: status
+    class(message_t), intent(in) :: this
+    character(len=*), intent(in) :: status
 
     ! only root node is taking care of file I/O
     if (.not.mpi_grp_is_root(mpi_world)) return     
@@ -623,9 +628,9 @@ contains
 
   ! ---------------------------------------------------------
   subroutine messages_input_error(this, var, details)
-    class(message_t),           intent(inout) :: this
-    character(len=*),           intent(in)    :: var
-    character(len=*), optional, intent(in)    :: details
+    class(message_t),           intent(in) :: this
+    character(len=*),           intent(in) :: var
+    character(len=*), optional, intent(in) :: details
 
     type(block_t) :: blk
     
@@ -651,10 +656,10 @@ contains
 
   ! ---------------------------------------------------------
   subroutine messages_print_var_valuei(this, iunit, var, val)
-    class(message_t), intent(inout) :: this
-    integer,          intent(in)    :: iunit
-    character(len=*), intent(in)    :: var
-    integer,          intent(in)    :: val
+    class(message_t), intent(in) :: this
+    integer,          intent(in) :: iunit
+    character(len=*), intent(in) :: var
+    integer,          intent(in) :: val
 
     character(len=10) :: intstring
 
@@ -668,10 +673,10 @@ contains
 
   ! ---------------------------------------------------------
   subroutine messages_print_var_values(this, iunit, var, val)
-    class(message_t), intent(inout) :: this
-    integer,          intent(in)    :: iunit
-    character(len=*), intent(in)    :: var
-    character(len=*), intent(in)    :: val
+    class(message_t), intent(in) :: this
+    integer,          intent(in) :: iunit
+    character(len=*), intent(in) :: var
+    character(len=*), intent(in) :: val
 
     if(.not. mpi_grp_is_root(mpi_world)) return
 
@@ -683,11 +688,11 @@ contains
 
   ! ---------------------------------------------------------
   subroutine messages_print_var_valuer(this, iunit, var, val, unit)
-    class(message_t),       intent(inout) :: this
-    integer,                intent(in)    :: iunit
-    character(len=*),       intent(in)    :: var
-    FLOAT,                  intent(in)    :: val
-    type(unit_t), optional, intent(in)    :: unit
+    class(message_t),       intent(in) :: this
+    integer,                intent(in) :: iunit
+    character(len=*),       intent(in) :: var
+    FLOAT,                  intent(in) :: val
+    type(unit_t), optional, intent(in) :: unit
 
     character(len=10) :: floatstring
 
@@ -707,10 +712,10 @@ contains
 
   ! ---------------------------------------------------------
   subroutine messages_print_var_valuel(this, iunit, var, val)
-    class(message_t), intent(inout) :: this
-    integer,          intent(in)    :: iunit
-    character(len=*), intent(in)    :: var
-    logical,          intent(in)    :: val
+    class(message_t), intent(in) :: this
+    integer,          intent(in) :: iunit
+    character(len=*), intent(in) :: var
+    logical,          intent(in) :: val
 
     character(len=3) :: lstring
 
@@ -729,11 +734,11 @@ contains
 
   ! ---------------------------------------------------------
   subroutine messages_print_var_valuear(this, iunit, var, val, unit)
-    class(message_t),       intent(inout) :: this
-    integer,                intent(in)    :: iunit
-    character(len=*),       intent(in)    :: var
-    FLOAT,                  intent(in)    :: val(:)
-    type(unit_t), optional, intent(in)    :: unit
+    class(message_t),       intent(in) :: this
+    integer,                intent(in) :: iunit
+    character(len=*),       intent(in) :: var
+    FLOAT,                  intent(in) :: val(:)
+    type(unit_t), optional, intent(in) :: unit
 
     integer :: ii
     character(len=10) :: floatstring
@@ -760,9 +765,9 @@ contains
 
   ! ---------------------------------------------------------
   subroutine messages_print_var_info(this, iunit, var)
-    class(message_t), intent(inout) :: this
-    integer,          intent(in)    :: iunit
-    character(len=*), intent(in)    :: var
+    class(message_t), intent(in) :: this
+    integer,          intent(in) :: iunit
+    character(len=*), intent(in) :: var
 
     if(.not. mpi_grp_is_root(mpi_world)) return
 
@@ -772,11 +777,11 @@ contains
 
   ! ---------------------------------------------------------
   subroutine messages_print_var_option_8(this, iunit, var, option, pre)
-    class(message_t),           intent(inout) :: this
-    integer,                    intent(in)    :: iunit
-    character(len=*),           intent(in)    :: var
-    integer(8),                 intent(in)    :: option
-    character(len=*), optional, intent(in)    :: pre
+    class(message_t),           intent(in) :: this
+    integer,                    intent(in) :: iunit
+    character(len=*),           intent(in) :: var
+    integer(8),                 intent(in) :: option
+    character(len=*), optional, intent(in) :: pre
 
     integer :: option4
 
@@ -808,11 +813,11 @@ contains
 
   ! ---------------------------------------------------------
   subroutine messages_print_var_option_4(this, iunit, var, option, pre)
-    class(message_t),           intent(inout) :: this
-    integer,                    intent(in)    :: iunit
-    character(len=*),           intent(in)    :: var
-    integer(4),                 intent(in)    :: option
-    character(len=*), optional, intent(in)    :: pre
+    class(message_t),           intent(in) :: this
+    integer,                    intent(in) :: iunit
+    character(len=*),           intent(in) :: var
+    integer(4),                 intent(in) :: option
+    character(len=*), optional, intent(in) :: pre
 
     call this%print_var_option_8(iunit, var, int(option, 8), pre)
 
@@ -820,7 +825,7 @@ contains
   
   ! ---------------------------------------------------------
   subroutine messages_print_stress(this, iunit, msg)
-    class(message_t), intent(inout) :: this
+    class(message_t),           intent(in) :: this
     integer,                    intent(in) :: iunit
     character(len=*), optional, intent(in) :: msg
 
@@ -1122,69 +1127,83 @@ contains
   
   ! ---------------------------------------------------------
   subroutine messages_obsolete_variable(this, namespace, name, rep)
-    class(message_t),           intent(inout) :: this
-    type(namespace_t),          intent(in)    :: namespace
-    character(len=*),           intent(in)    :: name
-    character(len=*), optional, intent(in)    :: rep
+    class(message_t),           intent(in) :: this
+    type(namespace_t),          intent(in) :: namespace
+    character(len=*),           intent(in) :: name
+    character(len=*), optional, intent(in) :: rep
+
+    class(message_t), allocatable :: that
+
+    allocate(that, source=this)
     
     if(parse_is_defined(namespace, trim(name))) then 
 
-      write(this%lines(1), '(a)') 'Input variable '//trim(name)//' is obsolete.'
+      write(that%lines(1), '(a)') 'Input variable '//trim(name)//' is obsolete.'
 
       if(present(rep)) then
-        write(this%lines(2), '(a)') ' '
-        write(this%lines(3), '(a)') 'Equivalent functionality can be obtained with the '//trim(rep)
-        write(this%lines(4), '(a)') 'variable. Check the documentation for details.'
-        write(this%lines(5), '(a)') '(You can use the `oct-help -p '//trim(rep)//'` command).'
-        call this%fatal(5, only_root_writes = .true.)
+        write(that%lines(2), '(a)') ' '
+        write(that%lines(3), '(a)') 'Equivalent functionality can be obtained with the '//trim(rep)
+        write(that%lines(4), '(a)') 'variable. Check the documentation for details.'
+        write(that%lines(5), '(a)') '(You can use the `oct-help -p '//trim(rep)//'` command).'
+        call that%fatal(5, only_root_writes = .true.)
       else
-        call this%fatal(1, only_root_writes = .true.)
+        call that%fatal(1, only_root_writes = .true.)
       end if
 
     end if
+
+    deallocate(that)
     
   end subroutine messages_obsolete_variable
 
   ! ---------------------------------------------------------
   subroutine messages_experimental(this, name)
-    class(message_t), intent(inout) :: this
-    character(len=*), intent(in)    :: name
+    class(message_t), intent(in) :: this
+    character(len=*), intent(in) :: name
+    class(message_t), allocatable :: that
+
+    allocate(that, source=this)
     
-    INCR(this%experimentals, 1)
+    INCR(that%experimentals, 1)
 
     if(.not. conf%devel_version) then
-      call this%write(trim(name)//' is an experimental feature.')
-      call this%new_line()
-      call this%new_line()
-      call this%write('If you still want to use this feature (at your own risk), check:')
-      call this%new_line()
-      call this%new_line()
-      call this%write('http://octopus-code.org/experimental_features')
-      call this%new_line()
-      call this%fatal(only_root_writes = .true.)
+      call that%write(trim(name)//' is an experimental feature.')
+      call that%new_line()
+      call that%new_line()
+      call that%write('If you still want to use this feature (at your own risk), check:')
+      call that%new_line()
+      call that%new_line()
+      call that%write('http://octopus-code.org/experimental_features')
+      call that%new_line()
+      call that%fatal(only_root_writes = .true.)
     else
-      write(this%lines(1), '(a)') trim(name)//' is under development.'
-      write(this%lines(2), '(a)') 'It might not work or produce wrong results.'
-      call this%warning(2)
+      write(that%lines(1), '(a)') trim(name)//' is under development.'
+      write(that%lines(2), '(a)') 'It might not work or produce wrong results.'
+      call that%warning(2)
 
-      ! remove this warning from the count
-      INCR(this%warnings, -1)
+      ! remove that warning from the count
+      INCR(that%warnings, -1)
     end if
+
+    deallocate(that)
 
   end subroutine messages_experimental
   
 
   !--------------------------------------------------------------
   subroutine messages_check_def(this, var, should_be_less, def, name, unit)
-    class(message_t),       intent(inout) :: this
-    FLOAT,                  intent(in)    :: var
-    logical,                intent(in)    :: should_be_less
-    FLOAT,                  intent(in)    :: def
-    character(len=*),       intent(in)    :: name
-    type(unit_t), optional, intent(in)    :: unit
+    class(message_t),       intent(in) :: this
+    FLOAT,                  intent(in) :: var
+    logical,                intent(in) :: should_be_less
+    FLOAT,                  intent(in) :: def
+    character(len=*),       intent(in) :: name
+    type(unit_t), optional, intent(in) :: unit
 
     logical :: is_bad
     character(len=3) :: op_str
+    class(message_t), allocatable :: that
+
+    allocate(that, source=this)
 
     PUSH_SUB(messages_check_def)
 
@@ -1197,15 +1216,17 @@ contains
     end if
 
     if(is_bad) then
-      write(this%lines(1), '(3a)') "The value for '", name, "' is inconsistent with the recommended value."
+      write(that%lines(1), '(3a)') "The value for '", name, "' is inconsistent with the recommended value."
       if(present(unit)) then
-        write(this%lines(2), '(a,f8.3,4a,f8.3,a,a)') 'given ', units_from_atomic(unit, var), ' ', trim(units_abbrev(unit)), &
+        write(that%lines(2), '(a,f8.3,4a,f8.3,a,a)') 'given ', units_from_atomic(unit, var), ' ', trim(units_abbrev(unit)), &
           op_str, 'recommended ', units_from_atomic(unit, def), ' ', trim(units_abbrev(unit))
       else
-        write(this%lines(2), '(a,f8.3,2a,f8.3)') 'given ', var, op_str, 'recommended ', def
+        write(that%lines(2), '(a,f8.3,2a,f8.3)') 'given ', var, op_str, 'recommended ', def
       end if
-      call this%warning(2)
+      call that%warning(2)
     end if
+
+    deallocate(that)
 
     POP_SUB(messages_check_def)
   end subroutine messages_check_def
@@ -1213,12 +1234,12 @@ contains
 
   ! ------------------------------------------------------------
   subroutine messages_not_implemented(this, feature)
-    class(message_t), intent(inout) :: this
-    character(len=*), intent(in)    :: feature
+    class(message_t), intent(in) :: this
+    character(len=*), intent(in) :: feature
 
     PUSH_SUB(messages_not_implemented)
 
-    this%lines(1) = trim(feature)//" not implemented."
+    lines(1) = trim(feature)//" not implemented."
     call this%fatal(1, only_root_writes = .true.)
 
     POP_SUB(messages_not_implemented)
@@ -1227,7 +1248,7 @@ contains
   ! ------------------------------------------------------------
 
   subroutine messages_reset_lines(this)
-    class(message_t), intent(inout) :: this
+    class(message_t), intent(in) :: this
 
     this%current_line = 1
     this%lines(1) = ''
@@ -1237,7 +1258,7 @@ contains
   ! ------------------------------------------------------------
 
   subroutine messages_new_line(this)
-    class(message_t), intent(inout) :: this
+    class(message_t), intent(in) :: this
     
     this%current_line = this%current_line + 1
     this%lines(this%current_line) = ''
@@ -1249,16 +1270,19 @@ contains
   ! ------------------------------------------------------------
 
   subroutine messages_write_float(this, val, fmt, new_line, units, align_left, print_units)
-    class(message_t),           intent(inout) :: this
-    FLOAT,                      intent(in)    :: val
-    character(len=*), optional, intent(in)    :: fmt
-    logical,          optional, intent(in)    :: new_line
-    type(unit_t),     optional, intent(in)    :: units
-    logical,          optional, intent(in)    :: align_left
-    logical,          optional, intent(in)    :: print_units
+    class(message_t),           intent(in) :: this
+    FLOAT,                      intent(in) :: val
+    character(len=*), optional, intent(in) :: fmt
+    logical,          optional, intent(in) :: new_line
+    type(unit_t),     optional, intent(in) :: units
+    logical,          optional, intent(in) :: align_left
+    logical,          optional, intent(in) :: print_units
 
     character(len=30) :: number
     FLOAT            :: tval
+    class(message_t), allocatable :: that
+
+    allocate(that, source=this)
 
     tval = val
     if(present(units)) tval = units_from_atomic(units, val)
@@ -1271,59 +1295,66 @@ contains
 
     if(optional_default(align_left, .false.)) number = ' '//adjustl(number)
 
-    write(this%lines(this%current_line), '(a, a)') trim(this%lines(this%current_line)), trim(number)
+    write(that%lines(that%current_line), '(a, a)') trim(that%lines(that%current_line)), trim(number)
 
     if(present(units) .and. optional_default(print_units, .true.)) then
-      write(this%lines(this%current_line), '(a, a, a)') trim(this%lines(this%current_line)), ' ', trim(units_abbrev(units))
+      write(that%lines(that%current_line), '(a, a, a)') trim(that%lines(that%current_line)), ' ', trim(units_abbrev(units))
     end if
 
-    if(optional_default(new_line, .false.)) call this%new_line()
+    if(optional_default(new_line, .false.)) call that%new_line()
+
+    deallocate(that)
 
   end subroutine messages_write_float
 
   ! ------------------------------------------------------------
 
   subroutine messages_write_integer8(this, val, fmt, new_line, units, print_units)
-    class(message_t),           intent(inout) :: this
-    integer(8),                 intent(in)    :: val
-    character(len=*), optional, intent(in)    :: fmt
-    logical,          optional, intent(in)    :: new_line
-    type(unit_t),     optional, intent(in)    :: units
-    logical,          optional, intent(in)    :: print_units
+    class(message_t),           intent(in) :: this
+    integer(8),                 intent(in) :: val
+    character(len=*), optional, intent(in) :: fmt
+    logical,          optional, intent(in) :: new_line
+    type(unit_t),     optional, intent(in) :: units
+    logical,          optional, intent(in) :: print_units
 
     character(len=10) :: number
     integer(8) :: val_conv
+    class(message_t), allocatable :: that
+
+    allocate(that, source=this)
 
     val_conv = val
     if(present(units)) val_conv = int(nint(units_from_atomic(units, dble(val))), 8)
 
     if(present(fmt)) then
-      write(this%lines(this%current_line), '(a, '//trim(fmt)//')') trim(this%lines(this%current_line)), val_conv
+      write(that%lines(that%current_line), '(a, '//trim(fmt)//')') trim(that%lines(that%current_line)), val_conv
     else
       write(number, '(i10)') val_conv
-      write(this%lines(this%current_line), '(3a)') trim(this%lines(this%current_line)), ' ', trim(adjustl(number))
+      write(that%lines(that%current_line), '(3a)') trim(that%lines(that%current_line)), ' ', trim(adjustl(number))
     end if
 
 
     if(present(units) .and. optional_default(print_units, .true.)) then
-      write(this%lines(this%current_line), '(a, a, a)') trim(this%lines(this%current_line)), ' ', trim(units_abbrev(units))
+      write(that%lines(that%current_line), '(a, a, a)') trim(that%lines(that%current_line)), ' ', trim(units_abbrev(units))
     end if
 
     if(present(new_line)) then
-      if(new_line) call this%new_line()
+      if(new_line) call that%new_line()
     end if
+
+    deallocate(that)
 
   end subroutine messages_write_integer8
 
   ! ------------------------------------------------------------
 
   subroutine messages_write_integer(this, val, fmt, new_line, units, print_units)
-    class(message_t),           intent(inout) :: this
-    integer(4),                 intent(in)    :: val
-    character(len=*), optional, intent(in)    :: fmt
-    logical,          optional, intent(in)    :: new_line
-    type(unit_t),     optional, intent(in)    :: units
-    logical,          optional, intent(in)    :: print_units
+    class(message_t),           intent(in) :: this
+    integer(4),                 intent(in) :: val
+    character(len=*), optional, intent(in) :: fmt
+    logical,          optional, intent(in) :: new_line
+    type(unit_t),     optional, intent(in) :: units
+    logical,          optional, intent(in) :: print_units
 
     call this%write_integer8(int(val, 8), fmt, new_line, units, print_units)
 
@@ -1332,36 +1363,44 @@ contains
   ! ------------------------------------------------------------
 
   subroutine messages_write_str(this, val, fmt, new_line)
-    class(message_t),           intent(inout) :: this
-    character(len=*),           intent(in)    :: val
-    character(len=*), optional, intent(in)    :: fmt
-    logical,          optional, intent(in)    :: new_line
+    class(message_t),           intent(in) :: this
+    character(len=*),           intent(in) :: val
+    character(len=*), optional, intent(in) :: fmt
+    logical,          optional, intent(in) :: new_line
 
     character(len=100) :: fmt_
+    class(message_t), allocatable :: that
 
-    if(len(trim(this%lines(this%current_line))) + len(trim(val)) > len(this%lines(this%current_line))) then
+    allocate(that, source=this)
+
+    if(len(trim(that%lines(that%current_line))) + len(trim(val)) > len(that%lines(that%current_line))) then
       ! cannot use normal message approach without interfering with message we are trying to write
       ! write directly in case trim(val) is itself too long
       write(0, *) "Exceeded message line length limit, to write string:", trim(val)
     else
       fmt_ = optional_default(fmt, '(a)')
-      write(this%lines(this%current_line), '(a, '//trim(fmt_)//')') trim(this%lines(this%current_line)), trim(val)
+      write(that%lines(that%current_line), '(a, '//trim(fmt_)//')') trim(that%lines(that%current_line)), trim(val)
     end if
 
     if(present(new_line)) then
-      if(new_line) call this%new_line()
+      if(new_line) call that%new_line()
     end if
+
+    deallocate(that)
 
   end subroutine messages_write_str
 
   ! ------------------------------------------------------------
 
   subroutine messages_write_logical(this, val, new_line)
-    class(message_t),  intent(inout) :: this
-    logical,           intent(in)    :: val
-    logical, optional, intent(in)    :: new_line
+    class(message_t),  intent(in) :: this
+    logical,           intent(in) :: val
+    logical, optional, intent(in) :: new_line
 
     character(len=3) :: text
+    class(message_t), allocatable :: that
+
+    allocate(that, source=this)
 
     if(val) then
       text = 'yes'
@@ -1369,25 +1408,27 @@ contains
       text = 'no'
     end if
 
-    if(len(trim(this%lines(this%current_line))) + len(trim(text)) > len(this%lines(this%current_line))) then
-      write(this%lines(this%current_line + 1), '(3a)') "Exceeded message line length limit, "//&
+    if(len(trim(that%lines(that%current_line))) + len(trim(text)) > len(that%lines(that%current_line))) then
+      write(that%lines(that%current_line + 1), '(3a)') "Exceeded message line length limit, "//&
         "to write logical value '", trim(text), "'"
-      call this%fatal(this%current_line + 1)
+      call that%fatal(that%current_line + 1)
     end if
 
-    write(this%lines(this%current_line), '(a,1x,a)') trim(this%lines(this%current_line)), trim(text)
+    write(that%lines(that%current_line), '(a,1x,a)') trim(that%lines(that%current_line)), trim(text)
 
     if(present(new_line)) then
-      if(new_line) call this%new_line()
+      if(new_line) call that%new_line()
     end if
+
+    deallocate(that)
 
   end subroutine messages_write_logical
 
   ! -----------------------------------------------------------
 
   character(len=MAX_PATH_LEN) function messages_clean_path(this, filename) result(clean_path)
-    class(message_t), intent(inout) :: this
-    character(len=*), intent(in)    :: filename
+    class(message_t), intent(in) :: this
+    character(len=*), intent(in) :: filename
 
     integer :: pos, start
 
@@ -1405,8 +1446,8 @@ contains
   ! -----------------------------------------------------------
 
   subroutine messages_dump_stack(this, isignal)
-    class(message_t), intent(inout) :: this
-    integer,          intent(in)    :: isignal
+    class(message_t), intent(in) :: this
+    integer,          intent(in) :: isignal
 
     integer :: ii
     character(len=300) :: description

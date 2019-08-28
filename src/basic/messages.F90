@@ -45,14 +45,18 @@ module messages_oct_m
 
   
   integer, parameter :: max_lines = 20
+  character(len=256), dimension(max_lines), target :: lines    !< to be output by fatal, warning
+  integer, target :: warnings
+  integer, target :: experimentals
+  integer, target :: current_line
 
   type message_t
     private
-    character(len=256), dimension(max_lines), public :: lines    !< to be output by fatal, warning
     type(namespace_t), pointer :: namespace
-    integer :: warnings
-    integer :: experimentals
-    integer :: current_line
+    integer, pointer :: warnings
+    integer, pointer :: experimentals
+    integer, pointer :: current_line
+    character(len=256), dimension(:), pointer, public :: lines    !< pointer to global buffer
   contains
     procedure :: init => messages_init
     procedure :: end => messages_end
@@ -141,6 +145,11 @@ contains
     
     call this%obsolete_variable(namespace, 'DebugLevel', 'Debug')
 
+    this%lines => lines
+    this%warnings => warnings
+    this%experimentals => experimentals
+    this%current_line => current_line
+
     this%warnings = 0
     this%experimentals = 0
 
@@ -156,6 +165,10 @@ contains
     class(message_t), intent(inout) :: this
 
     nullify(this%namespace)
+    nullify(this%lines)
+    nullify(this%warnings)
+    nullify(this%experimentals)
+    nullify(this%current_line)
 
   end subroutine messages_end
 

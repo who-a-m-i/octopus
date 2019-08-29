@@ -359,16 +359,16 @@
 
     ftcurr = M_ONE
 
-    call batch_init(currb, 3, 1, 1, curr)
+    call batch_init(currb, 3, 1, 1, curr, message_g)
 
     call spectrum_signal_damp(spectrum%damp, spectrum%damp_factor, 1, ntime, M_ZERO, deltat, currb)
 
-    call batch_init(ftcurrb, 3, 1, 1, ftcurr)
+    call batch_init(ftcurrb, 3, 1, 1, ftcurr, message_g)
     call spectrum_fourier_transform(spectrum%method, SPECTRUM_TRANSFORM_COS, spectrum%noise, &
       1, ntime, M_ZERO, deltat, currb, spectrum%min_energy, spectrum%max_energy, spectrum%energy_step, ftcurrb)
     call batch_end(ftcurrb)
 
-    call batch_init(ftcurrb, 3, 1, 1, ftcurr(:, :, 2:2))
+    call batch_init(ftcurrb, 3, 1, 1, ftcurr(:, :, 2:2), message_g)
     call spectrum_fourier_transform(spectrum%method, SPECTRUM_TRANSFORM_SIN, spectrum%noise, &
       1, ntime, M_ZERO, deltat, currb, spectrum%min_energy, spectrum%max_energy, spectrum%energy_step, ftcurrb)
     call batch_end(ftcurrb)
@@ -406,16 +406,16 @@
 
     ftheatcurr = M_ONE
 
-    call batch_init(heatcurrb, 3, 1, 1, heatcurr)
+    call batch_init(heatcurrb, 3, 1, 1, heatcurr, message_g)
     
     call spectrum_signal_damp(spectrum%damp, spectrum%damp_factor, 1, ntime, M_ZERO, deltat, heatcurrb)
 
-    call batch_init(ftheatcurrb, 3, 1, 1, ftheatcurr)
+    call batch_init(ftheatcurrb, 3, 1, 1, ftheatcurr, message_g)
     call spectrum_fourier_transform(spectrum%method, SPECTRUM_TRANSFORM_COS, spectrum%noise, &
       1, ntime, M_ZERO, deltat, heatcurrb, spectrum%min_energy, spectrum%max_energy, spectrum%energy_step, ftheatcurrb)
     call batch_end(ftheatcurrb)
 
-    call batch_init(ftheatcurrb, 3, 1, 1, ftheatcurr(:, :, 2:2))
+    call batch_init(ftheatcurrb, 3, 1, 1, ftheatcurr(:, :, 2:2), message_g)
     call spectrum_fourier_transform(spectrum%method, SPECTRUM_TRANSFORM_SIN, spectrum%noise, &
       1, ntime, M_ZERO, deltat, heatcurrb, spectrum%min_energy, spectrum%max_energy, spectrum%energy_step, ftheatcurrb)
     call batch_end(ftheatcurrb)

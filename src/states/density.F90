@@ -436,7 +436,7 @@ contains
             call states_elec_get_state(st, gr%mesh, states_elec_block_min(st, ib) + ist - 1, ik, psi(:, :, ist)) 
           end do
 
-          call batch_init(psib, st%d%dim, states_elec_block_min(st, ib), n, psi)
+          call batch_init(psib, st%d%dim, states_elec_block_min(st, ib), n, psi, message_g)
           call density_calc_accumulate(dens_calc, ik, psib)
           call batch_end(psib)
           SAFE_DEALLOCATE_A(psi)

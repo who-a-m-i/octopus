@@ -348,9 +348,6 @@ subroutine X(derivatives_test)(this, namespace, repetitions, min_blocksize, max_
   logical :: packstates
   real(8) :: stime, etime
   character(len=20) :: type
-  class(message_t), allocatable :: message
-
-  allocate(message, source=this%message)
 
   call parse_variable(namespace, 'StatesPack', .true., packstates)
 
@@ -392,10 +389,10 @@ subroutine X(derivatives_test)(this, namespace, repetitions, min_blocksize, max_
 
   do 
 
-    call batch_init(ffb, 1, blocksize, message)
+    call batch_init(ffb, 1, blocksize, this%message)
     call X(batch_allocate)(ffb, 1, blocksize, this%mesh%np_part)
 
-    call batch_init(opffb, 1, blocksize, message)
+    call batch_init(opffb, 1, blocksize, this%message)
     call X(batch_allocate)(opffb, 1, blocksize, this%mesh%np)
 
     forall(ist = 1:blocksize, ip = 1:this%mesh%np_part)
@@ -438,7 +435,7 @@ subroutine X(derivatives_test)(this, namespace, repetitions, min_blocksize, max_
       blocksize*this%mesh%np*CNST(4.0)*this%lapl%stencil%size/(etime*CNST(1.0e9))
 #endif
 
-    call message%info(1)
+    call this%message%info(1)
 
     call batch_end(ffb)
     call batch_end(opffb)
@@ -455,19 +452,18 @@ subroutine X(derivatives_test)(this, namespace, repetitions, min_blocksize, max_
   end forall
 
   messages(1) = ''
-  call message%info(1)
+  call this%message%info(1)
 
   write(messages(1), '(3a, es17.10)') 'Gradient ', trim(type),  &
     ' err = ', X(mf_nrm2)(this%mesh, this%mesh%sb%dim, opff)
-  call message%info(1)
+  call this%message%info(1)
 
   messages(1) = ''
-  call message%info(1)
+  call this%message%info(1)
 
   SAFE_DEALLOCATE_A(ff)
   SAFE_DEALLOCATE_A(opff)
 
-  deallocate(message)
 
 end subroutine X(derivatives_test)
 

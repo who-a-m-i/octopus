@@ -521,7 +521,7 @@ subroutine X(lcao_alt_init_orbitals)(this, st, gr, geo, start)
     call submesh_init(this%sphere(iatom), gr%mesh%sb, gr%mesh, geo%atom(iatom)%x, this%radius(iatom))
     INCR(dof, this%sphere(iatom)%np*this%mult*norbs)
     ! FIXME: the second argument should be dim = st%d%dim, not 1!
-    call batch_init(this%orbitals(iatom), 1, this%mult*norbs)
+    call batch_init(this%orbitals(iatom), 1, this%mult*norbs, message_g)
   end do
 
   if(this%keep_orb) then
@@ -643,8 +643,8 @@ subroutine X(lcao_alt_wf) (this, st, gr, geo, hm, psolver, namespace, start)
 
         psii = M_ZERO
 
-        call batch_init( psib, st%d%dim, this%atom_orb_basis(iatom, 1), this%atom_orb_basis(iatom, norbs), psii)
-        call batch_init(hpsib, st%d%dim, this%atom_orb_basis(iatom, 1), this%atom_orb_basis(iatom, norbs), hpsi)
+        call batch_init( psib, st%d%dim, this%atom_orb_basis(iatom, 1), this%atom_orb_basis(iatom, norbs), psii, message_g)
+        call batch_init(hpsib, st%d%dim, this%atom_orb_basis(iatom, 1), this%atom_orb_basis(iatom, norbs), hpsi, message_g)
 
         call X(submesh_batch_add)(this%sphere(iatom), this%orbitals(iatom), psib)
         call X(hamiltonian_elec_apply_batch)(hm, gr%der, psolver, psib, hpsib, ik)

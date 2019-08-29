@@ -161,10 +161,10 @@ subroutine X(sternheimer_solve)(                           &
 
           !calculate the RHS of the Sternheimer eq
 
-          call batch_init(rhsb, st%d%dim, sst, est, rhs)
+          call batch_init(rhsb, st%d%dim, sst, est, rhs, message_g)
           
           if(sternheimer_have_rhs(this)) then
-            call batch_init(orhsb, st%d%dim, sst, est, this%X(rhs)(:, :, sst:, ik - st%d%kpt%start + 1))
+            call batch_init(orhsb, st%d%dim, sst, est, this%X(rhs)(:, :, sst:, ik - st%d%kpt%start + 1), message_g)
             call batch_copy_data(mesh%np, orhsb, rhsb)
             call batch_end(orhsb)
           else
@@ -204,8 +204,8 @@ subroutine X(sternheimer_solve)(                           &
           end do
 
           !solve the Sternheimer equation
-          call batch_init(dlpsib, st%d%dim, sst, est, lr(sigma)%X(dl_psi)(:, :, sst:, ik))
-          call batch_init(rhsb, st%d%dim, sst, est, rhs)
+          call batch_init(dlpsib, st%d%dim, sst, est, lr(sigma)%X(dl_psi)(:, :, sst:, ik), message_g)
+          call batch_init(rhsb, st%d%dim, sst, est, rhs, message_g)
 
           call X(linear_solver_solve_HXeY_batch)(this%solver, sys%hm, sys%psolver, sys%gr, sys%st, ik, &
             dlpsib, rhsb, -sys%st%eigenval(sst:est, ik) + omega_sigma, tol, &

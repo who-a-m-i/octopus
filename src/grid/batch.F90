@@ -119,6 +119,8 @@ module batch_oct_m
     integer                                :: in_buffer_count !< whether there is a copy in the opencl buffer
     type(batch_pack_t),             public :: pack
     type(type_t)                           :: type !< only available if the batched is packed
+
+    type(message_t),       pointer, public :: message
   end type batch_t
 
   !--------------------------------------------------------------
@@ -189,6 +191,8 @@ contains
     SAFE_DEALLOCATE_P(this%states_linear)
     
     SAFE_DEALLOCATE_P(this%ist_idim_index)
+
+    nullify(this%message)
 
     POP_SUB(batch_end)
   end subroutine batch_end
@@ -283,10 +287,11 @@ contains
   end subroutine batch_allocate_temporary
 
   !--------------------------------------------------------------
-  subroutine batch_init_empty (this, dim, nst)
-    type(batch_t), intent(out)   :: this
-    integer,       intent(in)    :: dim
-    integer,       intent(in)    :: nst
+  subroutine batch_init_empty (this, dim, nst, message)
+    type(batch_t),            intent(out)   :: this
+    integer,                  intent(in)    :: dim
+    integer,                  intent(in)    :: nst
+    class(message_t), target, intent(inout) :: message
     
     integer :: ist
 
@@ -323,15 +328,18 @@ contains
     this%ndims = 2
     SAFE_ALLOCATE(this%ist_idim_index(1:this%nst_linear, 1:this%ndims))
 
+    this%message => message
+
     POP_SUB(batch_init_empty)
   end subroutine batch_init_empty
 
 
   !--------------------------------------------------------------
   !> When we are interested in batches of 1D functions
-  subroutine batch_init_empty_linear(this, nst)
-    type(batch_t), intent(out)   :: this
-    integer,       intent(in)    :: nst
+  subroutine batch_init_empty_linear(this, nst, message)
+    type(batch_t),            intent(out)   :: this
+    integer,                  intent(in)    :: nst
+    class(message_t), target, intent(inout) :: message
     
     integer :: ist
 
@@ -360,6 +368,8 @@ contains
 
     this%ndims = 1
     SAFE_ALLOCATE(this%ist_idim_index(1:this%nst_linear, 1:this%ndims))
+
+    this%message => message
 
     POP_SUB(batch_init_empty_linear)
   end subroutine batch_init_empty_linear
@@ -403,7 +413,7 @@ contains
     logical :: pack_, copy_data_
     PUSH_SUB(batch_copy)
 
-    call batch_init_empty(bout, bin%dim, bin%nst)
+    call batch_init_empty(bout, bin%dim, bin%nst, bin%message)
 
     copy_data_ = optional_default(copy_data, .false.)
 

@@ -145,7 +145,7 @@ contains
 
       ! create index and domain communicators
       call multicomm_init(sys%mc, sys%namespace, mpi_world, calc_mode_par_parallel_mask(), calc_mode_par_default_parallel_mask(), &
-        mpi_world%size, index_range, (/ 5000, 1, 1, 1 /))
+        mpi_world%size, index_range, (/ 5000, 1, 1, 1 /), sys%message)
 
       POP_SUB(system_init.parallel_init)
     end subroutine parallel_init

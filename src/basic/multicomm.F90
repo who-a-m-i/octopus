@@ -134,6 +134,8 @@ module multicomm_oct_m
     integer, public  :: master_comm      !< The communicator without slaves.
     integer          :: master_comm_rank !< The rank in the communicator without slaves.
     integer, public  :: slave_intercomm  !< the intercomm to communicate with slaves
+
+    class(message_t), pointer, private :: message
   end type multicomm_t
 
   !> An all-pairs communication schedule for a given group.
@@ -165,27 +167,30 @@ contains
 
   ! ---------------------------------------------------------
   !> create index and domain communicators
-  subroutine multicomm_init(mc, namespace, base_grp, parallel_mask, default_mask, n_node, index_range, min_range)
-    type(multicomm_t), intent(out)   :: mc
-    type(namespace_t), intent(in)    :: namespace
-    type(mpi_grp_t),   intent(inout) :: base_grp
-    integer,           intent(in)    :: parallel_mask
-    integer,           intent(in)    :: default_mask
-    integer,           intent(in)    :: n_node
-    integer,           intent(inout) :: index_range(:)
-    integer,           intent(in)    :: min_range(:)
+  subroutine multicomm_init(mc, namespace, base_grp, parallel_mask, default_mask, n_node, index_range, min_range, message)
+    type(multicomm_t),       intent(out)   :: mc
+    type(namespace_t),       intent(in)    :: namespace
+    type(mpi_grp_t),         intent(inout) :: base_grp
+    integer,                 intent(in)    :: parallel_mask
+    integer,                 intent(in)    :: default_mask
+    integer,                 intent(in)    :: n_node
+    integer,                 intent(inout) :: index_range(:)
+    integer,                 intent(in)    :: min_range(:)
+    type(message_t), target, intent(inout) :: message
 
     integer :: ii, num_slaves, slave_level, ipar
     integer :: parse(1:P_STRATEGY_MAX), default(1:P_STRATEGY_MAX)
 
     PUSH_SUB(multicomm_init)
 
+    mc%message => message
+
     mc%n_node  = n_node
 
-    call message_g%print_stress(stdout, "Parallelization")
+    call mc%message%print_stress(stdout, "Parallelization")
 
-    call message_g%obsolete_variable(namespace, 'ParallelizationStrategy')
-    call message_g%obsolete_variable(namespace, 'ParallelizationGroupRanks')
+    call mc%message%obsolete_variable(namespace, 'ParallelizationStrategy')
+    call mc%message%obsolete_variable(namespace, 'ParallelizationGroupRanks')
     
     do ipar = 1, P_STRATEGY_MAX
       default(ipar) = PAR_NO
@@ -302,10 +307,10 @@ contains
         if(multicomm_strategy_is_parallel(mc, ipar)) then
           mc%group_sizes(ipar) = parse(ipar)
         else if(parse(ipar) /= 1) then
-          call message_g%write('Ignoring specification for ' // par_types(ipar))
-          call message_g%new_line()
-          call message_g%write('This parallelization strategy is not available.')
-          call message_g%warning()
+          call mc%message%write('Ignoring specification for ' // par_types(ipar))
+          call mc%message%new_line()
+          call mc%message%write('This parallelization strategy is not available.')
+          call mc%message%warning()
         end if
       end do
 
@@ -329,10 +334,10 @@ contains
 
       if(mc%have_slaves) then
 #ifndef HAVE_MPI2
-        message_g%lines(1) = 'Task parallelization requires MPI 2.'
-        call message_g%fatal(1)
+        mc%message%lines(1) = 'Task parallelization requires MPI 2.'
+        call mc%message%fatal(1)
 #endif
-        call message_g%experimental('Task parallelization')
+        call mc%message%experimental('Task parallelization')
       end if
 
       ! clear parallel strategies that were available but will not be used
@@ -346,7 +351,7 @@ contains
 
     call group_comm_create()
 
-    call message_g%print_stress(stdout)
+    call mc%message%print_stress(stdout)
 
     POP_SUB(multicomm_init)
 
@@ -369,25 +374,25 @@ contains
         end do
 
         if(mc%par_strategy /= bitand(mc%par_strategy, parallel_mask)) then
-          call message_g%write('Parallelization strategies unavailable for this run mode are being discarded.')
-          call message_g%warning()
+          call mc%message%write('Parallelization strategies unavailable for this run mode are being discarded.')
+          call mc%message%warning()
         end if
         
         mc%par_strategy = bitand(mc%par_strategy, parallel_mask)
         
         if(mc%par_strategy == P_STRATEGY_SERIAL) then
-          message_g%lines(1) = "More than one node is available, but this run mode cannot run with the requested parallelization."
-          message_g%lines(2) = "Please select a parallelization strategy compatible with"
+          mc%message%lines(1) = "More than one node is available, but this run mode cannot run with the requested parallelization."
+          mc%message%lines(2) = "Please select a parallelization strategy compatible with"
           jj = 2
           do ii = 1, n_par_types
             if(bitand(parallel_mask, 2**(ii - 1)) /= 0) then
               jj = jj + 1
-              write(message_g%lines(jj), '(2a)') "  -> ", par_types(ii)
+              write(mc%message%lines(jj), '(2a)') "  -> ", par_types(ii)
             end if
           end do
           jj=jj+1
-          write(message_g%lines(jj),'(a,i6)') "mc%par_strategy is : ",mc%par_strategy
-          call message_g%fatal(jj, only_root_writes = .true.)
+          write(mc%message%lines(jj),'(a,i6)') "mc%par_strategy is : ",mc%par_strategy
+          call mc%message%fatal(jj, only_root_writes = .true.)
         end if
       else
         mc%par_strategy = P_STRATEGY_SERIAL
@@ -403,15 +408,15 @@ contains
 #endif
 
       if(mc%par_strategy == P_STRATEGY_SERIAL .and. mc%nthreads == 1) then
-        message_g%lines(1) = "Info: Octopus will run in *serial*"
-        call message_g%info(1)
+        mc%message%lines(1) = "Info: Octopus will run in *serial*"
+        call mc%message%info(1)
       else
-        write(message_g%lines(1),'(a)')     'Info: Octopus will run in *parallel*'
-        write(message_g%lines(2),'(a)')     ''
-        write(message_g%lines(3),'(a, i8)') '      Number of processes           :', base_grp%size
-        write(message_g%lines(4),'(a, i8)') '      Number of threads per process :', mc%nthreads
-        write(message_g%lines(5),'(a)')     ''
-        call message_g%info(5)
+        write(mc%message%lines(1),'(a)')     'Info: Octopus will run in *parallel*'
+        write(mc%message%lines(2),'(a)')     ''
+        write(mc%message%lines(3),'(a, i8)') '      Number of processes           :', base_grp%size
+        write(mc%message%lines(4),'(a, i8)') '      Number of threads per process :', mc%nthreads
+        write(mc%message%lines(5),'(a)')     ''
+        call mc%message%info(5)
       end if
       
       POP_SUB(multicomm_init.strategy)
@@ -432,12 +437,12 @@ contains
       end do
 
       if(debug%info) then
-        call message_g%write('Debug info: Allowable group ranks:', new_line = .true.)
+        call mc%message%write('Debug info: Allowable group ranks:', new_line = .true.)
         do kk = 1, P_STRATEGY_MAX
-          call message_g%write(par_types(kk), fmt = '2x,a12,":",1x')
-          call message_g%write(n_group_max(kk), new_line = .true.)
+          call mc%message%write(par_types(kk), fmt = '2x,a12,":",1x')
+          call mc%message%write(n_group_max(kk), new_line = .true.)
         end do
-        call message_g%info()
+        call mc%message%info()
       end if
 
       nn = mc%n_node
@@ -448,23 +453,23 @@ contains
         if(mc%group_sizes(ipar) == PAR_AUTO) cycle
 
         if(mc%group_sizes(ipar) > n_group_max(ipar)) then
-          call message_g%write('The number of processors specified for '//par_types(ipar)//'(')
-          call message_g%write(mc%group_sizes(ipar))
-          call message_g%write(')', new_line = .true.)
-          call message_g%write('is larger than the degrees of freedom for that level (')
-          call message_g%write(n_group_max(ipar))
-          call message_g%write(').')
-          call message_g%warning()
+          call mc%message%write('The number of processors specified for '//par_types(ipar)//'(')
+          call mc%message%write(mc%group_sizes(ipar))
+          call mc%message%write(')', new_line = .true.)
+          call mc%message%write('is larger than the degrees of freedom for that level (')
+          call mc%message%write(n_group_max(ipar))
+          call mc%message%write(').')
+          call mc%message%warning()
         end if
 
         if(mod(nn, mc%group_sizes(ipar)) /= 0) then
-          call message_g%write('The number of processors specified for '//par_types(ipar)//'(')
-          call message_g%write(mc%group_sizes(ipar))
-          call message_g%write(')', new_line = .true.)
-          call message_g%write('is not a divisor of the number of processors (')
-          call message_g%write(mc%n_node)
-          call message_g%write(').')
-          call message_g%fatal()
+          call mc%message%write('The number of processors specified for '//par_types(ipar)//'(')
+          call mc%message%write(mc%group_sizes(ipar))
+          call mc%message%write(')', new_line = .true.)
+          call mc%message%write('is not a divisor of the number of processors (')
+          call mc%message%write(mc%n_node)
+          call mc%message%write(').')
+          call mc%message%fatal()
         end if
         
         nn = nn/mc%group_sizes(ipar)
@@ -507,13 +512,13 @@ contains
       if(num_slaves > 0) then
 
         if(mc%group_sizes(slave_level) < num_slaves + 1) then
-          message_g%lines(1) = 'Too many nodes assigned to task parallelization.'
-          call message_g%fatal(1)
+          mc%message%lines(1) = 'Too many nodes assigned to task parallelization.'
+          call mc%message%fatal(1)
         end if
 
-        write(message_g%lines(1),'(a,i6)') 'Info: Number of slaves nodes              :', &
+        write(mc%message%lines(1),'(a,i6)') 'Info: Number of slaves nodes              :', &
           num_slaves*product(mc%group_sizes(1:slave_level - 1))
-        call message_g%info(1)
+        call mc%message%info(1)
 
       end if
 
@@ -524,32 +529,32 @@ contains
         if(.not. multicomm_strategy_is_parallel(mc, kk)) cycle
         ii = ii + 1
         if(kk == slave_level) INCR(real_group_sizes(kk), -num_slaves)
-        write(message_g%lines(ii),'(3a,i6,a,i8,a)') 'Info: Number of nodes in ', &
+        write(mc%message%lines(ii),'(3a,i6,a,i8,a)') 'Info: Number of nodes in ', &
           par_types(kk), ' group:', real_group_sizes(kk), ' (', index_range(kk), ')'
       end do
-      call message_g%info(ii)
+      call mc%message%info(ii)
 
       ! do we have the correct number of processors
       if(product(mc%group_sizes(1:P_STRATEGY_MAX)) /= base_grp%size) then
-        write(message_g%lines(1),'(a)') 'Inconsistent number of processors:'
-        write(message_g%lines(2),'(a,i6)') '  MPI processes      = ', base_grp%size
-        write(message_g%lines(3),'(a,i6)') '  Required processes = ', product(mc%group_sizes(1:P_STRATEGY_MAX))
-        message_g%lines(4) = ''
-        message_g%lines(5) = 'You probably have a problem in the ParDomains, ParStates, ParKPoints or ParOther.'
-        call message_g%fatal(5, only_root_writes = .true.)
+        write(mc%message%lines(1),'(a)') 'Inconsistent number of processors:'
+        write(mc%message%lines(2),'(a,i6)') '  MPI processes      = ', base_grp%size
+        write(mc%message%lines(3),'(a,i6)') '  Required processes = ', product(mc%group_sizes(1:P_STRATEGY_MAX))
+        mc%message%lines(4) = ''
+        mc%message%lines(5) = 'You probably have a problem in the ParDomains, ParStates, ParKPoints or ParOther.'
+        call mc%message%fatal(5, only_root_writes = .true.)
       end if
 
       if(any(real_group_sizes(1:P_STRATEGY_MAX) > index_range(1:P_STRATEGY_MAX))) then
-        message_g%lines(1) = "Could not distribute nodes in parallel job. Most likely you are trying to"
-        message_g%lines(2) = "use too many nodes for the job."
-        call message_g%fatal(2, only_root_writes = .true.)
+        mc%message%lines(1) = "Could not distribute nodes in parallel job. Most likely you are trying to"
+        mc%message%lines(2) = "use too many nodes for the job."
+        call mc%message%fatal(2, only_root_writes = .true.)
       end if
 
       if(any(index_range(1:P_STRATEGY_MAX) / real_group_sizes(1:P_STRATEGY_MAX) < min_range(1:P_STRATEGY_MAX) .and. &
              real_group_sizes(1:P_STRATEGY_MAX) >  1)) then
-        message_g%lines(1) = "I have fewer elements in a parallel group than recommended."
-        message_g%lines(2) = "Maybe you should reduce the number of nodes."
-        call message_g%warning(2)
+        mc%message%lines(1) = "I have fewer elements in a parallel group than recommended."
+        mc%message%lines(2) = "Maybe you should reduce the number of nodes."
+        call mc%message%warning(2)
       end if
 
       ! calculate fraction of idle time
@@ -560,13 +565,13 @@ contains
         frac = frac*(M_ONE - real(kk - index_range(ii), REAL_PRECISION) / real(kk, REAL_PRECISION))
       end do
 
-      write(message_g%lines(1), '(a,f5.2,a)') "Info: Octopus will waste at least ", &
+      write(mc%message%lines(1), '(a,f5.2,a)') "Info: Octopus will waste at least ", &
         (M_ONE - frac)*CNST(100.0), "% of computer time."
       if(frac < CNST(0.8)) then
-        message_g%lines(2) = "Usually a number of processors which is a multiple of small primes is best."
-        call message_g%warning(2)
+        mc%message%lines(2) = "Usually a number of processors which is a multiple of small primes is best."
+        call mc%message%warning(2)
       else
-        call message_g%info(1)
+        call mc%message%info(1)
       end if
 
       POP_SUB(multicomm_init.sanity_check)
@@ -684,9 +689,9 @@ contains
 
       ! This is temporary debugging information.
       if(debug%info .and. mc%par_strategy /= P_STRATEGY_SERIAL) then
-        write(message_g%lines(1),'(a)') 'Debug: MPI Task Assignment to MPI Groups'
-        write(message_g%lines(2),'(5a10)') 'World', 'Domains', 'States', 'K-Points', 'Other'
-        call message_g%info(1)
+        write(mc%message%lines(1),'(a)') 'Debug: MPI Task Assignment to MPI Groups'
+        write(mc%message%lines(2),'(5a10)') 'World', 'Domains', 'States', 'K-Points', 'Other'
+        call mc%message%info(1)
 
         if(mc%node_type == P_SLAVE) then
           node_type = "slave"
@@ -695,9 +700,9 @@ contains
         end if
         do irank = 0, mpi_world%size - 1
           if(mpi_world%rank == irank) then
-            write(message_g%lines(1),'(5i10,5x,a)') mpi_world%rank, mc%who_am_i(P_STRATEGY_DOMAINS), mc%who_am_i(P_STRATEGY_STATES), &
+            write(mc%message%lines(1),'(5i10,5x,a)') mpi_world%rank, mc%who_am_i(P_STRATEGY_DOMAINS), mc%who_am_i(P_STRATEGY_STATES), &
             mc%who_am_i(P_STRATEGY_KPOINTS), mc%who_am_i(P_STRATEGY_OTHER), trim(node_type)
-            call message_g%info(1, all_nodes = .true.)
+            call mc%message%info(1, all_nodes = .true.)
           end if
           call MPI_Barrier(mpi_world%comm, mpi_err)
         end do

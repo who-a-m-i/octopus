@@ -68,6 +68,8 @@ module orbitalbasis_oct_m
     logical,            public :: orthogonalization  !> Orthogonalization of the basis
 
     character(len=256), public :: debugdir !> For debug
+
+    class(message_t), pointer, public :: message
   end type orbitalbasis_t
 
 contains
@@ -85,6 +87,8 @@ contains
   nullify(this%global2os)
   nullify(this%os2global)
 
+  nullify(this%message)
+
   this%norbsets = 0
   this%maxnorbs = 0
   this%max_np = 0
@@ -96,13 +100,16 @@ contains
 
  end subroutine orbitalbasis_nullify
 
- subroutine orbitalbasis_init(this, namespace)
-   type(orbitalbasis_t),    intent(inout) :: this
-   type(namespace_t),       intent(in)    :: namespace
+ subroutine orbitalbasis_init(this, namespace, message)
+   type(orbitalbasis_t),     intent(inout) :: this
+   type(namespace_t),        intent(in)    :: namespace
+   class(message_t), target, intent(inout) :: message
 
   PUSH_SUB(orbitalbasis_init)
 
   call orbitalbasis_nullify(this)
+
+  this%message => message
 
   !%Variable AOTruncation
   !%Type flag
@@ -121,7 +128,7 @@ contains
   !% of the corresponding atom.
   !%End
   call parse_variable(namespace, 'AOTruncation', OPTION__AOTRUNCATION__AO_FULL, this%truncation)
-  call message_g%print_var_option(stdout, 'AOTruncation', this%truncation)
+  call this%message%print_var_option(stdout, 'AOTruncation', this%truncation)
 
   !%Variable AOThreshold
   !%Type float
@@ -135,8 +142,8 @@ contains
   !% However increasing this value increases the number of grid points covered by the orbitals and directly affect performances.
   !%End
   call parse_variable(namespace, 'AOThreshold', CNST(0.01), this%threshold)
-  if(this%threshold <= M_ZERO) call message_g%input_error('AOThreshold')
-  call message_g%print_var_value(stdout, 'AOThreshold', this%threshold)
+  if(this%threshold <= M_ZERO) call this%message%input_error('AOThreshold')
+  call this%message%print_var_value(stdout, 'AOThreshold', this%threshold)
 
   !%Variable AONormalize
   !%Type logical
@@ -146,7 +153,7 @@ contains
   !% If set to yes, Octopus will normalize the atomic orbitals
   !%End
   call parse_variable(namespace, 'AONormalize', .true., this%normalize)
-  call message_g%print_var_value(stdout, 'AONormalize', this%normalize)
+  call this%message%print_var_value(stdout, 'AONormalize', this%normalize)
 
   !%Variable AOSubmeshForPeriodic
   !%Type logical
@@ -159,7 +166,7 @@ contains
   !% At the moment this option is not compatible with Loewdin orthogonalization
   !%End
   call parse_variable(namespace, 'AOSubmeshForPeriodic', .false., this%submeshforperiodic)
-  call message_g%print_var_value(stdout, 'AOSubmeshForPeriodic', this%submeshforperiodic)
+  call this%message%print_var_value(stdout, 'AOSubmeshForPeriodic', this%submeshforperiodic)
 
   !%Variable AOLoewdin
   !%Type logical
@@ -172,11 +179,11 @@ contains
   !% not yet implemented for isolated systems, and seems to lead to important egg-box effect
   !%End
   call parse_variable(namespace, 'AOLoewdin', .false., this%orthogonalization)
-  call message_g%print_var_value(stdout, 'AOLoewdin', this%orthogonalization)
-  if(this%orthogonalization) call message_g%experimental("AOLoewdin")
+  call this%message%print_var_value(stdout, 'AOLoewdin', this%orthogonalization)
+  if(this%orthogonalization) call this%message%experimental("AOLoewdin")
 
   if(this%orthogonalization .and. this%submeshforperiodic) &
-    call message_g%not_implemented("AOLoewdin=yes with AOSubmeshForPeriodic=yes.") 
+    call this%message%not_implemented("AOLoewdin=yes with AOSubmeshForPeriodic=yes.") 
 
   if(debug%info) then
     write(this%debugdir, '(a)') 'debug/ao_basis'
@@ -202,6 +209,8 @@ contains
   
    SAFE_DEALLOCATE_P(this%global2os)
    SAFE_DEALLOCATE_P(this%os2global)
+
+   nullify(this%message)
 
    POP_SUB(orbitalbasis_end)
  end subroutine orbitalbasis_end

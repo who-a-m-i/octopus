@@ -101,7 +101,7 @@ contains
 
     PUSH_SUB(orbitalset_init_intersite)
 
-    call message_g%print_stress(stdout, "Intersite Coulomb integrals")
+    call this%message%print_stress(stdout, "Intersite Coulomb integrals")
 
     !From the formula and the coding point of view, it is interesting to split the intersite terms
     !into the neighbors (between two different atoms) and periodic copies (same atom).
@@ -160,8 +160,14 @@ contains
         call periodic_copy_end(pc)
       end do
 
+<<<<<<< HEAD
       write(messages(1),'(a, i3, a)')    'Intersite interaction will be computed for ', this%nneighbors, ' neighboring atoms.'
       call message_g%info(1)
+=======
+      write(this%message%lines(1),'(a, i3, a)')    'Intersite interaction will be computed for ', &
+        this%nneighbors, ' neighboring atoms.'
+      call this%message%info(1)
+>>>>>>> 4e98211ef... Convert basis_set
 
 
       SAFE_ALLOCATE(this%coulomb_IIJJ(1:this%norbs,1:this%norbs,1:maxnorbs,1:maxnorbs,1:this%nneighbors))
@@ -169,7 +175,11 @@ contains
 
       call distributed_nullify(dist, this%nneighbors)
 #ifdef HAVE_MPI
+<<<<<<< HEAD
       call distributed_init(dist, this%nneighbors, MPI_COMM_WORLD, 'orbs')
+=======
+      call distributed_init(dist, this%nneighbors, MPI_COMM_WORLD, this%message, 'orbs')
+>>>>>>> 4e98211ef... Convert basis_set
 #endif
 
       do inn = dist%start, dist%end
@@ -180,9 +190,13 @@ contains
         call submesh_merge(sm, sb, der%mesh, this%sphere, os(ios)%sphere, &
                        shift = this%V_ij(inn, 1:sb%dim))
 
+<<<<<<< HEAD
         write(messages(1),'(a, i3, a, f6.3, a, i5, a)') 'Neighbor ', inn, ' is located at ', &
+=======
+        write(this%message%lines(1),'(a, i3, a, f6.3, a, i5, a)') 'Neighbor ', inn, ' is located at ', &
+>>>>>>> 4e98211ef... Convert basis_set
                              this%V_ij(inn, sb%dim+1), ' Bohr and has ', sm%np, ' grid points.'
-        call message_g%info(1)
+        call this%message%info(1)
 
         SAFE_ALLOCATE(orb(1:sm%np, 1:max(this%norbs,os(ios)%norbs),1:2))
         SAFE_ALLOCATE(nn(1:sm%np))
@@ -251,7 +265,7 @@ contains
 
     end if
 
-    call message_g%print_stress(stdout)
+    call this%message%print_stress(stdout)
 
     POP_SUB(orbitalset_init_intersite)
   end subroutine orbitalset_init_intersite

@@ -133,6 +133,8 @@ module lda_u_oct_m
     integer             :: maxneighbors       
     FLOAT, pointer      :: dn_ij(:,:,:,:,:), dn_alt_IJ(:,:,:,:,:)
     CMPLX, pointer      :: zn_ij(:,:,:,:,:), zn_alt_IJ(:,:,:,:,:)
+
+    class(message_t), pointer, private :: message
   end type lda_u_t
 
   integer, public, parameter ::        &
@@ -186,6 +188,8 @@ contains
   nullify(this%dn_alt_IJ)
   nullify(this%zn_alt_IJ)
 
+  nullify(this%message)
+
   call distributed_nullify(this%orbs_dist, 0)
 
   call orbitalbasis_nullify(this%basis)
@@ -194,7 +198,7 @@ contains
 
  end subroutine lda_u_nullify
 
- subroutine lda_u_init(this, namespace, level, gr, geo, st, psolver)
+ subroutine lda_u_init(this, namespace, level, gr, geo, st, psolver, message)
    type(lda_u_t),             intent(inout) :: this
    type(namespace_t),         intent(in)    :: namespace
    integer,                   intent(in)    :: level
@@ -202,6 +206,7 @@ contains
    type(geometry_t), target,  intent(in)    :: geo
    type(states_elec_t),       intent(in)    :: st
    type(poisson_t),           intent(in)    :: psolver
+   type(message_t), target,   intent(inout) :: message
 
    logical :: complex_coulomb_integrals
    integer :: ios, is
@@ -211,8 +216,10 @@ contains
 
    ASSERT(.not. (level == DFT_U_NONE))
 
-   call message_g%print_stress(stdout, "DFT+U")
-   if(gr%mesh%parallel_in_domains) call message_g%experimental("dft+u parallel in domains")
+   this%message => message
+
+   call this%message%print_stress(stdout, "DFT+U")
+   if(gr%mesh%parallel_in_domains) call this%message%experimental("dft+u parallel in domains")
    this%level = level
 
    call lda_u_write_info(this, stdout)
@@ -228,7 +235,7 @@ contains
    !% The states are defined via the block DFTUBasisStates
    !%End
    call parse_variable(namespace, 'DFTUBasisFromStates', .false., this%basisfromstates)
-   if(this%basisfromstates) call message_g%experimental("DFTUBasisFromStates") 
+   if(this%basisfromstates) call this%message%experimental("DFTUBasisFromStates") 
 
    !%Variable DFTUDoubleCounting
    !%Type integer
@@ -243,10 +250,10 @@ contains
    !% (Experimental) Around mean field double counting, as defined in PRB 44, 943 (1991) and PRB 49, 14211 (1994).
    !%End
    call parse_variable(namespace, 'DFTUDoubleCounting', DFT_U_FLL, this%double_couting)
-   call message_g%print_var_option(stdout,  'DFTUDoubleCounting', this%double_couting)
-   if(this%double_couting /= DFT_U_FLL) call message_g%experimental("DFTUDoubleCounting = dft_u_amf")
+   call this%message%print_var_option(stdout,  'DFTUDoubleCounting', this%double_couting)
+   if(this%double_couting /= DFT_U_FLL) call this%message%experimental("DFTUDoubleCounting = dft_u_amf")
    if(st%d%ispin == SPINORS .and. this%double_couting /= DFT_U_FLL) then
-     call message_g%not_implemented("AMF double couting with spinors.")
+     call this%message%not_implemented("AMF double couting with spinors.")
    end if
 
    if( this%level == DFT_U_ACBN0 ) then
@@ -260,7 +267,7 @@ contains
      !% It is strongly recommended to set AOLoewdin=yes when using the option.
      !%End
      call parse_variable(namespace, 'UseAllAtomicOrbitals', .false., this%useAllOrbitals)
-     if(this%useAllOrbitals) call message_g%experimental("UseAllAtomicOrbitals")
+     if(this%useAllOrbitals) call this%message%experimental("UseAllAtomicOrbitals")
 
      !%Variable SkipSOrbitals
      !%Type logical
@@ -271,7 +278,7 @@ contains
      !% from the peusopotential but s orbitals. Only available with ACBN0 functional.
      !%End
      call parse_variable(namespace, 'SkipSOrbitals', .true., this%skipSOrbitals)   
-     if(.not.this%SkipSOrbitals) call message_g%experimental("SkipSOrbitals")
+     if(.not.this%SkipSOrbitals) call this%message%experimental("SkipSOrbitals")
 
      !%Variable ACBN0Screening
      !%Type float
@@ -283,7 +290,7 @@ contains
      !% of the U, as defined in the ACBN0 functional, is used.
      !%End
      call parse_variable(namespace, 'ACBN0Screening', M_ONE, this%acbn0_screening)
-     call message_g%print_var_value(stdout, 'ACBN0Screening', this%acbn0_screening)
+     call this%message%print_var_value(stdout, 'ACBN0Screening', this%acbn0_screening)
 
      !%Variable ACBN0RotationallyInvariant
      !%Type logical
@@ -294,9 +301,9 @@ contains
      !% This is activated by default, except in the case of spinors, as this is not yet implemented in this case.
      !%End
      call parse_variable(namespace, 'ACBN0RotationallyInvariant', st%d%ispin /= SPINORS, this%rot_inv)
-     call message_g%print_var_value(stdout, 'ACBN0RotationallyInvariant', this%rot_inv)
+     call this%message%print_var_value(stdout, 'ACBN0RotationallyInvariant', this%rot_inv)
      if(this%rot_inv .and. st%d%ispin == SPINORS ) then
-       call message_g%not_implemented("Rotationally invariant ACBN0 with spinors.")
+       call this%message%not_implemented("Rotationally invariant ACBN0 with spinors.")
      end if
 
      !%Variable ACBN0IntersiteInteraction
@@ -309,15 +316,15 @@ contains
      !% It is strongly recommended to set AOLoewdin=yes when using the option.
      !%End
      call parse_variable(namespace, 'ACBN0IntersiteInteraction', .false., this%intersite)
-     if(this%intersite) call message_g%experimental("ACBN0IntersiteInteraction")
-     call message_g%print_var_value(stdout, 'ACBN0IntersiteInteraction', this%intersite)
+     if(this%intersite) call this%message%experimental("ACBN0IntersiteInteraction")
+     call this%message%print_var_value(stdout, 'ACBN0IntersiteInteraction', this%intersite)
 
      if(this%intersite) then
 
        !This is a non local operator. To make this working, one probably needs to apply the 
        ! symmetries to the generalized occupation matrices 
        if(gr%sb%kpoints%use_symmetries) then
-         call message_g%not_implemented("Intersite interaction with kpoint symmetries")
+         call this%message%not_implemented("Intersite interaction with kpoint symmetries")
        end if
  
        !%Variable ACBN0IntersiteCutoff
@@ -329,8 +336,8 @@ contains
        !%End
        call parse_variable(namespace, 'ACBN0IntersiteCutoff', M_ZERO, this%intersite_radius, unit = units_inp%length)
        if(abs(this%intersite_radius) < M_EPSILON) then
-         call message_g%write("ACBN0IntersiteCutoff must be greater than 0")
-         call message_g%fatal(1)
+         call this%message%write("ACBN0IntersiteCutoff must be greater than 0")
+         call this%message%fatal(1)
        end if
      end if
 
@@ -377,9 +384,9 @@ contains
          if(this%orbsets(ios)%ndim  > 1) complex_coulomb_integrals = .true.
        end do
 
-       call message_g%info(1)
+       call this%message%info(1)
        if(.not. complex_coulomb_integrals) then 
-         write(message_g%lines(1),'(a)')    'Computing the Coulomb integrals of the localized basis.'
+         write(this%message%lines(1),'(a)')    'Computing the Coulomb integrals of the localized basis.'
          if (states_are_real(st)) then
            call dcompute_coulomb_integrals(this, gr%mesh, gr%der, psolver)
          else
@@ -387,7 +394,7 @@ contains
          end if
        else
          ASSERT(.not.states_are_real(st))
-         write(message_g%lines(1),'(a)')    'Computing complex Coulomb integrals of the localized basis.'
+         write(this%message%lines(1),'(a)')    'Computing complex Coulomb integrals of the localized basis.'
          call compute_complex_coulomb_integrals(this, gr%mesh, gr%der, st, psolver)
        end if
      end if
@@ -406,8 +413,8 @@ contains
        this%norbsets = 1
        this%maxnorbs = parse_block_n(blk) 
        if(this%maxnorbs <1) then
-         write(message_g%lines(1),'(a,i3,a,i3)') 'DFTUBasisStates must contains at least one state.'
-         call message_g%fatal(1)
+         write(this%message%lines(1),'(a,i3,a,i3)') 'DFTUBasisStates must contains at least one state.'
+         call this%message%fatal(1)
        end if
        SAFE_ALLOCATE(this%basisstates(1:this%maxnorbs))
        do is = 1, this%maxnorbs
@@ -415,8 +422,8 @@ contains
        end do
        call parse_block_end(blk)
      else
-       write(message_g%lines(1),'(a,i3,a,i3)') 'DFTUBasisStates must be specified if DFTUBasisFromStates=yes'
-       call message_g%fatal(1)
+       write(this%message%lines(1),'(a,i3,a,i3)') 'DFTUBasisStates must be specified if DFTUBasisFromStates=yes'
+       call this%message%fatal(1)
      end if
 
      if (states_are_real(st)) then
@@ -444,7 +451,7 @@ contains
 
    end if
 
-   call message_g%print_stress(stdout)
+   call this%message%print_stress(stdout)
 
    POP_SUB(lda_u_init)
  end subroutine lda_u_init
@@ -726,24 +733,29 @@ contains
   subroutine lda_u_write_info(this, iunit)
     type(lda_u_t),  intent(in)    :: this
     integer,        intent(in)    :: iunit
+    class(message_t), allocatable :: message
 
     PUSH_SUB(lda_u_write_info)
 
-    write(message_g%lines(1), '(1x)')
-    call message_g%info(1, iunit)
+    allocate(message, source=this%message)
+
+    write(message%lines(1), '(1x)')
+    call message%info(1, iunit)
     if(this%level == DFT_U_EMPIRICAL) then
-      write(message_g%lines(1), '(a)') "Method:"
-      write(message_g%lines(2), '(a)') "  [1] Dudarev et al., Phys. Rev. B 57, 1505 (1998)"
-      call message_g%info(2, iunit)
+      write(message%lines(1), '(a)') "Method:"
+      write(message%lines(2), '(a)') "  [1] Dudarev et al., Phys. Rev. B 57, 1505 (1998)"
+      call message%info(2, iunit)
     else
-      write(message_g%lines(1), '(a)') "Method:"
-      write(message_g%lines(2), '(a)') "  [1] Agapito et al., Phys. Rev. X 5, 011006 (2015)"
-      call message_g%info(2, iunit)
+      write(message%lines(1), '(a)') "Method:"
+      write(message%lines(2), '(a)') "  [1] Agapito et al., Phys. Rev. X 5, 011006 (2015)"
+      call message%info(2, iunit)
     end if
-    write(message_g%lines(1), '(a)') "Implementation:"
-    write(message_g%lines(2), '(a)') "  [1] Tancogne-Dejean, Oliveira, and Rubio, Phys. Rev. B 69, 245133 (2017)"
-    write(message_g%lines(3), '(1x)')
-    call message_g%info(3, iunit)
+    write(message%lines(1), '(a)') "Implementation:"
+    write(message%lines(2), '(a)') "  [1] Tancogne-Dejean, Oliveira, and Rubio, Phys. Rev. B 69, 245133 (2017)"
+    write(message%lines(3), '(1x)')
+    call message%info(3, iunit)
+
+    deallocate(message)
 
     POP_SUB(lda_u_write_info)
 

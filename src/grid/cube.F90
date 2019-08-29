@@ -90,12 +90,13 @@ module cube_oct_m
 contains
 
   ! ---------------------------------------------------------
-  subroutine cube_init(cube, nn, sb, namespace, fft_type, fft_library, dont_optimize, nn_out, verbose, &
-                       mpi_grp, need_partition, spacing, tp_enlarge, blocksize)
+  subroutine cube_init(cube, nn, sb, namespace, message, fft_type, fft_library, dont_optimize, &
+      nn_out, verbose, mpi_grp, need_partition, spacing, tp_enlarge, blocksize)
     type(cube_t),      intent(out) :: cube
     integer,           intent(in)  :: nn(3)
     type(simul_box_t), intent(in)  :: sb
     type(namespace_t), intent(in)  :: namespace
+    class(message_t),  intent(inout) :: message
     integer, optional, intent(in)  :: fft_type  !< Is the cube going to be used to perform FFTs?
     integer, optional, intent(in)  :: fft_library !< What fft library to use
     logical, optional, intent(in)  :: dont_optimize !< if true, do not optimize grid for FFT
@@ -156,8 +157,8 @@ contains
 
 #ifndef HAVE_PFFT
       if (fft_library_ == FFTLIB_PFFT) then
-        write(message_g%lines(1),'(a)')'You have selected the PFFT for FFT, but it was not linked.'
-        call message_g%fatal(1)
+        write(message%lines(1),'(a)')'You have selected the PFFT for FFT, but it was not linked.'
+        call message%fatal(1)
       end if
 #endif
 

@@ -436,7 +436,7 @@ contains
       
     case(PW_MAP_PFFT)
       ASSERT(mask%mesh%parallel_in_domains)
-      call cube_init(mask%cube, mask%ll, mesh%sb, namespace, &
+      call cube_init(mask%cube, mask%ll, mesh%sb, namespace, message_g, &
         fft_type = FFT_COMPLEX, fft_library = FFTLIB_PFFT, nn_out = ll, &
         mpi_grp = mask%mesh%mpi_grp, need_partition=.true., spacing = mesh%spacing)
       !        print *,mpi_world%rank, "mask%mesh%mpi_grp%comm", mask%mesh%mpi_grp%comm, mask%mesh%mpi_grp%size
@@ -459,7 +459,7 @@ contains
       end if
       
     case(PW_MAP_FFT)
-      call cube_init(mask%cube, mask%ll, mesh%sb, namespace, &
+      call cube_init(mask%cube, mask%ll, mesh%sb, namespace, message_g, &
         fft_type = FFT_COMPLEX, fft_library = FFTLIB_FFTW, nn_out = ll, &
         spacing = mesh%spacing )
       mask%ll = ll 
@@ -473,7 +473,7 @@ contains
       ! we just add 2 points for the enlarged region
       if (mask%enlarge_2p(1) /= 1) mask%ll(1:sb%dim) = mask%ll(1:sb%dim) + 2 
 
-      call cube_init(mask%cube, mask%ll, mesh%sb, namespace, &
+      call cube_init(mask%cube, mask%ll, mesh%sb, namespace, message_g, &
         fft_type = FFT_COMPLEX, fft_library = FFTLIB_NFFT, nn_out = ll, &
         spacing = mesh%spacing, tp_enlarge = mask%enlarge_2p )
                      
@@ -486,7 +486,7 @@ contains
     
       if (mask%enlarge_2p(1) /= 1) mask%ll(1:sb%dim) = mask%ll(1:sb%dim) + 2 
 
-      call cube_init(mask%cube, mask%ll, mesh%sb, namespace, &
+      call cube_init(mask%cube, mask%ll, mesh%sb, namespace, message_g, &
         fft_type = FFT_COMPLEX, fft_library = FFTLIB_PNFFT, nn_out = ll, &
         spacing = mesh%spacing, tp_enlarge = mask%enlarge_2p, &
         mpi_grp = mask%mesh%mpi_grp, need_partition=.true.)

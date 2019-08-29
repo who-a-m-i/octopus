@@ -125,6 +125,8 @@ module derivatives_oct_m
     type(derivatives_t),    pointer :: coarser
     type(transfer_table_t), pointer :: to_finer
     type(transfer_table_t), pointer :: to_coarser
+
+    class(message_t),  pointer :: message
   end type derivatives_t
 
   type derivatives_handle_batch_t
@@ -146,12 +148,13 @@ module derivatives_oct_m
 contains
 
   ! ---------------------------------------------------------
-  subroutine derivatives_init(der, namespace, sb, use_curvilinear, order)
-    type(derivatives_t), target, intent(out) :: der
-    type(namespace_t),           intent(in)  :: namespace
-    type(simul_box_t),           intent(in)  :: sb
-    logical,                     intent(in)  :: use_curvilinear
-    integer, optional,           intent(in)  :: order
+  subroutine derivatives_init(der, namespace, message, sb, use_curvilinear, order)
+    type(derivatives_t), target, intent(out)   :: der
+    type(namespace_t),           intent(in)    :: namespace
+    class(message_t), target,    intent(inout) :: message
+    type(simul_box_t),           intent(in)    :: sb
+    logical,                     intent(in)    :: use_curvilinear
+    integer, optional,           intent(in)    :: order
 
     integer :: idir
     integer :: default_stencil
@@ -160,6 +163,8 @@ contains
 
     ! copy this value to my structure
     der%dim = sb%dim
+
+    der%message => message
 
     !%Variable DerivativesStencil
     !%Type integer
@@ -190,10 +195,10 @@ contains
 
     call parse_variable(namespace, 'DerivativesStencil', default_stencil, der%stencil_type)
     
-    if(.not.varinfo_valid_option('DerivativesStencil', der%stencil_type)) call message_g%input_error('DerivativesStencil')
-    call message_g%print_var_option(stdout, "DerivativesStencil", der%stencil_type)
+    if(.not.varinfo_valid_option('DerivativesStencil', der%stencil_type)) call der%message%input_error('DerivativesStencil')
+    call der%message%print_var_option(stdout, "DerivativesStencil", der%stencil_type)
 
-    if(use_curvilinear  .and.  der%stencil_type < DER_CUBE) call message_g%input_error('DerivativesStencil')
+    if(use_curvilinear  .and.  der%stencil_type < DER_CUBE) call der%message%input_error('DerivativesStencil')
     if(der%stencil_type == DER_VARIATIONAL) then
       call parse_variable(namespace, 'DerivativesLaplacianFilter', M_ONE, der%lapl_cutoff)
     end if
@@ -239,10 +244,10 @@ contains
     call parse_variable(namespace, 'ParallelizationOfDerivatives', NON_BLOCKING, der%comm_method)
     
     if(.not. varinfo_valid_option('ParallelizationOfDerivatives', der%comm_method)) then
-      call message_g%input_error('ParallelizationOfDerivatives')
+      call der%message%input_error('ParallelizationOfDerivatives')
     end if
 
-    call message_g%obsolete_variable(namespace, 'OverlapDerivatives', 'ParallelizationOfDerivatives')
+    call der%message%obsolete_variable(namespace, 'OverlapDerivatives', 'ParallelizationOfDerivatives')
 #endif
 
     ! if needed, der%masses should be initialized in modelmb_particles_init
@@ -292,6 +297,8 @@ contains
     nullify(der%finer)
     nullify(der%to_coarser)
     nullify(der%to_finer)
+
+    nullify(der%message)
 
     call boundaries_end(der%boundaries)
 
@@ -452,7 +459,7 @@ contains
           name = "Laplacian"
         end if
 
-        call derivatives_make_discretization(der%dim, der%mesh, der%masses, polynomials, rhs, 1, der%op(i:i), name)
+        call derivatives_make_discretization(der%dim, der%message, der%mesh, der%masses, polynomials, rhs, 1, der%op(i:i), name)
         SAFE_DEALLOCATE_A(polynomials)
         SAFE_DEALLOCATE_A(rhs)
       end do
@@ -469,7 +476,7 @@ contains
       call get_rhs_lapl(rhs(:, der%dim+1))
 
       name = "derivatives"
-      call derivatives_make_discretization(der%dim, der%mesh, der%masses, polynomials, rhs, der%dim+1, der%op(:), name)
+      call derivatives_make_discretization(der%dim, der%message, der%mesh, der%masses, polynomials, rhs, der%dim+1, der%op(:), name)
 
       SAFE_DEALLOCATE_A(polynomials)
       SAFE_DEALLOCATE_A(rhs)
@@ -481,7 +488,7 @@ contains
         call stencil_starplus_pol_grad(der%dim, i, der%order, polynomials)
         call get_rhs_grad(i, rhs(:, 1))
         name = index2axis(i) // "-gradient"
-        call derivatives_make_discretization(der%dim, der%mesh, der%masses, polynomials, rhs, 1, der%op(i:i), name)
+        call derivatives_make_discretization(der%dim, der%message, der%mesh, der%masses, polynomials, rhs, 1, der%op(i:i), name)
         SAFE_DEALLOCATE_A(polynomials)
         SAFE_DEALLOCATE_A(rhs)
       end do
@@ -490,7 +497,8 @@ contains
       call stencil_starplus_pol_lapl(der%dim, der%order, polynomials)
       call get_rhs_lapl(rhs(:, 1))
       name = "Laplacian"
-      call derivatives_make_discretization(der%dim, der%mesh, der%masses, polynomials, rhs, 1, der%op(der%dim+1:der%dim+1), name)
+      call derivatives_make_discretization(der%dim, der%message, der%mesh, der%masses, polynomials, &
+        rhs, 1, der%op(der%dim+1:der%dim+1), name)
       SAFE_DEALLOCATE_A(polynomials)
       SAFE_DEALLOCATE_A(rhs)
 
@@ -508,7 +516,7 @@ contains
         ! For directional derivatives the weights are the same as in the orthogonal case.
         ! Forcing the orthogonal case avoid incurring in ill-defined cases.
         ! NOTE: this is not so clean and also am not 100% sure is correct. It has to be tested. UDG
-        call derivatives_make_discretization(der%dim, der%mesh, der%masses, polynomials, rhs, 1,&
+        call derivatives_make_discretization(der%dim, der%message, der%mesh, der%masses, polynomials, rhs, 1,&
                                               der%op(i:i), name, force_orthogonal = .true.)
         SAFE_DEALLOCATE_A(polynomials)
         SAFE_DEALLOCATE_A(rhs)
@@ -522,7 +530,8 @@ contains
       call stencil_stargeneral_pol_lapl(der%op(der%dim+1)%stencil, der%dim, der%order, polynomials)
       call get_rhs_lapl(rhs(:, 1))
       name = "Laplacian"
-      call derivatives_make_discretization(der%dim, der%mesh, der%masses, polynomials, rhs, 1, der%op(der%dim+1:der%dim+1), name)
+      call derivatives_make_discretization(der%dim, der%message, der%mesh, der%masses, polynomials, &
+        rhs, 1, der%op(der%dim+1:der%dim+1), name)
       SAFE_DEALLOCATE_A(polynomials)
       SAFE_DEALLOCATE_A(rhs)
 
@@ -615,8 +624,9 @@ contains
 
 
   ! ---------------------------------------------------------
-  subroutine derivatives_make_discretization(dim, mesh, masses, pol, rhs, nderiv, op, name, force_orthogonal)
+  subroutine derivatives_make_discretization(dim, message, mesh, masses, pol, rhs, nderiv, op, name, force_orthogonal)
     integer,                intent(in)    :: dim
+    class(message_t),       intent(inout) :: message
     type(mesh_t),           intent(in)    :: mesh
     FLOAT,                  intent(in)    :: masses(:)
     integer,                intent(in)    :: pol(:,:)
@@ -635,8 +645,8 @@ contains
     SAFE_ALLOCATE(mat(1:op(1)%stencil%npoly, 1:op(1)%stencil%size))
     SAFE_ALLOCATE(sol(1:op(1)%stencil%size, 1:nderiv))
 
-    message_g%lines(1) = 'Info: Generating weights for finite-difference discretization of ' // trim(name)
-    call message_g%info(1)
+    message%lines(1) = 'Info: Generating weights for finite-difference discretization of ' // trim(name)
+    call message%info(1)
 
     ! use to generate power lookup table
     pow_max = maxval(pol)

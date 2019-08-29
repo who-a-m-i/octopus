@@ -49,19 +49,24 @@ module basins_oct_m
     FLOAT,   pointer :: volume(:)
 
     FLOAT,   pointer :: population(:)
+
+    class(message_t), pointer :: message
   end type basins_t
 
 contains
 
   !----------------------------------------------------------------
-  subroutine basins_init(this, mesh)
-    type(basins_t), intent(out) :: this
-    type(mesh_t),   intent(in)  :: mesh
+  subroutine basins_init(this, mesh, message)
+    type(basins_t),           intent(out)   :: this
+    type(mesh_t),             intent(in)    :: mesh
+    class(message_t), target, intent(inout) :: message
     
     PUSH_SUB(basins_init)
 
+    this%message => message
+
     if(mesh%parallel_in_domains) &
-      call message_g%experimental("Bader basins parallel in domains")
+      call this%message%experimental("Bader basins parallel in domains")
     
     SAFE_ALLOCATE(this%map(1:mesh%np))
     this%map(1:mesh%np) = -1
@@ -85,6 +90,8 @@ contains
       SAFE_DEALLOCATE_P(this%volume)
       SAFE_DEALLOCATE_P(this%population)
     end if
+
+    nullify(this%message)
     
     POP_SUB(basins_end)
   end subroutine basins_end
@@ -217,7 +224,7 @@ contains
       this%number = maxval(this%map) + 1
       if(this%number <= 0) then
         messages(1) = "Internal error analysing basins of attraction"
-        call message_g%fatal(1)
+        call this%message%fatal(1)
       end if
 
       SAFE_ALLOCATE(this%position  (1:this%number))

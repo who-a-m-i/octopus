@@ -83,7 +83,7 @@ contains
 
     PUSH_SUB(pes_out_velocity_map)
 
-    call cube_init(cube, ll, sb, namespace)
+    call cube_init(cube, ll, sb, namespace, message_g)
     call cube_function_null(cf)
     call dcube_function_alloc_RS(cube, cf, force_alloc = .true.)
     cf%dRS = pesK

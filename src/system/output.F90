@@ -1251,7 +1251,7 @@ contains
       call zbgw_vxc_dat(bgw, dir, st, gr, hm, psolver, namespace, vxc)
     end if
 
-    call cube_init(cube, gr%mesh%idx%ll, gr%sb, namespace, &
+    call cube_init(cube, gr%mesh%idx%ll, gr%sb, namespace, message_g, &
       fft_type = FFT_COMPLEX, dont_optimize = .true., nn_out = FFTgrid)
     if(any(gr%mesh%idx%ll(1:3) /= FFTgrid(1:3))) then ! paranoia check
       messages(1) = "Cannot do BerkeleyGW output: FFT grid has been modified."

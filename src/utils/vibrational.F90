@@ -66,7 +66,7 @@
 
     call io_init(default_namespace)
 
-    call unit_system_init(default_namespace)
+    call unit_system_init(default_namespace, message)
 
     call spectrum_init(spectrum, default_namespace, &
       default_energy_step = units_to_atomic(unit_invcm, CNST(0.2)), &

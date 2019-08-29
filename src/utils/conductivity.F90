@@ -77,7 +77,7 @@
 
     call io_init(default_namespace)
 
-    call unit_system_init(default_namespace)
+    call unit_system_init(default_namespace, message)
 
     call spectrum_init(spectrum, default_namespace, default_energy_step = CNST(0.0001), default_max_energy  = CNST(1.0))
  

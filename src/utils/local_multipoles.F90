@@ -91,7 +91,7 @@ program oct_local_multipoles
     
   call message_g%experimental("oct-local_multipoles utility")
 
-  call unit_system_init(default_namespace)
+  call unit_system_init(default_namespace, message_g)
   call restart_module_init(default_namespace)
 
   call calc_mode_par_set_parallelization(P_STRATEGY_STATES, default = .false.)

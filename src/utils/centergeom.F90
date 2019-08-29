@@ -56,7 +56,7 @@ program centergeom
   call debug_init(debug, default_namespace)
 
   call io_init(default_namespace)
-  call unit_system_init(default_namespace)
+  call unit_system_init(default_namespace, message)
 
   call space_init(space, default_namespace, message)
   call geometry_init(geo, default_namespace, space, message)

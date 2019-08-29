@@ -1190,9 +1190,9 @@ contains
     ! Figure out the units of the file
     ii = index(line, 'eV')
     if(ii /= 0) then
-      call unit_system_get(file_units, UNITS_EVA)
+      call unit_system_get(file_units, UNITS_EVA, message_g)
     else
-      call unit_system_get(file_units, UNITS_ATOMIC)
+      call unit_system_get(file_units, UNITS_ATOMIC, message_g)
     end if
 
     ! get time_steps and dt, and make sure that dt is the same in the two files
@@ -2278,9 +2278,9 @@ contains
     ! Figure out the units of the file
     ii = index(line,'eV')
     if(ii /= 0) then
-      call unit_system_get(file_units, UNITS_EVA)
+      call unit_system_get(file_units, UNITS_EVA, message_g)
     else
-      call unit_system_get(file_units, UNITS_ATOMIC)
+      call unit_system_get(file_units, UNITS_ATOMIC, message_g)
     end if
 
     call spectrum_count_time_steps(iunit, time_steps, dt)

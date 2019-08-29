@@ -64,7 +64,7 @@ program casida_spectrum
   call message_g%init(default_namespace) ! to be deleted
   call debug_init(debug, default_namespace)
   call io_init(default_namespace)
-  call unit_system_init(default_namespace)
+  call unit_system_init(default_namespace, message)
   call space_init(cs%space, default_namespace, message)
 
   ! Reads the spin components. This is read here, as well as in states_init.

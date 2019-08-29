@@ -83,7 +83,7 @@ program oct_convert
 
   call restart_module_init(default_namespace)
   call fft_all_init(default_namespace)
-  call unit_system_init(default_namespace)
+  call unit_system_init(default_namespace, message_g)
 
   call convert()
 

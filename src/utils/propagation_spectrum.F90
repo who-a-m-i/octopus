@@ -58,7 +58,7 @@ program propagation_spectrum
 
   call io_init(default_namespace)
 
-  call unit_system_init(default_namespace)
+  call unit_system_init(default_namespace, message_g)
 
   call spectrum_init(spectrum, default_namespace)
 

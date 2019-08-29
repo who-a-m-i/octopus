@@ -56,7 +56,7 @@ program xyzanim
   call message_g%init(default_namespace)
   call debug_init(debug, default_namespace)
   call io_init(default_namespace)
-  call unit_system_init(default_namespace)
+  call unit_system_init(default_namespace, message)
 
   ! Sets the filenames
   coords_file = 'td.general/coordinates'

@@ -63,7 +63,7 @@
 
     call io_init(default_namespace)
 
-    call unit_system_init(default_namespace)
+    call unit_system_init(default_namespace, message)
 
     !These variables are documented in src/td/spectrum.F90
     call parse_variable(default_namespace, 'TDMaxSteps', 1500, max_iter)

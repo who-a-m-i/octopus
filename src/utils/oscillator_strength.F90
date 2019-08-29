@@ -181,7 +181,7 @@ contains
     end if
   
     ! Now, we should find out which units the file "ot" has.
-    call unit_system_from_file(units, "ot", namespace, ierr)
+    call unit_system_from_file(units, "ot", namespace, message_g, ierr)
     if(ierr /= 0) then
       write(messages(1),'(a)') "Could not retrieve units in the 'ot' file."
       call message_g%fatal(1)
@@ -310,7 +310,7 @@ contains
     end if
   
     ! Now, we should find out which units the file "ot" has.
-    call unit_system_from_file(units, "ot", namespace, ierr)
+    call unit_system_from_file(units, "ot", namespace, message_g, ierr)
     if(ierr /= 0) then
       write(messages(1),'(a)') "Could not retrieve units in the 'ot' file."
       call message_g%fatal(1)
@@ -973,7 +973,7 @@ contains
     call io_skip_header(iunit)
   
     ! Figure out about the units of the file
-    call unit_system_from_file(units, "ot", namespace, ierr)
+    call unit_system_from_file(units, "ot", namespace, message_g, ierr)
     if(ierr /= 0) then
       write(messages(1), '(a)') 'Could not figure out the units in file "ot".'
       call message_g%fatal(1)
@@ -1040,7 +1040,7 @@ contains
     end if
   
     ! Now, we should find out which units the file "ot" has.
-    call unit_system_from_file(units, "ot", namespace, ierr)
+    call unit_system_from_file(units, "ot", namespace, message_g, ierr)
     if(ierr /= 0) then
       write(messages(1),'(a)') "Could not retrieve units in the 'ot' file."
       call message_g%fatal(1)

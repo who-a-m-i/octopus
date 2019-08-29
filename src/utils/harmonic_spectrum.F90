@@ -73,7 +73,7 @@ program harmonic_spectrum
   call debug_init(debug, default_namespace)
 
   call io_init(default_namespace)
-  call unit_system_init(default_namespace)
+  call unit_system_init(default_namespace, message_g)
   call fft_all_init(default_namespace)
 
   call spectrum_init(spectrum, default_namespace)

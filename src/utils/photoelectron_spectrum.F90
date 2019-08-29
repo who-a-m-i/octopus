@@ -111,7 +111,7 @@ program photoelectron_spectrum
   call io_init(default_namespace)
 
   !* In order to initialize k-points
-  call unit_system_init(default_namespace)
+  call unit_system_init(default_namespace, message)
   
   call space_init(space, default_namespace)
   call geometry_init(geo, default_namespace, space)
@@ -394,7 +394,7 @@ program photoelectron_spectrum
   if(uEspan(2) > 0 ) Emax = uEspan(2)
 
 
-  call unit_system_init(default_namespace)
+  call unit_system_init(default_namespace, message)
  
   write(messages(1),'(a,f10.2,a2,f10.2,a2,f10.2,a1)') &
                    "Zenith axis: (",pol(1),", ",pol(2),", ",pol(3),")"

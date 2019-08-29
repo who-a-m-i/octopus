@@ -70,7 +70,7 @@ program dielectric_function
 
   call io_init(default_namespace)
 
-  call unit_system_init(default_namespace)
+  call unit_system_init(default_namespace, message)
 
   call spectrum_init(spectrum, default_namespace)
 

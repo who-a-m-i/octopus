@@ -84,8 +84,9 @@ contains
 
 
   ! ---------------------------------------------------------
-  subroutine unit_system_init(namespace)
-    type(namespace_t), intent(in) :: namespace
+  subroutine unit_system_init(namespace, message)
+    type(namespace_t), intent(in)    :: namespace
+    class(message_t),  intent(inout) :: message
     
     integer :: cc, cinp, cout, xyz_units
 
@@ -154,19 +155,19 @@ contains
     !%End
 
     if(parse_is_defined(namespace, 'Units') .or. parse_is_defined(namespace, 'Units')) then
-      call message_g%write("The 'Units' variable is obsolete. Now Octopus always works in atomic", new_line = .true.)
-      call message_g%write("units. For different units you can use values like 'angstrom', 'eV' ", new_line = .true.)
-      call message_g%write("and others in the input file.")
-      call message_g%fatal()
+      call message%write("The 'Units' variable is obsolete. Now Octopus always works in atomic", new_line = .true.)
+      call message%write("units. For different units you can use values like 'angstrom', 'eV' ", new_line = .true.)
+      call message%write("and others in the input file.")
+      call message%fatal()
     end if
 
-    call message_g%obsolete_variable(namespace, 'Units')
-    call message_g%obsolete_variable(namespace, 'UnitsInput')
+    call message%obsolete_variable(namespace, 'Units')
+    call message%obsolete_variable(namespace, 'UnitsInput')
 
     cinp = UNITS_ATOMIC
     
     call parse_variable(namespace, 'UnitsOutput', UNITS_ATOMIC, cc)
-    if(.not.varinfo_valid_option('Units', cc, is_flag = .true.)) call message_g%input_error('UnitsOutput')
+    if(.not.varinfo_valid_option('Units', cc, is_flag = .true.)) call message%input_error('UnitsOutput')
     cout = cc
 
     unit_one%factor = M_ONE
@@ -219,8 +220,8 @@ contains
     unit_gigabytes%abbrev = 'GiB'
     unit_gigabytes%name   = 'gibibytes'
 
-    call unit_system_get(units_inp, cinp)
-    call unit_system_get(units_out, cout)
+    call unit_system_get(units_inp, cinp, message)
+    call unit_system_get(units_out, cout, message)
 
     !%Variable UnitsXYZFiles
     !%Type integer
@@ -240,7 +241,7 @@ contains
 
     call parse_variable(namespace, 'UnitsXYZFiles', OPTION__UNITSXYZFILES__ANGSTROM_UNITS, xyz_units)
 
-    if(.not.varinfo_valid_option('UnitsXYZFiles', xyz_units)) call message_g%input_error('UnitsXYZFiles', 'Invalid option')
+    if(.not.varinfo_valid_option('UnitsXYZFiles', xyz_units)) call message%input_error('UnitsXYZFiles', 'Invalid option')
 
     select case(xyz_units)
 
@@ -262,9 +263,10 @@ contains
   end subroutine unit_system_init
 
   ! ---------------------------------------------------------
-  subroutine unit_system_get(uu, cc)
+  subroutine unit_system_get(uu, cc, message)
     type(unit_system_t), intent(out) :: uu
     integer,             intent(in)  :: cc
+    class(message_t),    intent(inout) :: message
 
     PUSH_SUB(unit_system_get)
 
@@ -274,7 +276,7 @@ contains
     case (UNITS_EVA)
       call unit_system_init_eV_Ang(uu)
     case default
-      call message_g%input_error('Units')
+      call message%input_error('Units')
     end select
 
     POP_SUB(unit_system_get)
@@ -381,10 +383,11 @@ contains
   !! \todo  Although it seems to work in most cases, it is obviously
   !! a very weak code.
   ! ---------------------------------------------------------
-  subroutine unit_system_from_file(uu, fname, namespace, ierr)
+  subroutine unit_system_from_file(uu, fname, namespace, message, ierr)
     type(unit_system_t), intent(inout) :: uu
     character(len=*),    intent(in)    :: fname
     type(namespace_t),   intent(in)    :: namespace
+    class(message_t),    intent(inout) :: message
     integer,             intent(inout) :: ierr
 
     integer            :: iunit, ios
@@ -404,11 +407,11 @@ contains
       read(iunit, '(a)', iostat = ios) line
       if(ios /= 0) exit
       if(index(line,'[A]') /= 0  .or.  index(line,'eV') /= 0) then
-        call unit_system_get(uu, UNITS_EVA)
+        call unit_system_get(uu, UNITS_EVA, message)
         POP_SUB(unit_system_from_file)
         return
       elseif(index(line,'[b]') /= 0) then
-        call unit_system_get(uu, UNITS_ATOMIC)
+        call unit_system_get(uu, UNITS_ATOMIC, message)
         POP_SUB(unit_system_from_file)
         return
       end if

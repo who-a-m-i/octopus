@@ -62,8 +62,8 @@ program casida_spectrum
   call message_g%init(default_namespace)
   call debug_init(debug, default_namespace)
   call io_init(default_namespace)
-  call unit_system_init(default_namespace)
-  call space_init(cs%space, default_namespace)
+  call unit_system_init(default_namespace, message)
+  call space_init(cs%space, default_namespace, message)
 
   ! Reads the spin components. This is read here, as well as in states_init.
   call parse_variable(default_namespace, 'SpinComponents', 1, cs%ispin)

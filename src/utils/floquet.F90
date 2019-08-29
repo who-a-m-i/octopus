@@ -90,7 +90,7 @@ program oct_floquet
 
   call message_g%experimental("oct-floquet utility")
   call fft_all_init(default_namespace)
-  call unit_system_init(default_namespace)
+  call unit_system_init(default_namespace, message_g)
   call restart_module_init(default_namespace)
 
   call calc_mode_par_set_parallelization(P_STRATEGY_STATES, default = .false.)

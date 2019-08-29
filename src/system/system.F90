@@ -105,7 +105,7 @@ contains
     call parallel_init()
 
     call geometry_partition(sys%geo, sys%mc)
-    call kpoints_distribute(sys%st%d, sys%mc)
+    call kpoints_distribute(sys%st%d, sys%mc, sys%message)
     call states_elec_distribute_nodes(sys%st, sys%namespace, sys%mc)
     call grid_init_stage_2(sys%gr, sys%namespace, sys%mc, sys%geo)
     if(sys%st%symmetrize_density) call mesh_check_symmetries(sys%gr%mesh, sys%gr%sb)

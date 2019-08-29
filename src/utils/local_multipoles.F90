@@ -85,7 +85,7 @@ program oct_local_multipoles
   call io_init(default_namespace)
   call profiling_init(default_namespace)
  
-  call print_header()
+  call print_header(message_g)
   call message_g%print_stress(stdout, "Local Domains mode")
   call message_g%print_stress(stdout)
     

@@ -482,7 +482,7 @@ contains
         if(mc%group_sizes(ipar) /= PAR_AUTO) cycle
         
         n_divisors = ubound(divisors, dim = 1)
-        call get_divisors(nn, n_divisors, divisors)
+        call get_divisors(nn, n_divisors, divisors, mc%message)
         
         mc%group_sizes(ipar) = nn
         do ii = 2, n_divisors

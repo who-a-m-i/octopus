@@ -102,7 +102,7 @@ program oct_unfold
   call io_init(default_namespace)
   call profiling_init(default_namespace)
 
-  call print_header()
+  call print_header(message_g)
   call message_g%print_stress(stdout, "Unfolding Band-structure")
   call message_g%print_stress(stdout)
 

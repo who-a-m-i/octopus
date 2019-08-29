@@ -175,7 +175,7 @@ contains
       psib => this%group%psib(ib, iqn)
     else
       SAFE_ALLOCATE(psib)
-      call batch_init(psib, this%d%dim, this%group%block_size(ib))
+      call batch_init(psib, this%d%dim, this%group%block_size(ib), message_g)
 
       if(states_are_real(this)) then
         call dbatch_allocate(psib, this%group%block_range(ib, 1), this%group%block_range(ib, 2), mesh%np_part)

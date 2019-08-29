@@ -703,8 +703,8 @@ contains
 
     else
 
-      call batch_init(dipoleb, 3, 1, nspin, dipole)
-      call batch_init(sigmab, 3, 1, nspin, sigma)
+      call batch_init(dipoleb, 3, 1, nspin, dipole, message_g)
+      call batch_init(sigmab, 3, 1, nspin, sigma, message_g)
 
       call spectrum_signal_damp(spectrum%damp, spectrum%damp_factor, istart + 1, iend + 1, kick%time, dt, dipoleb)
       call spectrum_fourier_transform(spectrum%method, spectrum%transform, spectrum%noise, &
@@ -974,8 +974,8 @@ contains
 
     ! imaginary part of the polarizability
 
-    call batch_init(dipoleb, 3, 1, nspin, dipole)
-    call batch_init(sigmab, 3, 1, nspin, sigma)
+    call batch_init(dipoleb, 3, 1, nspin, dipole, message_g)
+    call batch_init(sigmab, 3, 1, nspin, sigma, message_g)
 
     call spectrum_signal_damp(spectrum%damp, spectrum%damp_factor, istart + 1, iend + 1, kick_time, dt, dipoleb)
     call spectrum_fourier_transform(spectrum%method, SPECTRUM_TRANSFORM_SIN, spectrum%noise, &
@@ -988,8 +988,8 @@ contains
 
     SAFE_ALLOCATE(sigmap(1:no_e, 1:3, 1:nspin))
 
-    call batch_init(dipoleb, 3, 1, nspin, dipole)
-    call batch_init(sigmab, 3, 1, nspin, sigmap)
+    call batch_init(dipoleb, 3, 1, nspin, dipole, message_g)
+    call batch_init(sigmab, 3, 1, nspin, sigmap, message_g)
 
     call spectrum_signal_damp(spectrum%damp, spectrum%damp_factor, istart + 1, iend + 1, kick_time, dt, dipoleb)
     call spectrum_fourier_transform(spectrum%method, SPECTRUM_TRANSFORM_COS, spectrum%noise, &
@@ -1091,9 +1091,9 @@ contains
     SAFE_ALLOCATE(power(1:no_e, 1:3, 1:nspin))
 
 
-    call batch_init(dipoleb, 3, 1, nspin, dipole)
-    call batch_init(transformb_cos, 3, 1, nspin, transform_cos)
-    call batch_init(transformb_sin, 3, 1, nspin, transform_sin)
+    call batch_init(dipoleb, 3, 1, nspin, dipole, message_g)
+    call batch_init(transformb_cos, 3, 1, nspin, transform_cos, message_g)
+    call batch_init(transformb_sin, 3, 1, nspin, transform_sin, message_g)
 
     call spectrum_signal_damp(spectrum%damp, spectrum%damp_factor, istart + 1, iend + 1, spectrum%start_time, dt, dipoleb)
 
@@ -1345,9 +1345,9 @@ contains
     SAFE_ALLOCATE(resp(1:no_e))
     SAFE_ALLOCATE(imsp(1:no_e))
 
-    call batch_init(angularb, 1)
-    call batch_init(respb, 1)
-    call batch_init(imspb, 1)
+    call batch_init(angularb, 1, message_g)
+    call batch_init(respb, 1, message_g)
+    call batch_init(imspb, 1, message_g)
 
     call batch_add_state(angularb, angular(:, 1))
     call batch_add_state(respb, resp)
@@ -1912,9 +1912,9 @@ contains
       sps = M_ZERO
       spc = M_ZERO
 
-      call batch_init(acc_batch, 1)
-      call batch_init(sps_batch, 1)
-      call batch_init(spc_batch, 1)
+      call batch_init(acc_batch, 1, message_g)
+      call batch_init(sps_batch, 1, message_g)
+      call batch_init(spc_batch, 1, message_g)
 
       call batch_add_state(acc_batch, racc)
       call batch_add_state(sps_batch, sps)
@@ -2019,9 +2019,9 @@ contains
       sps = M_ZERO
       spc = M_ZERO
 
-      call batch_init(acc_batch, 1)
-      call batch_init(sps_batch, 1)
-      call batch_init(spc_batch, 1)
+      call batch_init(acc_batch, 1, message_g)
+      call batch_init(sps_batch, 1, message_g)
+      call batch_init(spc_batch, 1, message_g)
 
       call batch_add_state(acc_batch, racc)
       call batch_add_state(sps_batch, sps)
@@ -2125,9 +2125,9 @@ contains
       sps = M_ZERO
       spc = M_ZERO
 
-      call batch_init(cur_batch, 1)
-      call batch_init(sps_batch, 1)
-      call batch_init(spc_batch, 1)
+      call batch_init(cur_batch, 1, message_g)
+      call batch_init(sps_batch, 1, message_g)
+      call batch_init(spc_batch, 1, message_g)
 
       call batch_add_state(cur_batch, rcur)
       call batch_add_state(sps_batch, sps)

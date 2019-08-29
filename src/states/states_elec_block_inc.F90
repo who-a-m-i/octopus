@@ -178,21 +178,21 @@ subroutine X(states_elec_blockt_mul)(mesh, st, psi1_start, psi2_start, &
   else ! No states parallelization.
 
     if(present(xpsi1)) then
-      call batch_init(psi1b, st%d%dim, psi1_col)
+      call batch_init(psi1b, st%d%dim, psi1_col, message_g)
       do ii = 1, psi1_col
         call batch_add_state(psi1b, ii, psi1(:, :, xpsi1(ii)))
       end do
     else
-      call batch_init(psi1b, st%d%dim, 1, psi1_col, psi1(:, :, :))
+      call batch_init(psi1b, st%d%dim, 1, psi1_col, psi1(:, :, :), message_g)
     end if
 
     if(present(xpsi2)) then
-      call batch_init(psi2b, st%d%dim, psi2_col)
+      call batch_init(psi2b, st%d%dim, psi2_col, message_g)
       do ii = 1, psi2_col
         call batch_add_state(psi2b, ii, psi2(:, :, xpsi2(ii)))
       end do
     else
-      call batch_init(psi2b, st%d%dim, 1, psi2_col, psi2(:, :, :))
+      call batch_init(psi2b, st%d%dim, 1, psi2_col, psi2(:, :, :), message_g)
     end if
 
     ASSERT(batch_is_ok(psi1b))

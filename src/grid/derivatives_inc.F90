@@ -150,10 +150,10 @@ subroutine X(derivatives_perform)(op, der, ff, op_ff, ghost_update, set_bc, fact
 
   ASSERT(ubound(ff, DIM=1) >= der%mesh%np_part)
 
-  call batch_init     (batch_ff, 1)
+  call batch_init     (batch_ff, 1, message_g)
   call batch_add_state(batch_ff, ff)
 
-  call batch_init     (batch_op_ff, 1)
+  call batch_init     (batch_op_ff, 1, message_g)
   call batch_add_state(batch_op_ff, op_ff)
 
   ASSERT(batch_is_ok(batch_ff))
@@ -389,10 +389,10 @@ subroutine X(derivatives_test)(this, namespace, repetitions, min_blocksize, max_
 
   do 
 
-    call batch_init(ffb, 1, blocksize)
+    call batch_init(ffb, 1, blocksize, message_g)
     call X(batch_allocate)(ffb, 1, blocksize, this%mesh%np_part)
 
-    call batch_init(opffb, 1, blocksize)
+    call batch_init(opffb, 1, blocksize, message_g)
     call X(batch_allocate)(opffb, 1, blocksize, this%mesh%np)
 
     forall(ist = 1:blocksize, ip = 1:this%mesh%np_part)

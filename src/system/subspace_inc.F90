@@ -219,8 +219,8 @@ subroutine X(subspace_diag_scalapack)(der, st, hm, psolver, ik, eigenval, psi, d
   do ist = st%st_start, st%st_end, st%d%block_size
     size = min(st%d%block_size, st%st_end - ist + 1)
     
-    call batch_init(psib, hm%d%dim, ist, ist + size - 1, psi(:, :, ist:))
-    call batch_init(hpsib, hm%d%dim, ist, ist + size - 1, hpsi(: , :, ist:))
+    call batch_init(psib, hm%d%dim, ist, ist + size - 1, psi(:, :, ist:), message_g)
+    call batch_init(hpsib, hm%d%dim, ist, ist + size - 1, hpsi(: , :, ist:), message_g)
     
     call X(hamiltonian_elec_apply_batch)(hm, der, psolver, psib, hpsib, ik)
     

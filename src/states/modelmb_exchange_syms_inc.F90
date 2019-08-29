@@ -122,7 +122,7 @@ subroutine X(modelmb_sym_state)(gr, modelmbparticles, ncombo, young_used, &
 
   ! if we are projecting on all Fermionic YD, need to renormalize here
   if (gr%mesh%parallel_in_domains) then
-    call batch_init(wfbatch, 1, 1, 1, fermicompwf)
+    call batch_init(wfbatch, 1, 1, 1, fermicompwf, message_g)
     call X(mesh_batch_dotp_self)(gr%mesh, wfbatch, wfdotp, reduce=.true.)
     norm = TOFLOAT(wfdotp(1,1))
     call batch_end(wfbatch)
@@ -259,7 +259,7 @@ subroutine X(modelmb_sym_state_1diag)(gr, &
     SAFE_DEALLOCATE_A(ofst)
 
     if (gr%mesh%parallel_in_domains) then
-      call batch_init(antisymwfbatch, 1, 1, 1, antisymwf)
+      call batch_init(antisymwfbatch, 1, 1, 1, antisymwf, message_g)
       call X(mesh_batch_dotp_self)(gr%mesh, antisymwfbatch, wfdotp, reduce=.true.)
       norm = TOFLOAT(wfdotp(1,1))
       call batch_end(antisymwfbatch)
@@ -331,7 +331,7 @@ subroutine X(modelmb_sym_updown)(ndimmb, npptype, &
     if (gr%mesh%parallel_in_domains) then
       antisymwf_swap = antisymwf
       ! set up batch type for global exchange operation: 1 state, the loop over MB states is outside this routine
-      call batch_init (antisymwfbatch, 1, 1, 1, antisymwf_swap)
+      call batch_init (antisymwfbatch, 1, 1, 1, antisymwf_swap, message_g)
       call X(mesh_batch_exchange_points) (gr%mesh, antisymwfbatch, forward_map=forward_map_exchange)
       call batch_end(antisymwfbatch)
     else
@@ -344,7 +344,7 @@ subroutine X(modelmb_sym_updown)(ndimmb, npptype, &
 
   if (debug_antisym) then 
     if (gr%mesh%parallel_in_domains) then
-      call batch_init(antisymwfbatch, 1, 1, 1, antisymwf)
+      call batch_init(antisymwfbatch, 1, 1, 1, antisymwf, message_g)
       call X(mesh_batch_dotp_self)(gr%mesh, antisymwfbatch, wfdotp, reduce=.true.)
       norm = TOFLOAT(wfdotp(1,1))
       call batch_end(antisymwfbatch)
@@ -413,7 +413,7 @@ subroutine X(modelmb_antisym_1spin) (n1spin, perms_1spin, ndimmb, npptype, ofst,
     if (gr%mesh%parallel_in_domains) then
       antisymwf_swap=antisymwf
       ! set up batch type for global exchange operation: 1 state, the loop over MB states is outside this routine
-      call batch_init (antisymwfbatch, 1, 1, 1, antisymwf_swap)
+      call batch_init (antisymwfbatch, 1, 1, 1, antisymwf_swap, message_g)
       call X(mesh_batch_exchange_points) (gr%mesh, antisymwfbatch, forward_map=forward_map_exchange)
       call batch_end(antisymwfbatch)
     else
@@ -429,7 +429,7 @@ subroutine X(modelmb_antisym_1spin) (n1spin, perms_1spin, ndimmb, npptype, ofst,
   ! the following could be removed for production
   if (debug_antisym) then 
     if (gr%mesh%parallel_in_domains) then
-      call batch_init(antisymwfbatch, 1, 1, 1, antisymwf)
+      call batch_init(antisymwfbatch, 1, 1, 1, antisymwf, message_g)
       call X(mesh_batch_dotp_self)(gr%mesh, antisymwfbatch, wfdotp, reduce=.true.)
       norm = TOFLOAT(wfdotp(1,1))
       call batch_end(antisymwfbatch)

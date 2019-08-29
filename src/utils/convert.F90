@@ -680,8 +680,8 @@ contains
         point_tmp(read_count, 0:time_steps) = AIMAG(out_fft(0:time_steps)) * dt
       case (STANDARD_FOURIER)
         tdrho_a(0:time_steps, 1, 1) = read_ft(0:time_steps)
-        call batch_init(tdrho_b, 1, 1, 1, tdrho_a)
-        call batch_init(wdrho_b, 1, 1, 1, wdrho_a)
+        call batch_init(tdrho_b, 1, 1, 1, tdrho_a, message_g)
+        call batch_init(wdrho_b, 1, 1, 1, wdrho_a, message_g)
         call spectrum_signal_damp(spectrum%damp, spectrum%damp_factor, c_start + 1, c_start + time_steps + 1, & 
                                   kick%time, dt, tdrho_b)
         call spectrum_fourier_transform(spectrum%method, spectrum%transform, spectrum%noise, &

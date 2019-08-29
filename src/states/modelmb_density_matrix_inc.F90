@@ -116,7 +116,7 @@ subroutine X(mf_calculate_gamma)(ikeeppart, mb_1part, nparticles_densmat, &
     ! use map to recover the corresponding np points for psi
     if (mesh%parallel_in_domains) then
       psi_p(:,1,1) = psi(1:mesh%np)
-      call batch_init (wfbatch, 1, 1, 1, psi_p)
+      call batch_init (wfbatch, 1, 1, 1, psi_p, message_g)
       call X(mesh_batch_exchange_points) (mesh, wfbatch, forward_map=forward_map_gamma)
       call batch_end(wfbatch)
     else

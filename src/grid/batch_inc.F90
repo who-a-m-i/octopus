@@ -17,12 +17,13 @@
 !!
 
 !--------------------------------------------------------------
-subroutine X(batch_init_contiguous)(this, dim, st_start, st_end, psi)
-  type(batch_t),  intent(out)   :: this
-  integer,        intent(in)    :: dim
-  integer,        intent(in)    :: st_start
-  integer,        intent(in)    :: st_end
-  R_TYPE, target, intent(in)    :: psi(:, :, st_start:)
+subroutine X(batch_init_contiguous)(this, dim, st_start, st_end, psi, message)
+  type(batch_t),            intent(out)   :: this
+  integer,                  intent(in)    :: dim
+  integer,                  intent(in)    :: st_start
+  integer,                  intent(in)    :: st_end
+  R_TYPE, target,           intent(in)    :: psi(:, :, st_start:)
+  class(message_t), target, intent(inout) :: message
 
   integer :: ist
 
@@ -30,7 +31,7 @@ subroutine X(batch_init_contiguous)(this, dim, st_start, st_end, psi)
 
   ASSERT(st_end >= st_start)
 
-  call batch_init_empty(this, dim, st_end - st_start + 1)
+  call batch_init_empty(this, dim, st_end - st_start + 1, message)
 
   this%X(psicont) => psi(:, :, st_start:)
 

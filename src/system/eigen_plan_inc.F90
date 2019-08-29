@@ -167,8 +167,8 @@ subroutine X(eigensolver_plan) (gr, st, hm, psolver, pre, tol, niter, converged,
         end if
       end do ortho
 
-      call batch_init(vvb, st%d%dim, blk)
-      call batch_init(avb, st%d%dim, d1 + 1, d1 + blk, av(:, :, d1 + 1:))
+      call batch_init(vvb, st%d%dim, blk, message_g)
+      call batch_init(avb, st%d%dim, d1 + 1, d1 + blk, av(:, :, d1 + 1:), message_g)
       call X(batch_allocate)(vvb, d1 + 1, d1 + blk, gr%mesh%np_part)
 
       ! we need to copy to mesh%np_part size array

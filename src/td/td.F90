@@ -472,7 +472,7 @@ contains
     ! step "iter" means propagation from (iter-1)*dt to iter*dt.
     propagation: do iter = td%iter, td%max_iter
 
-      stopping = clean_stop(sys%mc%master_comm) .or. walltimer_alarm()
+      stopping = clean_stop(sys%mc%master_comm) .or. walltimer_alarm(message_g)
 
 #ifdef HAVE_MPI
       call MPI_Allreduce(stopping, stopping_tmp, 1, MPI_LOGICAL, MPI_LOR, sys%mc%master_comm, mpi_err)

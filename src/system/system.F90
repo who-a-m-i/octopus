@@ -93,9 +93,9 @@ contains
 
     call space_init(sys%space, sys%namespace)
     
-    call geometry_init(sys%geo, sys%namespace, sys%space)
-    call grid_init_stage_0(sys%gr, sys%namespace, sys%geo, sys%space)
-    call states_elec_init(sys%st, sys%namespace, sys%gr, sys%geo)
+    call geometry_init(sys%geo, sys%namespace, sys%space, sys%message)
+    call grid_init_stage_0(sys%gr, sys%namespace, sys%geo, sys%space, sys%message)
+    call states_elec_init(sys%st, sys%namespace, sys%gr, sys%geo, sys%message)
     call sys%st%write_info()
     call grid_init_stage_1(sys%gr, sys%namespace, sys%geo)
     ! if independent particles in N dimensions are being used, need to initialize them

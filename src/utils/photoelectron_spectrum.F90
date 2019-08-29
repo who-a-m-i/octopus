@@ -117,7 +117,7 @@ program photoelectron_spectrum
   call geometry_init(geo, default_namespace, space)
   call simul_box_init(sb, default_namespace, geo, space)
   gr%sb = sb
-  call states_elec_init(st, default_namespace, gr, geo)
+  call states_elec_init(st, default_namespace, gr, geo, message)
   !*
 
   !Initialize variables

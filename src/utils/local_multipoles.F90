@@ -738,7 +738,7 @@ contains
       end if                                                                               
 
       call add_dens_to_ion_x(ff2, namespace, sys%geo)
-      call basins_init(basins, sys%gr%mesh)
+      call basins_init(basins, sys%gr%mesh, message_g)
       call parse_variable(namespace, 'LDBaderThreshold', CNST(0.01), BaderThreshold)
       call basins_analyze(basins, sys%gr%mesh, ff2(:,1), ff2, BaderThreshold)
       call parse_variable(namespace, 'LDExtraWrite', .false., extra_write)

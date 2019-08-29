@@ -832,7 +832,7 @@ contains
 
       PUSH_SUB(output_localization_funct.out_basins)
 
-      call basins_init(basins, gr%mesh)
+      call basins_init(basins, gr%mesh, message_g)
       call basins_analyze(basins, gr%mesh, ff(:), st%rho, CNST(0.01))
 
       call dio_function_output(outp%how, dir, trim(filename), outp%namespace, gr%mesh, &

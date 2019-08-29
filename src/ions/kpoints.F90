@@ -1488,7 +1488,7 @@ contains
     call distributed_nullify(kpt_dist, nk)
  #ifdef HAVE_MPI
     if(mpi_world%comm /= -1) &
-      call distributed_init(kpt_dist, nk, MPI_COMM_WORLD, "kpt_check")
+      call distributed_init(kpt_dist, nk, MPI_COMM_WORLD, message_g, "kpt_check")
  #endif
 
     !A simple map to tell if the k-point as a matching symmetric point or not

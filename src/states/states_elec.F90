@@ -1753,7 +1753,8 @@ contains
         call message_g%fatal(2)
       end if
 
-      call distributed_init(st%dist, st%nst, st%mpi_grp%comm, "states", scalapack_compat = st%scalapack_compatible)
+      call distributed_init(st%dist, st%nst, st%mpi_grp%comm, st%message, "states", &
+        scalapack_compat = st%scalapack_compatible)
 
       st%st_start = st%dist%start
       st%st_end   = st%dist%end

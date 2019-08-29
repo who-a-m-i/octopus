@@ -50,6 +50,7 @@ module distributed_oct_m
     integer, allocatable :: range(:, :)
     integer, allocatable :: num(:)
     type(mpi_grp_t)      :: mpi_grp
+    class(message_t), pointer, private :: message
   end type distributed_t
   
 contains
@@ -73,21 +74,26 @@ contains
 
     call mpi_grp_init(this%mpi_grp, -1)
 
+    nullify(this%message)
+
     POP_SUB(distributed_nullify)
   end subroutine distributed_nullify
   
 
   ! ---------------------------------------------------------
-  subroutine distributed_init(this, total, comm, tag, scalapack_compat)
-    type(distributed_t),        intent(out) :: this
-    integer,                    intent(in)  :: total
-    integer,                    intent(in)  :: comm
-    character(len=*), optional, intent(in)  :: tag
-    logical,          optional, intent(in)  :: scalapack_compat
+  subroutine distributed_init(this, total, comm, message, tag, scalapack_compat)
+    type(distributed_t),        intent(out)   :: this
+    integer,                    intent(in)    :: total
+    integer,                    intent(in)    :: comm
+    type(message_t),  target,   intent(inout) :: message
+    character(len=*), optional, intent(in)    :: tag
+    logical,          optional, intent(in)    :: scalapack_compat
 
     integer :: kk
 
     PUSH_SUB(distributed_init)
+
+    this%message => message
     
     this%nglobal = total
 
@@ -124,7 +130,7 @@ contains
 
       if(present(tag)) then
         messages(1) = 'Info: Parallelization in ' // trim(tag)
-        call message_g%info(1)
+        call this%message%info(1)
       end if
 
       do kk = 1, this%mpi_grp%size
@@ -136,7 +142,7 @@ contains
             write(messages(1),'(a,a,i6,a,i6)') trim(messages(1)), ':', &
               this%range(1, kk - 1), " - ", this%range(2, kk - 1)
           end if
-          call message_g%info(1)
+          call this%message%info(1)
         end if
         
         if(this%mpi_grp%rank  ==  kk - 1) then
@@ -188,6 +194,8 @@ contains
       SAFE_ALLOCATE(out%num(0:size - 1))
       out%num(0:size - 1) = in%num(0:size - 1)
     end if
+
+    out%message => in%message
 
     POP_SUB(distributed_copy)
   end subroutine distributed_copy

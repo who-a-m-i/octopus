@@ -172,7 +172,7 @@ subroutine xc_get_vxc(der, xcs, st, psolver, namespace, rho, ispin, ioniz_pot, q
   end if
 
   if(xcs%parallel) then
-    call distributed_init(distribution, der%mesh%np, st%st_kpt_mpi_grp%comm)
+    call distributed_init(distribution, der%mesh%np, st%st_kpt_mpi_grp%comm, message_g)
     ipstart = distribution%start
     ipend = distribution%end
   else

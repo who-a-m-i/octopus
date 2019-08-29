@@ -179,7 +179,7 @@ contains
     ! divide the processors
     ndiv = 10
     SAFE_ALLOCATE(div(1:ndiv))
-    call get_divisors(this%mpi_grp%size, ndiv, div)
+    call get_divisors(this%mpi_grp%size, ndiv, div, message_g)
     
     np1 = div((ndiv + 1)/2)
     np2 = this%mpi_grp%size/np1

@@ -62,10 +62,11 @@ module utils_oct_m
 contains
 
   ! ---------------------------------------------------------
-  subroutine get_divisors(nn, n_divisors, divisors)
-    integer, intent(in)    :: nn
-    integer, intent(inout) :: n_divisors
-    integer, intent(out)   :: divisors(:)
+  subroutine get_divisors(nn, n_divisors, divisors, message)
+    integer,          intent(in)    :: nn
+    integer,          intent(inout) :: n_divisors
+    integer,          intent(out)   :: divisors(:)
+    class(message_t), intent(inout) :: message
 
     integer :: ii, max_d
 
@@ -82,7 +83,7 @@ contains
 
         if(n_divisors > max_d - 1) then
           messages(1) = "Internal error in get_divisors. Please increase n_divisors"
-          call message_g%fatal(1)
+          call message%fatal(1)
         end if
 
         divisors(n_divisors) = ii
@@ -193,10 +194,11 @@ contains
   !! the compilation and the system. It also prints the start time 
   !! of the execution.
   ! ---------------------------------------------------------
-  subroutine print_header()
+  subroutine print_header(message)
 #ifdef HAVE_FC_COMPILER_VERSION
     use iso_fortran_env
 #endif
+    class(message_t), intent(inout) :: message
     
     character(len=256) :: sys_name
     
@@ -207,7 +209,7 @@ contains
     messages(1) = ""
     messages(2) = str_center("Running octopus", 70)
     messages(3) = ""
-    call message_g%info(3)
+    call message%info(3)
 
     messages(1) = &
          "Version                : " // trim(conf%version)
@@ -215,13 +217,13 @@ contains
          "Commit                 : "// trim(conf%git_commit)
     messages(3) = &
          "Build time             : "// trim(conf%build_time)
-    call message_g%info(3)
+    call message%info(3)
 
     messages(1) = 'Configuration options  : ' // trim(get_config_opts())
     messages(2) = 'Optional libraries     :'  // trim(get_optional_libraries())
 
     messages(3) = 'Architecture           : ' + TOSTRING(OCT_ARCH)
-    call message_g%info(3)
+    call message%info(3)
 
     messages(1) = &
          "C compiler             : "//trim(conf%cc)
@@ -234,16 +236,16 @@ contains
 #endif
     messages(4) = &
          "Fortran compiler flags : "//trim(conf%fcflags)
-    call message_g%info(4)
+    call message%info(4)
 
     messages(1) = ""
-    call message_g%info(1)
+    call message%info(1)
 
     ! Let us print where we are running
     call loct_sysname(sys_name)
     write(messages(1), '(a)') str_center("The octopus is swimming in " // trim(sys_name), 70)
     messages(2) = ""
-    call message_g%info(2)
+    call message%info(2)
 
 #if defined(HAVE_MPI)
     call MPI_Barrier(mpi_world%comm, mpi_err)

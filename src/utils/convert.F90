@@ -76,7 +76,7 @@ program oct_convert
   call profiling_init(default_namespace)
   call message_g%experimental("oct-convert utility")
 
-  call print_header()
+  call print_header(message_g)
 
   call message_g%print_stress(stdout, "Convert mode")
   call message_g%print_stress(stdout)

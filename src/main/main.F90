@@ -134,7 +134,7 @@ program octopus
   
   call profiling_init(default_namespace)
   
-  call print_header()
+  call print_header(message_g)
 
 #if !defined(HAVE_LIBXC3) && !defined(HAVE_LIBXC4)
   call message_g%write('You have compiled Octopus with version 2 of Libxc.', new_line = .true.)

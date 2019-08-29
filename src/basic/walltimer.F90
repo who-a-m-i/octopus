@@ -151,8 +151,9 @@ contains
   end subroutine start
 
   !> measure time of on itertion  
-  subroutine walltimer_tap(print)
-    logical, optional, intent(in) :: print
+  subroutine walltimer_tap(message, print)
+    class(message_t),  intent(inout) :: message
+    logical, optional, intent(in)    :: print
 
     FLOAT :: now
 
@@ -166,14 +167,15 @@ contains
     if(optional_default(print, .false.)) then
       write(messages(1), '("Walltimer_tap:   elapsed time = ",F6.2," (", 3F10.5, "), active = ",L1 )')  &
         now - start_time, duration, iteration_time, margin, active
-      call message_g%info(1, all_nodes=.true.)
+      call message%info(1, all_nodes=.true.)
     end if
 
     POP_SUB(walltimer_tap)
   end subroutine walltimer_tap
 
   !> indicate whether time is up
-  logical function walltimer_alarm(print)
+  logical function walltimer_alarm(message, print)
+    class(message_t),  intent(inout) :: message
     logical, optional, intent(in) :: print
 
     FLOAT :: now
@@ -185,16 +187,16 @@ contains
     if(optional_default(print, .false.)) then
       write(messages(1), '("Walltimer_alarm: elapsed time = ",F6.2," (", 3F10.5, "), active = ",L1 )')  &
         now - start_time, duration, iteration_time, margin, active
-      call message_g%info(1, all_nodes=.true.)
+      call message%info(1, all_nodes=.true.)
     end if
     
-    if(auto_tap) call walltimer_tap()
+    if(auto_tap) call walltimer_tap(message)
   
     walltimer_alarm = active .and. (now > start_time + duration - iteration_time - margin) 
   
     if(walltimer_alarm) then
       write(messages(1), '("Walltimer stopping execution after = ",F6.2," minutes.")') (now - start_time)/CNST(60.0)
-      call message_g%info(1)
+      call message%info(1)
     end if
   
     POP_SUB(walltimer_alarm)

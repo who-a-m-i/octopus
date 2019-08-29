@@ -882,7 +882,7 @@ contains
 
 
       ! Are we asked to stop? (Whenever Fortran is ready for signals, this should go away)
-      scf%forced_finish = clean_stop(mc%master_comm) .or. walltimer_alarm()
+      scf%forced_finish = clean_stop(mc%master_comm) .or. walltimer_alarm(message_g)
 
 #ifdef HAVE_MPI
       call MPI_Allreduce(scf%forced_finish, forced_finish_tmp, 1, MPI_LOGICAL, MPI_LOR, mc%master_comm, mpi_err)

@@ -200,7 +200,7 @@ contains
     call curvilinear_init(gr%cv, namespace, gr%sb, geo, grid_spacing)
 
     ! initialize derivatives
-    call derivatives_init(gr%der, namespace, gr%sb, gr%cv%method /= CURV_METHOD_UNIFORM)
+    call derivatives_init(gr%der, namespace, gr%message, gr%sb, gr%cv%method /= CURV_METHOD_UNIFORM)
 
     call double_grid_init(gr%dgrid, namespace, gr%sb)
 
@@ -258,7 +258,7 @@ contains
       
       call multigrid_mesh_double(geo, gr%cv, gr%mesh, gr%fine%mesh, gr%stencil)
       
-      call derivatives_init(gr%fine%der, namespace, gr%mesh%sb, gr%cv%method /= CURV_METHOD_UNIFORM)
+      call derivatives_init(gr%fine%der, namespace, gr%message, gr%mesh%sb, gr%cv%method /= CURV_METHOD_UNIFORM)
       
       call mesh_init_stage_3(gr%fine%mesh, namespace, gr%stencil, mc)
       

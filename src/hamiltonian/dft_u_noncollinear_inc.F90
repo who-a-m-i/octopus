@@ -38,7 +38,7 @@ subroutine compute_complex_coulomb_integrals (this, mesh, der, st, psolver)
   PUSH_SUB(compute_complex_coulomb_integrals)
 
   ASSERT(.not. st%parallel_in_states)
-  if(mesh%parallel_in_domains) call message_g%not_implemented("Coulomb integrals parallel in domains")
+  if(mesh%parallel_in_domains) call this%message%not_implemented("Coulomb integrals parallel in domains")
 
   SAFE_ALLOCATE(nn(1:this%max_np,st%d%dim))
   SAFE_ALLOCATE(vv(1:this%max_np,st%d%dim))
@@ -242,7 +242,7 @@ subroutine compute_ACBNO_U_noncollinear(this, ios)
     else
       write(messages(1),'(a,a)')' Small denominator value for the s orbital ', this%orbsets(ios)%Ubar
       write(messages(2),'(a)')' U is set to zero '
-      call message_g%warning(2)
+      call this%message%warning(2)
       this%orbsets(ios)%Ubar = M_ZERO
     end if
     this%orbsets(ios)%Jbar = 0

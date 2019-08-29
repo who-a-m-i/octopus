@@ -404,7 +404,7 @@ contains
     call lda_u_nullify(hm%lda_u)
     if(hm%lda_u_level /= DFT_U_NONE) then
       call message_g%experimental('DFT+U')
-      call lda_u_init(hm%lda_u, namespace, hm%lda_u_level, gr, geo, st, psolver)
+      call lda_u_init(hm%lda_u, namespace, hm%lda_u_level, gr, geo, st, psolver, message_g)
     end if
  
 

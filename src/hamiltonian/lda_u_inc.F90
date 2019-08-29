@@ -388,7 +388,7 @@ subroutine X(update_occ_matrices)(this, mesh, st, lda_u_energy, phase)
         else
           call compute_ACBNO_U_noncollinear(this, ios)
           if(this%intersite) then
-            call message_g%not_implemented("Intersite interaction with spinors orbitals.")
+            call this%message%not_implemented("Intersite interaction with spinors orbitals.")
           end if
         end if
       end do
@@ -665,7 +665,7 @@ subroutine X(compute_ACBNO_U)(this, ios)
         this%orbsets(ios)%Ubar = (numU/denomU)
         write(messages(1),'(a,a)')' Small denominator value for the s orbital ', this%orbsets(ios)%Ubar
         write(messages(2),'(a,a)')' to be multiplied by ',  this%coulomb(1,1,1,1,ios)
-        call message_g%warning(2) 
+        call this%message%warning(2) 
         this%orbsets(ios)%Ubar = this%orbsets(ios)%Ubar*this%coulomb(1,1,1,1,ios)
       end if
     end if
@@ -1278,11 +1278,11 @@ end subroutine X(compute_periodic_coulomb_integrals)
    PUSH_SUB(lda_u_commute_r)
 
    if(this%double_couting /= DFT_U_FLL) then
-    call message_g%not_implemented("AMF double couting and commutator [r,V_u]")
+    call this%message%not_implemented("AMF double couting and commutator [r,V_u]")
    end if
 
    if(this%intersite .and. d%ispin == SPINORS) then
-     call message_g%not_implemented("Intersite interaction, spinors, and commutator [r,V_u]")
+     call this%message%not_implemented("Intersite interaction, spinors, and commutator [r,V_u]")
    end if
 
    if((simul_box_is_periodic(mesh%sb) .and. .not. this%basis%submeshforperiodic) &
@@ -1563,7 +1563,7 @@ end subroutine X(compute_periodic_coulomb_integrals)
    if(this%basisfromstates) return
 
    if(this%double_couting /= DFT_U_FLL) then
-    call message_g%not_implemented("AMF double couting with forces")
+    call this%message%not_implemented("AMF double couting with forces")
    end if
 
    PUSH_SUB(X(lda_u_force))
@@ -1571,7 +1571,7 @@ end subroutine X(compute_periodic_coulomb_integrals)
    !TODO: Implement
    if(this%intersite) then
      messages(1) = "Intersite V forces are not implemented."
-     call message_g%warning(1)
+     call this%message%warning(1)
    end if
 
    SAFE_ALLOCATE(psi(1:mesh%np, 1:st%d%dim))

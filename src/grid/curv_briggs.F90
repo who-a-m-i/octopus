@@ -50,10 +50,11 @@ module curv_briggs_oct_m
 contains
 
   ! ---------------------------------------------------------
-  subroutine curv_briggs_init(cv, namespace, sb)
-    type(curv_briggs_t), intent(out) :: cv
-    type(namespace_t),   intent(in)  :: namespace
-    type(simul_box_t),   intent(in)  :: sb
+  subroutine curv_briggs_init(cv, namespace, sb, message)
+    type(curv_briggs_t), intent(out)   :: cv
+    type(namespace_t),   intent(in)    :: namespace
+    type(simul_box_t),   intent(in)    :: sb
+    class(message_t),    intent(inout) :: message
 
     cv%L = M_ZERO
     cv%L(1:sb%dim) = sb%lsize(1:sb%dim)
@@ -62,7 +63,7 @@ contains
 
     if(cv%beta<M_ZERO.or.cv%beta>M_ONE) then
       messages(1) = 'The parameter "CurvBriggsBeta" must lie between 0 and 1.'
-      call message_g%fatal(1)
+      call message%fatal(1)
     end if
 
   end subroutine curv_briggs_init

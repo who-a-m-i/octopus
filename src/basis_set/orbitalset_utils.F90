@@ -169,7 +169,7 @@ contains
 
       call distributed_nullify(dist, this%nneighbors)
 #ifdef HAVE_MPI
-      call distributed_init(dist, this%nneighbors, MPI_COMM_WORLD, 'orbs')
+      call distributed_init(dist, this%nneighbors, MPI_COMM_WORLD, message_g, 'orbs')
 #endif
 
       do inn = dist%start, dist%end

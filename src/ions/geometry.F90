@@ -291,7 +291,7 @@ contains
 
     PUSH_SUB(geometry_partition)
 
-    call distributed_init(geo%atoms_dist, geo%natoms, mc%group_comm(P_STRATEGY_STATES), "atoms")
+    call distributed_init(geo%atoms_dist, geo%natoms, mc%group_comm(P_STRATEGY_STATES), geo%message, "atoms")
 
     POP_SUB(geometry_partition)
   end subroutine geometry_partition

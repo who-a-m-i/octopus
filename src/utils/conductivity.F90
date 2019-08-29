@@ -115,7 +115,7 @@
     call simul_box_init(sb, default_namespace, geo, space)
 
     call grid_init_stage_0(gr, default_namespace, geo, space, message)
-    call states_elec_init(st, default_namespace, gr, geo)
+    call states_elec_init(st, default_namespace, gr, geo, message)
     
     if(from_forces) then
 

@@ -90,12 +90,15 @@ module orbitalset_oct_m
     logical             :: submeshforperiodic !> Do we use or not submeshes for the orbitals
 
     type(poisson_t)  :: poisson               !> For computing the Coulomb integrals
+
+    class(message_t), pointer :: message
   end type orbitalset_t
 
 contains
 
- subroutine orbitalset_nullify(this)
+ subroutine orbitalset_nullify(this, message)
   type(orbitalset_t),             intent(inout) :: this
+  class(message_t), target,       intent(inout) :: message
 
   PUSH_SUB(orbitalset_nullify)
 
@@ -105,16 +108,18 @@ contains
   nullify(this%zorb)
   nullify(this%eorb_submesh)
   nullify(this%eorb_mesh)
+  nullify(this%message)
 
   call submesh_null(this%sphere)
-  call orbitalset_init(this)
+  call orbitalset_init(this, message)
 
   POP_SUB(orbitalset_nullify)
 
  end subroutine orbitalset_nullify
 
- subroutine orbitalset_init(this)
+ subroutine orbitalset_init(this, message)
   type(orbitalset_t),             intent(inout) :: this
+  class(message_t), target,       intent(inout) :: message
 
   PUSH_SUB(orbitalset_init)
 
@@ -132,6 +137,8 @@ contains
   this%Jbar = M_ZERO
   this%alpha = M_ZERO
   this%radius = M_ZERO
+
+  this%message => message
 
   POP_SUB(orbitalset_init)
  end subroutine orbitalset_init

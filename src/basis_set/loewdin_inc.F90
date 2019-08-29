@@ -37,8 +37,8 @@
    SAFE_ALLOCATE(eigenval(1:basis%size))
 
    if(debug%info) then
-    write(message_g%lines(1), '(a)') 'Debug: Orthogonalizing the atomic orbital basis.'
-    call message_g%info(1)
+    write(basis%message%lines(1), '(a)') 'Debug: Orthogonalizing the atomic orbital basis.'
+    call basis%message%info(1)
    end if
 
    do ik = kpt%start, kpt%end
@@ -92,8 +92,8 @@
    SAFE_DEALLOCATE_A(eigenval)
 
    if(debug%info) then
-    write(message_g%lines(1), '(a)') 'Debug: Orthogonalization completed.'
-    call message_g%info(1)
+    write(basis%message%lines(1), '(a)') 'Debug: Orthogonalization completed.'
+    call basis%message%info(1)
    end if
 
    call profiling_out(prof)
@@ -136,7 +136,7 @@
         end do
  #endif
       else
-        call message_g%not_implemented("Lowdin orthogonalization with submeshes.")
+        call basis%message%not_implemented("Lowdin orthogonalization with submeshes.")
       end if
     end do !ind2
   end do !ind

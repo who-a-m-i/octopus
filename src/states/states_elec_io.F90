@@ -737,7 +737,7 @@ contains
 
         !We loop over the orbital sets of the atom ia
         do norb = 1, work
-          call orbitalset_nullify(os)
+          call orbitalset_nullify(os, message_g)
 
           !We count the orbitals
           work2 = 0

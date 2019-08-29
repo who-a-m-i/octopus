@@ -345,7 +345,7 @@ contains
 
    if(.not.this%basisfromstates) then
 
-     call orbitalbasis_init(this%basis, namespace)
+     call orbitalbasis_init(this%basis, namespace, this%message)
 
      if (states_are_real(st)) then
        call dorbitalbasis_build(this%basis, geo, gr%mesh, st%d%kpt, st%d%dim, &
@@ -372,7 +372,7 @@ contains
      call distributed_nullify(this%orbs_dist, this%norbsets)
 #ifdef HAVE_MPI
      if(.not. gr%mesh%parallel_in_domains) then
-       call distributed_init(this%orbs_dist, this%norbsets, MPI_COMM_WORLD, message_g, "orbsets")
+       call distributed_init(this%orbs_dist, this%norbsets, MPI_COMM_WORLD, this%message, "orbsets")
      end if
 #endif 
 

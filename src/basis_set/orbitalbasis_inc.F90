@@ -41,8 +41,8 @@ subroutine X(orbitalbasis_build)(this, geo, mesh, kpt, ndim, skip_s_orb, use_all
   verbose_ = optional_default(verbose,.true.)
 
   if(verbose_) then
-    write(message_g%lines(1),'(a)')    'Building the LDA+U localized orbital basis.'
-    call message_g%info(1)
+    write(this%message%lines(1),'(a)')    'Building the LDA+U localized orbital basis.'
+    call this%message%info(1)
   end if
 
   !We first count the number of orbital sets we have to treat
@@ -65,9 +65,9 @@ subroutine X(orbitalbasis_build)(this, geo, mesh, kpt, ndim, skip_s_orb, use_all
       end if
 
       if( hubbardj /= 0 .and. .not. hasjdependence) then
-        write(message_g%lines(1),'(a,i1,a)') 'Atom ', ia, ' has no j-dependent atomic wavefunctions.'
-        write(message_g%lines(2),'(a)') 'This is not compatible with the hubbard_j option.'
-        call message_g%fatal(2)
+        write(this%message%lines(1),'(a,i1,a)') 'Atom ', ia, ' has no j-dependent atomic wavefunctions.'
+        write(this%message%lines(2),'(a)') 'This is not compatible with the hubbard_j option.'
+        call this%message%fatal(2)
       end if
     end do
   else
@@ -84,9 +84,9 @@ subroutine X(orbitalbasis_build)(this, geo, mesh, kpt, ndim, skip_s_orb, use_all
         work = max(work, ii)
 
         if( hubbardj /= 0 .and. abs(jj) > M_EPSILON ) then
-          write(message_g%lines(1),'(a,i1,a)') 'Atom ', ia, ' has no j-dependent atomic wavefunction.'
-          write(message_g%lines(2),'(a)') 'This is not compatible with the hubbard_j option.'
-          call message_g%fatal(2)  
+          write(this%message%lines(1),'(a,i1,a)') 'Atom ', ia, ' has no j-dependent atomic wavefunction.'
+          write(this%message%lines(2),'(a)') 'This is not compatible with the hubbard_j option.'
+          call this%message%fatal(2)  
         end if
       end do
       if(skip_s_orb) work = work-n_s_orb
@@ -95,20 +95,20 @@ subroutine X(orbitalbasis_build)(this, geo, mesh, kpt, ndim, skip_s_orb, use_all
   end if
 
   if(norb == 0) then
-    write(message_g%lines(1),'(a)')  'No orbital set found. Please check your input file.'
-    call message_g%fatal(1)
+    write(this%message%lines(1),'(a)')  'No orbital set found. Please check your input file.'
+    call this%message%fatal(1)
   end if
 
 
   if(verbose_) then
-    write(message_g%lines(1),'(a, i3, a)')    'Found ', norb, ' orbital sets.'
-    call message_g%info(1)
+    write(this%message%lines(1),'(a, i3, a)')    'Found ', norb, ' orbital sets.'
+    call this%message%info(1)
   end if
 
   this%norbsets = norb
   SAFE_ALLOCATE(this%orbsets(1:norb))
   do iorbset = 1, this%norbsets
-    call orbitalset_nullify(this%orbsets(iorbset))
+    call orbitalset_nullify(this%orbsets(iorbset), this%message)
   end do
 
   iorbset = 0
@@ -122,8 +122,8 @@ subroutine X(orbitalbasis_build)(this, geo, mesh, kpt, ndim, skip_s_orb, use_all
     call species_iwf_j(geo%atom(ia)%species, 1, jj)
     if(abs(jj) >  M_EPSILON) hasjdependence = .true.
     if (debug%info .and. hasjdependence .and. verbose_) then
-      write(message_g%lines(1),'(a,i3,a)')  'Debug: Atom ', ia, ' has j-dependent pseudo-wavefunctions.'
-      call message_g%info(1)
+      write(this%message%lines(1),'(a,i3,a)')  'Debug: Atom ', ia, ' has j-dependent pseudo-wavefunctions.'
+      call this%message%info(1)
     end if 
 
     if(.not. use_all_orb) then
@@ -273,9 +273,9 @@ subroutine X(orbitalbasis_build)(this, geo, mesh, kpt, ndim, skip_s_orb, use_all
         end do
       else
         if(verbose_) then
-          write(message_g%lines(1),'(a,i3,a,i3,a,f8.5)') 'Info: Orbset ', iorbset, ' Orbital ', iorb, &
+          write(this%message%lines(1),'(a,i3,a,i3,a,f8.5)') 'Info: Orbset ', iorbset, ' Orbital ', iorb, &
                            ' norm= ',  norm
-          call message_g%info(1)
+          call this%message%info(1)
         end if
       end if
     end do
@@ -309,18 +309,18 @@ subroutine X(orbitalbasis_build)(this, geo, mesh, kpt, ndim, skip_s_orb, use_all
 
   do ios = 1, this%norbsets
     if(this%orbsets(ios)%sphere%np == -1) then
-       write(message_g%lines(1),'(a,a4,i1,a1,a)')    'Internal error: the orbital ',trim(species_label(this%orbsets(ios)%spec)), &
+       write(this%message%lines(1),'(a,a4,i1,a1,a)')    'Internal error: the orbital ',trim(species_label(this%orbsets(ios)%spec)), &
                       this%orbsets(ios)%nn, l_notation(this%orbsets(ios)%ll), ' has no grid point.'
-       write(message_g%lines(2),'(a)') 'Change the input file or use a pseudopotential that contains these orbitals.'
-       call message_g%fatal(2)
+       write(this%message%lines(2),'(a)') 'Change the input file or use a pseudopotential that contains these orbitals.'
+       call this%message%fatal(2)
     end if
     if(verbose_) then
-      write(message_g%lines(1),'(a,i2,a,f8.5,a)')    'Orbital set ', ios, ' has a value of U of ',&
+      write(this%message%lines(1),'(a,i2,a,f8.5,a)')    'Orbital set ', ios, ' has a value of U of ',&
                          this%orbsets(ios)%Ueff   , ' Ha.'
-      write(message_g%lines(2),'(a,i2,a)')    'It contains ', this%orbsets(ios)%norbs, ' orbitals.'
-      write(message_g%lines(3),'(a,f8.5,a,i6,a)') 'The radius is ', this%orbsets(ios)%sphere%radius, &
+      write(this%message%lines(2),'(a,i2,a)')    'It contains ', this%orbsets(ios)%norbs, ' orbitals.'
+      write(this%message%lines(3),'(a,f8.5,a,i6,a)') 'The radius is ', this%orbsets(ios)%sphere%radius, &
                         ' Bohr,  with ', this%orbsets(ios)%sphere%np, ' grid points.'
-       call message_g%info(3)
+       call this%message%info(3)
     end if
   end do 
 
@@ -367,15 +367,15 @@ subroutine X(orbitalbasis_build_empty)(this, geo, mesh, kpt, ndim, nstates, verb
   verbose_ = optional_default(verbose,.true.)
 
   if(verbose_) then
-    write(message_g%lines(1),'(a)')    'Building an empty LDA+U orbital basis.'
-    call message_g%info(1)
+    write(this%message%lines(1),'(a)')    'Building an empty LDA+U orbital basis.'
+    call this%message%info(1)
   end if
 
   ASSERT(nstates > 0)
 
   this%norbsets = 1
   SAFE_ALLOCATE(this%orbsets(1:1))
-  call orbitalset_nullify(this%orbsets(1))
+  call orbitalset_nullify(this%orbsets(1), this%message)
   os => this%orbsets(1)
   os%ii = -1
   os%radius = M_ZERO

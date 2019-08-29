@@ -177,12 +177,13 @@ contains
 
 
   ! ---------------------------------------------------------
-  subroutine kpoints_distribute(this, mc)
+  subroutine kpoints_distribute(this, mc, message)
     type(states_elec_dim_t), intent(inout) :: this
     type(multicomm_t),       intent(in)    :: mc
+    class(message_t),        intent(inout) :: message
 
     PUSH_SUB(kpoints_distribute)
-    call distributed_init(this%kpt, this%nik, mc%group_comm(P_STRATEGY_KPOINTS), message_g, "k-points")
+    call distributed_init(this%kpt, this%nik, mc%group_comm(P_STRATEGY_KPOINTS), message, "k-points")
 
     POP_SUB(kpoints_distribute)
   end subroutine kpoints_distribute

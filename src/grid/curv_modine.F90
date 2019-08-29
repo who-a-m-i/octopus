@@ -63,6 +63,8 @@ module curv_modine_oct_m
     FLOAT, pointer :: csi(:,:)
 
     integer :: natoms
+
+    class(message_t), pointer :: message
   end type curv_modine_t
 
   integer, parameter :: qq = 3
@@ -131,14 +133,17 @@ contains
   end subroutine getf2
 
   ! ---------------------------------------------------------
-  subroutine curv_modine_init(cv, namespace, sb, geo, spacing)
-    type(curv_modine_t), target, intent(out) :: cv
-    type(namespace_t),           intent(in)  :: namespace
-    type(simul_box_t),   target, intent(in)  :: sb
-    type(geometry_t),            intent(in)  :: geo
-    FLOAT,                       intent(in)  :: spacing(:)
+  subroutine curv_modine_init(cv, namespace, sb, geo, spacing, message)
+    type(curv_modine_t), target, intent(out)   :: cv
+    type(namespace_t),           intent(in)    :: namespace
+    type(simul_box_t),   target, intent(in)    :: sb
+    type(geometry_t),            intent(in)    :: geo
+    FLOAT,                       intent(in)    :: spacing(:)
+    class(message_t),    target, intent(inout) :: message
 
     PUSH_SUB(curv_modine_init)
+
+    cv%message => message
 
     !%Variable CurvModineXBar
     !%Type float
@@ -164,8 +169,8 @@ contains
     cv%L(1:sb%dim) = sb%lsize(1:sb%dim) / cv%Jbar
 
     if(cv%xbar<M_ZERO.or.cv%xbar>M_ONE) then
-      message_g%lines(1) = 'The parameter "CurvModineXBar" must lie between 0 and 1.'
-      call message_g%fatal(1)
+      cv%message%lines(1) = 'The parameter "CurvModineXBar" must lie between 0 and 1.'
+      call cv%message%fatal(1)
     end if
 
     SAFE_ALLOCATE(cv%Jlocal(1:geo%natoms))
@@ -194,8 +199,8 @@ contains
     call parse_variable(namespace, 'CurvModineJrange', M_TWO, cv%Jrange(1), units_inp%length)
 
     if(cv%Jlocal(1)<M_ZERO.or.cv%Jlocal(1)>M_ONE) then
-      message_g%lines(1) = 'The parameter "CurvModineJlocal" must lie between 0 and 1.'
-      call message_g%fatal(1)
+      cv%message%lines(1) = 'The parameter "CurvModineJlocal" must lie between 0 and 1.'
+      call cv%message%fatal(1)
     end if
 
     cv%Jlocal(:) = cv%Jlocal(1)
@@ -267,9 +272,9 @@ contains
       call droot_solver_run(rs, getf2, my_csi, conv, startval=start_csi)
 
       if(.not.conv) then
-        message_g%lines(1) = "During the construction of the adaptive grid, the Newton-Raphson"
-        message_g%lines(2) = "method did not converge."
-        call message_g%fatal(2)
+        cv%message%lines(1) = "During the construction of the adaptive grid, the Newton-Raphson"
+        cv%message%lines(2) = "method did not converge."
+        call cv%message%fatal(2)
       end if
 
       ! Now set csi to the new values
@@ -306,6 +311,7 @@ contains
     call loct_pointer_copy(this_out%chi_atoms, this_in%chi_atoms)
     call loct_pointer_copy(this_out%csi, this_in%csi)
     this_out%natoms=this_in%natoms
+    this_out%message => this_in%message
     POP_SUB(curv_modine_copy)
     return
   end subroutine curv_modine_copy
@@ -319,6 +325,8 @@ contains
     SAFE_DEALLOCATE_P(cv%Jlocal)
     SAFE_DEALLOCATE_P(cv%Jrange)
     SAFE_DEALLOCATE_P(cv%chi_atoms)
+
+    nullify(cv%message)
 
     POP_SUB(curv_modine_end)
 
@@ -462,6 +470,7 @@ contains
 
     logical :: conv
     type(root_solver_t) :: rs
+    class(message_t), allocatable :: message
 
     PUSH_SUB(curv_modine_x2chi)
 
@@ -480,10 +489,12 @@ contains
     nullify(cv_p)
 
     if(.not.conv) then
-      message_g%lines(1) = "During the construction of the adaptive grid, the Newton-Raphson"
-      message_g%lines(2) = "method did not converge for point:"
-      write(message_g%lines(3),'(3f14.6)') xx(1:sb%dim)
-      call message_g%fatal(3)
+      allocate(message, source=cv%message)
+      message%lines(1) = "During the construction of the adaptive grid, the Newton-Raphson"
+      message%lines(2) = "method did not converge for point:"
+      write(message%lines(3),'(3f14.6)') xx(1:sb%dim)
+      call message%fatal(3)
+      deallocate(message)
     end if
 
     POP_SUB(curv_modine_x2chi)

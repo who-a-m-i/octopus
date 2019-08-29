@@ -54,6 +54,7 @@ module curv_gygi_oct_m
     FLOAT, public :: beta          !< distance over which Euclidian coordinates are recovered
     FLOAT, pointer :: pos(:, :)
     integer :: npos
+    class(message_t), pointer :: message
   end type curv_gygi_t
 
   type(simul_box_t), pointer  :: sb_p
@@ -64,15 +65,18 @@ module curv_gygi_oct_m
 contains
 
   ! ---------------------------------------------------------
-  subroutine curv_gygi_init(cv, namespace, sb, geo)
-    type(curv_gygi_t), intent(out) :: cv
-    type(namespace_t), intent(in)  :: namespace
-    type(simul_box_t), intent(in)  :: sb
-    type(geometry_t),  intent(in)  :: geo
+  subroutine curv_gygi_init(cv, namespace, sb, geo, message)
+    type(curv_gygi_t),        intent(out)   :: cv
+    type(namespace_t),        intent(in)    :: namespace
+    type(simul_box_t),        intent(in)    :: sb
+    type(geometry_t),         intent(in)    :: geo
+    class(message_t), target, intent(inout) :: message
 
     integer :: ipos, idir
 
     PUSH_SUB(curv_gygi_init)
+
+    cv%message => message
 
     !%Variable CurvGygiA
     !%Type float
@@ -111,9 +115,9 @@ contains
     !%End
     call parse_variable(namespace, 'CurvGygiBeta', M_FOUR, cv%beta, units_inp%length)
 
-    if(cv%a<=M_ZERO)     call message_g%input_error('CurvGygiA')
-    if(cv%alpha<=M_ZERO) call message_g%input_error('CurvGygiAlpha')
-    if(cv%beta<=M_ZERO)  call message_g%input_error('CurvGygiBeta')
+    if(cv%a<=M_ZERO)     call cv%message%input_error('CurvGygiA')
+    if(cv%alpha<=M_ZERO) call cv%message%input_error('CurvGygiAlpha')
+    if(cv%beta<=M_ZERO)  call cv%message%input_error('CurvGygiBeta')
 
     cv%npos = geo%natoms
     SAFE_ALLOCATE(cv%pos(1:cv%npos, 1:sb%dim))
@@ -133,6 +137,7 @@ contains
     this_out%beta=this_in%beta
     call loct_pointer_copy(this_out%pos, this_in%pos)
     this_out%npos=this_in%npos
+    this_out%message => this_in%message
     POP_SUB(curv_gygi_copy)
     return
   end subroutine curv_gygi_copy
@@ -144,6 +149,8 @@ contains
     PUSH_SUB(curv_gygi_end)
 
     SAFE_DEALLOCATE_P(cv%pos)
+
+    nullify(cv%message)
 
     POP_SUB(curv_gygi_end)
   end subroutine curv_gygi_end
@@ -171,6 +178,7 @@ contains
     integer :: i
     logical :: conv
     type(root_solver_t) :: rs
+    class(message_t), allocatable :: message
 
     ! no push_sub, called too frequently
 
@@ -195,12 +203,14 @@ contains
     nullify(sb_p); nullify(cv_p)
 
     if(.not.conv) then
-      message_g%lines(1) = "During the construction of the adaptive grid, the Newton-Raphson"
-      message_g%lines(2) = "method did not converge for point:"
-      write(message_g%lines(3),'(9f14.6)') x(1:sb%dim)
-      message_g%lines(4) = "Try varying the Gygi parameters -- usually reducing CurvGygiA or"
-      message_g%lines(5) = "CurvGygiAlpha (or both) solves the problem."
-      call message_g%fatal(5)
+      allocate(message, source=cv%message)
+      message%lines(1) = "During the construction of the adaptive grid, the Newton-Raphson"
+      message%lines(2) = "method did not converge for point:"
+      write(message%lines(3),'(9f14.6)') x(1:sb%dim)
+      message%lines(4) = "Try varying the Gygi parameters -- usually reducing CurvGygiA or"
+      message%lines(5) = "CurvGygiAlpha (or both) solves the problem."
+      call message%fatal(5)
+      deallocate(message)
     end if
 
   end subroutine curv_gygi_chi2x

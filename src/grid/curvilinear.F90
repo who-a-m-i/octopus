@@ -60,6 +60,7 @@ module curvilinear_oct_m
     type(curv_gygi_t)   :: gygi
     type(curv_briggs_t) :: briggs
     type(curv_modine_t) :: modine
+    class(message_t), pointer :: message
   end type curvilinear_t
 
   character(len=23), parameter :: dump_tag = '*** curvilinear_dump **'
@@ -67,14 +68,17 @@ module curvilinear_oct_m
 contains
 
   ! ---------------------------------------------------------
-  subroutine curvilinear_init(cv, namespace, sb, geo, spacing)
-    type(curvilinear_t), intent(out) :: cv
-    type(namespace_t),   intent(in)  :: namespace
-    type(simul_box_t),   intent(in)  :: sb
-    type(geometry_t),    intent(in)  :: geo
-    FLOAT,               intent(in)  :: spacing(:)
+  subroutine curvilinear_init(cv, namespace, sb, geo, spacing, message)
+    type(curvilinear_t),      intent(out)   :: cv
+    type(namespace_t),        intent(in)    :: namespace
+    type(simul_box_t),        intent(in)    :: sb
+    type(geometry_t),         intent(in)    :: geo
+    FLOAT,                    intent(in)    :: spacing(:)
+    class(message_t), target, intent(inout) :: message
 
     PUSH_SUB(curvilinear_init)
+
+    cv%message => message
 
     !%Variable CurvMethod
     !%Type integer
@@ -102,19 +106,19 @@ contains
     !% (NOT WORKING).
     !%End
     call parse_variable(namespace, 'CurvMethod', CURV_METHOD_UNIFORM, cv%method)
-    if(.not.varinfo_valid_option('CurvMethod', cv%method)) call message_g%input_error('CurvMethod')
-    call message_g%print_var_option(stdout, "CurvMethod", cv%method)
+    if(.not.varinfo_valid_option('CurvMethod', cv%method)) call cv%message%input_error('CurvMethod')
+    call cv%message%print_var_option(stdout, "CurvMethod", cv%method)
 
     ! FIXME: The other two methods are apparently not working
-    if(cv%method > CURV_METHOD_GYGI) call message_g%experimental('Selected curvilinear coordinates method')
+    if(cv%method > CURV_METHOD_GYGI) call cv%message%experimental('Selected curvilinear coordinates method')
 
     select case(cv%method)
     case(CURV_METHOD_GYGI)
-      call curv_gygi_init(cv%gygi, namespace, sb, geo)
+      call curv_gygi_init(cv%gygi, namespace, sb, geo, cv%message)
     case(CURV_METHOD_BRIGGS)
-      call curv_briggs_init(cv%briggs, namespace, sb)
+      call curv_briggs_init(cv%briggs, namespace, sb, cv%message)
     case(CURV_METHOD_MODINE)
-      call curv_modine_init(cv%modine, namespace, sb, geo, spacing)
+      call curv_modine_init(cv%modine, namespace, sb, geo, spacing, cv%message)
     end select
 
     POP_SUB(curvilinear_init)
@@ -199,8 +203,8 @@ contains
     case(CURV_METHOD_GYGI)
       call curv_gygi_x2chi(sb, cv%gygi, x, chi)
     case(CURV_METHOD_BRIGGS, CURV_METHOD_MODINE)
-      message_g%lines(1) = "Internal error in curvilinear_x2chi"
-      call message_g%fatal(1)
+      cv%message%lines(1) = "Internal error in curvilinear_x2chi"
+      call cv%message%fatal(1)
     end select
 
     POP_SUB(curvilinear_x2chi)
@@ -249,30 +253,36 @@ contains
     type(curvilinear_t), intent(in) :: cv
     integer,            intent(in) :: unit
 
+    class(message_t), allocatable :: message
+
     PUSH_SUB(curvilinear_write_info)
+
+    allocate(message, source=cv%message)
 
     select case(cv%method)
     case(CURV_METHOD_GYGI)
-      write(message_g%lines(1), '(a)')  '  Curvilinear Method = gygi'
-      write(message_g%lines(2), '(a)')  '  Gygi Parameters:'
-      write(message_g%lines(3), '(4x,a,f6.3)')  'A = ', cv%gygi%a
-      write(message_g%lines(4), '(4x,3a,f6.3)') 'alpha [', &
+      write(message%lines(1), '(a)')  '  Curvilinear Method = gygi'
+      write(message%lines(2), '(a)')  '  Gygi Parameters:'
+      write(message%lines(3), '(4x,a,f6.3)')  'A = ', cv%gygi%a
+      write(message%lines(4), '(4x,3a,f6.3)') 'alpha [', &
         trim(units_abbrev(units_out%length)), '] = ', &
         units_from_atomic(units_out%length, cv%gygi%alpha)
-      write(message_g%lines(5), '(4x,3a,f6.3)') 'beta  [', &
+      write(message%lines(5), '(4x,3a,f6.3)') 'beta  [', &
         trim(units_abbrev(units_out%length)), '] = ', &
         units_from_atomic(units_out%length, cv%gygi%beta)
-      call message_g%info(5, unit)
+      call message%info(5, unit)
 
     case(CURV_METHOD_BRIGGS)
-      write(message_g%lines(1), '(a)') '  Curvilinear Method = briggs'
-      call message_g%info(1, unit)
+      write(message%lines(1), '(a)') '  Curvilinear Method = briggs'
+      call message%info(1, unit)
 
     case(CURV_METHOD_MODINE)
-      write(message_g%lines(1), '(a)') ' Curvilinear  Method = modine'
-      call message_g%info(1, unit)
+      write(message%lines(1), '(a)') ' Curvilinear  Method = modine'
+      call message%info(1, unit)
 
     end select
+
+    deallocate(message)
 
     POP_SUB(curvilinear_write_info)
   end subroutine curvilinear_write_info

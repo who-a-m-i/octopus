@@ -201,7 +201,7 @@ contains
     end if
 
     ! initialize curvilinear coordinates
-    call curvilinear_init(gr%cv, namespace, gr%sb, geo, grid_spacing)
+    call curvilinear_init(gr%cv, namespace, gr%sb, geo, grid_spacing, gr%message)
 
     ! initialize derivatives
     call derivatives_init(gr%der, namespace, gr%sb, gr%cv%method /= CURV_METHOD_UNIFORM)

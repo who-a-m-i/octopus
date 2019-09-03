@@ -30,7 +30,7 @@
 
     PUSH_SUB(target_init_excited)
 
-    message_g%lines(1) =  'Info: TargetOperator is a linear combination of Slater determinants.'
+    messages(1) =  'Info: TargetOperator is a linear combination of Slater determinants.'
     call message_g%info(1)
 
     tg%move_ions = ion_dynamics_ions_move(td%ions)
@@ -38,7 +38,7 @@
 
     call states_elec_look(restart, ip, ip, tg%st%nst, ierr)
     if (ierr /= 0) then
-      message_g%lines(1) = "Unable to read states information."
+      messages(1) = "Unable to read states information."
       call message_g%fatal(1)
     end if
     tg%st%st_start = 1
@@ -60,7 +60,7 @@
 
     call states_elec_load(restart, namespace, tg%st, gr, ierr)
     if (ierr /= 0) then
-      message_g%lines(1) = "Unable to read wavefunctions."
+      messages(1) = "Unable to read wavefunctions."
       call message_g%fatal(1)
     end if
 
@@ -166,7 +166,7 @@
 
     select case(psi_in%d%ispin)
     case(UNPOLARIZED)
-      write(message_g%lines(1), '(a)') 'Internal error in target.target_chi: unpolarized.'
+      write(messages(1), '(a)') 'Internal error in target.target_chi: unpolarized.'
       call message_g%fatal(1)
 
     case(SPIN_POLARIZED)

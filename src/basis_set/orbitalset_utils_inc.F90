@@ -31,7 +31,7 @@
 
     do iorb = 1, os%norbs
       if (debug%info) then
-        write(message_g%lines(1),'(a,i3,1x,i1,1x,i1,1x,i1,1x,f3.1)')  'get_atomic_orbital ', os%iatom, &
+        write(messages(1),'(a,i3,1x,i1,1x,i1,1x,i1,1x,f3.1)')  'get_atomic_orbital ', os%iatom, &
                                                                     iorb, os%ii, os%ll, os%jj
         call message_g%info(1)
       end if

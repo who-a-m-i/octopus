@@ -37,7 +37,7 @@
    SAFE_ALLOCATE(eigenval(1:basis%size))
 
    if(debug%info) then
-    write(message_g%lines(1), '(a)') 'Debug: Orthogonalizing the atomic orbital basis.'
+    write(messages(1), '(a)') 'Debug: Orthogonalizing the atomic orbital basis.'
     call message_g%info(1)
    end if
 
@@ -92,7 +92,7 @@
    SAFE_DEALLOCATE_A(eigenval)
 
    if(debug%info) then
-    write(message_g%lines(1), '(a)') 'Debug: Orthogonalization completed.'
+    write(messages(1), '(a)') 'Debug: Orthogonalization completed.'
     call message_g%info(1)
    end if
 

@@ -184,7 +184,7 @@ contains
 #endif
 
     if(clean_stop) then
-      message_g%lines(1) = 'Clean STOP'
+      messages(1) = 'Clean STOP'
       call message_g%warning(1)
     end if
 
@@ -425,7 +425,7 @@ contains
 
     ! Sanity checks
     if (present(exact) .and. .not. present(mesh)) then
-      message_g%lines(1) = "Error in restart_init: the 'exact' optional argument requires a mesh."
+      messages(1) = "Error in restart_init: the 'exact' optional argument requires a mesh."
       call message_g%fatal(1)
     end if
 
@@ -438,7 +438,7 @@ contains
     call mpi_grp_init(restart%mpi_grp, mc%master_comm)
     restart%format = io_function_fill_how("Binary")
     if (data_type < RESTART_UNDEFINED .and. data_type > RESTART_N_DATA_TYPES) then
-      message_g%lines(1) = "Illegal data_type in restart_init"
+      messages(1) = "Illegal data_type in restart_init"
       call message_g%fatal(1)
     end if
     restart%data_type = data_type
@@ -460,7 +460,7 @@ contains
       restart%skip = .not. restart_write
 
       if(restart%skip) then
-        message_g%lines(1) = 'Restart information will not be written.'
+        messages(1) = 'Restart information will not be written.'
         call message_g%warning(1)
       end if
         
@@ -469,7 +469,7 @@ contains
       restart%skip = .false.
       
     case default
-      message_g%lines(1) = "Unknown restart type in restart_init"
+      messages(1) = "Unknown restart type in restart_init"
       call message_g%fatal(1)
     end select
 
@@ -513,7 +513,7 @@ contains
     select case (restart%type)
     case (RESTART_TYPE_DUMP)
       if (.not. restart%skip) then
-        message_g%lines(1) = "Info: "//trim(tag)//" restart information will be written to '"//trim(restart%pwd)//"'."
+        messages(1) = "Info: "//trim(tag)//" restart information will be written to '"//trim(restart%pwd)//"'."
         call message_g%info(1)
 
         ! Dump the grid information. The main parameters of the grid should not change
@@ -530,26 +530,26 @@ contains
           
           call mesh_dump(mesh, restart%pwd, "mesh", restart%mpi_grp, namespace, ierr)
           if (ierr /= 0) then
-            message_g%lines(1) = "Unable to write mesh information to '"//trim(restart%pwd)//"/mesh'."
+            messages(1) = "Unable to write mesh information to '"//trim(restart%pwd)//"/mesh'."
             call message_g%fatal(1)
           end if
 
           call index_dump_lxyz(mesh%idx, mesh%np_part_global, restart%pwd, restart%mpi_grp, &
             restart%namespace, ierr)
           if (ierr /= 0) then
-            message_g%lines(1) = "Unable to write index map to '"//trim(restart%pwd)//"'."
+            messages(1) = "Unable to write index map to '"//trim(restart%pwd)//"'."
             call message_g%fatal(1)
           end if
 
           call mesh_write_fingerprint(mesh, restart%pwd, "grid", restart%mpi_grp, namespace, ierr)
           if (ierr /= 0) then
-            message_g%lines(1) = "Unable to write mesh fingerprint to '"//trim(restart%pwd)//"/grid'."
+            messages(1) = "Unable to write mesh fingerprint to '"//trim(restart%pwd)//"/grid'."
             call message_g%fatal(1)
           end if
 
           call simul_box_dump(mesh%sb, namespace, restart%pwd, "mesh", restart%mpi_grp, ierr)
           if (ierr /= 0) then
-            message_g%lines(1) = "Unable to write simulation box information to '"//trim(restart%pwd)//"/mesh'."
+            messages(1) = "Unable to write simulation box information to '"//trim(restart%pwd)//"/mesh'."
             call message_g%fatal(1)
           end if
         end if
@@ -561,12 +561,12 @@ contains
         ierr = 1
         restart%skip = .true.
 
-        message_g%lines(1) = "Could not find '"//trim(restart%pwd)//"' directory for restart."
-        message_g%lines(2) = "No restart information will be read."
+        messages(1) = "Could not find '"//trim(restart%pwd)//"' directory for restart."
+        messages(2) = "No restart information will be read."
         call message_g%warning(2)
 
       else
-        message_g%lines(1) = "Info: "//trim(tag)//" restart information will be read from '"//trim(restart%pwd)//"'."
+        messages(1) = "Info: "//trim(tag)//" restart information will be read from '"//trim(restart%pwd)//"'."
         call message_g%info(1)
 
         if (present(mesh)) then
@@ -576,13 +576,13 @@ contains
           ! Check whether an error occurred. In this case we cannot read.
           if (ierr /= 0) then
             if (ierr == -1) then
-              message_g%lines(1) = "Unable to check mesh compatibility: unable to read mesh fingerprint"
-              message_g%lines(2) = "in '"//trim(restart%pwd)//"'."
+              messages(1) = "Unable to check mesh compatibility: unable to read mesh fingerprint"
+              messages(2) = "in '"//trim(restart%pwd)//"'."
             else if (ierr > 0) then
-              message_g%lines(1) = "Mesh from current calculation is not compatible with mesh found in"
-              message_g%lines(2) = "'"//trim(restart%pwd)//"'."
+              messages(1) = "Mesh from current calculation is not compatible with mesh found in"
+              messages(2) = "'"//trim(restart%pwd)//"'."
             end if
-            message_g%lines(3) = "No restart information will be read."
+            messages(3) = "No restart information will be read."
             call message_g%warning(3)
             ierr = 1
           end if
@@ -590,9 +590,9 @@ contains
           ! Print some warnings in case the mesh is compatible, but changed.
           if (grid_changed) then
             if (grid_reordered) then
-              message_g%lines(1) = "Octopus is attempting to restart from a mesh with a different order of points."
+              messages(1) = "Octopus is attempting to restart from a mesh with a different order of points."
             else
-              message_g%lines(1) = "Octopus is attempting to restart from a different mesh."
+              messages(1) = "Octopus is attempting to restart from a different mesh."
             end if
             call message_g%warning(1)
           end if
@@ -600,8 +600,8 @@ contains
           if (present(exact)) then
             restart%skip = grid_changed .and. .not. grid_reordered .and. exact
             if (restart%skip) then
-              message_g%lines(1) = "This calculation requires the exact same mesh to restart."
-              message_g%lines(2) = "No restart information will be read from '"//trim(restart%pwd)//"'."
+              messages(1) = "This calculation requires the exact same mesh to restart."
+              messages(2) = "No restart information will be read from '"//trim(restart%pwd)//"'."
               call message_g%warning(2)
               ierr = 1
             end if
@@ -635,11 +635,11 @@ contains
     if(mpi_grp_is_root(restart%mpi_grp) .and. .not. restart%skip) then
       select case (restart%type)
       case (RESTART_TYPE_LOAD)
-        message_g%lines(1) = "Info: Finished reading information from '"//trim(restart%dir)//"'."
+        messages(1) = "Info: Finished reading information from '"//trim(restart%dir)//"'."
         call io_rm(trim(restart%pwd)//"/loading", restart%namespace)
       case (RESTART_TYPE_DUMP)
         call io_rm(trim(restart%pwd)//"/dumping", restart%namespace)
-        message_g%lines(1) = "Info: Finished writing information to '"//trim(restart%dir)//"'."
+        messages(1) = "Info: Finished writing information to '"//trim(restart%dir)//"'."
       end select
       call message_g%info(1)
     end if
@@ -793,7 +793,7 @@ contains
       die = .false.
 
     case default
-      message_g%lines(1) = "Error in restart_open: illegal restart type"
+      messages(1) = "Error in restart_open: illegal restart type"
       call message_g%fatal(1)
     end select
 
@@ -804,7 +804,7 @@ contains
       die=die, position=position, form="formatted", grp=restart%mpi_grp)
 
     if (restart_open < 0 .and. .not. optional_default(silent, .false.)) then    
-      message_g%lines(1) = "Unable to open file '"//trim(restart%pwd)//"/"//trim(filename)//"'."
+      messages(1) = "Unable to open file '"//trim(restart%pwd)//"/"//trim(filename)//"'."
       call message_g%warning(1)
     end if
 

@@ -336,17 +336,17 @@ contains
 
     if(bitand(prof_vars%mode, PROFILING_MEMORY) /= 0) then
       call message_g%print_stress(stdout, "Memory profiling information")
-      write(message_g%lines(1), '(a,i10)') 'Number of   allocations = ', prof_vars%alloc_count
-      write(message_g%lines(2), '(a,i10)') 'Number of deallocations = ', prof_vars%dealloc_count
-      write(message_g%lines(3), '(a,f18.3,a)') 'Maximum total memory allocated = ', prof_vars%max_memory/megabyte, ' Mbytes'
-      write(message_g%lines(4), '(2x,a,a)') 'at ', trim(prof_vars%max_memory_location)
+      write(messages(1), '(a,i10)') 'Number of   allocations = ', prof_vars%alloc_count
+      write(messages(2), '(a,i10)') 'Number of deallocations = ', prof_vars%dealloc_count
+      write(messages(3), '(a,f18.3,a)') 'Maximum total memory allocated = ', prof_vars%max_memory/megabyte, ' Mbytes'
+      write(messages(4), '(2x,a,a)') 'at ', trim(prof_vars%max_memory_location)
       call message_g%info(4)
 
-      message_g%lines(1) = ''
-      message_g%lines(2) = 'Largest variables allocated:'
+      messages(1) = ''
+      messages(2) = 'Largest variables allocated:'
       call message_g%info(2)
       do ii = 1, MAX_MEMORY_VARS
-        write(message_g%lines(1),'(i2,f18.3,2a)') ii, prof_vars%large_vars_size(ii)/megabyte, &
+        write(messages(1),'(i2,f18.3,2a)') ii, prof_vars%large_vars_size(ii)/megabyte, &
           ' Mbytes ', trim(prof_vars%large_vars(ii))
         call message_g%info(1)
       end do
@@ -354,12 +354,12 @@ contains
       call message_g%print_stress(stdout)
 
       if(prof_vars%alloc_count /= prof_vars%dealloc_count) then
-        write(message_g%lines(1),'(a,i10,a,i10,a)') "Not all memory was deallocated: ", prof_vars%alloc_count, &
+        write(messages(1),'(a,i10,a,i10,a)') "Not all memory was deallocated: ", prof_vars%alloc_count, &
           ' allocations and ', prof_vars%dealloc_count, ' deallocations'
         call message_g%warning(1, all_nodes = .true.)
       end if
       if(prof_vars%total_memory > 0) then
-        write(message_g%lines(1),'(a,f18.3,a,f18.3,a)') "Remaining allocated memory: ", prof_vars%total_memory/megabyte, &
+        write(messages(1),'(a,f18.3,a,f18.3,a)') "Remaining allocated memory: ", prof_vars%total_memory/megabyte, &
           ' Mbytes (out of maximum ', prof_vars%max_memory/megabyte, ' Mbytes)'
         call message_g%warning(1, all_nodes = .true.)
       end if
@@ -842,7 +842,7 @@ contains
     filename = trim(prof_vars%output_dir)//'/time.'//prof_vars%file_number
     iunit = io_open(trim(filename), namespace, action='write')
     if(iunit < 0) then
-      message_g%lines(1) = 'Failed to open file ' // trim(filename) // ' to write profiling results.'
+      messages(1) = 'Failed to open file ' // trim(filename) // ' to write profiling results.'
       call message_g%warning(1)
       POP_SUB(profiling_output)
       return
@@ -876,11 +876,11 @@ contains
     do ii = 1, prof_vars%last_profile
       prof =>  prof_vars%profile_list(position(ii))%p
       if(.not. prof%initialized) then
-        write(message_g%lines(1),'(a,i6,a)') "Internal error: Profile number ", position(ii), " is not initialized."
+        write(messages(1),'(a,i6,a)') "Internal error: Profile number ", position(ii), " is not initialized."
         call message_g%fatal(1)
       end if
       if(prof%active) then
-        write(message_g%lines(1),'(a)') "Internal error: Profile '" // trim(profile_label(prof)) // &
+        write(messages(1),'(a)') "Internal error: Profile '" // trim(profile_label(prof)) // &
           "' is active, i.e. profiling_out was not called."
         call message_g%warning(1)
       end if
@@ -934,7 +934,7 @@ contains
         if(nn == 0) exit
       end do
       if(jj == 0) then
-        message_g%lines(1) = "Internal Error in profiling_memory_log"
+        messages(1) = "Internal Error in profiling_memory_log"
         call message_g%fatal(1)
       end if
     end if
@@ -996,7 +996,7 @@ contains
 
     if(prof_vars%memory_limit > 0) then
       if(prof_vars%total_memory > prof_vars%memory_limit) then
-        message_g%lines(1) = "Memory limit set in the input file was passed"
+        messages(1) = "Memory limit set in the input file was passed"
         call message_g%fatal(1)
       end if
     end if

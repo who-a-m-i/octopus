@@ -211,7 +211,7 @@ contains
           else
             ! If det = 0, mu = -infinity, so this condition should never be reached
             ! if things are working properly.
-            write(message_g%lines(1),*) "Divide by zero: dir = ", idir, " Berry-phase determinant = ", det
+            write(messages(1),*) "Divide by zero: dir = ", idir, " Berry-phase determinant = ", det
             call message_g%fatal(1)
           end if
           pot(1:mesh%np, ispin) = pot(1:mesh%np, ispin) + &

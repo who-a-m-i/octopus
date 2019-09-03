@@ -275,7 +275,7 @@ contains
     nullify(tg%td_fitness)
     call restart_init(restart, namespace, RESTART_GS, RESTART_TYPE_LOAD, mc, ierr, mesh=gr%mesh, exact=.true.)
     if(ierr /= 0) then
-      message_g%lines(1) = "Could not read gs for OCTTargetOperator."
+      messages(1) = "Could not read gs for OCTTargetOperator."
       call message_g%fatal(1)
     end if
 
@@ -311,7 +311,7 @@ contains
       call message_g%experimental('OCTTargetOperator = oct_tg_spin')
       call target_init_spin(tg, namespace)
     case default
-      write(message_g%lines(1),'(a)') "Target Operator not properly defined."
+      write(messages(1),'(a)') "Target Operator not properly defined."
       call message_g%fatal(1)
     end select
 
@@ -440,7 +440,7 @@ contains
     case(oct_tg_jdensity)
       call target_tdcalc_density(tg, gr, psi, time)
     case default
-      message_g%lines(1) = 'Error in target.target_tdcalc: default.'
+      messages(1) = 'Error in target.target_tdcalc: default.'
       call message_g%fatal(1)
     end select
 
@@ -526,7 +526,7 @@ contains
       end if     
 
     case default
-      write(message_g%lines(1),'(a)') 'Internal error in target_inh'
+      write(messages(1),'(a)') 'Internal error in target_inh'
       call message_g%fatal(1)
   
     end select

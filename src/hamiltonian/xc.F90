@@ -103,7 +103,7 @@ contains
 
     PUSH_SUB(xc_write_info)
 
-    write(message_g%lines(1), '(a)') "Exchange-correlation:"
+    write(messages(1), '(a)') "Exchange-correlation:"
     call message_g%info(1, iunit)
 
     do ifunc = FUNC_X, FUNC_C
@@ -111,8 +111,8 @@ contains
     end do
     
     if(xcs%exx_coef /= M_ZERO) then
-      write(message_g%lines(1), '(1x)')
-      write(message_g%lines(2), '(a,f8.5)') "Exact exchange mixing = ", xcs%exx_coef
+      write(messages(1), '(1x)')
+      write(messages(2), '(a,f8.5)') "Exact exchange mixing = ", xcs%exx_coef
       call message_g%info(2, iunit)
     end if
 
@@ -173,8 +173,8 @@ contains
       .or.(bitand(xcs%functional(FUNC_C,1)%family, XC_FAMILY_HYB_MGGA) /= 0)
     if(ll) then
       if((xcs%functional(FUNC_X,1)%id /= 0).and.(xcs%functional(FUNC_X,1)%id /= XC_OEP_X)) then
-        message_g%lines(1) = "You cannot use an exchange functional when performing"
-        message_g%lines(2) = "a Hartree-Fock calculation or using a hybrid functional."
+        messages(1) = "You cannot use an exchange functional when performing"
+        messages(2) = "a Hartree-Fock calculation or using a hybrid functional."
         call message_g%fatal(2)
       end if
 

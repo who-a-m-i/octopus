@@ -87,7 +87,7 @@ program harmonic_spectrum
       (pol /= '+') .and. &
       (pol /= '-') .and. &
       (pol /= 'v') ) then
-    message_g%lines(1) = 'The polarization direction given in the command line is not valid.'
+    messages(1) = 'The polarization direction given in the command line is not valid.'
     call message_g%fatal(1)
   end if
 
@@ -97,7 +97,7 @@ program harmonic_spectrum
       call spectrum_hs_from_mult('hs-mult-maxima', default_namespace, spectrum, pol, vec, w0)
     else
       if(ar  ==  1) then
-         message_g%lines(1)= "Calculating angle-resolved hs from multipoles."
+         messages(1)= "Calculating angle-resolved hs from multipoles."
         call message_g%info(1)
         call spectrum_hs_ar_from_mult('hs-mult', default_namespace, spectrum, vec)
       else
@@ -109,7 +109,7 @@ program harmonic_spectrum
       call spectrum_hs_from_acc('hs-acc-maxima', default_namespace, spectrum, pol, vec, w0)
     else
       if(ar  ==  1) then
-         message_g%lines(1)= "Calculating angle-resolved hs from acceleration."
+         messages(1)= "Calculating angle-resolved hs from acceleration."
         call message_g%info(1)
         call spectrum_hs_ar_from_acc('hs-acc', default_namespace, spectrum, vec)
       else
@@ -123,7 +123,7 @@ program harmonic_spectrum
       call spectrum_hs_from_current('hs-curr', default_namespace, spectrum, pol, vec)
     end if  
   case default
-    message_g%lines(1) = 'The harmonic-spectrum mode given in the command line is not valid.'
+    messages(1) = 'The harmonic-spectrum mode given in the command line is not valid.'
     call message_g%fatal(1)  
   end select
 

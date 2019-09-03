@@ -135,8 +135,8 @@ contains
     end if
     if(sys%st%smear%method  ==  SMEAR_SEMICONDUCTOR .and. &
       (abs(sys%st%smear%ef_occ) > M_EPSILON) .and. abs(sys%st%smear%ef_occ - M_ONE) > M_EPSILON) then
-      write(message_g%lines(1),'(a,f12.6)') 'Partial occupation at the Fermi level: ', sys%st%smear%ef_occ
-      message_g%lines(2) = 'Semiconducting smearing cannot be used for Sternheimer in this situation.'
+      write(messages(1),'(a,f12.6)') 'Partial occupation at the Fermi level: ', sys%st%smear%ef_occ
+      messages(2) = 'Semiconducting smearing cannot be used for Sternheimer in this situation.'
       call message_g%fatal(2)
     end if
 
@@ -214,22 +214,22 @@ contains
        this%last_occ_response = .false.
     end if
 
-    message_g%lines(1) = "Variation of the Hamiltonian in Sternheimer equation: V_ext"
-    if(this%add_hartree) write(message_g%lines(1), '(2a)') trim(message_g%lines(1)), ' + hartree'
-    if(this%add_fxc)     write(message_g%lines(1), '(2a)') trim(message_g%lines(1)), ' + fxc'
+    messages(1) = "Variation of the Hamiltonian in Sternheimer equation: V_ext"
+    if(this%add_hartree) write(messages(1), '(2a)') trim(messages(1)), ' + hartree'
+    if(this%add_fxc)     write(messages(1), '(2a)') trim(messages(1)), ' + fxc'
 
-    message_g%lines(2) = "Solving Sternheimer equation for"
+    messages(2) = "Solving Sternheimer equation for"
     if (this%occ_response) then
-       write(message_g%lines(2), '(2a)') trim(message_g%lines(2)), ' full linear response.'
+       write(messages(2), '(2a)') trim(messages(2)), ' full linear response.'
     else
-       write(message_g%lines(2), '(2a)') trim(message_g%lines(2)), ' linear response in unoccupied subspace only.'
+       write(messages(2), '(2a)') trim(messages(2)), ' linear response in unoccupied subspace only.'
     end if
 
-    message_g%lines(3) = "Sternheimer preorthogonalization:"
+    messages(3) = "Sternheimer preorthogonalization:"
     if (this%preorthogonalization) then
-       write(message_g%lines(3), '(2a)') trim(message_g%lines(3)), ' yes'
+       write(messages(3), '(2a)') trim(messages(3)), ' yes'
     else
-       write(message_g%lines(3), '(2a)') trim(message_g%lines(3)), ' no'
+       write(messages(3), '(2a)') trim(messages(3)), ' no'
     end if
     call message_g%info(3) 
 
@@ -422,7 +422,7 @@ contains
     case(2)
       sigma_char = '-'
     case default 
-      write(message_g%lines(1),'(a,i2)') "Illegal integer isigma passed to wfs_tag_sigma: ", isigma
+      write(messages(1),'(a,i2)') "Illegal integer isigma passed to wfs_tag_sigma: ", isigma
       call message_g%fatal(1)
     end select
 

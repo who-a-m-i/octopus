@@ -99,24 +99,24 @@ contains
 
     select case(istype)
     case(oct_is_groundstate) 
-      message_g%lines(1) =  'Info: Using ground state for initial state.'
+      messages(1) =  'Info: Using ground state for initial state.'
       call message_g%info(1)
       call restart_init(restart, sys%namespace, RESTART_GS, RESTART_TYPE_LOAD, sys%mc, ierr, mesh=sys%gr%mesh, exact=.true.)
       if(ierr == 0) call states_elec_load(restart, sys%namespace, psi, sys%gr, ierr)
       if (ierr /= 0) then
-        message_g%lines(1) = "Unable to read wavefunctions."
+        messages(1) = "Unable to read wavefunctions."
         call message_g%fatal(1)
       end if
       call restart_end(restart)
 
     case(oct_is_excited)  
-      message_g%lines(1) = 'Using an excited state as the starting state for an '
-      message_g%lines(2) = 'optimal-control run is not possible yet.'
-      message_g%lines(3) = 'Try using "OCTInitialState = oct_is_transformation" instead.'
+      messages(1) = 'Using an excited state as the starting state for an '
+      messages(2) = 'optimal-control run is not possible yet.'
+      messages(3) = 'Try using "OCTInitialState = oct_is_transformation" instead.'
       call message_g%fatal(3)
 
     case(oct_is_gstransformation)   
-      message_g%lines(1) =  'Info: Using superposition of states for initial state.'
+      messages(1) =  'Info: Using superposition of states for initial state.'
       call message_g%info(1)
 
 
@@ -133,14 +133,14 @@ contains
       !%End
 
       if(.not. parse_is_defined(sys%namespace, "OCTInitialTransformStates")) then
-        message_g%lines(1) = 'If "OCTInitialState = oct_is_gstransformation", then you must'
-        message_g%lines(2) = 'supply an "OCTInitialTransformStates" block to define the transformation.'
+        messages(1) = 'If "OCTInitialState = oct_is_gstransformation", then you must'
+        messages(2) = 'supply an "OCTInitialTransformStates" block to define the transformation.'
         call message_g%fatal(2)
       end if
 
       call restart_init(restart, sys%namespace, RESTART_GS, RESTART_TYPE_LOAD, sys%mc, ierr, mesh=sys%gr%mesh, exact=.true.)
       if(ierr /= 0) then
-        message_g%lines(1) = "Could not read states for OCTInitialTransformStates."
+        messages(1) = "Could not read states for OCTInitialTransformStates."
         call message_g%fatal(1)
       end if
       
@@ -148,7 +148,7 @@ contains
       call restart_end(restart)
 
     case(oct_is_userdefined) 
-      message_g%lines(1) =  'Info: Building user-defined initial state.'
+      messages(1) =  'Info: Building user-defined initial state.'
       call message_g%info(1)
       
       !%Variable OCTInitialUserdefined
@@ -213,13 +213,13 @@ contains
         end do
         SAFE_DEALLOCATE_A(zpsi)
       else
-        message_g%lines(1) = '"OCTInitialUserdefined" has to be specified as block.'
+        messages(1) = '"OCTInitialUserdefined" has to be specified as block.'
         call message_g%fatal(1)
       end if
       
     case default
-      write(message_g%lines(1),'(a)') "No valid initial state defined."
-      write(message_g%lines(2),'(a)') "Choosing the ground state."
+      write(messages(1),'(a)') "No valid initial state defined."
+      write(messages(2),'(a)') "Choosing the ground state."
       call message_g%info(2)
     end select
 
@@ -228,7 +228,7 @@ contains
     if(freeze_orbitals > 0) then
       ! In this case, we first freeze the orbitals, then calculate the Hxc potential.
       call states_elec_freeze_orbitals(psi, sys%namespace, sys%gr, sys%mc, freeze_orbitals, family_is_mgga(sys%ks%xc_family))
-      write(message_g%lines(1),'(a,i4,a,i4,a)') 'Info: The lowest', freeze_orbitals, &
+      write(messages(1),'(a,i4,a,i4,a)') 'Info: The lowest', freeze_orbitals, &
         ' orbitals have been frozen.', psi%nst, ' will be propagated.'
       call message_g%info(1)
       call density_calc(psi, sys%gr, psi%rho)
@@ -236,7 +236,7 @@ contains
     elseif(freeze_orbitals < 0) then
       ! This means SAE approximation. We calculate the Hxc first, then freeze all
       ! orbitals minus one.
-      write(message_g%lines(1),'(a)') 'Info: The single-active-electron approximation will be used.'
+      write(messages(1),'(a)') 'Info: The single-active-electron approximation will be used.'
       call message_g%info(1)
       call density_calc(psi, sys%gr, psi%rho)
       call v_ks_calc(sys%ks, sys%namespace, sys%hm, psi, sys%geo, calc_eigenval = .true.)

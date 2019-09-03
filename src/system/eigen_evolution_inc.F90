@@ -79,7 +79,7 @@ subroutine X(eigensolver_evolution)(gr, st, hm, psolver, te, tol, niter, converg
       diff(ist) = X(states_elec_residue)(gr%mesh, st%d%dim, hpsi, st%eigenval(ist, ik), psi)
 
       if(debug%info) then
-        write(message_g%lines(1), '(a,i4,a,i4,a,i4,a,es12.6)') 'Debug: Evolution Eigensolver - ik', ik, &
+        write(messages(1), '(a,i4,a,i4,a,i4,a,es12.6)') 'Debug: Evolution Eigensolver - ik', ik, &
           ' ist ', ist, ' iter ', iter, ' res ', diff(ist)
         call message_g%info(1)
       end if

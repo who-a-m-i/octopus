@@ -517,7 +517,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Writing LDA+U restart."
+      messages(1) = "Debug: Writing LDA+U restart."
       call message_g%info(1)
     end if
 
@@ -551,7 +551,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Writing LDA+U restart done."
+      messages(1) = "Debug: Writing LDA+U restart done."
       call message_g%info(1)
     end if
 
@@ -583,7 +583,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Reading LDA+U restart."
+      messages(1) = "Debug: Reading LDA+U restart."
       call message_g%info(1)
     end if
 
@@ -623,7 +623,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Reading LDA+U restart done."
+      messages(1) = "Debug: Reading LDA+U restart done."
       call message_g%info(1)
     end if
 
@@ -657,7 +657,7 @@ contains
     ierr = 0
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Loading LDA+U basis from states."
+      messages(1) = "Debug: Loading LDA+U basis from states."
       call message_g%info(1)
     end if
 
@@ -671,10 +671,10 @@ contains
     else if (states_are_real(st)) then
       read(lines(2), '(a)') str
       if (str(2:8) == 'Complex') then
-        message_g%lines(1) = "Cannot read real states from complex wavefunctions."
+        messages(1) = "Cannot read real states from complex wavefunctions."
         call message_g%fatal(1)
       else if (str(2:5) /= 'Real') then
-        message_g%lines(1) = "Restart file 'wfns' does not specify real/complex; cannot check compatibility."
+        messages(1) = "Restart file 'wfns' does not specify real/complex; cannot check compatibility."
         call message_g%warning(1)
       end if
     end if
@@ -728,7 +728,7 @@ contains
       do idim = 1, st%d%dim
 
         if (.not. restart_file_present(idim, ist)) then
-          write(message_g%lines(1), '(a,i3,a)') "Cannot read states ", ist, "from the projection folder"
+          write(messages(1), '(a,i3,a)') "Cannot read states ", ist, "from the projection folder"
           call message_g%fatal(1)            
         end if
 
@@ -755,7 +755,7 @@ contains
     call restart_end(restart_gs)
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Loading LDA+U basis from states done."
+      messages(1) = "Debug: Loading LDA+U basis from states done."
       call message_g%info(1)
     end if
 

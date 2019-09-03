@@ -104,7 +104,7 @@ contains
     call message_g%obsolete_variable(namespace, 'DensitiestoCalc', 'DensitytoCalc')
 
     if(parse_block(namespace, 'DensitytoCalc', blk) /= 0) then
-     message_g%lines(1) = 'To print out density (matrices), you must specify the DensitytoCalc block in input'
+     messages(1) = 'To print out density (matrices), you must specify the DensitytoCalc block in input'
      call message_g%fatal(1)
     end if
    
@@ -127,9 +127,9 @@ contains
       call parse_block_integer(blk, ipart-1, 1, denmat%particle_kept(ipart))
       call parse_block_integer(blk, ipart-1, 2, denmat%nnatorb_prt(ipart))
 
-      write (message_g%lines(1),'(a,a)') 'labels_densmat = ', denmat%labels(ipart)
-      write (message_g%lines(2),'(a,i6)') 'particle_kept_densmat = ', denmat%particle_kept(ipart)
-      write (message_g%lines(3),'(a,i6)') 'nnatorb_prt_densmat = ', denmat%nnatorb_prt(ipart)
+      write (messages(1),'(a,a)') 'labels_densmat = ', denmat%labels(ipart)
+      write (messages(2),'(a,i6)') 'particle_kept_densmat = ', denmat%particle_kept(ipart)
+      write (messages(3),'(a,i6)') 'nnatorb_prt_densmat = ', denmat%nnatorb_prt(ipart)
       call message_g%info(3)
     end do
     call parse_block_end(blk)

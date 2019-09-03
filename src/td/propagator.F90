@@ -274,9 +274,9 @@ contains
       call sparskit_solver_init(namespace, tr%tdsk_size, tr%tdsk, .true.)
 
 #ifndef HAVE_SPARSKIT
-      message_g%lines(1) = 'Octopus was not compiled with support for the SPARSKIT library. This'
-      message_g%lines(2) = 'library is required if the "runge_kutta4" propagator is selected.'
-      message_g%lines(3) = 'Try using a different propagation scheme or recompile with SPARSKIT support.'
+      messages(1) = 'Octopus was not compiled with support for the SPARSKIT library. This'
+      messages(2) = 'library is required if the "runge_kutta4" propagator is selected.'
+      messages(3) = 'Try using a different propagation scheme or recompile with SPARSKIT support.'
       call message_g%fatal(3)
 #endif
 
@@ -291,9 +291,9 @@ contains
       call sparskit_solver_init(namespace, tr%tdsk_size, tr%tdsk, .true.)
 
 #ifndef HAVE_SPARSKIT
-      message_g%lines(1) = 'Octopus was not compiled with support for the SPARSKIT library. This'
-      message_g%lines(2) = 'library is required if the "runge_kutta2" propagator is selected.'
-      message_g%lines(3) = 'Try using a different propagation scheme or recompile with SPARSKIT support.'
+      messages(1) = 'Octopus was not compiled with support for the SPARSKIT library. This'
+      messages(2) = 'library is required if the "runge_kutta2" propagator is selected.'
+      messages(3) = 'Try using a different propagation scheme or recompile with SPARSKIT support.'
       call message_g%fatal(3)
 #endif
 
@@ -307,9 +307,9 @@ contains
       call sparskit_solver_init(namespace, st%d%dim*gr%mesh%np, tr%tdsk, .true.)
 
 #ifndef HAVE_SPARSKIT
-      message_g%lines(1) = 'Octopus was not compiled with support for the SPARSKIT library. This'
-      message_g%lines(2) = 'library is required if the "crank_nicolson_sparskit" propagator is selected.'
-      message_g%lines(3) = 'Try using a different propagation scheme or recompile with SPARSKIT support.'
+      messages(1) = 'Octopus was not compiled with support for the SPARSKIT library. This'
+      messages(2) = 'library is required if the "crank_nicolson_sparskit" propagator is selected.'
+      messages(3) = 'Try using a different propagation scheme or recompile with SPARSKIT support.'
       call message_g%fatal(3)
 #endif
     case(PROP_MAGNUS)
@@ -336,7 +336,7 @@ contains
          tr%method /= PROP_EXPLICIT_RUNGE_KUTTA4 .and. &
          tr%method /= PROP_RUNGE_KUTTA2 .and. &
          tr%method /= PROP_CRANK_NICOLSON_SPARSKIT ) then
-        message_g%lines(1) = "To move the ions or put in a gauge field, use the etrs, aetrs or exp_mid propagators." 
+        messages(1) = "To move the ions or put in a gauge field, use the etrs, aetrs or exp_mid propagators." 
         call message_g%fatal(1)
       end if
     end if

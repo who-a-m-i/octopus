@@ -117,10 +117,10 @@ subroutine X(scdm_localize)(st,mesh,scdm)
   call X(POTRF)("L", nval, Pcc, nval, info )
   if (info /= 0) then
     if (info < 0) then
-      write(message_g%lines(1),'(A28,I2)') 'Illegal argument in DPOTRF: ', info
+      write(messages(1),'(A28,I2)') 'Illegal argument in DPOTRF: ', info
       call message_g%fatal(1)
     else
-      message_g%lines(1) = 'Fail of Cholesky, not pos-semi-def '
+      messages(1) = 'Fail of Cholesky, not pos-semi-def '
       call message_g%fatal(1)
     end if
     stop
@@ -209,7 +209,7 @@ subroutine X(scdm_localize)(st,mesh,scdm)
     ! only periodic dimensions can be out of range
     do idim=1,3
       if(out_of_index_range(idim).and.idim > mesh%sb%periodic_dim) then
-        message_g%lines(1) = 'SCDM box out of index range in non-periodic dimension'
+        messages(1) = 'SCDM box out of index range in non-periodic dimension'
         call message_g%fatal(1)
       end if
     end do
@@ -228,7 +228,7 @@ subroutine X(scdm_localize)(st,mesh,scdm)
           out_of_mesh(idim) = .true.
           ! can only be out of mesh in periodic direction
           if(idim > mesh%sb%periodic_dim ) then
-            message_g%lines(1) = 'SCDM box out of mesh in non-periodic dimension'
+            messages(1) = 'SCDM box out of mesh in non-periodic dimension'
             call message_g%fatal(1)
           end if
         end if
@@ -291,7 +291,7 @@ subroutine X(scdm_localize)(st,mesh,scdm)
 
     ! check that box is well defined now
     if(minval(temp_box) <= 0.or.maxval(temp_box) > mesh%np_global ) then
-      message_g%lines(1) = 'SCDM box mapping failed'
+      messages(1) = 'SCDM box mapping failed'
       call message_g%fatal(1)
     end if
 
@@ -385,11 +385,11 @@ subroutine X(invert)(nn, A)
     allocate(work(lwork*2))
     call X(getri)(nn, A, nn, ipiv, work, lwork, ierror )
   else
-    message_g%lines(1) = 'Terminating due to failed LU decomp'
+    messages(1) = 'Terminating due to failed LU decomp'
     call message_g%fatal(1)
   end if
   if (ierror /= 0) then
-    message_g%lines(1) = 'Terminating due to failed inversion'
+    messages(1) = 'Terminating due to failed inversion'
     call message_g%fatal(1)
   end if
   deallocate(work)
@@ -444,12 +444,12 @@ subroutine X(scdm_rrqr)(st, scdm, mesh, nst,root, jpvt)
   do_serial = .false.
   if(mesh%parallel_in_domains .or. st%parallel_in_states) then
 #ifndef HAVE_SCALAPACK
-     message_g%lines(1) = 'The RRQR is performed in serial. Try linking ScaLAPCK'
+     messages(1) = 'The RRQR is performed in serial. Try linking ScaLAPCK'
      call message_g%warning(1)
      do_serial = .true.
 #else
      if(.not.st%scalapack_compatible) then
-        message_g%lines(1) = 'The RRQR is performed in serial. Try setting ScaLAPACKCompatible = yes'
+        messages(1) = 'The RRQR is performed in serial. Try setting ScaLAPACKCompatible = yes'
         call message_g%warning(1)
         do_serial = .true.
      end if
@@ -495,7 +495,7 @@ subroutine X(scdm_rrqr)(st, scdm, mesh, nst,root, jpvt)
 #endif
      
     if(blacs_info /= 0) then
-       write(message_g%lines(1),'(a,i6)') 'descinit failed with error code: ', blacs_info
+       write(messages(1),'(a,i6)') 'descinit failed with error code: ', blacs_info
        call message_g%fatal(1)
     end if
     
@@ -517,7 +517,7 @@ subroutine X(scdm_rrqr)(st, scdm, mesh, nst,root, jpvt)
 #endif
     
     if(blacs_info /= 0) then
-      write(message_g%lines(1),'(a,i6)') 'scalapack geqrf workspace query failed with error code: ', blacs_info
+      write(messages(1),'(a,i6)') 'scalapack geqrf workspace query failed with error code: ', blacs_info
       call message_g%fatal(1)
     end if
      
@@ -535,7 +535,7 @@ subroutine X(scdm_rrqr)(st, scdm, mesh, nst,root, jpvt)
 #endif
 
     if(blacs_info /= 0) then
-      write(message_g%lines(1),'(a,i6)') 'scalapack geqrf call failed with error code: ', blacs_info
+      write(messages(1),'(a,i6)') 'scalapack geqrf call failed with error code: ', blacs_info
       call message_g%fatal(1)
     end if
     SAFE_DEALLOCATE_A(work)
@@ -604,7 +604,7 @@ subroutine X(scdm_rrqr)(st, scdm, mesh, nst,root, jpvt)
          call dgeqp3(nst, mesh%np_global, kst, nst, jpvt, tau, work, -1, info)
       endif
       if (info /= 0) then
-         write(message_g%lines(1),'(A28,I2)') 'Illegal argument in ZGEQP3: ', info
+         write(messages(1),'(A28,I2)') 'Illegal argument in ZGEQP3: ', info
          call message_g%fatal(1)
       end if
 
@@ -621,7 +621,7 @@ subroutine X(scdm_rrqr)(st, scdm, mesh, nst,root, jpvt)
          call dgeqp3(nst, mesh%np_global, kst, nst, jpvt, tau, work, wsize, info)
       endif
       if (info /= 0)then
-         write(message_g%lines(1),'(A28,I2)') 'Illegal argument in ZGEQP3: ', info
+         write(messages(1),'(A28,I2)') 'Illegal argument in ZGEQP3: ', info
          call message_g%fatal(1)
       end if
       SAFE_DEALLOCATE_A(work)

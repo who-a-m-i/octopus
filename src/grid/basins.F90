@@ -216,7 +216,7 @@ contains
 
       this%number = maxval(this%map) + 1
       if(this%number <= 0) then
-        message_g%lines(1) = "Internal error analysing basins of attraction"
+        messages(1) = "Internal error analysing basins of attraction"
         call message_g%fatal(1)
       end if
 

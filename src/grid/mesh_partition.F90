@@ -122,7 +122,7 @@ contains
     PUSH_SUB(mesh_partition)
 
     if(mesh%np_global == 0) then
-      message_g%lines(1) = 'The mesh is empty and cannot be partitioned.'
+      messages(1) = 'The mesh is empty and cannot be partitioned.'
       call message_g%fatal(1)
     end if
 
@@ -146,13 +146,13 @@ contains
 
 #if !defined(HAVE_METIS)
     if(library == METIS) then
-      message_g%lines(1) = 'METIS was requested, but Octopus was compiled without it.'
+      messages(1) = 'METIS was requested, but Octopus was compiled without it.'
       call message_g%fatal(1, only_root_writes = .true.)
     end if
 #endif
 #if !defined(HAVE_PARMETIS)
     if(library == PARMETIS) then
-      message_g%lines(1) = 'PARMETIS was requested, but Octopus was compiled without it.'
+      messages(1) = 'PARMETIS was requested, but Octopus was compiled without it.'
       call message_g%fatal(1, only_root_writes = .true.)
     end if
 #endif
@@ -284,11 +284,11 @@ contains
 
     if(debug%info) then
       ! DEBUG output. Write graph to file mesh_graph.txt.
-      message_g%lines(1) = 'Info: Adjacency lists of the graph representing the grid'
-      message_g%lines(2) = 'Info: are stored in debug/mesh_partition/mesh_graph.txt.'
-      message_g%lines(3) = 'Info: Compatible with METIS programs pmetis and kmetis.'
-      message_g%lines(4) = 'Info: First line contains number of vertices and edges.'
-      message_g%lines(5) = 'Info: Edges are not directed and appear twice in the lists.'
+      messages(1) = 'Info: Adjacency lists of the graph representing the grid'
+      messages(2) = 'Info: are stored in debug/mesh_partition/mesh_graph.txt.'
+      messages(3) = 'Info: Compatible with METIS programs pmetis and kmetis.'
+      messages(4) = 'Info: First line contains number of vertices and edges.'
+      messages(5) = 'Info: Edges are not directed and appear twice in the lists.'
       call message_g%info(5)
       if(mpi_grp_is_root(mpi_world)) then
         call io_mkdir('debug/mesh_partition', namespace)
@@ -299,7 +299,7 @@ contains
         end do
         call io_close(iunit)
       end if
-      message_g%lines(1) = "Info: Done writing mesh_graph.txt."
+      messages(1) = "Info: Done writing mesh_graph.txt."
       call message_g%info(1)
     end if
 
@@ -346,17 +346,17 @@ contains
 #ifdef HAVE_METIS
       select case(method)
       case(RCB)
-        message_g%lines(1) = 'Info: Using METIS 5 multilevel recursive bisection to partition the mesh.'
+        messages(1) = 'Info: Using METIS 5 multilevel recursive bisection to partition the mesh.'
         call message_g%info(1)
         call oct_metis_partgraphrecursive(nv_global, 1, xadj_global(1), adjncy_global(1), vsize, &
                                           tpwgts(1), 1.01_4, options(1), edgecut, part_global(1))
       case(GRAPH)
-        message_g%lines(1) = 'Info: Using METIS 5 multilevel k-way algorithm to partition the mesh.'
+        messages(1) = 'Info: Using METIS 5 multilevel k-way algorithm to partition the mesh.'
         call message_g%info(1)
         call oct_metis_partgraphkway(nv_global, 1, xadj_global(1), adjncy_global(1), vsize, &
                                      tpwgts(1), 1.01_4, options(1), edgecut, part_global(1))
       case default
-        message_g%lines(1) = 'Selected partition method is not available in METIS 5.'
+        messages(1) = 'Selected partition method is not available in METIS 5.'
         call message_g%fatal(1)
       end select
 #endif
@@ -371,7 +371,7 @@ contains
       SAFE_ALLOCATE(options(1:3))
       options = 0 ! For the moment we use default options
       
-      write(message_g%lines(1),'(a)') 'Info: Using ParMETIS multilevel k-way algorithm to partition the mesh.'
+      write(messages(1),'(a)') 'Info: Using ParMETIS multilevel k-way algorithm to partition the mesh.'
       call message_g%info(1)
 
       ! Call to ParMETIS with no imbalance tolerance
@@ -587,7 +587,7 @@ contains
     end if
     
     if (debug%info) then
-      message_g%lines(1) = "Debug: Writing mesh partition restart."
+      messages(1) = "Debug: Writing mesh partition restart."
       call message_g%info(1)
     end if
     
@@ -595,20 +595,20 @@ contains
 
     call partition_dump(mesh%inner_partition, restart_dir(restart), 'inner_partition_'//trim(numstring)//'.obf', err)
     if (err /= 0) then
-      message_g%lines(1) = "Unable to write inner mesh partition to 'inner_partition_"//trim(numstring)//".obf'"
+      messages(1) = "Unable to write inner mesh partition to 'inner_partition_"//trim(numstring)//".obf'"
       call message_g%warning(1)
       ierr = ierr + 1
     end if
 
     call partition_dump(mesh%bndry_partition, restart_dir(restart), 'bndry_partition_'//trim(numstring)//'.obf', err)
     if (err /= 0) then
-      message_g%lines(1) = "Unable to write boundary mesh partition to 'bndry_partition_"//trim(numstring)//".obf'"
+      messages(1) = "Unable to write boundary mesh partition to 'bndry_partition_"//trim(numstring)//".obf'"
       call message_g%warning(1)
       ierr = ierr + 2
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Writing mesh partition restart done."
+      messages(1) = "Debug: Writing mesh partition restart done."
       call message_g%info(1)
     end if
     
@@ -638,7 +638,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Reading mesh partition restart."
+      messages(1) = "Debug: Reading mesh partition restart."
       call message_g%info(1)
     end if
 
@@ -651,13 +651,13 @@ contains
     !Read inner partition
     filename = 'inner_partition_'//numstring//'.obf'
     if (.not. io_file_exists(trim(dir)//"/"//filename)) then
-      message_g%lines(1) = "Unable to read inner mesh partition, file '"//trim(filename)//"' does not exist."
+      messages(1) = "Unable to read inner mesh partition, file '"//trim(filename)//"' does not exist."
       call message_g%warning(1)
       ierr = ierr + 1
     else
       call partition_load(mesh%inner_partition, restart_dir(restart), filename, err)
       if (err /= 0) then
-        message_g%lines(1) = "Unable to read inner mesh partition from '"//trim(filename)//"'."
+        messages(1) = "Unable to read inner mesh partition from '"//trim(filename)//"'."
         call message_g%warning(1)
         ierr = ierr + 2
       end if
@@ -666,13 +666,13 @@ contains
     !Read boundary partition
     filename = 'bndry_partition_'//numstring//'.obf'
     if (.not. io_file_exists(trim(dir)//"/"//filename)) then
-      message_g%lines(1) = "Unable to read boundary mesh partition, file '"//trim(filename)//"' does not exist."
+      messages(1) = "Unable to read boundary mesh partition, file '"//trim(filename)//"' does not exist."
       call message_g%warning(1)
       ierr = ierr + 4
     else
       call partition_load(mesh%bndry_partition, restart_dir(restart), filename, err)
       if (err /= 0) then
-        message_g%lines(1) = "Unable to read boundary mesh partition from '"//trim(filename)//"'."
+        messages(1) = "Unable to read boundary mesh partition from '"//trim(filename)//"'."
         call message_g%warning(1)
         ierr = ierr + 8
       end if
@@ -685,7 +685,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Reading mesh partition restart done."
+      messages(1) = "Debug: Reading mesh partition restart done."
       call message_g%info(1)
     end if
 
@@ -794,40 +794,40 @@ contains
 
 
     ! Write information about the partition
-    message_g%lines(1) = &
+    messages(1) = &
       'Info: Mesh partition:'
-    message_g%lines(2) = ''
+    messages(2) = ''
     call message_g%info(2)
 
-    write(message_g%lines(1),'(a,e16.6)') &
+    write(messages(1),'(a,e16.6)') &
       '      Partition quality:', quality
-    message_g%lines(2) = ''
+    messages(2) = ''
     call message_g%info(2)
 
-    write(message_g%lines(1),'(a)') &
+    write(messages(1),'(a)') &
       '                 Neighbours         Ghost points'
-    write(message_g%lines(2),'(a,i5,a,i10)') &
+    write(messages(2),'(a,i5,a,i10)') &
       '      Average  :      ', sum(nneigh)/npart, '           ', sum(nghost)/npart
-    write(message_g%lines(3),'(a,i5,a,i10)') &
+    write(messages(3),'(a,i5,a,i10)') &
       '      Minimum  :      ', minval(nneigh),    '           ', minval(nghost)
-    write(message_g%lines(4),'(a,i5,a,i10)') &
+    write(messages(4),'(a,i5,a,i10)') &
       '      Maximum  :      ', maxval(nneigh),    '           ', maxval(nghost)
-    message_g%lines(5) = ''
+    messages(5) = ''
     call message_g%info(5)
 
     do ipart = 1, npart
-      write(message_g%lines(1),'(a,i5)')  &
+      write(messages(1),'(a,i5)')  &
         '      Nodes in domain-group  ', ipart
-      write(message_g%lines(2),'(a,i10,a,i10)') &
+      write(messages(2),'(a,i10,a,i10)') &
         '        Neighbours     :', nneigh(ipart), &
         '        Local points    :', nlocal(ipart)
-      write(message_g%lines(3),'(a,i10,a,i10)') &
+      write(messages(3),'(a,i10,a,i10)') &
         '        Ghost points   :', nghost(ipart), &
         '        Boundary points :', nbound(ipart)
       call message_g%info(3)
     end do
 
-    message_g%lines(1) = ''
+    messages(1) = ''
     call message_g%info(1)
 
     SAFE_DEALLOCATE_A(nghost)

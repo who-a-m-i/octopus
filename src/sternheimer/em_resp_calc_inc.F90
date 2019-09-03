@@ -814,7 +814,7 @@ subroutine X(post_orthogonalize)(sys, nfactor, nsigma, freq_factor, omega, eta, 
 
 #ifdef R_TREAL
   if(abs(eta) > M_EPSILON) then
-    message_g%lines(1) = "Internal error: dpost_orthogonalize cannot be called with argument eta != 0"
+    messages(1) = "Internal error: dpost_orthogonalize cannot be called with argument eta != 0"
     call message_g%fatal(1)
   end if
 #endif

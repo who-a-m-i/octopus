@@ -191,9 +191,9 @@ contains
 #endif
     
     if (ierror /= 0) then
-      message_g%lines(1) = "The number of rows and columns in PNFFT processor grid is not equal to "
-      message_g%lines(2) = "the number of processor in the MPI communicator."
-      message_g%lines(3) = "Please check it."
+      messages(1) = "The number of rows and columns in PNFFT processor grid is not equal to "
+      messages(2) = "the number of processor in the MPI communicator."
+      messages(3) = "Please check it."
       call message_g%fatal(3)
     end if
         

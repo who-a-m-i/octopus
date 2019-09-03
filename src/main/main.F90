@@ -186,14 +186,14 @@ contains
     min   = (sec / 60) - (days * 1440) - (hours * 60)
     sec   = modulo(sec, 60)
 
-    message_g%lines(2) = ''
-    if(days  > 0) write(message_g%lines(2), '(i3,a)') days, ' days,'
-    if(hours > 0.or.message_g%lines(2) /= '') &
-      write(message_g%lines(2), '(a,1x,i2.2,a)') trim(message_g%lines(2)), hours, 'h'
-    if(min   > 0.or.message_g%lines(1) /= '') &
-      write(message_g%lines(2), '(a,1x,i2.2,a)') trim(message_g%lines(2)), min, 'm'
-    write(message_g%lines(2), '(a,1x,i2.2,a,i3,a)') trim(message_g%lines(2)), sec, '.', usec/1000, 's'
-    message_g%lines(1) = str_center('Walltime: ' // trim(message_g%lines(2)), 70)
+    messages(2) = ''
+    if(days  > 0) write(messages(2), '(i3,a)') days, ' days,'
+    if(hours > 0.or.messages(2) /= '') &
+      write(messages(2), '(a,1x,i2.2,a)') trim(messages(2)), hours, 'h'
+    if(min   > 0.or.messages(1) /= '') &
+      write(messages(2), '(a,1x,i2.2,a)') trim(messages(2)), min, 'm'
+    write(messages(2), '(a,1x,i2.2,a,i3,a)') trim(messages(2)), sec, '.', usec/1000, 's'
+    messages(1) = str_center('Walltime: ' // trim(messages(2)), 70)
     call message_g%info(1)
 
   end subroutine print_walltime

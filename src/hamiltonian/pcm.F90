@@ -247,7 +247,7 @@ contains
     if (pcm%run_pcm) then
       call message_g%print_stress(stdout, trim('PCM'))
       if ( (grid%sb%box_shape /= MINIMUM) .or. (grid%sb%dim /= PCM_DIM_SPACE) ) then
-        message_g%lines(1) = "PCM is only available for BoxShape = minimum and 3d calculations"
+        messages(1) = "PCM is only available for BoxShape = minimum and 3d calculations"
         call message_g%fatal(1)
       end if
     else
@@ -434,7 +434,7 @@ contains
 
     if (abs(pcm%epsilon_0 - M_ONE) <= M_EPSILON ) then
       if (pcm%tdlevel == PCM_TD_EOM .and. pcm%which_eps == PCM_DRUDE_MODEL) then
-        message_g%lines(1) = "PCMEpsilonStatic = 1 is incompatible with a Drude-Lorentz EOM-PCM run."
+        messages(1) = "PCMEpsilonStatic = 1 is incompatible with a Drude-Lorentz EOM-PCM run."
         call message_g%fatal(1)
       end if
     else
@@ -459,7 +459,7 @@ contains
         call message_g%warning()
         pcm%drl%w0 = sqrt(M_ONE/(pcm%epsilon_0 - M_ONE))
       else
-        message_g%lines(1) = "PCMEpsilonStatic = 1 is incompatible with a Drude-Lorentz EOM-PCM run."
+        messages(1) = "PCMEpsilonStatic = 1 is incompatible with a Drude-Lorentz EOM-PCM run."
         call message_g%fatal(1)
       end if
     end if
@@ -492,7 +492,7 @@ contains
     call message_g%print_var_value(stdout, "PCMLocalField", pcm%localf)
 
     if (pcm%localf .and. ((.not.external_potentials_present) .and. (.not.pcm%kick_is_present))) then
-      message_g%lines(1) = "Sorry, you have set PCMLocalField = yes, but you have not included any external potentials."
+      messages(1) = "Sorry, you have set PCMLocalField = yes, but you have not included any external potentials."
       call message_g%fatal(1)
     end if
 
@@ -512,7 +512,7 @@ contains
       call message_g%write('N.B. This PCM run do not consider the polarization effects due to the solute.')        
       call message_g%warning()
       if (.not. pcm%localf) then
-        message_g%lines(1) = "You have activated a PCM run without polarization effects. Octopus will halt."
+        messages(1) = "You have activated a PCM run without polarization effects. Octopus will halt."
         call message_g%fatal(1)
       end if
     end if
@@ -532,23 +532,23 @@ contains
     call message_g%print_var_value(stdout, "PCMKick", pcm%kick_like)
 
     if (pcm%kick_like .and. (.not. pcm%run_pcm)) then
-      message_g%lines(1) = "PCMKick option can only be activated when PCMCalculation = yes. Octopus will halt."
+      messages(1) = "PCMKick option can only be activated when PCMCalculation = yes. Octopus will halt."
       call message_g%fatal(1)
     end if
 
     if (pcm%kick_like .and. (.not. pcm%localf)) then
-      message_g%lines(1) = "PCMKick option can only be activated when a PCMLocalField = yes. Octopus will halt."
+      messages(1) = "PCMKick option can only be activated when a PCMLocalField = yes. Octopus will halt."
       call message_g%fatal(1)
     endif
 
     if (pcm%kick_like .and. (.not. pcm%kick_is_present)) then
-      message_g%lines(1) = "Sorry, you have set PCMKick = yes, but you have not included any kick."
+      messages(1) = "Sorry, you have set PCMKick = yes, but you have not included any kick."
       call message_g%fatal(1)
     endif
 
     if (pcm%kick_is_present .and. pcm%run_pcm .and. (.not. pcm%localf)) then
-      message_g%lines(1) = "You have set up a PCM calculation with a kick without local field effects."
-      message_g%lines(2) = "Please, reconsider if you want the kick to be relevant for the PCM run."
+      messages(1) = "You have set up a PCM calculation with a kick without local field effects."
+      messages(2) = "Please, reconsider if you want the kick to be relevant for the PCM run."
       call message_g%warning(2)
     end if
     
@@ -600,8 +600,8 @@ contains
     call parse_variable(namespace, 'PCMQtotTol', CNST(0.5), pcm%q_tot_tol)
 
     if (pcm%renorm_charges) then
-      message_g%lines(1) = "Info: Polarization charges will be renormalized"
-      message_g%lines(2) = "      if |Q_tot_PCM - Q_M| > PCMQtotTol"
+      messages(1) = "Info: Polarization charges will be renormalized"
+      messages(2) = "      if |Q_tot_PCM - Q_M| > PCMQtotTol"
       call message_g%info(2)
     end if
 
@@ -618,10 +618,10 @@ contains
     call message_g%print_var_value(stdout, "PCMSmearingFactor", pcm%gaussian_width)
 
     if (abs(pcm%gaussian_width) <= M_EPSILON) then
-      message_g%lines(1) = "Info: PCM potential will be defined in terms of polarization point charges"
+      messages(1) = "Info: PCM potential will be defined in terms of polarization point charges"
       call message_g%info(1)
     else
-      message_g%lines(1) = "Info: PCM potential is regularized to avoid Coulomb singularity"
+      messages(1) = "Info: PCM potential is regularized to avoid Coulomb singularity"
       call message_g%info(1)        
     end if
 
@@ -748,7 +748,7 @@ contains
 
       SAFE_DEALLOCATE_A(dum2)
 
-      message_g%lines(1) = "Info: van der Waals surface has been calculated"
+      messages(1) = "Info: van der Waals surface has been calculated"
       call message_g%info(1)
 
     else
@@ -758,7 +758,7 @@ contains
       read(iunit,*) pcm%n_tesserae
 
       if (pcm%n_tesserae > MXTS) then
-        write(message_g%lines(1),'(a,I5,a,I5)') "total number of tesserae", pcm%n_tesserae, ">", MXTS
+        write(messages(1),'(a,I5,a,I5)') "total number of tesserae", pcm%n_tesserae, ">", MXTS
         call message_g%warning(1)
       end if
 
@@ -796,7 +796,7 @@ contains
       end do
 
       call io_close(iunit)
-      message_g%lines(1) = "Info: van der Waals surface has been read from " // trim(pcm%input_cavity)
+      messages(1) = "Info: van der Waals surface has been read from " // trim(pcm%input_cavity)
       call message_g%info(1)
     end if
 
@@ -969,7 +969,7 @@ contains
 
     end if
 
-    message_g%lines(1) = "Info: PCM response matrices has been evaluated"
+    messages(1) = "Info: PCM response matrices has been evaluated"
     call message_g%info(1)
     
     !%Variable PCMCalcMethod
@@ -1452,7 +1452,7 @@ contains
     
     if (pcm%localf .and. ( (.not.present(E_int_e_ext)) .or. &
                            (.not.present(E_int_n_ext))      ) ) then
-      message_g%lines(1) = "pcm_elect_energy: There are lacking terms in subroutine call."
+      messages(1) = "pcm_elect_energy: There are lacking terms in subroutine call."
       call message_g%fatal(1)
     else if (pcm%localf .and. ( present(E_int_e_ext) .and. &
                                 present(E_int_n_ext)       ) ) then
@@ -1707,9 +1707,9 @@ contains
     PUSH_SUB(pcm_poisson_sanity_check)
 
     if (.not. pcm_nn_in_mesh(pcm, mesh)) then 
-      message_g%lines(1) = 'The simulation box is too small to contain all the requested'
-      message_g%lines(2) = 'nearest neighbors for each tessera.'
-      message_g%lines(3) = 'Consider using a larger box or reduce PCMChargeSmearNN.'
+      messages(1) = 'The simulation box is too small to contain all the requested'
+      messages(2) = 'nearest neighbors for each tessera.'
+      messages(3) = 'Consider using a larger box or reduce PCMChargeSmearNN.'
       call message_g%warning(3)
     end if
 
@@ -1882,7 +1882,7 @@ contains
       call pcm_pot_rs_poisson(v_pcm, psolver, rho)
 
     case default
-      message_g%lines(1) = "BAD BAD BAD"
+      messages(1) = "BAD BAD BAD"
       call message_g%fatal(1,only_root_writes = .true.)
 
     end select
@@ -2460,7 +2460,7 @@ contains
         nn = nn + 1
 
         if (nn > MXTS) then !> check the total number of tessera
-          write(message_g%lines(1),'(a,I5,a,I5)') "total number of tesserae", nn, ">",MXTS
+          write(messages(1),'(a,I5,a,I5)') "total number of tesserae", nn, ">",MXTS
           call message_g%warning(1)     
         end if
 
@@ -2801,7 +2801,7 @@ contains
 
       nv = na - 1
       if (nv > 10) then
-        message_g%lines(1) = "Too many vertices on the tessera"
+        messages(1) = "Too many vertices on the tessera"
         call message_g%fatal(1)
       end if
     end do
@@ -2848,7 +2848,7 @@ contains
     band_iter = .false.
     do while(.not.(band_iter))
       if (m_iter > 1000) then
-        message_g%lines(1) = "Too many iterations inside subrotuine inter"
+        messages(1) = "Too many iterations inside subrotuine inter"
         call message_g%fatal(1)     
       end if
 
@@ -3199,8 +3199,8 @@ contains
     select case (pcm_vdw_type)
     case (PCM_VDW_OPTIMIZED)
       if (species_z(species) > UPTO_XE) then
-        write(message_g%lines(1),'(a,a)') "The van der Waals radius is missing for element ", trim(species_label(species))
-        write(message_g%lines(2),'(a)') "Use PCMVdWRadii = pcm_vdw_species, for other vdw radii values" 
+        write(messages(1),'(a,a)') "The van der Waals radius is missing for element ", trim(species_label(species))
+        write(messages(2),'(a)') "Use PCMVdWRadii = pcm_vdw_species, for other vdw radii values" 
         call message_g%fatal(2)
       end if
       ia = species_z(species)

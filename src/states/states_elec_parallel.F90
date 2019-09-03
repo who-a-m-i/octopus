@@ -67,8 +67,8 @@ contains
     ! points and we set to zero the remaining points.
 
     if(.not. st%scalapack_compatible) then
-      message_g%lines(1) = "Attempt to use ScaLAPACK when processes have not been distributed in compatible layout."
-      message_g%lines(2) = "You need to set ScaLAPACKCompatible = yes in the input file and re-run."
+      messages(1) = "Attempt to use ScaLAPACK when processes have not been distributed in compatible layout."
+      messages(2) = "You need to set ScaLAPACKCompatible = yes in the input file and re-run."
       call message_g%fatal(2, only_root_writes = .true.)
     end if
     

@@ -127,7 +127,7 @@ contains
     call read_coords_read('Coordinates', xyz, geo%space, namespace)
 
     if(xyz%n < 1) then
-      message_g%lines(1) = "Coordinates have not been defined."
+      messages(1) = "Coordinates have not been defined."
       call message_g%fatal(1)
     end if
 
@@ -156,12 +156,12 @@ contains
     call read_coords_read('Classical', xyz, geo%space, namespace)
     if(xyz%source /= READ_COORDS_ERR) then ! found classical atoms
       if(.not. bitand(xyz%flags, XYZ_FLAGS_CHARGE) /= 0) then
-        message_g%lines(1) = "Need to know charge for the classical atoms."
-        message_g%lines(2) = "Please use a .pdb"
+        messages(1) = "Need to know charge for the classical atoms."
+        messages(2) = "Please use a .pdb"
         call message_g%fatal(2)
       end if
       geo%ncatoms = xyz%n
-      write(message_g%lines(1), '(a,i8)') 'Info: Number of classical atoms = ', geo%ncatoms
+      write(messages(1), '(a,i8)') 'Info: Number of classical atoms = ', geo%ncatoms
       call message_g%info(1)
       if(geo%ncatoms>0)then
         SAFE_ALLOCATE(geo%catom(1:geo%ncatoms))
@@ -217,7 +217,7 @@ contains
       geo%only_user_def = geo%only_user_def .and. .not. species_represents_real_atom(geo%species(k))
       
       if(species_is_ps(geo%species(k)) .and. geo%space%dim /= 3) then
-        message_g%lines(1) = "Pseudopotentials may only be used with Dimensions = 3."
+        messages(1) = "Pseudopotentials may only be used with Dimensions = 3."
         call message_g%fatal(1)
       end if
     end do atoms2

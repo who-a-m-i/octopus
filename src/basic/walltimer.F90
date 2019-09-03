@@ -164,7 +164,7 @@ contains
     last_tap = now
     
     if(optional_default(print, .false.)) then
-      write(message_g%lines(1), '("Walltimer_tap:   elapsed time = ",F6.2," (", 3F10.5, "), active = ",L1 )')  &
+      write(messages(1), '("Walltimer_tap:   elapsed time = ",F6.2," (", 3F10.5, "), active = ",L1 )')  &
         now - start_time, duration, iteration_time, margin, active
       call message_g%info(1, all_nodes=.true.)
     end if
@@ -183,7 +183,7 @@ contains
     now = loct_clock()
     
     if(optional_default(print, .false.)) then
-      write(message_g%lines(1), '("Walltimer_alarm: elapsed time = ",F6.2," (", 3F10.5, "), active = ",L1 )')  &
+      write(messages(1), '("Walltimer_alarm: elapsed time = ",F6.2," (", 3F10.5, "), active = ",L1 )')  &
         now - start_time, duration, iteration_time, margin, active
       call message_g%info(1, all_nodes=.true.)
     end if
@@ -193,7 +193,7 @@ contains
     walltimer_alarm = active .and. (now > start_time + duration - iteration_time - margin) 
   
     if(walltimer_alarm) then
-      write(message_g%lines(1), '("Walltimer stopping execution after = ",F6.2," minutes.")') (now - start_time)/CNST(60.0)
+      write(messages(1), '("Walltimer stopping execution after = ",F6.2," minutes.")') (now - start_time)/CNST(60.0)
       call message_g%info(1)
     end if
   

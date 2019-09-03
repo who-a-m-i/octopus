@@ -249,7 +249,7 @@ contains
     call parse_variable(namespace, 'RashbaSpinOrbitCoupling', M_ZERO, rashba_coupling, units_inp%energy*units_inp%length)
     if(parse_is_defined(namespace, 'RashbaSpinOrbitCoupling')) then
       if(gr%sb%dim .ne. 2) then
-        write(message_g%lines(1),'(a)') 'Rashba spin-orbit coupling can only be used for two-dimensional systems.'
+        write(messages(1),'(a)') 'Rashba spin-orbit coupling can only be used for two-dimensional systems.'
         call message_g%fatal(1)
       end if
       call message_g%experimental('RashbaSpinOrbitCoupling')
@@ -448,7 +448,7 @@ contains
       if(hm%theory_level /= HARTREE_FOCK) then
         call message_g%not_implemented("SCDM for exact exchange in OEP (TheoryLevel = dft)")
       end if
-      message_g%lines(1) = "Info: Using SCDM for exact exchange"
+      messages(1) = "Info: Using SCDM for exact exchange"
       call message_g%info(1)
 
       call scdm_init(hm%hf_st, namespace, gr%der, psolver%cube, hm%scdm)
@@ -1105,7 +1105,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Writing Vhxc restart."
+      messages(1) = "Debug: Writing Vhxc restart."
       call message_g%info(1)
     end if
 
@@ -1171,7 +1171,7 @@ contains
     call restart_close(restart, iunit)
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Writing Vhxc restart done."
+      messages(1) = "Debug: Writing Vhxc restart done."
       call message_g%info(1)
     end if
 
@@ -1200,7 +1200,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Reading Vhxc restart."
+      messages(1) = "Debug: Reading Vhxc restart."
       call message_g%info(1)
     end if
 
@@ -1237,7 +1237,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Reading Vhxc restart done."
+      messages(1) = "Debug: Reading Vhxc restart done."
       call message_g%info(1)
     end if
 

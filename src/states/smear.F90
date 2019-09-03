@@ -148,7 +148,7 @@ contains
       this%nik_factor = kpoints_kweight_denominator(kpoints)
 
       if(this%nik_factor == 0) then
-        message_g%lines(1) = "k-point weights in KPoints or KPointsReduced blocks "//&
+        messages(1) = "k-point weights in KPoints or KPointsReduced blocks "//&
           "must be rational numbers for semiconducting smearing."
         call message_g%fatal(1)
       end if
@@ -210,8 +210,8 @@ contains
 
     maxq = this%el_per_state * nst * this%nspins
     if (maxq - qtot <= -tol) then ! not enough states
-      message_g%lines(1) = 'Not enough states'
-      write(message_g%lines(2),'(6x,a,f12.6,a,i10)')'(total charge = ', qtot, &
+      messages(1) = 'Not enough states'
+      write(messages(2),'(6x,a,f12.6,a,i10)')'(total charge = ', qtot, &
         ' max charge = ', maxq
       call message_g%fatal(2)
     end if
@@ -305,7 +305,7 @@ contains
       end do
 
       if(.not.conv) then
-        message_g%lines(1) = 'Fermi: did not converge.'
+        messages(1) = 'Fermi: did not converge.'
         call message_g%fatal(1)
       end if
 
@@ -425,7 +425,7 @@ contains
     deltaf = M_ZERO
     select case(this%method)
     case(SMEAR_FIXED_OCC)
-      message_g%lines(1) = "smear_delta_function is not defined for SMEAR_FIXED_OCC."
+      messages(1) = "smear_delta_function is not defined for SMEAR_FIXED_OCC."
       call message_g%fatal(1)
 
     case(SMEAR_SEMICONDUCTOR)
@@ -484,7 +484,7 @@ contains
     stepf = M_ZERO
     select case(this%method)
     case(SMEAR_FIXED_OCC)
-      message_g%lines(1) = "smear_step_function is not defined for SMEAR_FIXED_OCC."
+      messages(1) = "smear_step_function is not defined for SMEAR_FIXED_OCC."
       call message_g%fatal(1)
 
     case(SMEAR_SEMICONDUCTOR)
@@ -557,7 +557,7 @@ contains
     entropyf = M_ZERO
     select case(this%method)
     case(SMEAR_FIXED_OCC)
-      message_g%lines(1) = "smear_entropy_function is not defined for SMEAR_FIXED_OCC."
+      messages(1) = "smear_entropy_function is not defined for SMEAR_FIXED_OCC."
       call message_g%fatal(1)
 
     case(SMEAR_SEMICONDUCTOR)

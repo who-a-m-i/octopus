@@ -225,8 +225,8 @@ contains
 
       nrm = abs(nrm - M_ONE)
       if (nrm > CNST(1.0e-5)) then
-        write(message_g%lines(1), '(a,i2,a)') "Eigenstate for l = ", ll, ' is not normalized'
-        write(message_g%lines(2), '(a, f12.6,a)') '(abs(1 - norm) = ', nrm, ')'
+        write(messages(1), '(a,i2,a)') "Eigenstate for l = ", ll, ' is not normalized'
+        write(messages(2), '(a, f12.6,a)') '(abs(1 - norm) = ', nrm, ')'
         call message_g%warning(2)
       end if
 

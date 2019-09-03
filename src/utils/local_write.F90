@@ -168,8 +168,8 @@ contains
 
     call parse_variable(namespace, 'LDMultipoleLmax', 1, writ%lmax)
     if (writ%lmax < 0) then
-      write(message_g%lines(1), '(a,i6,a)') "Input: '", writ%lmax, "' is not a valid LDMultipoleLmax."
-      message_g%lines(2) = '(Must be LDMultipoleLmax >= 0 )'
+      write(messages(1), '(a,i6,a)') "Input: '", writ%lmax, "' is not a valid LDMultipoleLmax."
+      messages(2) = '(Must be LDMultipoleLmax >= 0 )'
       call message_g%fatal(2)
     end if
 

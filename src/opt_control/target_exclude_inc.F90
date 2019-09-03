@@ -31,8 +31,8 @@
     tg%move_ions = ion_dynamics_ions_move(td%ions)
     tg%dt = td%dt
 
-    message_g%lines(1) =  'Info: The target functional is the exclusion of a number of states defined by'
-    message_g%lines(2) =  '      "OCTExcludedStates".'
+    messages(1) =  'Info: The target functional is the exclusion of a number of states defined by'
+    messages(2) =  '      "OCTExcludedStates".'
     call message_g%info(2)
     !%Variable OCTExcludedStates
     !%Type string

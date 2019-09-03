@@ -206,19 +206,19 @@ contains
       call message_g%experimental("PES_mask with periodic dimensions")
     
     
-    write(message_g%lines(1),'(a,i1,a)') 'Info: Calculating PES using mask technique.'
+    write(messages(1),'(a,i1,a)') 'Info: Calculating PES using mask technique.'
     call message_g%info(1)
     
     
     if(sb%box_shape /= SPHERE .and. .not. simul_box_is_periodic(sb)) then
-      message_g%lines(1) = 'PhotoElectronSpectrum = pes_mask usually requires BoxShape = sphere.'
-      message_g%lines(2) = 'Unless you know what you are doing modify this parameter and rerun.'
+      messages(1) = 'PhotoElectronSpectrum = pes_mask usually requires BoxShape = sphere.'
+      messages(2) = 'Unless you know what you are doing modify this parameter and rerun.'
       call message_g%warning(2)
     end if
 
     if(hm%bc%abtype /= NOT_ABSORBING) then
-      message_g%lines(1) = 'PhotoElectronSpectrum = pes_mask already contains absorbing boundaries.'
-      message_g%lines(2) = 'Set AbsorbingBoundaries = no and rerun.'
+      messages(1) = 'PhotoElectronSpectrum = pes_mask already contains absorbing boundaries.'
+      messages(2) = 'Set AbsorbingBoundaries = no and rerun.'
       call message_g%fatal(2)
     end if
 
@@ -307,36 +307,36 @@ contains
     call message_g%print_var_option(stdout, "PESMaskPlaneWaveProjection", mask%pw_map_how)
 
     if (mask%pw_map_how ==  PW_MAP_PFFT .and. (.not. mask%mesh%parallel_in_domains)) then
-      message_g%lines(1)= "Trying to use PESMaskPlaneWaveProjection = pfft_map with no domain parallelization."
-      message_g%lines(2)= "Projection method changed to more efficient fft_map."
+      messages(1)= "Trying to use PESMaskPlaneWaveProjection = pfft_map with no domain parallelization."
+      messages(2)= "Projection method changed to more efficient fft_map."
       call message_g%warning(2)
       mask%pw_map_how = PW_MAP_FFT
     end if
 
     if (mask%pw_map_how ==  PW_MAP_PNFFT .and. (.not. mask%mesh%parallel_in_domains)) then
-      message_g%lines(1)= "Trying to use PESMaskPlaneWaveProjection = pnfft_map with no domain parallelization."
-      message_g%lines(2)= "Projection method changed to more efficient nfft_map."
+      messages(1)= "Trying to use PESMaskPlaneWaveProjection = pnfft_map with no domain parallelization."
+      messages(2)= "Projection method changed to more efficient nfft_map."
       call message_g%warning(2)
       mask%pw_map_how = PW_MAP_NFFT
     end if
     
 #if !defined(HAVE_NFFT) 
     if (mask%pw_map_how ==  PW_MAP_NFFT) then
-      message_g%lines(1) = "PESMaskPlaneWaveProjection = nfft_map requires NFFT but that library was not linked."
+      messages(1) = "PESMaskPlaneWaveProjection = nfft_map requires NFFT but that library was not linked."
       call message_g%fatal(1) 
     end if
 #endif
     
 #if !defined(HAVE_PFFT) 
     if (mask%pw_map_how ==  PW_MAP_PFFT) then
-      message_g%lines(1) = "PESMaskPlaneWaveProjection = pfft_map requires PFFT but that library was not linked."
+      messages(1) = "PESMaskPlaneWaveProjection = pfft_map requires PFFT but that library was not linked."
       call message_g%fatal(1) 
     end if
 #endif
 
 #if !defined(HAVE_PNFFT) 
     if (mask%pw_map_how ==  PW_MAP_PNFFT) then
-      message_g%lines(1) = "PESMaskPlaneWaveProjection = pnfft_map requires PNFFT but that library was not linked."
+      messages(1) = "PESMaskPlaneWaveProjection = pnfft_map requires PNFFT but that library was not linked."
       call message_g%fatal(1) 
     end if
 #endif
@@ -367,7 +367,7 @@ contains
       
     end if
     if( mask%enlarge(1) < M_ONE ) then
-      message_g%lines(1) = "PESMaskEnlargeFactor must be bigger than one."
+      messages(1) = "PESMaskEnlargeFactor must be bigger than one."
       call message_g%fatal(1) 
     end if
  
@@ -404,14 +404,14 @@ contains
       end if
                           
       if (mask%pw_map_how /=  PW_MAP_NFFT .and. mask%pw_map_how /=  PW_MAP_PNFFT) then
-        message_g%lines(1) = "PESMask2PEnlargeFactor requires PESMaskPlaneWaveProjection = nfft_map"
-        message_g%lines(2) = "or pnfft_map in order to run properly." 
+        messages(1) = "PESMask2PEnlargeFactor requires PESMaskPlaneWaveProjection = nfft_map"
+        messages(2) = "or pnfft_map in order to run properly." 
         call message_g%warning(2) 
       end if        
     end if
     
     if( mask%enlarge_2p(1) < M_ONE ) then
-      message_g%lines(1) = "PESMask2PEnlargeFactor must be bigger than one."
+      messages(1) = "PESMask2PEnlargeFactor must be bigger than one."
       call message_g%fatal(1) 
     end if
     
@@ -502,7 +502,7 @@ contains
 
     case default 
       !Program should die before coming here
-      write(message_g%lines(1),'(a)') "PESMaskPlaneWaveProjection unrecognized option." 
+      write(messages(1),'(a)') "PESMaskPlaneWaveProjection unrecognized option." 
       call message_g%fatal(1)
       
     end select
@@ -603,21 +603,21 @@ contains
       if (sb%box_shape == SPHERE) then
         mask%mask_R(1)=mesh%sb%rsize/M_TWO
         mask%mask_R(2)=mesh%sb%rsize
-        message_g%lines(1) = "Input: PESMaskSize R(1) and R(2) not specified. Using default values for spherical mask."
+        messages(1) = "Input: PESMaskSize R(1) and R(2) not specified. Using default values for spherical mask."
       else if(sb%box_shape == PARALLELEPIPED) then
         mask%mask_R(1)=mesh%sb%lsize(1)/M_TWO
         mask%mask_R(2)=mesh%sb%lsize(1)        
-        message_g%lines(1) = "Input: PESMaskSize R(1) and R(2) not specified. Using default values for cubic mask."
+        messages(1) = "Input: PESMaskSize R(1) and R(2) not specified. Using default values for cubic mask."
       end if    
       call message_g%info(1)
     case(1)
       call parse_block_float(blk, 0, 0, mask%mask_R(1), units_inp%length)
       if (sb%box_shape == SPHERE) then
         mask%mask_R(2)=mesh%sb%rsize
-        message_g%lines(1) = "Input: PESMaskSize R(2) not specified. Using default value for spherical mask."
+        messages(1) = "Input: PESMaskSize R(2) not specified. Using default value for spherical mask."
       else if(sb%box_shape == PARALLELEPIPED) then
         mask%mask_R(2)=mesh%sb%lsize(1)
-        message_g%lines(1) = "Input: PESMaskSize R(2) not specified. Using default value for cubic mask."
+        messages(1) = "Input: PESMaskSize R(2) not specified. Using default value for cubic mask."
       end if    
       call message_g%info(1)
     case(2)
@@ -626,10 +626,10 @@ contains
 
       if (sb%box_shape == SPHERE) then
         if(mask%mask_R(2) > mesh%sb%rsize)  mask%mask_R(2) = mesh%sb%rsize 
-        message_g%lines(1) = "Info: using spherical mask."
+        messages(1) = "Info: using spherical mask."
       else if (sb%box_shape == PARALLELEPIPED) then
         if(mask%mask_R(2) > mesh%sb%lsize(1))  mask%mask_R(2) = mesh%sb%lsize(1) 
-        message_g%lines(1) = "Info: using cubic mask."
+        messages(1) = "Info: using cubic mask."
       end if    
       call message_g%info(1)
 
@@ -648,17 +648,17 @@ contains
         call parse_expression(ufn_re, ufn_im, sb%dim, xx, r, M_ZERO, user_def_expr)
         mask%ufn(ip) = ufn_re
       end do
-      message_g%lines(1) = "Input: using user-defined mask function from expression:"
-      write(message_g%lines(2),'(a,a)') '   R = ', trim(user_def_expr) 
+      messages(1) = "Input: using user-defined mask function from expression:"
+      write(messages(2),'(a,a)') '   R = ', trim(user_def_expr) 
       call message_g%info(2)
     end select
 
     call parse_block_end(blk)
 
-    write(message_g%lines(1),'(a,es10.3,3a)') & 
+    write(messages(1),'(a,es10.3,3a)') & 
       "  R1 = ", units_from_atomic(units_inp%length, mask%mask_R(1) ),&
       ' [', trim(units_abbrev(units_inp%length)), ']'
-    write(message_g%lines(2),'(a,es10.3,3a)') & 
+    write(messages(2),'(a,es10.3,3a)') & 
       "  R2 = ", units_from_atomic(units_inp%length, mask%mask_R(2) ),&
       ' [', trim(units_abbrev(units_inp%length)), ']'
     call message_g%info(2)
@@ -708,7 +708,7 @@ contains
     !%End
     call parse_variable(namespace, 'PESMaskIncludePsiA', .false., mask%add_psia)
     if(mask%add_psia) then
-      message_g%lines(1)= "Input: Include contribution from Psi_A."
+      messages(1)= "Input: Include contribution from Psi_A."
       call message_g%info(1)
     end if
     
@@ -756,8 +756,8 @@ contains
         end do
         
       case default 
-        write(message_g%lines(1),'(a)') 'PESMask should work only with TDExternalFields = vector_potential.'
-        write(message_g%lines(2),'(a)') 'Unless PESMaskMode = passive_mode the results are likely to be wrong. '
+        write(messages(1),'(a)') 'PESMask should work only with TDExternalFields = vector_potential.'
+        write(messages(2),'(a)') 'Unless PESMaskMode = passive_mode the results are likely to be wrong. '
         call message_g%warning(2)
         
       end select
@@ -992,7 +992,7 @@ contains
     case(M_ERF)
       
     case default
-      message_g%lines(1)="PhotoElectronSpectrum = pes_mask. Unrecognized mask type."
+      messages(1)="PhotoElectronSpectrum = pes_mask. Unrecognized mask type."
       call message_g%fatal(1) 
     end select
 
@@ -1407,7 +1407,7 @@ contains
               
             case default
               !Program should die before coming here
-              write(message_g%lines(1),'(a)') "PhotoElectroSpectrum = pes_mask. Unrecognized calculation mode." 
+              write(messages(1),'(a)') "PhotoElectroSpectrum = pes_mask. Unrecognized calculation mode." 
               call message_g%fatal(1)
               
             end select

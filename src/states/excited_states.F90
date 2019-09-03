@@ -128,7 +128,7 @@ contains
     nspin = ground_state%d%nspin
 
     if( nik > 2 .or. ( (nik  ==  2) .and. (ispin /= SPIN_POLARIZED))  ) then
-      message_g%lines(1) = 'Cannot calculate projections onto excited states for periodic systems.'
+      messages(1) = 'Cannot calculate projections onto excited states for periodic systems.'
       call message_g%fatal(1)
     end if
 
@@ -145,16 +145,16 @@ contains
       call occupied_states(ground_state, 1, n_filled(1), n_partially_filled(1), n_half_filled(1), &
                            filled(:, 1), partially_filled(:, 1), half_filled(:, 1))
       if(n_partially_filled(1) > 0) then
-        message_g%lines(1) = 'Cannot calculate projections onto excited states if there are partially filled orbitals.'
+        messages(1) = 'Cannot calculate projections onto excited states if there are partially filled orbitals.'
         call message_g%fatal(1)
       end if
       ! We will not accept, for the time being, constructing excited states in spin-restricted mode if
       ! there are single-particle states that are half-filled, *unless* there is only one state and it is
       ! half-filled (single-particle calculation).
       if(  (n_half_filled(1) /= 0  .and. n_filled(1) > 0)  .or. (n_half_filled(1) > 1)  ) then
-        message_g%lines(1) = 'Cannot construct excited states from ground states that contain half-filled'
-        message_g%lines(2) = 'orbitals - unless they are just one-particle states with only one half-filled'
-        message_g%lines(3) = 'orbital and no doubly occupied ones. Try using the spin-unrestricted mode.'
+        messages(1) = 'Cannot construct excited states from ground states that contain half-filled'
+        messages(2) = 'orbitals - unless they are just one-particle states with only one half-filled'
+        messages(3) = 'orbital and no doubly occupied ones. Try using the spin-unrestricted mode.'
         call message_g%fatal(3)
       end if
       if(n_half_filled(1) == 0) then
@@ -171,7 +171,7 @@ contains
       call occupied_states(ground_state, 2, n_filled(2), n_partially_filled(2), n_half_filled(2), &
                            filled(:, 2), partially_filled(:, 2), half_filled(:, 2))
       if(n_partially_filled(1) * n_partially_filled(2) > 0) then
-        message_g%lines(1) = 'Cannot calculate projections onto excited states if there are partially filled orbitals.'
+        messages(1) = 'Cannot calculate projections onto excited states if there are partially filled orbitals.'
         call message_g%fatal(1)
       end if
       n_empty(1) = nst - n_filled(1)
@@ -182,7 +182,7 @@ contains
       call occupied_states(ground_state, 1, n_filled(1), n_partially_filled(1), n_half_filled(1), &
                            filled(:, 1), partially_filled(:, 1), half_filled(:, 1))
       if(n_partially_filled(1) > 0) then
-        message_g%lines(1) = 'Cannot calculate projections onto excited states if there are partially filled orbitals.'
+        messages(1) = 'Cannot calculate projections onto excited states if there are partially filled orbitals.'
         call message_g%fatal(1)
       end if
       n_empty(1) = nst - n_filled(1)
@@ -199,17 +199,17 @@ contains
       backspace(iunit)
       read(iunit, *, iostat = ios) trash, trash, trash, dump
       if(ios /= 0) then
-        message_g%lines(1) = 'Error attempting to read the electron-hole pairs in file "'//trim(filename)//'"'
+        messages(1) = 'Error attempting to read the electron-hole pairs in file "'//trim(filename)//'"'
         call message_g%fatal(1)
       end if
       ipair = ipair + 1
     end do
 101 continue
     if(ipair  ==  0) then
-      message_g%lines(1) = 'File "'//trim(filename)//'" is empty?'
+      messages(1) = 'File "'//trim(filename)//'" is empty?'
       call message_g%fatal(1)
     elseif(ipair > n_possible_pairs) then
-      message_g%lines(1) = 'File "'//trim(filename)//'" contains too many electron-hole pairs.'
+      messages(1) = 'File "'//trim(filename)//'" contains too many electron-hole pairs.'
       call message_g%fatal(1)
     end if 
 
@@ -223,8 +223,8 @@ contains
       read(iunit, *) excited_state%pair(ipair)%i, excited_state%pair(ipair)%a, &
                      excited_state%pair(ipair)%kk, excited_state%weight(ipair)
       if(( (ispin  ==  UNPOLARIZED) .or. (ispin  ==  SPINORS) ) .and. (excited_state%pair(ipair)%kk /= 1) ) then
-        message_g%lines(1) = 'Error reading excited state in file "'//trim(filename)//'":'
-        message_g%lines(2) = 'Cannot treat a electron-hole pair for "down" spin when not working in spin-polarized mode.'
+        messages(1) = 'Error reading excited state in file "'//trim(filename)//'":'
+        messages(2) = 'Cannot treat a electron-hole pair for "down" spin when not working in spin-polarized mode.'
         call message_g%fatal(2)
       end if
       ! Check whether it is a legitimate electron-hole swap.
@@ -242,7 +242,7 @@ contains
       end if
 
       if(.not.ok) then
-        write(message_g%lines(1),'(a6,i3,a1,i3,a8,i1,a)') 'Pair (', excited_state%pair(ipair)%i, ',', &
+        write(messages(1),'(a6,i3,a1,i3,a8,i1,a)') 'Pair (', excited_state%pair(ipair)%i, ',', &
           excited_state%pair(ipair)%a, '; k =', excited_state%pair(ipair)%kk, ') is not valid.'
         call message_g%fatal(1)
       end if
@@ -258,7 +258,7 @@ contains
       end if
       ok = .not. (excited_state%pair(ipair)%a > nst)
       if(.not.ok) then
-        write(message_g%lines(1),'(a6,i3,a1,i3,a8,i1,a)') 'Pair (', excited_state%pair(ipair)%i, ',', &
+        write(messages(1),'(a6,i3,a1,i3,a8,i1,a)') 'Pair (', excited_state%pair(ipair)%i, ',', &
           excited_state%pair(ipair)%a, '; k =', excited_state%pair(ipair)%kk, ') is not valid.'
           call message_g%fatal(1)
       end if
@@ -267,7 +267,7 @@ contains
       do jpair = 1, ipair - 1
         ok = .not. pair_is_eq(excited_state%pair(ipair), excited_state%pair(jpair))
         if(.not.ok) then
-          write(message_g%lines(1),'(a6,i3,a1,i3,a8,i1,a)') 'Pair (', excited_state%pair(ipair)%i, ',', &
+          write(messages(1),'(a6,i3,a1,i3,a8,i1,a)') 'Pair (', excited_state%pair(ipair)%i, ',', &
             excited_state%pair(ipair)%a, '; k =', excited_state%pair(ipair)%kk, ') is repeated in the file.'
           call message_g%fatal(1)
         end if
@@ -282,7 +282,7 @@ contains
     dump = sum(excited_state%weight(1:excited_state%n_pairs)**2)
     if(.not. abs(dump - M_ONE) < CNST(1.0e-5)) then
       excited_state%weight(1:excited_state%n_pairs) = excited_state%weight(1:excited_state%n_pairs) / sqrt(dump)
-      message_g%lines(1) = 'The excited state in file "'//trim(filename)//'" was not normalized.'
+      messages(1) = 'The excited state in file "'//trim(filename)//'" was not normalized.'
       call message_g%warning(1)
     end if
 

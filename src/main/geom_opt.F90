@@ -113,7 +113,7 @@ contains
       if(ierr == 0) call states_elec_load(restart_load, sys%namespace, sys%st, sys%gr, ierr)
       call restart_end(restart_load)
       if(ierr /= 0) then
-        message_g%lines(1) = "Unable to read wavefunctions: Starting from scratch."
+        messages(1) = "Unable to read wavefunctions: Starting from scratch."
         call message_g%warning(1)
         fromscratch = .true.
       end if
@@ -125,7 +125,7 @@ contains
       call lcao_run(sys, lmm_r = g_opt%scfv%lmm_r)
     else
       ! setup Hamiltonian
-      message_g%lines(1) = 'Info: Setting up Hamiltonian.'
+      messages(1) = 'Info: Setting up Hamiltonian.'
       call message_g%info(1)
       call system_h_setup(sys)
     end if
@@ -170,11 +170,11 @@ contains
 
     if(ierr == 1025) then
       ! not a GSL error, set by our minimize routines, so we must handle it separately
-      message_g%lines(1) = "Reached maximum number of iterations allowed by GOMaxIter."
+      messages(1) = "Reached maximum number of iterations allowed by GOMaxIter."
       call message_g%info(1)
     else if (ierr /= 0) then
-      message_g%lines(1) = "Error occurred during the GSL minimization procedure:"
-      call loct_strerror(ierr, message_g%lines(2))
+      messages(1) = "Error occurred during the GSL minimization procedure:"
+      call loct_strerror(ierr, messages(2))
       call message_g%fatal(2)
     end if
 
@@ -182,7 +182,7 @@ contains
   
     ! print out geometry
     call from_coords(g_opt, coords)
-    message_g%lines(1) = "Writing final coordinates to min.xyz"
+    messages(1) = "Writing final coordinates to min.xyz"
     call message_g%info(1)
     call geometry_write_xyz(g_opt%geo, './min', g_opt%syst%namespace)
 
@@ -361,7 +361,7 @@ contains
       !%End
       call parse_variable(sys%namespace, 'GOMaxIter', 200, g_opt%max_iter)
       if(g_opt%max_iter <= 0) then
-        message_g%lines(1) = "GOMaxIter has to be larger than 0"
+        messages(1) = "GOMaxIter has to be larger than 0"
         call message_g%fatal(1)
       end if
 
@@ -479,7 +479,7 @@ contains
       if(xyz%source /= READ_COORDS_ERR) then
         !Sanity check
         if(g_opt%geo%natoms /= xyz%n) then
-          write(message_g%lines(1), '(a,i4,a,i4)') 'I need exactly ', g_opt%geo%natoms, ' constrains, but I found ', xyz%n
+          write(messages(1), '(a,i4,a,i4)') 'I need exactly ', g_opt%geo%natoms, ' constrains, but I found ', xyz%n
           call message_g%fatal(1)
         end if
         ! copy information and adjust units

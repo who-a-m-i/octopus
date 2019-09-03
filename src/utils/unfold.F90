@@ -116,7 +116,7 @@ program oct_unfold
   call simul_box_init(sb, default_namespace, sys%geo, sys%space)
 
   if(sb%periodic_dim == 0) then
-    message_g%lines(1) = "oct-unfold can only be used for periodic ystems."
+    messages(1) = "oct-unfold can only be used for periodic ystems."
     call message_g%fatal(1)
   end if
 
@@ -160,7 +160,7 @@ program oct_unfold
       call parse_block_float(blk, 0, idim-1, lparams(idim))
     end do
   else
-    message_g%lines(1) = "UnfoldLatticeParameters is not specified"
+    messages(1) = "UnfoldLatticeParameters is not specified"
     call message_g%fatal(1)
   end if
 
@@ -182,7 +182,7 @@ program oct_unfold
     end do
     call parse_block_end(blk)
   else
-    message_g%lines(1) = "UnfoldLatticeVectors is not specified"
+    messages(1) = "UnfoldLatticeVectors is not specified"
     call message_g%fatal(1)
   end if
 
@@ -204,7 +204,7 @@ program oct_unfold
   !% The syntax is identical to <tt>KPointsPath</tt>.
   !%End
   if(parse_block(default_namespace, 'UnfoldKPointsPath', blk) /= 0) then
-    write(message_g%lines(1),'(a)') 'Error while reading UnfoldPointsPath.'
+    write(messages(1),'(a)') 'Error while reading UnfoldPointsPath.'
     call message_g%fatal(1)
   end if
 
@@ -212,7 +212,7 @@ program oct_unfold
   nsegments = parse_block_cols(blk, 0)
   nhighsympoints = parse_block_n(blk) - 1
   if( nhighsympoints /= nsegments+1) then
-    write(message_g%lines(1),'(a,i3,a,i3)') 'The first row of UnfoldPointsPath is not compatible '//&
+    write(messages(1),'(a,i3,a,i3)') 'The first row of UnfoldPointsPath is not compatible '//&
       'with the number of specified k-points.'
     call message_g%fatal(1)
   end if
@@ -229,7 +229,7 @@ program oct_unfold
     !Sanity check
     ncols = parse_block_cols(blk, ik)
     if(ncols /= sb%dim) then
-      write(message_g%lines(1),'(a,i3,a,i3)') 'UnfoldPointsPath row ', ik, ' has ', ncols, ' columns but must have ', sb%dim
+      write(messages(1),'(a,i3,a,i3)') 'UnfoldPointsPath row ', ik, ' has ', ncols, ' columns but must have ', sb%dim
       call message_g%fatal(1)
     end if
 
@@ -267,7 +267,7 @@ program oct_unfold
     read(file_gvec, *)
     read(file_gvec, *) ik
     if(ik /= path_kpoints_grid%npoints) then
-      message_g%lines(1) = 'There is an inconsistency between unfold_gvec.dat and the input file'
+      messages(1) = 'There is an inconsistency between unfold_gvec.dat and the input file'
       call message_g%fatal(1)
     end if
     call io_close(file_gvec)
@@ -277,7 +277,7 @@ program oct_unfold
     call restart_init(restart, default_namespace, RESTART_UNOCC, RESTART_TYPE_LOAD, sys%mc, ierr, mesh=sys%gr%mesh, exact=.true.)
     if(ierr == 0) call states_elec_load(restart, default_namespace, sys%st, sys%gr, ierr, label = ": unfold")
     if(ierr /= 0) then
-      message_g%lines(1) = 'Unable to read unocc wavefunctions.'
+      messages(1) = 'Unable to read unocc wavefunctions.'
       call message_g%fatal(1)
     end if
     call restart_end(restart)  
@@ -295,7 +295,7 @@ program oct_unfold
     call cube_end(zcube)
 
   else
-    message_g%lines(1) = "Unsupported or incorrect value of UnfoldMode." 
+    messages(1) = "Unsupported or incorrect value of UnfoldMode." 
     call message_g%fatal(1)
   end if
 
@@ -383,7 +383,7 @@ contains
     !%End
     call parse_variable(default_namespace, 'UnfoldEnergyStep', M_ZERO, de)
     if(de < M_ZERO) then
-      message_g%lines(1) = "UnfoldEnergyStep must be positive"
+      messages(1) = "UnfoldEnergyStep must be positive"
       call message_g%fatal(1)
     end if
 

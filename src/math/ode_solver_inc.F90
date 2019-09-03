@@ -51,9 +51,9 @@ subroutine X(ode_solver_run)(os, func, startval, solutionp, solutionvec)
   case(ODE_PD89)
     call ode_pd89_coeff(os)
   case default
-    write(message_g%lines(1), '(a,i4,a)') "Input: '", os%solver_type, &
+    write(messages(1), '(a,i4,a)') "Input: '", os%solver_type, &
       "' is not a valid ODE solver"
-    message_g%lines(2) = '( ODE solver =  ode_rk4 | ode_fb7 | ode_vr8 | ode_pd8 )'
+    messages(2) = '( ODE solver =  ode_rk4 | ode_fb7 | ode_vr8 | ode_pd8 )'
     call message_g%fatal(2)
   end select
 

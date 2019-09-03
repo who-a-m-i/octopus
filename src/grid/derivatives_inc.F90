@@ -424,7 +424,7 @@ subroutine X(derivatives_test)(this, namespace, repetitions, min_blocksize, max_
         - this%mesh%sb%dim*M_TWO*aa*bb*exp(-aa*sum(this%mesh%x(ip, :)**2)))
     end forall
 
-    write(message_g%lines(1), '(3a,i3,a,es17.10,a,f8.3)') &
+    write(messages(1), '(3a,i3,a,es17.10,a,f8.3)') &
       'Laplacian ', trim(type),  &
       ' bsize = ', blocksize,    &
       ' , error = ', X(mf_nrm2)(this%mesh, opffb%states_linear(blocksize)%X(psi)), &
@@ -451,15 +451,15 @@ subroutine X(derivatives_test)(this, namespace, repetitions, min_blocksize, max_
     opff(ip, idir) = opff(ip, idir) - (-M_TWO*aa*bb*this%mesh%x(ip, idir)*exp(-aa*sum(this%mesh%x(ip, :)**2)))
   end forall
 
-  message_g%lines(1) = ''
+  messages(1) = ''
   call message_g%info(1)
 
 
-  write(message_g%lines(1), '(3a, es17.10)') 'Gradient ', trim(type),  &
+  write(messages(1), '(3a, es17.10)') 'Gradient ', trim(type),  &
     ' err = ', X(mf_nrm2)(this%mesh, this%mesh%sb%dim, opff)
   call message_g%info(1)
 
-  message_g%lines(1) = ''
+  messages(1) = ''
   call message_g%info(1)
 
   SAFE_DEALLOCATE_A(ff)

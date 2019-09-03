@@ -47,7 +47,7 @@ subroutine xc_get_fxc(xcs, mesh, rho, ispin, fxc, zfxc)
 
   ! is there anything to do? (only LDA by now)
   if(bitand(xcs%kernel_family, XC_FAMILY_LDA) == 0) then
-    message_g%lines(1) = "Only LDA functionals are authorized for now in XCKernel."
+    messages(1) = "Only LDA functionals are authorized for now in XCKernel."
     call message_g%fatal(1)
   end if
 
@@ -59,7 +59,7 @@ subroutine xc_get_fxc(xcs, mesh, rho, ispin, fxc, zfxc)
 
   do ixc = 1, 2
     if(bitand(functl(ixc)%flags, XC_FLAGS_HAVE_FXC) == 0) then
-      message_g%lines(1) = "Cannot calculate kernel. This functional does not have fxc available."
+      messages(1) = "Cannot calculate kernel. This functional does not have fxc available."
       call message_g%fatal(1)
     end if
   end do

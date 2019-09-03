@@ -92,7 +92,7 @@ contains
     PUSH_SUB(permutations_write)
     
     do iperm = 1, this%npermutations
-      write (message_g%lines(1), '(a,I7,a,I7,a,10I7)') 'permutation ', iperm, &
+      write (messages(1), '(a,I7,a,I7,a,10I7)') 'permutation ', iperm, &
               ' sign ', this%permsign(iperm), '= ', this%allpermutations(:,iperm)
       call message_g%info(1)
     end do

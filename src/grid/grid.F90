@@ -181,17 +181,17 @@ contains
         call geometry_grid_defaults_info(geo)
         do idir = 1, gr%sb%dim
           grid_spacing(idir) = def_h
-          write(message_g%lines(1), '(a,i1,3a,f6.3)') "Info: Using default spacing(", idir, &
+          write(messages(1), '(a,i1,3a,f6.3)') "Info: Using default spacing(", idir, &
             ") [", trim(units_abbrev(units_out%length)), "] = ",                        &
             units_from_atomic(units_out%length, grid_spacing(idir))
           call message_g%info(1)
         end do
         ! Note: the default automatically matches the 'recommended' value compared by message_g%check_def above.
       else
-        message_g%lines(1) = 'Either:'
-        message_g%lines(2) = "   *) variable 'Spacing' is not defined and"
-        message_g%lines(3) = "      I can't find a suitable default"
-        message_g%lines(4) = "   *) your input for 'Spacing' is negative or zero"
+        messages(1) = 'Either:'
+        messages(2) = "   *) variable 'Spacing' is not defined and"
+        messages(3) = "      I can't find a suitable default"
+        messages(4) = "   *) your input for 'Spacing' is negative or zero"
         call message_g%fatal(4)
       end if
     end if
@@ -238,7 +238,7 @@ contains
 
     call nl_operator_global_init(namespace)
     if(gr%have_fine_mesh) then
-      message_g%lines(1) = "Info: coarse mesh"
+      messages(1) = "Info: coarse mesh"
       call message_g%info(1)
     end if
     call derivatives_build(gr%der, gr%mesh)
@@ -249,7 +249,7 @@ contains
     if(gr%have_fine_mesh) then
 
       if(gr%mesh%parallel_in_domains) then
-        message_g%lines(1) = 'UseFineMesh does not work with domain parallelization.'
+        messages(1) = 'UseFineMesh does not work with domain parallelization.'
         call message_g%fatal(1)
       end if
 
@@ -264,7 +264,7 @@ contains
       
       call multigrid_get_transfer_tables(gr%fine%tt, gr%fine%mesh, gr%mesh)
       
-      message_g%lines(1) = "Info: fine mesh"
+      messages(1) = "Info: fine mesh"
       call message_g%info(1)
       call derivatives_build(gr%fine%der, gr%fine%mesh)
 
@@ -344,12 +344,12 @@ contains
     call simul_box_write_info(gr%sb, geo, iunit)
 
     if(gr%have_fine_mesh) then
-      message_g%lines(1) = "Wave-functions mesh:"
+      messages(1) = "Wave-functions mesh:"
       call message_g%info(1, iunit)
       call mesh_write_info(gr%mesh, iunit)
-      message_g%lines(1) = "Density mesh:"
+      messages(1) = "Density mesh:"
     else
-      message_g%lines(1) = "Main mesh:"
+      messages(1) = "Main mesh:"
     end if
     call message_g%info(1, iunit)
     call mesh_write_info(gr%fine%mesh, iunit)

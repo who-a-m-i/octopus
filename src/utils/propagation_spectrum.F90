@@ -73,8 +73,8 @@ program propagation_spectrum
     case (SPECTRUM_ROTATORY)
       call calculate_rotatory_strength("angular", "rotatory_strength")
     case default
-      write(message_g%lines(1), '(a)') 'No PropagationSpectrumType defined,'
-      write(message_g%lines(2), '(a)') 'cannot calculate the spectrum.'
+      write(messages(1), '(a)') 'No PropagationSpectrumType defined,'
+      write(messages(2), '(a)') 'cannot calculate the spectrum.'
       call message_g%warning(2)
   end select
 
@@ -134,10 +134,10 @@ program propagation_spectrum
       if(in_file(1) < 0) in_file(1) = io_open('td.general/'//trim(fname), default_namespace, &
         action='read', status='old', die=.false.)
       if(in_file(1) >= 0) then
-        write(message_g%lines(1),'(3a)') 'File "', trim(fname), '" found. This will be the only file to be processed.'
-        write(message_g%lines(2),'(a)')  '(If more than one file is to be used, the files should be called'
-        write(message_g%lines(3),'(5a)') '"', trim(fname), '.1", "', trim(fname), '.2", etc.)'
-        write(message_g%lines(4),'(a)')
+        write(messages(1),'(3a)') 'File "', trim(fname), '" found. This will be the only file to be processed.'
+        write(messages(2),'(a)')  '(If more than one file is to be used, the files should be called'
+        write(messages(3),'(5a)') '"', trim(fname), '.1", "', trim(fname), '.2", etc.)'
+        write(messages(4),'(a)')
         call message_g%info(4)
         
         ! OK, so we only have one file. Now we have to see what it has inside.
@@ -145,19 +145,19 @@ program propagation_spectrum
         eq_axes = kick%pol_equiv_axes
         if(eq_axes == 3) then
           calculate_tensor = .true.
-          write(message_g%lines(1),'(3a)') 'The file "', trim(fname), '" tells me that the system has three equivalent axes.'
-          write(message_g%lines(2),'(a)')  'I will calculate the full tensor, written in file "XXXX_tensor".'
+          write(messages(1),'(3a)') 'The file "', trim(fname), '" tells me that the system has three equivalent axes.'
+          write(messages(2),'(a)')  'I will calculate the full tensor, written in file "XXXX_tensor".'
           call message_g%info(2)
         else if(eq_axes == 2) then
-          write(message_g%lines(1),'(3a)') 'The file "', trim(fname), '" tells me that the system has two equivalent axes.'
-          write(message_g%lines(2),'(a)')  'However, I am only using this file; cannot calculate the full tensor.'
-          write(message_g%lines(3),'(a)')  'A file "XXXX_vector" will be generated instead.'
+          write(messages(1),'(3a)') 'The file "', trim(fname), '" tells me that the system has two equivalent axes.'
+          write(messages(2),'(a)')  'However, I am only using this file; cannot calculate the full tensor.'
+          write(messages(3),'(a)')  'A file "XXXX_vector" will be generated instead.'
           call message_g%warning(3)
           calculate_tensor = .false.
         else
-          write(message_g%lines(1),'(3a)') 'The file "', trim(fname), '" tells me that the system has no usable symmetry. '
-          write(message_g%lines(2),'(a)')  'However, I am only using this file; cannot calculate the full tensor.'
-          write(message_g%lines(3),'(a)')  'A file "XXXX_vector" will be generated instead.'
+          write(messages(1),'(3a)') 'The file "', trim(fname), '" tells me that the system has no usable symmetry. '
+          write(messages(2),'(a)')  'However, I am only using this file; cannot calculate the full tensor.'
+          write(messages(3),'(a)')  'A file "XXXX_vector" will be generated instead.'
           call message_g%warning(3)
           calculate_tensor = .false.
         end if
@@ -172,8 +172,8 @@ program propagation_spectrum
         if(in_file(1) < 0) in_file(1) = io_open('td.general/'//trim(fname)//'.1', default_namespace, &
           action='read', status='old', die=.false.)
         if(in_file(1) < 0) then ! Could not find proper files. Die and complain.
-          write(message_g%lines(1),'(5a)') 'No "', trim(fname), '" or "', trim(fname), '.1" file found. At least one of those'
-          write(message_g%lines(2),'(a)')  'should be visible.'
+          write(messages(1),'(5a)') 'No "', trim(fname), '" or "', trim(fname), '.1" file found. At least one of those'
+          write(messages(2),'(a)')  'should be visible.'
           call message_g%fatal(2)
         end if
         
@@ -181,8 +181,8 @@ program propagation_spectrum
         eq_axes = kick%pol_equiv_axes
         
         if(eq_axes == 3) then
-          write(message_g%lines(1),'(3a)') 'The file "', trim(fname), '.1" tells me that the system has three equivalent axes.'
-          write(message_g%lines(2),'(a)') 'I will calculate the full tensor, written in file "cross_section_tensor".'
+          write(messages(1),'(3a)') 'The file "', trim(fname), '.1" tells me that the system has three equivalent axes.'
+          write(messages(2),'(a)') 'I will calculate the full tensor, written in file "cross_section_tensor".'
           call message_g%info(2)
           
         else if(eq_axes == 2) then
@@ -190,12 +190,12 @@ program propagation_spectrum
           if(in_file(2) < 0) in_file(2) = io_open('td.general/'//trim(fname)//'.2', default_namespace, &
             action='read', status='old', die=.false.)
           if(in_file(2) < 0) then
-            write(message_g%lines(1),'(3a)') 'The file "', trim(fname), '.1" tells me that the system has two equivalent axes,'
-            write(message_g%lines(2),'(3a)') 'but I cannot find a "', trim(fname), '.2".'
+            write(messages(1),'(3a)') 'The file "', trim(fname), '.1" tells me that the system has two equivalent axes,'
+            write(messages(2),'(3a)') 'but I cannot find a "', trim(fname), '.2".'
             call message_g%fatal(2)
           end if
-          write(message_g%lines(1),'(5a)') 'Found two files, "', trim(fname), '.1" and "', trim(fname), '.2".'
-          write(message_g%lines(2),'(a)')  'Two polarization axes are equivalent. I will generate the full tensor.'
+          write(messages(1),'(5a)') 'Found two files, "', trim(fname), '.1" and "', trim(fname), '.2".'
+          write(messages(2),'(a)')  'Two polarization axes are equivalent. I will generate the full tensor.'
           call message_g%info(2)
           
         else ! No equivalent axes
@@ -204,8 +204,8 @@ program propagation_spectrum
           if(in_file(2) < 0) in_file(2) = io_open('td.general/'//trim(fname)//'.2', default_namespace, &
             action='read', status='old', die=.false.)
           if(in_file(2) < 0) then
-            write(message_g%lines(1),'(3a)') 'The file "', trim(fname), '.1" tells me that the system has three inequivalent axes,'
-            write(message_g%lines(2),'(3a)') 'but I cannot find a "', trim(fname), '.2".'
+            write(messages(1),'(3a)') 'The file "', trim(fname), '.1" tells me that the system has three inequivalent axes,'
+            write(messages(2),'(3a)') 'but I cannot find a "', trim(fname), '.2".'
             call message_g%fatal(2)
           end if
           in_file(3) = io_open(trim(fname)//'.3', default_namespace, action='read', &
@@ -213,13 +213,13 @@ program propagation_spectrum
           if(in_file(3) < 0) in_file(3) = io_open('td.general/'//trim(fname)//'.3', default_namespace, &
             action='read', status='old', die=.false.)
           if(in_file(3) < 0) then
-            write(message_g%lines(1),'(3a)') 'The file "', trim(fname), '.1" tells me that the system has three inequivalent axes,'
-            write(message_g%lines(2),'(3a)') 'but I cannot find a "', trim(fname), '.3".'
+            write(messages(1),'(3a)') 'The file "', trim(fname), '.1" tells me that the system has three inequivalent axes,'
+            write(messages(2),'(3a)') 'but I cannot find a "', trim(fname), '.3".'
             call message_g%fatal(2)
           end if
-          write(message_g%lines(1),'(7a)') 'Found three files, "', trim(fname), '.1", "', &
+          write(messages(1),'(7a)') 'Found three files, "', trim(fname), '.1", "', &
             trim(fname), '.2" and "', trim(fname), '.3".'
-          write(message_g%lines(2),'(a)')  'No symmetry information will be used.'
+          write(messages(2),'(a)')  'No symmetry information will be used.'
           call message_g%info(2)
         end if
         
@@ -231,7 +231,7 @@ program propagation_spectrum
         reference_multipoles = .true.
         ref_file = io_open(trim(reffname), default_namespace, action='read', status='old', die=.false.)
         if(ref_file < 0) then
-          write(message_g%lines(1),'(3a)') 'No "',trim(reffname), '" file found.'
+          write(messages(1),'(3a)') 'No "',trim(reffname), '" file found.'
           call message_g%fatal(1)
         end if
       end if
@@ -304,8 +304,8 @@ program propagation_spectrum
       if(in_file(1) < 0) in_file(1) = io_open('td.general/'//trim(fname_in), default_namespace, &
         action='read', status='old', die=.false.)
       if(in_file(1) >= 0) then
-        write(message_g%lines(1),'(3a)') 'File "', trim(fname_in), '" found.'
-        write(message_g%lines(2),'(a)')
+        write(messages(1),'(3a)') 'File "', trim(fname_in), '" found.'
+        write(messages(2),'(a)')
         call message_g%info(2)
       end if
 
@@ -328,8 +328,8 @@ program propagation_spectrum
       if(in_file(1) < 0) in_file(1) = io_open('td.general/'//trim(fname_in), default_namespace, &
         action='read', status='old', die=.false.)
       if(in_file(1) >= 0) then
-        write(message_g%lines(1),'(3a)') 'File "', trim(fname_in), '" found.'
-        write(message_g%lines(2),'(a)')
+        write(messages(1),'(3a)') 'File "', trim(fname_in), '" found.'
+        write(messages(2),'(a)')
         call message_g%info(2)
       end if
 

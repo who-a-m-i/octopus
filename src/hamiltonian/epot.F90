@@ -219,7 +219,7 @@ contains
       end if
 
       if(ep%classical_pot > 0) then
-        message_g%lines(1) = 'Info: generating classical external potential.'
+        messages(1) = 'Info: generating classical external potential.'
         call message_g%info(1)
 
         SAFE_ALLOCATE(ep%Vclassical(1:gr%mesh%np))
@@ -254,11 +254,11 @@ contains
         call parse_block_float(blk, 0, idir - 1, ep%E_field(idir), units_inp%energy / units_inp%length)
 
         if(idir <= gr%sb%periodic_dim .and. abs(ep%E_field(idir)) > M_EPSILON) then
-          message_g%lines(1) = "Applying StaticElectricField in a periodic direction is only accurate for large supercells."
+          messages(1) = "Applying StaticElectricField in a periodic direction is only accurate for large supercells."
           if(nik == 1) then
             call message_g%warning(1)
           else
-            message_g%lines(2) = "Single-point Berry phase is not appropriate when k-point sampling is needed."
+            messages(2) = "Single-point Berry phase is not appropriate when k-point sampling is needed."
             call message_g%warning(2)
           end if
         end if
@@ -336,7 +336,7 @@ contains
         call message_g%input_error('StaticMagneticField')
       case(2)
         if(gr%sb%periodic_dim == 2) then
-          message_g%lines(1) = "StaticMagneticField cannot be applied in a 2D, 2D-periodic system."
+          messages(1) = "StaticMagneticField cannot be applied in a 2D, 2D-periodic system."
           call message_g%fatal(1)
         end if
         if(ep%B_field(1)**2 + ep%B_field(2)**2 > M_ZERO) call message_g%input_error('StaticMagneticField')
@@ -345,10 +345,10 @@ contains
         ! Therefore, if idir is periodic, B_field for all other directions must be zero.
         ! 1D-periodic: only Bx. 2D-periodic or 3D-periodic: not allowed. Other gauges could allow 2D-periodic case.
         if(gr%sb%periodic_dim >= 2) then
-          message_g%lines(1) = "In 3D, StaticMagneticField cannot be applied when the system is 2D- or 3D-periodic."
+          messages(1) = "In 3D, StaticMagneticField cannot be applied when the system is 2D- or 3D-periodic."
           call message_g%fatal(1)
         else if(gr%sb%periodic_dim == 1 .and. any(abs(ep%B_field(2:3)) > M_ZERO)) then
-          message_g%lines(1) = "In 3D, 1D-periodic, StaticMagneticField must be zero in the y- and z-directions."
+          messages(1) = "In 3D, 1D-periodic, StaticMagneticField must be zero in the y- and z-directions."
           call message_g%fatal(1)
         end if
       end select
@@ -365,8 +365,8 @@ contains
         select case(gauge_2d)
         case(0) ! linear_xy
           if(gr%sb%periodic_dim == 1) then
-            message_g%lines(1) = "For 2D system, 1D-periodic, StaticMagneticField can only be "
-            message_g%lines(2) = "applied for StaticMagneticField2DGauge = linear_y."
+            messages(1) = "For 2D system, 1D-periodic, StaticMagneticField can only be "
+            messages(2) = "applied for StaticMagneticField2DGauge = linear_y."
             call message_g%fatal(2)
           end if
           do ip = 1, gr%mesh%np
@@ -425,7 +425,7 @@ contains
     call parse_variable(namespace, 'RelativisticCorrection', NOREL, ep%reltype)
     if(.not.varinfo_valid_option('RelativisticCorrection', ep%reltype)) call message_g%input_error('RelativisticCorrection')
     if (ispin /= SPINORS .and. ep%reltype == SPIN_ORBIT) then
-      message_g%lines(1) = "The spin-orbit term can only be applied when using spinors."
+      messages(1) = "The spin-orbit term can only be applied when using spinors."
       call message_g%fatal(1)
     end if
 

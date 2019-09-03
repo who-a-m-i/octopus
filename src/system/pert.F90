@@ -211,7 +211,7 @@ contains
 
     if(this%pert_type == PERTURBATION_KDOTP) then
       if (.not. this%use_nonlocalpps) then
-        write(message_g%lines(1), '(a)') 'Ignoring non-local pseudopotential term.'
+        write(messages(1), '(a)') 'Ignoring non-local pseudopotential term.'
         call message_g%info(1)
       end if
     end if

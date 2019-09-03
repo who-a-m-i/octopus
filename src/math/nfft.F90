@@ -416,7 +416,7 @@ contains
     call oct_nfft_check(nfft%plan)
 
 
-    write(message_g%lines(1), '(a)') "Info: NFFT plan precomputed."
+    write(messages(1), '(a)') "Info: NFFT plan precomputed."
     call message_g%info(1)
 
 

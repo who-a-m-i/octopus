@@ -176,8 +176,8 @@ contains
     call parse_variable(namespace, 'Eigensolver', default_es, eigens%es_type)
 
     if(st%parallel_in_states .and. .not. eigensolver_parallel_in_states(eigens)) then
-      message_g%lines(1) = "The selected eigensolver is not parallel in states."
-      message_g%lines(2) = "Please use the lobpcg, psd, or rmmdiis eigensolvers."
+      messages(1) = "The selected eigensolver is not parallel in states."
+      messages(2) = "Please use the lobpcg, psd, or rmmdiis eigensolvers."
       call message_g%fatal(2)
     end if
 

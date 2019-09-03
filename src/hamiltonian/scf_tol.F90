@@ -121,9 +121,9 @@ contains
     end if
 
     if(this%conv_abs_dens <= M_ZERO .and. this%conv_rel_dens <= M_ZERO) then
-      message_g%lines(1) = "Input: Not all convergence criteria can be <= 0"
-      message_g%lines(2) = "Please set one of the following to a nonzero value:"
-      message_g%lines(3) = "LRConvAbsDens | LRConvRelDens"
+      messages(1) = "Input: Not all convergence criteria can be <= 0"
+      messages(2) = "Please set one of the following to a nonzero value:"
+      messages(3) = "LRConvAbsDens | LRConvRelDens"
       call message_g%fatal(3)
     end if
 

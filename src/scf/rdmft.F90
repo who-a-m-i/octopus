@@ -117,8 +117,8 @@ contains
     PUSH_SUB(rdmft_init)
 
     if(st%nst < st%qtot + 1) then   
-      message_g%lines(1) = "Too few states to run RDMFT calculation"
-      message_g%lines(2) = "Number of states should be at least the number of electrons plus one"
+      messages(1) = "Too few states to run RDMFT calculation"
+      messages(2) = "Number of states should be at least the number of electrons plus one"
       call message_g%fatal(2)
     end if
    
@@ -320,8 +320,8 @@ contains
     else
       maxcount = 50
       !precalculate matrix elements in basis
-      write(message_g%lines(1),'(a)') 'Calculating Coulomb and exchange matrix elements in basis'
-      write(message_g%lines(2),'(a)') '--this may take a while--'
+      write(messages(1),'(a)') 'Calculating Coulomb and exchange matrix elements in basis'
+      write(messages(2),'(a)') '--this may take a while--'
       call message_g%info(2)
 
       call dstates_elec_me_two_body(gr, st, psolver, 1, st%nst, rdm%i_index, rdm%j_index, rdm%k_index, rdm%l_index, rdm%twoint)
@@ -334,8 +334,8 @@ contains
     ! using conjugated gradient (scf_orb_cg)
     do iter = 1, max_iter
       rdm%iter = rdm%iter + 1
-      write(message_g%lines(1), '(a)') '**********************************************************************'
-      write(message_g%lines(2),'(a, i4)') 'Iteration:', iter
+      write(messages(1), '(a)') '**********************************************************************'
+      write(messages(2),'(a, i4)') 'Iteration:', iter
       call message_g%info(2)
       ! occupation number optimization unless we are doing Hartree-Fock
       if (rdm%hf) then
@@ -344,7 +344,7 @@ contains
         call scf_occ(rdm, gr, hm, psolver, st, energy_occ)
       end if
       ! orbital optimization
-      write(message_g%lines(1), '(a)') 'Optimization of natural orbitals'
+      write(messages(1), '(a)') 'Optimization of natural orbitals'
       call message_g%info(1)
       do icount = 1, maxcount 
         if (rdm%do_basis) then
@@ -373,12 +373,12 @@ contains
       
       rel_ener = abs(energy_occ-energy)/abs(energy)
 
-      write(message_g%lines(1),'(a,11x,es20.10)') 'Total energy:', units_from_atomic(units_out%energy,energy + hm%ep%eii) 
-      write(message_g%lines(2),'(a,1x,es20.10)') 'Rel. energy difference:', rel_ener
+      write(messages(1),'(a,11x,es20.10)') 'Total energy:', units_from_atomic(units_out%energy,energy + hm%ep%eii) 
+      write(messages(2),'(a,1x,es20.10)') 'Rel. energy difference:', rel_ener
       call message_g%info(2)
 
       if (.not. rdm%hf .and. rdm%do_basis) then
-        write(message_g%lines(1),'(a,18x,es20.10)') 'Max F0:', rdm%maxFO
+        write(messages(1),'(a,18x,es20.10)') 'Max F0:', rdm%maxFO
         call message_g%info(1)
       end if
 
@@ -425,13 +425,13 @@ contains
           ! calculate maxFO for cg-solver 
           if (.not. rdm%hf) then
             call calc_maxFO (hm, st, gr, rdm)
-            write(message_g%lines(1),'(a,18x,es20.10)') 'Max F0:', rdm%maxFO
+            write(messages(1),'(a,18x,es20.10)') 'Max F0:', rdm%maxFO
             call message_g%info(1)
           end if 
         endif
          
         if (ierr /= 0) then
-          message_g%lines(1) = 'Unable to write states wavefunctions.'
+          messages(1) = 'Unable to write states wavefunctions.'
           call message_g%warning(1)
         end if
         
@@ -449,17 +449,17 @@ contains
     end do 
 
     if(conv) then 
-      write(message_g%lines(1),'(a,i3,a)')  'The calculation converged after ',rdm%iter,' iterations'
-      write(message_g%lines(2),'(a,9x,es20.10)')  'The total energy is ', units_from_atomic(units_out%energy,energy + hm%ep%eii)
+      write(messages(1),'(a,i3,a)')  'The calculation converged after ',rdm%iter,' iterations'
+      write(messages(2),'(a,9x,es20.10)')  'The total energy is ', units_from_atomic(units_out%energy,energy + hm%ep%eii)
       call message_g%info(3)
       if(gs_run_) then 
         call scf_write_static(STATIC_DIR, "info")
         call output_all(outp, namespace, gr, geo, st, hm, psolver, ks, STATIC_DIR)
       end if
     else
-      write(message_g%lines(1),'(a,i3,a)')  'The calculation did not converge after ', iter-1, ' iterations '
-      write(message_g%lines(2),'(a,es15.5)') 'Relative energy difference between the last two iterations ', rel_ener
-      write(message_g%lines(3),'(a,es15.5)') 'The maximal non-diagonal element of the Hermitian matrix F is ', rdm%maxFO
+      write(messages(1),'(a,i3,a)')  'The calculation did not converge after ', iter-1, ' iterations '
+      write(messages(2),'(a,es15.5)') 'Relative energy difference between the last two iterations ', rel_ener
+      write(messages(3),'(a,es15.5)') 'The maximal non-diagonal element of the Hermitian matrix F is ', rdm%maxFO
       call message_g%info(3)
     end if
  
@@ -607,7 +607,7 @@ contains
 
     PUSH_SUB(scf_occ_NO)
 
-    write(message_g%lines(1),'(a)') 'SKIP Optimization of occupation numbers'
+    write(messages(1),'(a)') 'SKIP Optimization of occupation numbers'
     call message_g%info(1)
     
     call set_occ_pinning(st)
@@ -620,16 +620,16 @@ contains
 
     rdm%occsum = sum(st%occ(1:st%nst, 1:st%d%nik))
     
-    write(message_g%lines(1),'(a4,5x,a12)')'#st','Occupation'
+    write(messages(1),'(a4,5x,a12)')'#st','Occupation'
     call message_g%info(1)   
 
     do ist = 1, st%nst
-      write(message_g%lines(1),'(i4,3x,f11.9)') ist, st%occ(ist, 1)
+      write(messages(1),'(i4,3x,f11.9)') ist, st%occ(ist, 1)
       call message_g%info(1)
     end do
 
-    write(message_g%lines(1),'(a,1x,f13.9)') 'Sum of occupation numbers', rdm%occsum
-    write(message_g%lines(2),'(a,es20.10)') 'Total energy occ', units_from_atomic(units_out%energy,energy + hm%ep%eii) 
+    write(messages(1),'(a,1x,f13.9)') 'Sum of occupation numbers', rdm%occsum
+    write(messages(2),'(a,es20.10)') 'Total energy occ', units_from_atomic(units_out%energy,energy + hm%ep%eii) 
     call message_g%info(2)   
     
     POP_SUB(scf_occ_NO)
@@ -655,7 +655,7 @@ contains
     PUSH_SUB(scf_occ)
     call profiling_in(prof_occ, "SCF_OCC")
 
-    write(message_g%lines(1),'(a)') 'Optimization of occupation numbers'
+    write(messages(1),'(a)') 'Optimization of occupation numbers'
     call message_g%info(1)
     
     SAFE_ALLOCATE(occin(1:st%nst, 1:st%d%nik))
@@ -750,7 +750,7 @@ contains
     nullify(rdm_ptr)
 
     if (icycle >= 50) then
-      write(message_g%lines(1),'(a,1x,f11.4)') 'Bisection ended without finding mu, sum of occupation numbers:', rdm%occsum
+      write(messages(1),'(a,1x,f11.4)') 'Bisection ended without finding mu, sum of occupation numbers:', rdm%occsum
       call message_g%fatal(1)
     end if
 
@@ -761,16 +761,16 @@ contains
     objective = objective + rdm%mu*(rdm%occsum - rdm%qtot)
     energy = objective
     
-    write(message_g%lines(1),'(a4,5x,a12)')'#st','Occupation'
+    write(messages(1),'(a4,5x,a12)')'#st','Occupation'
     call message_g%info(1)   
 
     do ist = 1, st%nst
-      write(message_g%lines(1),'(i4,3x,f14.12)') ist, st%occ(ist, 1)
+      write(messages(1),'(i4,3x,f14.12)') ist, st%occ(ist, 1)
       call message_g%info(1)
     end do
 
-    write(message_g%lines(1),'(a,3x,f11.9)') 'Sum of occupation numbers: ', rdm%occsum
-    write(message_g%lines(2),'(a,11x,es20.10)') 'Total energy: ', units_from_atomic(units_out%energy, energy + hm%ep%eii)
+    write(messages(1),'(a,3x,f11.9)') 'Sum of occupation numbers: ', rdm%occsum
+    write(messages(2),'(a,11x,es20.10)') 'Total energy: ', units_from_atomic(units_out%energy, energy + hm%ep%eii)
     call message_g%info(2)   
 
     SAFE_DEALLOCATE_A(occin)

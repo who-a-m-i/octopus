@@ -635,7 +635,7 @@ contains
     SAFE_ALLOCATE(mat(1:op(1)%stencil%npoly, 1:op(1)%stencil%size))
     SAFE_ALLOCATE(sol(1:op(1)%stencil%size, 1:nderiv))
 
-    message_g%lines(1) = 'Info: Generating weights for finite-difference discretization of ' // trim(name)
+    messages(1) = 'Info: Generating weights for finite-difference discretization of ' // trim(name)
     call message_g%info(1)
 
     ! use to generate power lookup table

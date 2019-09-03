@@ -127,7 +127,7 @@ contains
     !%End
     call parse_variable(namespace, 'TestType', OPTION__TESTTYPE__ALL, param%type)
     if(param%type < 1 .or. param%type > 5) then
-      message_g%lines(1) = "Invalid option for TestType."
+      messages(1) = "Invalid option for TestType."
       call message_g%fatal(1, only_root_writes = .true.)
     endif
   
@@ -261,7 +261,7 @@ contains
     end do
     
     do itime = 1, epsib%nst
-      write(message_g%lines(1),'(a,i1,3x, f12.6)') "Norm state  ", itime, zmf_nrm2(sys%gr%mesh, 2, epsib%states(itime)%zpsi)
+      write(messages(1),'(a,i1,3x, f12.6)') "Norm state  ", itime, zmf_nrm2(sys%gr%mesh, 2, epsib%states(itime)%zpsi)
       call message_g%info(1)
     end do
 
@@ -341,10 +341,10 @@ contains
 
     do itime = 1, epsib%nst
       if(states_are_real(sys%st)) then 
-        write(message_g%lines(1),'(a,i1,3x, f12.6)') "Norm state  ", itime, &
+        write(messages(1),'(a,i1,3x, f12.6)') "Norm state  ", itime, &
           dmf_nrm2(sys%gr%mesh, sys%st%d%dim, epsib%states(itime)%dpsi)
       else
-        write(message_g%lines(1),'(a,i1,3x, f12.6)') "Norm state  ", itime, &
+        write(messages(1),'(a,i1,3x, f12.6)') "Norm state  ", itime, &
           zmf_nrm2(sys%gr%mesh, sys%st%d%dim, epsib%states(itime)%zpsi)
       end if
       call message_g%info(1)
@@ -440,10 +440,10 @@ contains
     
     do itime = 1, hpsib%nst
       if(states_are_real(sys%st)) then 
-        write(message_g%lines(1),'(a,i1,3x, f12.6)') "Norm state  ", itime, &
+        write(messages(1),'(a,i1,3x, f12.6)') "Norm state  ", itime, &
           dmf_nrm2(sys%gr%mesh, sys%st%d%dim, hpsib%states(itime)%dpsi)
       else
-        write(message_g%lines(1),'(a,i1,3x, f12.6)') "Norm state  ", itime, &
+        write(messages(1),'(a,i1,3x, f12.6)') "Norm state  ", itime, &
           zmf_nrm2(sys%gr%mesh, sys%st%d%dim, hpsib%states(itime)%zpsi)
       end if
       call message_g%info(1)
@@ -486,7 +486,7 @@ contains
       call density_calc(sys%st, sys%gr, sys%st%rho)
     end do
 
-    write(message_g%lines(1),'(a,3x, f12.6)') "Norm density  ", dmf_nrm2(sys%gr%mesh, sys%st%rho(:,1))
+    write(messages(1),'(a,3x, f12.6)') "Norm density  ", dmf_nrm2(sys%gr%mesh, sys%st%rho(:,1))
     call message_g%info(1)
 
     call states_elec_deallocate_wfns(sys%st)
@@ -508,8 +508,8 @@ contains
 
     call system_init(sys, namespace)
 
-    message_g%lines(1) = 'Info: Testing the finite-differences derivatives.'
-    message_g%lines(2) = ''
+    messages(1) = 'Info: Testing the finite-differences derivatives.'
+    messages(2) = ''
     call message_g%info(2)
 
     if(param%type == OPTION__TESTTYPE__ALL .or. param%type == OPTION__TESTTYPE__REAL) then
@@ -548,18 +548,18 @@ contains
 
     call system_init(sys, namespace)
 
-    message_g%lines(1) = 'Info: Testing orthogonalization.'
-    message_g%lines(2) = ''
+    messages(1) = 'Info: Testing orthogonalization.'
+    messages(2) = ''
     call message_g%info(2)
 
     if(param%type == OPTION__TESTTYPE__ALL .or. param%type == OPTION__TESTTYPE__REAL) then
-      message_g%lines(1) = 'Info: Real wave-functions.'
+      messages(1) = 'Info: Real wave-functions.'
       call message_g%info(1)
       call dstates_elec_calc_orth_test(sys%st, sys%gr%mesh, sys%gr%sb)
     end if
 
     if(param%type == OPTION__TESTTYPE__ALL .or. param%type == OPTION__TESTTYPE__COMPLEX) then
-      message_g%lines(1) = 'Info: Complex wave-functions.'
+      messages(1) = 'Info: Complex wave-functions.'
       call message_g%info(1)
       call zstates_elec_calc_orth_test(sys%st, sys%gr%mesh, sys%gr%sb)
     end if

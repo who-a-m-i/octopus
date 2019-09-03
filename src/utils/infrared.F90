@@ -178,7 +178,7 @@
       if(ini_iter == 0 ) ini_iter = 1
       end_iter = iter - 1
 
-      write (message_g%lines(1), '(a)') "Read dipole moment from '"// &
+      write (messages(1), '(a)') "Read dipole moment from '"// &
         trim(io_workpath('td.general/multipoles', default_namespace))//"'."
       call message_g%info(1)
 
@@ -216,7 +216,7 @@
         fi(jj) = fi(jj) - av/(dt*count) 
       end do
 
-      write (message_g%lines(1), '(a)') "Taking the Fourier transform."
+      write (messages(1), '(a)') "Taking the Fourier transform."
       call message_g%info(1)
 
       !now calculate the FT
@@ -231,7 +231,7 @@
       end do
       !$omp end parallel do
 
-      write (message_g%lines(1), '(a)') "Done."
+      write (messages(1), '(a)') "Done."
       call message_g%info(1)
 
       POP_SUB(fourier)

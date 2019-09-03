@@ -236,7 +236,7 @@ contains
       if(user_lmax /= INVALID_L) then
         ps%lmax = min(ps%lmax, user_lmax) ! Maybe the file does not have enough components.
         if(user_lmax /= ps%lmax) then
-          message_g%lines(1) = "lmax in Species block for " // trim(label) // &
+          messages(1) = "lmax in Species block for " // trim(label) // &
                        " is larger than number available in pseudopotential."
           call message_g%fatal(1)
         end if
@@ -283,7 +283,7 @@ contains
       if(user_lmax /= INVALID_L) then
         ps%lmax = min(ps%lmax, user_lmax) ! Maybe the file does not have enough components.
         if(user_lmax /= ps%lmax) then
-          message_g%lines(1) = "lmax in Species block for " // trim(label) // &
+          messages(1) = "lmax in Species block for " // trim(label) // &
                        " is larger than number available in pseudopotential."
           call message_g%fatal(1)
         end if
@@ -1449,7 +1449,7 @@ contains
     PUSH_SUB(ps_density_volume)
     
     if (.not. ps_has_density(ps)) then
-       message_g%lines(1) = "The pseudopotential does not contain an atomic density"
+       messages(1) = "The pseudopotential does not contain an atomic density"
        call message_g%fatal(1)
     end if
 

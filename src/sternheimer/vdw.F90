@@ -192,9 +192,9 @@ contains
         iunit = io_open(VDW_DIR//'vdw_c6', sys%namespace, action='read')
         read(iunit, '(a12,i3)', iostat=ierr) dirname, ii
         if(ii /= gaus_leg_n) then
-          message_g%lines(1) = "Invalid restart of van der Waals calculation."
-          message_g%lines(2) = "The number of points in the Gauss-Legendre integration changed."
-          write(message_g%lines(3), '(i3,a,i3,a)') gaus_leg_n, " (input) != ", ii, "(restart)"
+          messages(1) = "Invalid restart of van der Waals calculation."
+          messages(2) = "The number of points in the Gauss-Legendre integration changed."
+          write(messages(3), '(i3,a,i3,a)') gaus_leg_n, " (input) != ", ii, "(restart)"
           call message_g%fatal(3)
         end if
         read(iunit,*) ! skip comment line
@@ -215,12 +215,12 @@ contains
         call states_elec_look_and_load(gs_restart, sys%namespace, sys%st, sys%gr, is_complex = .true.)
         call restart_end(gs_restart)
       else
-        message_g%lines(1) = "Previous gs calculation required."
+        messages(1) = "Previous gs calculation required."
         call message_g%fatal(1)
       end if
 
       ! setup Hamiltonian
-      message_g%lines(1) = 'Info: Setting up Hamiltonian for linear response.'
+      messages(1) = 'Info: Setting up Hamiltonian for linear response.'
       call message_g%info(1)
       call system_h_setup(sys)
 
@@ -238,7 +238,7 @@ contains
           call restart_open_dir(restart_load, dirname, ierr)
           if (ierr == 0) call states_elec_load(restart_load, sys%namespace, sys%st, sys%gr, ierr, lr=lr(dir,1))          
           if(ierr /= 0) then
-            message_g%lines(1) = "Unable to read response wavefunctions from '"//trim(dirname)//"'."
+            messages(1) = "Unable to read response wavefunctions from '"//trim(dirname)//"'."
             call message_g%warning(1)
           end if
           call restart_close_dir(restart_load)
@@ -286,7 +286,7 @@ contains
 
       call pert_init(perturbation, sys%namespace, PERTURBATION_ELECTRIC, sys%gr, sys%geo)
       do dir = 1, ndir
-        write(message_g%lines(1), '(3a,f7.3)') 'Info: Calculating response for the ', index2axis(dir), &
+        write(messages(1), '(3a,f7.3)') 'Info: Calculating response for the ', index2axis(dir), &
           '-direction and imaginary frequency ', units_from_atomic(units_out%energy, aimag(omega))
         call message_g%info(1)   
 

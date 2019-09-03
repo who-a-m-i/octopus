@@ -35,6 +35,7 @@ module messages_oct_m
 
   public ::                     &
     message_t,                  &
+    messages,                      &
     delete_debug_trace,         &    
     print_date,                 &
     epoch_time_diff,            &
@@ -45,7 +46,7 @@ module messages_oct_m
 
   
   integer, parameter :: max_lines = 20
-  character(len=256), dimension(max_lines), target :: lines    !< to be output by fatal, warning
+  character(len=256), dimension(max_lines) :: messages    !< to be output by fatal, warning
   integer, target :: warnings
   integer, target :: experimentals
   integer, target :: current_line
@@ -56,7 +57,6 @@ module messages_oct_m
     integer, pointer :: warnings
     integer, pointer :: experimentals
     integer, pointer :: current_line
-    character(len=256), dimension(:), pointer, public :: lines    !< pointer to global buffer
   contains
     procedure :: init => messages_init
     procedure :: end => messages_end
@@ -145,7 +145,6 @@ contains
     
     call this%obsolete_variable(namespace, 'DebugLevel', 'Debug')
 
-    this%lines => lines
     this%warnings => warnings
     this%experimentals => experimentals
     this%current_line => current_line
@@ -165,7 +164,6 @@ contains
     class(message_t), intent(inout) :: this
 
     nullify(this%namespace)
-    nullify(this%lines)
     nullify(this%warnings)
     nullify(this%experimentals)
     nullify(this%current_line)
@@ -180,7 +178,7 @@ contains
     if(mpi_grp_is_root(mpi_world)) then
   
       if(this%experimentals > 0 .or. this%warnings > 0) then
-        this%lines(1) = ''
+        messages(1) = ''
         call this%info(1)      
       end if
 
@@ -321,7 +319,7 @@ contains
 #endif
     call flush_msg(stderr, shyphens)
     do ii = 1, no_lines_
-      write(msg, '(a,1x,a)') '*', trim(this%lines(ii))
+      write(msg, '(a,1x,a)') '*', trim(messages(ii))
       call flush_msg(stderr, msg)
     end do
 
@@ -408,7 +406,7 @@ contains
 #endif
 
       do il = 1, no_lines_
-        write(msg , '(a,3x,a)') '**', trim(this%lines(il))
+        write(msg , '(a,3x,a)') '**', trim(messages(il))
         call flush_msg(stderr, msg)
       end do
       call flush_msg(stderr, '')
@@ -462,7 +460,7 @@ contains
 
     do il = 1, no_lines_
       if(.not. present(verbose_limit) .or. debug%info) then
-        call flush_msg(iu, trim(this%lines(il)))
+        call flush_msg(iu, trim(messages(il)))
       end if
     end do
     if(present(stress)) then
@@ -496,7 +494,7 @@ contains
 
     call open_debug_trace(iunit)
     do il = 1, no_lines
-      call flush_msg(iunit, trim(this%lines(il)))
+      call flush_msg(iunit, trim(messages(il)))
     end do
     close(iunit)
 
@@ -537,16 +535,12 @@ contains
   subroutine messages_debug_marker(this, no)
     class(message_t), intent(in) :: this
     integer,          intent(in) :: no
-    class(message_t), allocatable :: that
 
-    allocate(that, source=this)
 
     if(.not. debug%info) return
 
-    write(that%lines(1), '(a,i3)') 'debug marker #', no
-    call that%debug(1)
-
-    deallocate(that)
+    write(messages(1), '(a,i3)') 'debug marker #', no
+    call this%debug(1)
 
   end subroutine messages_debug_marker
 
@@ -607,7 +601,7 @@ contains
     character(len=*), intent(in) :: file
     integer,          intent(in) :: line
 
-    write(message_g%lines(1), '(a,i18,3a,i5)') "Failed to allocate ", size, " words in file '", trim(file), "' line ", line
+    write(messages(1), '(a,i18,3a,i5)') "Failed to allocate ", size, " words in file '", trim(file), "' line ", line
     call message_g%fatal(1)
 
   end subroutine alloc_error
@@ -619,7 +613,7 @@ contains
     character(len=*), intent(in) :: file
     integer,          intent(in) :: line
 
-    write(message_g%lines(1), '(a,i18,3a,i5)') "Failed to deallocate array of ", size, " words in file '", &
+    write(messages(1), '(a,i18,3a,i5)') "Failed to deallocate array of ", size, " words in file '", &
       trim(file), "' line ", line
     call message_g%fatal(1)
 
@@ -844,7 +838,7 @@ contains
 
     if(present(msg)) then
       if(len_trim(msg) > max_len) then
-        this%lines(1) = 'Message too long for printing.'
+        messages(1) = 'Message too long for printing.'
         call this%fatal(1)
       end if
 
@@ -928,12 +922,12 @@ contains
     integer :: val(8)
 
     call date_and_time(values=val)
-    message_g%lines(1) = ""
-    write(message_g%lines(3),'(a,i4,a1,i2.2,a1,i2.2,a,i2.2,a1,i2.2,a1,i2.2)') &
+    messages(1) = ""
+    write(messages(3),'(a,i4,a1,i2.2,a1,i2.2,a,i2.2,a1,i2.2,a1,i2.2)') &
       str , val(1), "/", val(2), "/", val(3), &
       " at ", val(5), ":", val(6), ":", val(7)
-    message_g%lines(2) = str_center(trim(message_g%lines(3)), 70)
-    message_g%lines(3) = ""
+    messages(2) = str_center(trim(messages(3)), 70)
+    messages(3) = ""
     call message_g%info(3)
 
   end subroutine print_date
@@ -1015,7 +1009,7 @@ contains
     no_sub_stack = no_sub_stack + 1
     if(no_sub_stack > 49) then
       sub_stack(50) = 'push_sub'
-      message_g%lines(1) = 'Too many recursion levels (max=50)'
+      messages(1) = 'Too many recursion levels (max=50)'
       call message_g%fatal(1)
     end if
 
@@ -1073,7 +1067,7 @@ contains
     if(no_sub_stack <= 0) then
       no_sub_stack = 1
       sub_stack(1) = 'pop_sub'
-      message_g%lines(1) = 'Too few recursion levels.'
+      messages(1) = 'Too few recursion levels.'
       call message_g%fatal(1)
     end if
 
@@ -1082,9 +1076,9 @@ contains
     sub_name_short = trim(message_g%clean_path(sub_name))
 
     if(sub_name_short /= sub_stack(no_sub_stack)) then
-      write (message_g%lines(1),'(a)') 'Wrong sub name on pop_sub :'
-      write (message_g%lines(2),'(2a)') ' got      : ', sub_name_short
-      write (message_g%lines(3),'(2a)') ' expected : ', sub_stack(no_sub_stack)
+      write (messages(1),'(a)') 'Wrong sub name on pop_sub :'
+      write (messages(2),'(2a)') ' got      : ', sub_name_short
+      write (messages(3),'(2a)') ' expected : ', sub_stack(no_sub_stack)
       call message_g%fatal(3)
     end if
 
@@ -1132,60 +1126,49 @@ contains
     character(len=*),           intent(in) :: name
     character(len=*), optional, intent(in) :: rep
 
-    class(message_t), allocatable :: that
-
-    allocate(that, source=this)
-    
     if(parse_is_defined(namespace, trim(name))) then 
 
-      write(that%lines(1), '(a)') 'Input variable '//trim(name)//' is obsolete.'
+      write(messages(1), '(a)') 'Input variable '//trim(name)//' is obsolete.'
 
       if(present(rep)) then
-        write(that%lines(2), '(a)') ' '
-        write(that%lines(3), '(a)') 'Equivalent functionality can be obtained with the '//trim(rep)
-        write(that%lines(4), '(a)') 'variable. Check the documentation for details.'
-        write(that%lines(5), '(a)') '(You can use the `oct-help -p '//trim(rep)//'` command).'
-        call that%fatal(5, only_root_writes = .true.)
+        write(messages(2), '(a)') ' '
+        write(messages(3), '(a)') 'Equivalent functionality can be obtained with the '//trim(rep)
+        write(messages(4), '(a)') 'variable. Check the documentation for details.'
+        write(messages(5), '(a)') '(You can use the `oct-help -p '//trim(rep)//'` command).'
+        call this%fatal(5, only_root_writes = .true.)
       else
-        call that%fatal(1, only_root_writes = .true.)
+        call this%fatal(1, only_root_writes = .true.)
       end if
 
     end if
 
-    deallocate(that)
-    
   end subroutine messages_obsolete_variable
 
   ! ---------------------------------------------------------
   subroutine messages_experimental(this, name)
     class(message_t), intent(in) :: this
     character(len=*), intent(in) :: name
-    class(message_t), allocatable :: that
-
-    allocate(that, source=this)
     
-    INCR(that%experimentals, 1)
+    INCR(experimentals, 1)
 
     if(.not. conf%devel_version) then
-      call that%write(trim(name)//' is an experimental feature.')
-      call that%new_line()
-      call that%new_line()
-      call that%write('If you still want to use this feature (at your own risk), check:')
-      call that%new_line()
-      call that%new_line()
-      call that%write('http://octopus-code.org/experimental_features')
-      call that%new_line()
-      call that%fatal(only_root_writes = .true.)
+      call this%write(trim(name)//' is an experimental feature.')
+      call this%new_line()
+      call this%new_line()
+      call this%write('If you still want to use this feature (at your own risk), check:')
+      call this%new_line()
+      call this%new_line()
+      call this%write('http://octopus-code.org/experimental_features')
+      call this%new_line()
+      call this%fatal(only_root_writes = .true.)
     else
-      write(that%lines(1), '(a)') trim(name)//' is under development.'
-      write(that%lines(2), '(a)') 'It might not work or produce wrong results.'
-      call that%warning(2)
+      write(messages(1), '(a)') trim(name)//' is under development.'
+      write(messages(2), '(a)') 'It might not work or produce wrong results.'
+      call this%warning(2)
 
-      ! remove that warning from the count
-      INCR(that%warnings, -1)
+      ! remove this warning from the count
+      INCR(this%warnings, -1)
     end if
-
-    deallocate(that)
 
   end subroutine messages_experimental
   
@@ -1201,9 +1184,6 @@ contains
 
     logical :: is_bad
     character(len=3) :: op_str
-    class(message_t), allocatable :: that
-
-    allocate(that, source=this)
 
     PUSH_SUB(messages_check_def)
 
@@ -1216,17 +1196,15 @@ contains
     end if
 
     if(is_bad) then
-      write(that%lines(1), '(3a)') "The value for '", name, "' is inconsistent with the recommended value."
+      write(messages(1), '(3a)') "The value for '", name, "' is inconsistent with the recommended value."
       if(present(unit)) then
-        write(that%lines(2), '(a,f8.3,4a,f8.3,a,a)') 'given ', units_from_atomic(unit, var), ' ', trim(units_abbrev(unit)), &
+        write(messages(2), '(a,f8.3,4a,f8.3,a,a)') 'given ', units_from_atomic(unit, var), ' ', trim(units_abbrev(unit)), &
           op_str, 'recommended ', units_from_atomic(unit, def), ' ', trim(units_abbrev(unit))
       else
-        write(that%lines(2), '(a,f8.3,2a,f8.3)') 'given ', var, op_str, 'recommended ', def
+        write(messages(2), '(a,f8.3,2a,f8.3)') 'given ', var, op_str, 'recommended ', def
       end if
-      call that%warning(2)
+      call this%warning(2)
     end if
-
-    deallocate(that)
 
     POP_SUB(messages_check_def)
   end subroutine messages_check_def
@@ -1239,7 +1217,7 @@ contains
 
     PUSH_SUB(messages_not_implemented)
 
-    lines(1) = trim(feature)//" not implemented."
+    messages(1) = trim(feature)//" not implemented."
     call this%fatal(1, only_root_writes = .true.)
 
     POP_SUB(messages_not_implemented)
@@ -1251,7 +1229,7 @@ contains
     class(message_t), intent(in) :: this
 
     this%current_line = 1
-    this%lines(1) = ''
+    messages(1) = ''
     
   end subroutine messages_reset_lines
 
@@ -1261,9 +1239,9 @@ contains
     class(message_t), intent(in) :: this
     
     this%current_line = this%current_line + 1
-    this%lines(this%current_line) = ''
+    messages(this%current_line) = ''
 
-    if(this%current_line > max_lines) stop 'Too many message lines.'
+    if(this%current_line > max_lines) stop 'Too many message messages.'
    
   end subroutine messages_new_line
 
@@ -1280,9 +1258,6 @@ contains
 
     character(len=30) :: number
     FLOAT            :: tval
-    class(message_t), allocatable :: that
-
-    allocate(that, source=this)
 
     tval = val
     if(present(units)) tval = units_from_atomic(units, val)
@@ -1295,15 +1270,13 @@ contains
 
     if(optional_default(align_left, .false.)) number = ' '//adjustl(number)
 
-    write(that%lines(that%current_line), '(a, a)') trim(that%lines(that%current_line)), trim(number)
+    write(messages(this%current_line), '(a, a)') trim(messages(this%current_line)), trim(number)
 
     if(present(units) .and. optional_default(print_units, .true.)) then
-      write(that%lines(that%current_line), '(a, a, a)') trim(that%lines(that%current_line)), ' ', trim(units_abbrev(units))
+      write(messages(this%current_line), '(a, a, a)') trim(messages(this%current_line)), ' ', trim(units_abbrev(units))
     end if
 
-    if(optional_default(new_line, .false.)) call that%new_line()
-
-    deallocate(that)
+    if(optional_default(new_line, .false.)) call this%new_line()
 
   end subroutine messages_write_float
 
@@ -1319,30 +1292,25 @@ contains
 
     character(len=10) :: number
     integer(8) :: val_conv
-    class(message_t), allocatable :: that
-
-    allocate(that, source=this)
 
     val_conv = val
     if(present(units)) val_conv = int(nint(units_from_atomic(units, dble(val))), 8)
 
     if(present(fmt)) then
-      write(that%lines(that%current_line), '(a, '//trim(fmt)//')') trim(that%lines(that%current_line)), val_conv
+      write(messages(this%current_line), '(a, '//trim(fmt)//')') trim(messages(this%current_line)), val_conv
     else
       write(number, '(i10)') val_conv
-      write(that%lines(that%current_line), '(3a)') trim(that%lines(that%current_line)), ' ', trim(adjustl(number))
+      write(messages(this%current_line), '(3a)') trim(messages(this%current_line)), ' ', trim(adjustl(number))
     end if
 
 
     if(present(units) .and. optional_default(print_units, .true.)) then
-      write(that%lines(that%current_line), '(a, a, a)') trim(that%lines(that%current_line)), ' ', trim(units_abbrev(units))
+      write(messages(this%current_line), '(a, a, a)') trim(messages(this%current_line)), ' ', trim(units_abbrev(units))
     end if
 
     if(present(new_line)) then
-      if(new_line) call that%new_line()
+      if(new_line) call this%new_line()
     end if
-
-    deallocate(that)
 
   end subroutine messages_write_integer8
 
@@ -1369,24 +1337,19 @@ contains
     logical,          optional, intent(in) :: new_line
 
     character(len=100) :: fmt_
-    class(message_t), allocatable :: that
 
-    allocate(that, source=this)
-
-    if(len(trim(that%lines(that%current_line))) + len(trim(val)) > len(that%lines(that%current_line))) then
+    if(len(trim(messages(this%current_line))) + len(trim(val)) > len(messages(this%current_line))) then
       ! cannot use normal message approach without interfering with message we are trying to write
       ! write directly in case trim(val) is itself too long
       write(0, *) "Exceeded message line length limit, to write string:", trim(val)
     else
       fmt_ = optional_default(fmt, '(a)')
-      write(that%lines(that%current_line), '(a, '//trim(fmt_)//')') trim(that%lines(that%current_line)), trim(val)
+      write(messages(this%current_line), '(a, '//trim(fmt_)//')') trim(messages(this%current_line)), trim(val)
     end if
 
     if(present(new_line)) then
-      if(new_line) call that%new_line()
+      if(new_line) call this%new_line()
     end if
-
-    deallocate(that)
 
   end subroutine messages_write_str
 
@@ -1398,9 +1361,6 @@ contains
     logical, optional, intent(in) :: new_line
 
     character(len=3) :: text
-    class(message_t), allocatable :: that
-
-    allocate(that, source=this)
 
     if(val) then
       text = 'yes'
@@ -1408,19 +1368,17 @@ contains
       text = 'no'
     end if
 
-    if(len(trim(that%lines(that%current_line))) + len(trim(text)) > len(that%lines(that%current_line))) then
-      write(that%lines(that%current_line + 1), '(3a)') "Exceeded message line length limit, "//&
+    if(len(trim(messages(this%current_line))) + len(trim(text)) > len(messages(this%current_line))) then
+      write(messages(this%current_line + 1), '(3a)') "Exceeded message line length limit, "//&
         "to write logical value '", trim(text), "'"
-      call that%fatal(that%current_line + 1)
+      call this%fatal(this%current_line + 1)
     end if
 
-    write(that%lines(that%current_line), '(a,1x,a)') trim(that%lines(that%current_line)), trim(text)
+    write(messages(this%current_line), '(a,1x,a)') trim(messages(this%current_line)), trim(text)
 
     if(present(new_line)) then
-      if(new_line) call that%new_line()
+      if(new_line) call this%new_line()
     end if
-
-    deallocate(that)
 
   end subroutine messages_write_logical
 

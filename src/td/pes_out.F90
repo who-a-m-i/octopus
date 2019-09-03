@@ -102,7 +102,7 @@ contains
   
     if(bitand(how, OPTION__OUTPUTFORMAT__NETCDF) /= 0) then
       filename = trim(file)//".ncdf"
-      write(message_g%lines(1), '(a)') 'Writing netcdf format file: '
+      write(messages(1), '(a)') 'Writing netcdf format file: '
       call message_g%info(1)
   
       call dout_cf_netcdf(filename, ierr, cf, cube, sb%dim, dk(:) , & 
@@ -114,7 +114,7 @@ contains
   
     if(bitand(how, OPTION__OUTPUTFORMAT__VTK) /= 0)  then
       filename = trim(file)//".vtk"
-      write(message_g%lines(1), '(a)') 'Writing vtk format file: '
+      write(messages(1), '(a)') 'Writing vtk format file: '
       call message_g%info(1)
     
       if (present(pmesh)) then          
@@ -480,7 +480,7 @@ contains
 
     !check dim
     if (dim  <  2 .or. dim > 3) then
-      message_g%lines(1) = "This interpolator works only for 2 <= dim <= 3."
+      messages(1) = "This interpolator works only for 2 <= dim <= 3."
       call message_g%fatal(1)
     end if
 

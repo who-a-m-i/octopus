@@ -32,7 +32,7 @@
     
     PUSH_SUB(target_init_userdefined)
 
-    message_g%lines(1) =  'Info: Target is a user-defined state.'
+    messages(1) =  'Info: Target is a user-defined state.'
     call message_g%info(1)
 
     tg%move_ions = ion_dynamics_ions_move(td%ions)
@@ -98,7 +98,7 @@
       call parse_block_end(blk)
       call density_calc(tg%st, gr, tg%st%rho)
     else
-      message_g%lines(1) = '"OCTTargetUserdefined" has to be specified as block.'
+      messages(1) = '"OCTTargetUserdefined" has to be specified as block.'
       call message_g%fatal(1)
     end if
 

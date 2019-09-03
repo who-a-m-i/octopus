@@ -158,7 +158,7 @@ contains
 
       call parse_block_end(blk)
       if(.not. simul_box_is_periodic(sb)) then
-        message_g%lines(1) = "GaugeVectorField is intended for periodic systems."
+        messages(1) = "GaugeVectorField is intended for periodic systems."
         call message_g%warning(1)
       end if
 
@@ -166,8 +166,8 @@ contains
         do iop = 1, symmetries_number(sb%symm)
           if(iop == symmetries_identity_index(sb%symm)) cycle
           if(.not. symm_op_invariant_cart(sb%symm%ops(iop), this%vecpot_kick, CNST(1e-5))) then
-            message_g%lines(1) = "The GaugeVectorField breaks (at least) one of the symmetries used to reduce the k-points."
-            message_g%lines(2) = "Set SymmetryBreakDir equal to GaugeVectorField."
+            messages(1) = "The GaugeVectorField breaks (at least) one of the symmetries used to reduce the k-points."
+            messages(2) = "Set SymmetryBreakDir equal to GaugeVectorField."
             call message_g%fatal(2)
           end if
         end do
@@ -303,8 +303,8 @@ contains
 
         warning_shown = .true.
 
-        write(message_g%lines(1),'(a)') 'It seems that the gauge-field might be diverging. You should probably check'
-        write(message_g%lines(2),'(a)') 'the simulation parameters, in particular the number of k-points.'
+        write(messages(1),'(a)') 'It seems that the gauge-field might be diverging. You should probably check'
+        write(messages(2),'(a)') 'the simulation parameters, in particular the number of k-points.'
         call message_g%warning(2)
       end if
     end do
@@ -335,7 +335,7 @@ contains
 
     this%wp2 = M_FOUR*M_PI*st%qtot/sb%rcell_volume
 
-    write (message_g%lines(1), '(a,f12.6,a)') "Info: Electron-gas plasmon frequency", &
+    write (messages(1), '(a,f12.6,a)') "Info: Electron-gas plasmon frequency", &
          units_from_atomic(units_out%energy, sqrt(this%wp2)), " ["//trim(units_abbrev(units_out%energy))//"]"
     call message_g%info(1)
 
@@ -373,7 +373,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Writing gauge field restart."
+      messages(1) = "Debug: Writing gauge field restart."
       call message_g%info(1)
     end if
 
@@ -387,7 +387,7 @@ contains
     if (err /= 0) ierr = ierr + 1
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Writing gauge field restart done."
+      messages(1) = "Debug: Writing gauge field restart done."
       call message_g%info(1)
     end if
 
@@ -415,7 +415,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Reading gauge field restart."
+      messages(1) = "Debug: Reading gauge field restart."
       call message_g%info(1)
     end if
 
@@ -428,7 +428,7 @@ contains
     SAFE_DEALLOCATE_A(vecpot)
     
     if (debug%info) then
-      message_g%lines(1) = "Debug: Reading gauge field restart done."
+      messages(1) = "Debug: Reading gauge field restart done."
       call message_g%info(1)
     end if
 

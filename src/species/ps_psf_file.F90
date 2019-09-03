@@ -122,8 +122,8 @@ contains
       end if
 
       if(l /= ndown-1) then
-        message_g%lines(1) = 'Unexpected angular momentum'
-        message_g%lines(2) = 'Pseudopotential should be ordered by increasing l'
+        messages(1) = 'Unexpected angular momentum'
+        messages(2) = 'Pseudopotential should be ordered by increasing l'
         call message_g%warning(2)
       end if
       
@@ -142,8 +142,8 @@ contains
       end if
 
       if( (l /= nup) .and. (psf%irel == 'rel') ) then
-        message_g%lines(1) = 'Unexpected angular momentum'
-        message_g%lines(2) = 'Pseudopotential should be ordered by increasing l'
+        messages(1) = 'Unexpected angular momentum'
+        messages(2) = 'Pseudopotential should be ordered by increasing l'
         call message_g%warning(2)
       end if
 

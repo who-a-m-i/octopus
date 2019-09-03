@@ -75,7 +75,7 @@ contains
       end if
       to = to / sqrt(sum(to(1:geo%space%dim)**2))
 
-      write(message_g%lines(1),'(a,6f15.6)') 'Using main axis ', to(1:geo%space%dim)
+      write(messages(1),'(a,6f15.6)') 'Using main axis ', to(1:geo%space%dim)
       call message_g%info(1)
 
       !%Variable MainAxis
@@ -124,7 +124,7 @@ contains
       case(NONE, INERTIA, PSEUDO)
         call find_center_of_mass(geo, center, pseudo = (axis_type==PSEUDO))
 
-        write(message_g%lines(1),'(3a,99f15.6)') 'Center of mass [', trim(units_abbrev(units_out%length)), '] = ', &
+        write(messages(1),'(3a,99f15.6)') 'Center of mass [', trim(units_abbrev(units_out%length)), '] = ', &
           (units_from_atomic(units_out%length, center(idir)), idir = 1, geo%space%dim)
         call message_g%info(1)
 
@@ -133,19 +133,19 @@ contains
       case(LARGE)
         call find_center(geo, center)
 
-        write(message_g%lines(1),'(3a,99f15.6)') 'Center [', trim(units_abbrev(units_out%length)), '] = ', &
+        write(messages(1),'(3a,99f15.6)') 'Center [', trim(units_abbrev(units_out%length)), '] = ', &
           (units_from_atomic(units_out%length, center(idir)), idir = 1, geo%space%dim)
         call message_g%info(1)
 
         call translate(geo, center)
         call axis_large(geo, x1, x2)
       case default
-        write(message_g%lines(1), '(a,i2,a)') 'AxisType = ', axis_type, ' not known by Octopus.'
+        write(messages(1), '(a,i2,a)') 'AxisType = ', axis_type, ' not known by Octopus.'
         call message_g%fatal(1)
       end select
 
-      write(message_g%lines(1),'(a,99f15.6)') 'Found primary   axis ', x1(1:geo%space%dim)
-      write(message_g%lines(2),'(a,99f15.6)') 'Found secondary axis ', x2(1:geo%space%dim)
+      write(messages(1),'(a,99f15.6)') 'Found primary   axis ', x1(1:geo%space%dim)
+      write(messages(2),'(a,99f15.6)') 'Found secondary axis ', x2(1:geo%space%dim)
       call message_g%info(2)
 
       if(axis_type /= NONE) call geometry_rotate(geo, x1, x2, to)
@@ -280,16 +280,16 @@ contains
     unit = units_out%length**2
     ! note: we always use amu for atomic masses, so no unit conversion to/from atomic is needed.
     if(pseudo) then
-      write(message_g%lines(1),'(a)') 'Moment of pseudo-inertia tensor [' // trim(units_abbrev(unit)) // ']'
+      write(messages(1),'(a)') 'Moment of pseudo-inertia tensor [' // trim(units_abbrev(unit)) // ']'
     else
-      write(message_g%lines(1),'(a)') 'Moment of inertia tensor [amu*' // trim(units_abbrev(unit)) // ']'
+      write(messages(1),'(a)') 'Moment of inertia tensor [amu*' // trim(units_abbrev(unit)) // ']'
     end if
     call message_g%info(1)
     call output_tensor(stdout, tinertia, geo%space%dim, unit, write_average = .true.)
 
     call lalg_eigensolve(geo%space%dim, tinertia, eigenvalues)
 
-    write(message_g%lines(1),'(a,6f25.6)') 'Eigenvalues: ', &
+    write(messages(1),'(a,6f25.6)') 'Eigenvalues: ', &
       (units_from_atomic(unit, eigenvalues(jj)), jj = 1, geo%space%dim)
     call message_g%info(1)
 

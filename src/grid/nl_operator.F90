@@ -389,13 +389,13 @@ contains
     if(op%const_w) then
       SAFE_ALLOCATE(op%w(1:op%stencil%size, 1:1))
       if(debug%info) then
-        message_g%lines(1) = 'Info: nl_operator_build: working with constant weights.'
+        messages(1) = 'Info: nl_operator_build: working with constant weights.'
         call message_g%info(1)
       end if
     else
       SAFE_ALLOCATE(op%w(1:op%stencil%size, 1:op%np))
       if(debug%info) then
-        message_g%lines(1) = 'Info: nl_operator_build: working with non-constant weights.'
+        messages(1) = 'Info: nl_operator_build: working with non-constant weights.'
         call message_g%info(1)
       end if
     end if
@@ -704,15 +704,15 @@ contains
 
     if(debug%info) then
 
-      write(message_g%lines(1), '(3a)') 'Debug info: Finite difference weights for ', trim(this%label), '.'
-      write(message_g%lines(2), '(a)')  '            Spacing:'
+      write(messages(1), '(3a)') 'Debug info: Finite difference weights for ', trim(this%label), '.'
+      write(messages(2), '(a)')  '            Spacing:'
       do idir = 1, this%mesh%sb%dim
-        write(message_g%lines(2), '(a,f16.8)') trim(message_g%lines(2)), this%mesh%spacing(idir)
+        write(messages(2), '(a,f16.8)') trim(messages(2)), this%mesh%spacing(idir)
       end do
       call message_g%info(2)
       
       do istencil = 1, this%stencil%size
-        write(message_g%lines(1), '(a,i3,3i4,f25.10)') '      ', istencil, this%stencil%points(1:3, istencil), this%w(istencil, 1)
+        write(messages(1), '(a,i3,3i4,f25.10)') '      ', istencil, this%stencil%points(1:3, istencil), this%w(istencil, 1)
         call message_g%info(1)
       end do
       

@@ -393,7 +393,7 @@ contains
     if(smix%scheme == OPTION__MIXINGSCHEME__LINEAR) then
       smix%coeff = newmixing
     else
-    !  message_g%lines(1) = "Mixing can only be adjusted in linear mixing scheme."
+    !  messages(1) = "Mixing can only be adjusted in linear mixing scheme."
     !  call message_g%fatal(1)
     end if
     
@@ -422,7 +422,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Writing mixing restart."
+      messages(1) = "Debug: Writing mixing restart."
       call message_g%info(1)
     end if
 
@@ -496,7 +496,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Writing mixing restart done."
+      messages(1) = "Debug: Writing mixing restart done."
       call message_g%info(1)
     end if
 
@@ -529,7 +529,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Reading mixing restart."
+      messages(1) = "Debug: Reading mixing restart."
       call message_g%info(1)
     end if
 
@@ -554,15 +554,15 @@ contains
     if (ierr == 0) then
       ! We can only use the restart information if the mixing scheme and the number of steps used remained the same
       if (scheme /= smix%scheme .or. ns /= smix%ns) then
-        message_g%lines(1) = "The mixing scheme from the restart data is not the same as the one used in the current calculation."
+        messages(1) = "The mixing scheme from the restart data is not the same as the one used in the current calculation."
         call message_g%warning(1)
         ierr = ierr + 2
       end if
 
       ! Check the dimensions of the arrays to be read
       if (mesh%np_global /= d1 .or. mesh%np /= smix%mixfield%d1 .or. d2 /= smix%mixfield%d2 .or. d3 /= smix%mixfield%d3 ) then
-        message_g%lines(1) = "The dimensions of the arrays from the mixing restart data"
-        message_g%lines(2) = "are not the same as the ones used in this calculation."
+        messages(1) = "The dimensions of the arrays from the mixing restart data"
+        messages(2) = "are not the same as the ones used in this calculation."
         call message_g%warning(2)
         ierr = ierr + 4
       end if
@@ -628,7 +628,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Reading mixing restart done."
+      messages(1) = "Debug: Reading mixing restart done."
       call message_g%info(1)
     end if
 

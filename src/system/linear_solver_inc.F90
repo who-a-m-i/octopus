@@ -99,7 +99,7 @@ subroutine X(linear_solver_solve_HXeY) (this, hm, psolver, gr, st, ist, ik, x, y
     call X(linear_solver_sos)(hm, psolver, gr, st, ist, ik, x, y, shift, residue, iter_used)
 
   case default 
-    write(message_g%lines(1), '(a,i2)') "Unknown linear-response solver", this%solver
+    write(messages(1), '(a,i2)') "Unknown linear-response solver", this%solver
     call message_g%fatal(1)
 
   end select
@@ -216,7 +216,7 @@ subroutine X(linear_solver_cg) (ls, hm, psolver, gr, st, ist, ik, x, y, shift, t
   residue = sqrt(abs(gamma))
 
   if(.not. conv) then 
-    write(message_g%lines(1), '(a)') "CG solver not converged!"
+    write(messages(1), '(a)') "CG solver not converged!"
     call message_g%warning(1)
   end if
 
@@ -264,8 +264,8 @@ subroutine X(linear_solver_idrs) (ls, gr, st, x, y, tol, residue, iter_used)
   x = X(doubledimarray)(gr%mesh%np, st%d%dim, phi(:, 1))
 
   if(residue > tol .or. info .ne. 0) then
-    write(message_g%lines(1), '(a)')     "IDRS solver failed."
-    write(message_g%lines(2), '(a,i3)')  "Flag =,", info
+    write(messages(1), '(a)')     "IDRS solver failed."
+    write(messages(2), '(a,i3)')  "Flag =,", info
     call message_g%warning(2)
   end if
 
@@ -404,7 +404,7 @@ subroutine X(linear_solver_bicgstab) (ls, hm, psolver, gr, st, ist, ik, x, y, sh
   residue = gamma
 
   if(.not. conv) then 
-    write(message_g%lines(1), '(a)') "BiCGSTAB solver not converged!"
+    write(messages(1), '(a)') "BiCGSTAB solver not converged!"
     call message_g%warning(1)
   end if
 
@@ -467,7 +467,7 @@ subroutine X(linear_solver_multigrid) (ls, hm, psolver, gr, st, ist, ik, x, y, s
       SAFE_ALLOCATE(psi(1:gr%mesh%np, 1:st%d%dim))
       
       call states_elec_get_state(st, gr%mesh, ist, ik, psi)
-      write(message_g%lines(1), *)  "Multigrid: iter ", iter,  residue, abs(X(mf_dotp)(gr%mesh, st%d%dim, psi, x))
+      write(messages(1), *)  "Multigrid: iter ", iter,  residue, abs(X(mf_dotp)(gr%mesh, st%d%dim, psi, x))
       call message_g%info(1)
 
       SAFE_DEALLOCATE_A(psi)
@@ -479,7 +479,7 @@ subroutine X(linear_solver_multigrid) (ls, hm, psolver, gr, st, ist, ik, x, y, s
   iter_used = iter
 
   if(residue > tol) then 
-    write(message_g%lines(1), '(a)') "Multigrid solver not converged!"
+    write(messages(1), '(a)') "Multigrid solver not converged!"
     call message_g%warning(1)
   end if
 
@@ -998,20 +998,20 @@ subroutine X(linear_solver_qmr_dotp)(this, hm, psolver, gr, st, ik, xb, bb, shif
 
     select case(status(ii))
     case(QMR_NOT_CONVERGED)
-      write(message_g%lines(1), '(a)') "QMR solver not converged!"
-      write(message_g%lines(2), '(a)') "Try increasing the maximum number of iterations or the tolerance."
+      write(messages(1), '(a)') "QMR solver not converged!"
+      write(messages(2), '(a)') "Try increasing the maximum number of iterations or the tolerance."
       call message_g%warning(2)
     case(QMR_BREAKDOWN_PB)
-      write(message_g%lines(1), '(a)') "QMR breakdown, cannot continue: b or P*b is the zero vector!"
+      write(messages(1), '(a)') "QMR breakdown, cannot continue: b or P*b is the zero vector!"
       call message_g%warning(1)
     case(QMR_BREAKDOWN_VZ)
-      write(message_g%lines(1), '(a)') "QMR breakdown, cannot continue: v^T*z is zero!"
+      write(messages(1), '(a)') "QMR breakdown, cannot continue: v^T*z is zero!"
       call message_g%warning(1)
     case(QMR_BREAKDOWN_QP)
-      write(message_g%lines(1), '(a)') "QMR breakdown, cannot continue: q^T*p is zero!"
+      write(messages(1), '(a)') "QMR breakdown, cannot continue: q^T*p is zero!"
       call message_g%warning(1)
     case(QMR_BREAKDOWN_GAMMA)
-      write(message_g%lines(1), '(a)') "QMR breakdown, cannot continue: gamma is zero!"
+      write(messages(1), '(a)') "QMR breakdown, cannot continue: gamma is zero!"
       call message_g%warning(1)
     end select
 

@@ -77,13 +77,13 @@
         end do
         call parse_block_end(blk)
       else
-        message_g%lines(1) = '"OCTOptimizeHarmonicSpectrum" has to be specified as a block.'
+        messages(1) = '"OCTOptimizeHarmonicSpectrum" has to be specified as a block.'
         call message_g%info(1)
         call message_g%input_error('OCTOptimizeHarmonicSpectrum')
       end if
     else
-      write(message_g%lines(1), '(a)') 'If "OCTTargetMode = oct_targetmode_hhg", you must supply an'
-      write(message_g%lines(2), '(a)') '"OCTOptimizeHarmonicSpectrum" block.'
+      write(messages(1), '(a)') 'If "OCTTargetMode = oct_targetmode_hhg", you must supply an'
+      write(messages(2), '(a)') '"OCTOptimizeHarmonicSpectrum" block.'
       call message_g%fatal(2)
     end if
 
@@ -122,13 +122,13 @@
 
     ! The following is a temporary hack, that assumes only one atom at the origin of coordinates.
     if(geo%natoms > 1) then
-      message_g%lines(1) = 'If "OCTTargetOperator = oct_tg_hhgnew", then you can only have one atom.'
+      messages(1) = 'If "OCTTargetOperator = oct_tg_hhgnew", then you can only have one atom.'
       call message_g%fatal(1)
     end if
 
     ! The following is a temporary hack, that assumes only one atom at the origin of coordinates.
     if(geo%natoms > 1) then
-      message_g%lines(1) = 'If "OCTTargetOperator = oct_tg_hhgnew", then you can only have one atom.'
+      messages(1) = 'If "OCTTargetOperator = oct_tg_hhgnew", then you can only have one atom.'
       call message_g%fatal(1)
     end if
 

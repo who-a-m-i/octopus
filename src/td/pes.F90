@@ -264,7 +264,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Writing PES restart."
+      messages(1) = "Debug: Writing PES restart."
       call message_g%info(1)
     end if
 
@@ -281,7 +281,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Writing PES restart done."
+      messages(1) = "Debug: Writing PES restart done."
       call message_g%info(1)
     end if
 
@@ -308,7 +308,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Reading PES restart."
+      messages(1) = "Debug: Reading PES restart."
       call message_g%info(1)
     end if
 
@@ -325,7 +325,7 @@ contains
     end if
 
     if (debug%info) then
-      message_g%lines(1) = "Debug: Reading PES restart done."
+      messages(1) = "Debug: Reading PES restart done."
       call message_g%info(1)
     end if
 

@@ -640,7 +640,7 @@ contains
         end if
       end if
 
-      write(message_g%lines(1), '(3a,f5.2,3a)') &
+      write(messages(1), '(3a,f5.2,3a)') &
         "Info: species_full_delta species ", trim(species_label(species)), &
         " atom displaced ", units_from_atomic(units_out%length, sqrt(dist2_min)), &
         " [ ", trim(units_abbrev(units_out%length)), " ]"
@@ -690,7 +690,7 @@ contains
       call droot_solver_run(rs, func, x, conv, startval=startval)
 
       if(.not.conv) then
-        write(message_g%lines(1),'(a)') 'Internal error in species_get_density.'
+        write(messages(1),'(a)') 'Internal error in species_get_density.'
         call message_g%fatal(1)
       end if
 
@@ -952,8 +952,8 @@ contains
 
         call dio_function_input(trim(species_filename(species)), namespace, mesh, vl, err)
         if(err /= 0) then
-          write(message_g%lines(1), '(a)')    'Error loading file '//trim(species_filename(species))//'.'
-          write(message_g%lines(2), '(a,i4)') 'Error code returned = ', err
+          write(messages(1), '(a)')    'Error loading file '//trim(species_filename(species))//'.'
+          write(messages(2), '(a,i4)') 'Error code returned = ', err
           call message_g%fatal(2)
         end if
 

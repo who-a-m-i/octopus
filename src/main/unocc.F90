@@ -155,9 +155,9 @@ contains
       (sys%ks%theory_level == KOHN_SHAM_DFT .and. xc_is_orbital_dependent(sys%ks%xc)))
 
     if(is_orbital_dependent) then
-      message_g%lines(1) = "Be sure your gs run is well converged since you have an orbital-dependent functional."
-      message_g%lines(2) = "Otherwise, the occupied states may change in CalculationMode = unocc, and your"
-      message_g%lines(3) = "unoccupied states will not be consistent with the gs run."
+      messages(1) = "Be sure your gs run is well converged since you have an orbital-dependent functional."
+      messages(2) = "Otherwise, the occupied states may change in CalculationMode = unocc, and your"
+      messages(3) = "unoccupied states will not be consistent with the gs run."
       call message_g%warning(3)
     end if
 
@@ -171,26 +171,26 @@ contains
 
       if(occ_missing) then
         if(is_orbital_dependent) then
-          message_g%lines(1) = "For an orbital-dependent functional, all occupied orbitals must be provided."
+          messages(1) = "For an orbital-dependent functional, all occupied orbitals must be provided."
         else if(ierr_rho /= 0) then
-          message_g%lines(1) = "Since density could not be read, all occupied orbitals must be provided."
+          messages(1) = "Since density could not be read, all occupied orbitals must be provided."
         end if
 
-        message_g%lines(2) = "Not all the occupied orbitals could be read."
-        message_g%lines(3) = "Please run a ground-state calculation first!"
+        messages(2) = "Not all the occupied orbitals could be read."
+        messages(3) = "Please run a ground-state calculation first!"
         call message_g%fatal(3, only_root_writes = .true.)
       end if
 
-      message_g%lines(1) = "Unable to read density: Building density from wavefunctions."
+      messages(1) = "Unable to read density: Building density from wavefunctions."
       call message_g%info(1)
 
       call density_calc(sys%st, sys%gr, sys%st%rho)
     end if
 
     if (states_are_real(sys%st)) then
-      message_g%lines(1) = 'Info: Using real wavefunctions.'
+      messages(1) = 'Info: Using real wavefunctions.'
     else
-      message_g%lines(1) = 'Info: Using complex wavefunctions.'
+      messages(1) = 'Info: Using complex wavefunctions.'
     end if
     call message_g%info(1)
 
@@ -223,8 +223,8 @@ contains
     ! In the case of someone using KPointsPath, the code assume that this is only for plotting a 
     ! bandstructure. This mode ensure that no restart information will be written for the new grid
     if(bandstructure_mode) then
-      message_g%lines(1) = "Info: The code will run in band structure mode."
-      message_g%lines(2) = "      No restart information will be printed."
+      messages(1) = "Info: The code will run in band structure mode."
+      messages(2) = "      No restart information will be printed."
       call message_g%info(2)
     end if
 
@@ -237,7 +237,7 @@ contains
         call states_elec_dump_rho(restart_dump, sys%st, sys%gr, ierr_rho)
     end if
 
-    message_g%lines(1) = "Info: Starting calculation of unoccupied states."
+    messages(1) = "Info: Starting calculation of unoccupied states."
     call message_g%info(1)
 
     ! reset this variable, so that the eigensolver passes through all states
@@ -281,7 +281,7 @@ contains
         if(converged .or. (modulo(iter, sys%outp%restart_write_interval) == 0) .or. iter == max_iter .or. forced_finish) then
           call states_elec_dump(restart_dump, sys%st, sys%gr, ierr, iter=iter)
           if(ierr /= 0) then
-            message_g%lines(1) = "Unable to write states wavefunctions."
+            messages(1) = "Unable to write states wavefunctions."
             call message_g%warning(1)
           end if
         end if
@@ -299,14 +299,14 @@ contains
       call restart_end(restart_dump)
 
     if(any(eigens%converged(:) < occ_states(:))) then
-      write(message_g%lines(1),'(a)') 'Some of the occupied states are not fully converged!'
+      write(messages(1),'(a)') 'Some of the occupied states are not fully converged!'
       call message_g%warning(1)
     end if
 
     SAFE_DEALLOCATE_A(occ_states)
 
     if(.not. converged) then
-      write(message_g%lines(1),'(a)') 'Some of the unoccupied states are not fully converged!'
+      write(messages(1),'(a)') 'Some of the unoccupied states are not fully converged!'
       call message_g%warning(1)
     end if
 
@@ -341,8 +341,8 @@ contains
       call eigensolver_init(eigens, sys%namespace, sys%gr, st, sys%ks%xc)
 
       if(eigens%es_type == RS_RMMDIIS) then
-        message_g%lines(1) = "With the RMMDIIS eigensolver for unocc, you will need to stop the calculation"
-        message_g%lines(2) = "by hand, since the highest states will probably never converge."
+        messages(1) = "With the RMMDIIS eigensolver for unocc, you will need to stop the calculation"
+        messages(2) = "by hand, since the highest states will probably never converge."
         call message_g%warning(2)
       end if
       
@@ -374,7 +374,7 @@ contains
       write(str, '(a,i5)') 'Unoccupied states iteration #', iter
       call message_g%print_stress(stdout, trim(str))
        
-      write(message_g%lines(1),'(a,i6,a,i6)') 'Converged states: ', minval(eigens%converged(1:st%d%nik))
+      write(messages(1),'(a,i6,a,i6)') 'Converged states: ', minval(eigens%converged(1:st%d%nik))
       call message_g%info(1)
 
       call states_elec_write_eigenvalues(stdout, sys%st%nst, sys%st, sys%gr%sb, eigens%diff, st_start = showstart, compact = .true.)
@@ -385,7 +385,7 @@ contains
         call MPI_Allreduce(mem, mem_tmp, 1, MPI_FLOAT, MPI_SUM, mpi_world%comm, mpi_err)
         mem = mem_tmp
 #endif
-        write(message_g%lines(1),'(a,f14.2)') 'Memory usage [Mbytes]     :', mem
+        write(messages(1),'(a,f14.2)') 'Memory usage [Mbytes]     :', mem
         call message_g%info(1)
       end if
 

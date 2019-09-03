@@ -177,9 +177,9 @@ contains
     ! are obtained, but not the real ones!!!
     call solve_schroedinger(psp, ierr)
     if(ierr /= 0) then ! If the wavefunctions could not be found, we set its number to zero.
-      write(message_g%lines(1),'(a)') 'The algorithm that calculates atomic wavefunctions could not'
-      write(message_g%lines(2),'(a)') 'do its job. The program will continue, but expect poor'
-      write(message_g%lines(3),'(a)') 'convergence properties.'
+      write(messages(1),'(a)') 'The algorithm that calculates atomic wavefunctions could not'
+      write(messages(2),'(a)') 'do its job. The program will continue, but expect poor'
+      write(messages(3),'(a)') 'convergence properties.'
       call message_g%warning(3)
       psp%conf%p = 0
     end if
@@ -633,8 +633,8 @@ contains
         e = sqrt(sum(psp%g%drdi(2:psp%g%nrval)*psp%rphi(2:psp%g%nrval, n)**2))
         e = abs(e - M_ONE)
         if (e > CNST(1.0e-5)) then
-          write(message_g%lines(1), '(a,i2,a)') "Eigenstate for n = ", n , ' is not normalized'
-          write(message_g%lines(2), '(a, f12.6,a)') '(abs(1-norm) = ', e, ')'
+          write(messages(1), '(a,i2,a)') "Eigenstate for n = ", n , ' is not normalized'
+          write(messages(2), '(a, f12.6,a)') '(abs(1-norm) = ', e, ')'
           call message_g%warning(2)
         end if
       end do

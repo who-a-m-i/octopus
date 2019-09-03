@@ -58,8 +58,8 @@
       end do
       call parse_block_end(blk)
     else
-      message_g%lines(1) = 'If OCTTargetOperator = oct_tg_classical, then you must give the shape'
-      message_g%lines(2) = 'of this target in the block "OCTClassicalTarget".'
+      messages(1) = 'If OCTTargetOperator = oct_tg_classical, then you must give the shape'
+      messages(2) = 'of this target in the block "OCTClassicalTarget".'
       call message_g%fatal(2)
     end if
 
@@ -82,9 +82,9 @@
       end do
       call parse_block_end(blk)
     elseif(oct%algorithm  ==  OPTION__OCTSCHEME__OCT_CG .or. oct%algorithm == OPTION__OCTSCHEME__OCT_BFGS) then
-      message_g%lines(1) = 'If "OCTTargetOperator = oct_classical" and "OCTScheme = oct_cg" or'
-      message_g%lines(2) = '"OCTScheme = oct_bfgs", then you must define the blocks "OCTClassicalTarget",' 
-      message_g%lines(3) = '"OCTPositionDerivatives" AND "OCTMomentumDerivatives"'
+      messages(1) = 'If "OCTTargetOperator = oct_classical" and "OCTScheme = oct_cg" or'
+      messages(2) = '"OCTScheme = oct_bfgs", then you must define the blocks "OCTClassicalTarget",' 
+      messages(3) = '"OCTPositionDerivatives" AND "OCTMomentumDerivatives"'
       call message_g%fatal(3)
     end if
 
@@ -107,9 +107,9 @@
       end do
       call parse_block_end(blk)
     elseif(oct%algorithm  ==  OPTION__OCTSCHEME__OCT_CG .or. oct%algorithm == OPTION__OCTSCHEME__OCT_BFGS) then
-      message_g%lines(1) = 'If "OCTTargetOperator = oct_tg_classical" and "OCTScheme = oct_cg" or'
-      message_g%lines(2) = '"OCTScheme = oct_bfgs", then you must define the blocks "OCTClassicalTarget",'
-      message_g%lines(3) = '"OCTPositionDerivatives" AND "OCTMomentumDerivatives"'
+      messages(1) = 'If "OCTTargetOperator = oct_tg_classical" and "OCTScheme = oct_cg" or'
+      messages(2) = '"OCTScheme = oct_bfgs", then you must define the blocks "OCTClassicalTarget",'
+      messages(3) = '"OCTPositionDerivatives" AND "OCTMomentumDerivatives"'
       call message_g%fatal(3)
     end if
 

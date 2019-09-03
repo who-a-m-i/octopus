@@ -199,7 +199,7 @@ contains
     case(CURV_METHOD_GYGI)
       call curv_gygi_x2chi(sb, cv%gygi, x, chi)
     case(CURV_METHOD_BRIGGS, CURV_METHOD_MODINE)
-      message_g%lines(1) = "Internal error in curvilinear_x2chi"
+      messages(1) = "Internal error in curvilinear_x2chi"
       call message_g%fatal(1)
     end select
 
@@ -253,23 +253,23 @@ contains
 
     select case(cv%method)
     case(CURV_METHOD_GYGI)
-      write(message_g%lines(1), '(a)')  '  Curvilinear Method = gygi'
-      write(message_g%lines(2), '(a)')  '  Gygi Parameters:'
-      write(message_g%lines(3), '(4x,a,f6.3)')  'A = ', cv%gygi%a
-      write(message_g%lines(4), '(4x,3a,f6.3)') 'alpha [', &
+      write(messages(1), '(a)')  '  Curvilinear Method = gygi'
+      write(messages(2), '(a)')  '  Gygi Parameters:'
+      write(messages(3), '(4x,a,f6.3)')  'A = ', cv%gygi%a
+      write(messages(4), '(4x,3a,f6.3)') 'alpha [', &
         trim(units_abbrev(units_out%length)), '] = ', &
         units_from_atomic(units_out%length, cv%gygi%alpha)
-      write(message_g%lines(5), '(4x,3a,f6.3)') 'beta  [', &
+      write(messages(5), '(4x,3a,f6.3)') 'beta  [', &
         trim(units_abbrev(units_out%length)), '] = ', &
         units_from_atomic(units_out%length, cv%gygi%beta)
       call message_g%info(5, unit)
 
     case(CURV_METHOD_BRIGGS)
-      write(message_g%lines(1), '(a)') '  Curvilinear Method = briggs'
+      write(messages(1), '(a)') '  Curvilinear Method = briggs'
       call message_g%info(1, unit)
 
     case(CURV_METHOD_MODINE)
-      write(message_g%lines(1), '(a)') ' Curvilinear  Method = modine'
+      write(messages(1), '(a)') ' Curvilinear  Method = modine'
       call message_g%info(1, unit)
 
     end select

@@ -30,7 +30,7 @@ subroutine X(calculate_eigenvalues)(hm, der, psolver, st)
   PUSH_SUB(X(calculate_eigenvalues))
   
   if(debug%info) then
-    write(message_g%lines(1), '(a)') 'Debug: Calculating eigenvalues.'
+    write(messages(1), '(a)') 'Debug: Calculating eigenvalues.'
     call message_g%info(1)
   end if
 

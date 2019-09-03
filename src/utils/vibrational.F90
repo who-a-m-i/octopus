@@ -283,7 +283,7 @@
 
       PUSH_SUB(calculate_vaf)
 
-      write (message_g%lines(1), '(a)') "Read velocities from '"// &
+      write (messages(1), '(a)') "Read velocities from '"// &
         trim(io_workpath('td.general/coordinates', default_namespace))//"'"
       call message_g%info(1)
 

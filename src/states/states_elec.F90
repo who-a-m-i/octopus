@@ -279,8 +279,8 @@ contains
     if (st%d%ispin == SPINORS) st%wfs_type = TYPE_CMPLX
 
     if(st%d%ispin /= UNPOLARIZED .and. gr%sb%kpoints%use_time_reversal) then
-      message_g%lines(1) = "Time reversal symmetry is only implemented for unpolarized spins."
-      message_g%lines(2) = "Use KPointsUseTimeReversal = no."
+      messages(1) = "Time reversal symmetry is only implemented for unpolarized spins."
+      messages(2) = "Use KPointsUseTimeReversal = no."
       call message_g%fatal(2)
     end if
       
@@ -328,7 +328,7 @@ contains
     !%End
     call parse_variable(namespace, 'TotalStates', 0, ntot)
     if (ntot < 0) then
-      write(message_g%lines(1), '(a,i5,a)') "Input: '", ntot, "' is not a valid value for TotalStates."
+      write(messages(1), '(a,i5,a)') "Input: '", ntot, "' is not a valid value for TotalStates."
       call message_g%fatal(1)
     end if
 
@@ -350,13 +350,13 @@ contains
     !%End
     call parse_variable(namespace, 'ExtraStates', 0, nempty)
     if (nempty < 0) then
-      write(message_g%lines(1), '(a,i5,a)') "Input: '", nempty, "' is not a valid value for ExtraStates."
-      message_g%lines(2) = '(0 <= ExtraStates)'
+      write(messages(1), '(a,i5,a)') "Input: '", nempty, "' is not a valid value for ExtraStates."
+      messages(2) = '(0 <= ExtraStates)'
       call message_g%fatal(2)
     end if
 
     if(ntot > 0 .and. nempty > 0) then
-      message_g%lines(1) = 'You cannot set TotalStates and ExtraStates at the same time.'
+      messages(1) = 'You cannot set TotalStates and ExtraStates at the same time.'
       call message_g%fatal(1)
     end if
 
@@ -374,13 +374,13 @@ contains
     !%End
     call parse_variable(namespace, 'ExtraStatesToConverge', nempty, nempty_conv)
     if (nempty < 0) then
-      write(message_g%lines(1), '(a,i5,a)') "Input: '", nempty_conv, "' is not a valid value for ExtraStatesToConverge."
-      message_g%lines(2) = '(0 <= ExtraStatesToConverge)'
+      write(messages(1), '(a,i5,a)') "Input: '", nempty_conv, "' is not a valid value for ExtraStatesToConverge."
+      messages(2) = '(0 <= ExtraStatesToConverge)'
       call message_g%fatal(2)
     end if
 
     if(nempty_conv > nempty) then
-      message_g%lines(1) = 'You cannot set ExtraStatesToConverge to an higer value than ExtraStates.'
+      messages(1) = 'You cannot set ExtraStatesToConverge to an higer value than ExtraStates.'
       call message_g%fatal(1)
     end if
 
@@ -392,8 +392,8 @@ contains
     st%qtot = -(st%val_charge + excess_charge)
 
     if(st%qtot < -M_EPSILON) then
-      write(message_g%lines(1),'(a,f12.6,a)') 'Total charge = ', st%qtot, ' < 0'
-      message_g%lines(2) = 'Check Species and ExcessCharge.'
+      write(messages(1),'(a,f12.6,a)') 'Total charge = ', st%qtot, ' < 0'
+      messages(2) = 'Check Species and ExcessCharge.'
       call message_g%fatal(2, only_root_writes = .true.)
     endif
 
@@ -420,7 +420,7 @@ contains
     
     if(ntot > 0) then
       if(ntot < st%nst) then
-        message_g%lines(1) = 'TotalStates is smaller than the number of states required by the system.'
+        messages(1) = 'TotalStates is smaller than the number of states required by the system.'
         call message_g%fatal(1)
       end if
 
@@ -430,7 +430,7 @@ contains
     st%nst_conv = st%nst + nempty_conv
     st%nst = st%nst + nempty
     if(st%nst == 0) then
-      message_g%lines(1) = "Cannot run with number of states = zero."
+      messages(1) = "Cannot run with number of states = zero."
       call message_g%fatal(1)
     end if
 
@@ -733,21 +733,21 @@ contains
 
       ncols = parse_block_cols(blk, 0)
       if(ncols > st%nst) then
-        message_g%lines(1) = "Too many columns in block Occupations."
+        messages(1) = "Too many columns in block Occupations."
         call message_g%warning(1)
         call message_g%input_error("Occupations")
       end if
 
       nrows = parse_block_n(blk)
       if(nrows /= st%d%nik) then
-        message_g%lines(1) = "Wrong number of rows in block Occupations."
+        messages(1) = "Wrong number of rows in block Occupations."
         call message_g%warning(1)
         call message_g%input_error("Occupations")
       end if
 
       do ik = 1, st%d%nik - 1
         if(parse_block_cols(blk, ik) /= ncols) then
-          message_g%lines(1) = "All rows in block Occupations must have the same number of columns."
+          messages(1) = "All rows in block Occupations must have the same number of columns."
           call message_g%warning(1)
           call message_g%input_error("Occupations")
         end if
@@ -783,9 +783,9 @@ contains
       start_pos = int((st%qtot - charge_in_block)/spin_n)
 
       if(start_pos + ncols > st%nst) then
-        message_g%lines(1) = "To balance charge, the first column in block Occupations is taken to refer to state"
-        write(message_g%lines(2),'(a,i6,a)') "number ", start_pos, " but there are too many columns for the number of states."
-        write(message_g%lines(3),'(a,i6,a)') "Solution: set ExtraStates = ", start_pos + ncols - st%nst
+        messages(1) = "To balance charge, the first column in block Occupations is taken to refer to state"
+        write(messages(2),'(a,i6,a)') "number ", start_pos, " but there are too many columns for the number of states."
+        write(messages(3),'(a,i6,a)') "Solution: set ExtraStates = ", start_pos + ncols - st%nst
         call message_g%fatal(3)
       end if
 
@@ -874,8 +874,8 @@ contains
       charge = charge + sum(st%occ(ist, 1:st%d%nik) * st%d%kweights(1:st%d%nik))
     end do
     if(abs(charge - st%qtot) > CNST(1e-6)) then
-      message_g%lines(1) = "Initial occupations do not integrate to total charge."
-      write(message_g%lines(2), '(6x,f12.6,a,f12.6)') charge, ' != ', st%qtot
+      messages(1) = "Initial occupations do not integrate to total charge."
+      write(messages(2), '(6x,f12.6,a,f12.6)') charge, ' != ', st%qtot
       call message_g%fatal(2, only_root_writes = .true.)
     end if
 
@@ -1630,11 +1630,11 @@ contains
       charge = charge + sum(st%occ(ist, 1:st%d%nik) * st%d%kweights(1:st%d%nik))
     end do
     if(abs(charge-st%qtot) > CNST(1e-6)) then
-      message_g%lines(1) = 'Occupations do not integrate to total charge.'
-      write(message_g%lines(2), '(6x,f12.8,a,f12.8)') charge, ' != ', st%qtot
+      messages(1) = 'Occupations do not integrate to total charge.'
+      write(messages(2), '(6x,f12.8,a,f12.8)') charge, ' != ', st%qtot
       call message_g%warning(2)
       if(charge < M_EPSILON) then
-        message_g%lines(1) = "There don't seem to be any electrons at all!"
+        messages(1) = "There don't seem to be any electrons at all!"
         call message_g%fatal(1)
       end if
     end if
@@ -1748,8 +1748,8 @@ contains
 #endif
 
       if(st%nst < st%mpi_grp%size) then
-        message_g%lines(1) = "Have more processors than necessary"
-        write(message_g%lines(2),'(i4,a,i4,a)') st%mpi_grp%size, " processors and ", st%nst, " states."
+        messages(1) = "Have more processors than necessary"
+        write(messages(2),'(i4,a,i4,a)') st%mpi_grp%size, " processors and ", st%nst, " states."
         call message_g%fatal(2)
       end if
 
@@ -2283,9 +2283,9 @@ contains
 
     call message_g%print_stress(stdout, "States")
 
-    write(message_g%lines(1), '(a,f12.3)') 'Total electronic charge  = ', st%qtot
-    write(message_g%lines(2), '(a,i8)')    'Number of states         = ', st%nst
-    write(message_g%lines(3), '(a,i8)')    'States block-size        = ', st%d%block_size
+    write(messages(1), '(a,f12.3)') 'Total electronic charge  = ', st%qtot
+    write(messages(2), '(a,i8)')    'Number of states         = ', st%nst
+    write(messages(3), '(a,i8)')    'States block-size        = ', st%d%block_size
     call message_g%info(3)
 
     call message_g%print_stress(stdout)
@@ -2404,7 +2404,7 @@ contains
       write(default,'(a,a)') "1-", trim(adjustl(nst_string))
       call parse_variable(namespace, 'CasidaKohnShamStates', default, wfn_list)
 
-      write(message_g%lines(1),'(a,a)') "Info: States that form the basis: ", trim(wfn_list)
+      write(messages(1),'(a,a)') "Info: States that form the basis: ", trim(wfn_list)
       call message_g%info(1)
 
       ! count pairs
@@ -2424,7 +2424,7 @@ contains
 
     else ! using CasidaKSEnergyWindow
 
-      write(message_g%lines(1),'(a,f12.6,a)') "Info: including transitions with energy < ", &
+      write(messages(1),'(a,f12.6,a)') "Info: including transitions with energy < ", &
         units_from_atomic(units_out%energy, energy_window), trim(units_abbrev(units_out%energy))
       call message_g%info(1)
 
@@ -2492,7 +2492,7 @@ contains
           n_partially_filled = n_partially_filled + 1
           if(present(partially_filled)) partially_filled(n_partially_filled) = ist
         elseif(abs(st%occ(ist, ik)) > M_THRESHOLD ) then
-          write(message_g%lines(1),*) 'Internal error in occupied_states: Illegal occupation value ', st%occ(ist, ik)
+          write(messages(1),*) 'Internal error in occupied_states: Illegal occupation value ', st%occ(ist, ik)
           call message_g%fatal(1)
          end if
       end do
@@ -2505,7 +2505,7 @@ contains
           n_partially_filled = n_partially_filled + 1
           if(present(partially_filled)) partially_filled(n_partially_filled) = ist
         elseif(abs(st%occ(ist, ik)) > M_THRESHOLD ) then
-          write(message_g%lines(1),*) 'Internal error in occupied_states: Illegal occupation value ', st%occ(ist, ik)
+          write(messages(1),*) 'Internal error in occupied_states: Illegal occupation value ', st%occ(ist, ik)
           call message_g%fatal(1)
          end if
       end do

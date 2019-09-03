@@ -60,7 +60,7 @@ contains
     PUSH_SUB(young_init)
 
     if (ndown > nup) then
-      write (message_g%lines(1),'(a)') 'We only make 2-row Young diagrams with nup >= ndown'
+      write (messages(1),'(a)') 'We only make 2-row Young diagrams with nup >= ndown'
       call message_g%fatal(1)
     end if
 
@@ -174,7 +174,7 @@ contains
 
 !
 !    if (all(this%young_up(:,this%iyoung) /= nn) .and. all(this%young_down(:,this%iyoung) /= nn)) then
-!      write (message_g%lines(1),'(a,I7,a)') 'nn = ', nn, ' was not attributed to any box- this should not happen!'
+!      write (messages(1),'(a,I7,a)') 'nn = ', nn, ' was not attributed to any box- this should not happen!'
 !      call message_g%fatal(1)
 !    end if
 

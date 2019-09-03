@@ -299,9 +299,9 @@ subroutine X(modelmb_density_matrix_write)(gr, st, wf, mm, denmat, namespace)
     end if
 
     ! note: for eventual multiple particles in 4D (eg 8D total) this would fail to give the last values of dipole_moment
-    write (message_g%lines(1),'(a,I6,a,I6,a,I6)') 'For particle ', ikeeppart, ' of mb state ', mm
-    write (message_g%lines(2),'(a,3E20.10)') 'The dipole moment is (in a.u. = e bohr):     ', dipole_moment(1:min(3,ndim1part))
-    write (message_g%lines(3),'(a,E15.3)') '     with intrinsic numerical error usually <= ', 1.e-6*mb_1part%npt
+    write (messages(1),'(a,I6,a,I6,a,I6)') 'For particle ', ikeeppart, ' of mb state ', mm
+    write (messages(2),'(a,3E20.10)') 'The dipole moment is (in a.u. = e bohr):     ', dipole_moment(1:min(3,ndim1part))
+    write (messages(3),'(a,E15.3)') '     with intrinsic numerical error usually <= ', 1.e-6*mb_1part%npt
     call message_g%info(3)
 
     SAFE_DEALLOCATE_A(evectors)

@@ -2291,24 +2291,16 @@ contains
   subroutine states_elec_write_info(st)
     class(states_elec_t),    intent(in) :: st
 
-    class(message_t), allocatable :: message
-
-    PUSH_SUB(states_elec_write_info)
-
-    allocate(message, source=st%message)
 
     call message%print_stress(stdout, "States")
 
     write(messages(1), '(a,f12.3)') 'Total electronic charge  = ', st%qtot
     write(messages(2), '(a,i8)')    'Number of states         = ', st%nst
     write(messages(3), '(a,i8)')    'States block-size        = ', st%d%block_size
-    call message%info(3)
+    call st%message%info(3)
 
-    call message%print_stress(stdout)
+    call st%message%print_stress(stdout)
 
-    deallocate(message)
-
-    POP_SUB(states_elec_write_info)
   end subroutine states_elec_write_info
 
   ! ------------------------------------------------------------
@@ -2370,12 +2362,8 @@ contains
     integer :: ik, ist, ast, n_filled, n_partially_filled, n_half_filled
     character(len=80) :: nst_string, default, wfn_list
     FLOAT :: energy_window
-    class(message_t), allocatable :: message
-
 
     PUSH_SUB(states_elec_count_pairs)
-
-    allocate(message, source=st%message)
 
     is_frac_occ = .false.
     do ik = 1, st%d%nik
@@ -2427,7 +2415,7 @@ contains
       call parse_variable(namespace, 'CasidaKohnShamStates', default, wfn_list)
 
       write(messages(1),'(a,a)') "Info: States that form the basis: ", trim(wfn_list)
-      call message%info(1)
+      call st%message%info(1)
 
       ! count pairs
       n_pairs = 0
@@ -2448,7 +2436,7 @@ contains
 
       write(messages(1),'(a,f12.6,a)') "Info: including transitions with energy < ", &
         units_from_atomic(units_out%energy, energy_window), trim(units_abbrev(units_out%energy))
-      call message%info(1)
+      call st%message%info(1)
 
       ! count pairs
       n_pairs = 0
@@ -2464,8 +2452,6 @@ contains
       end do
 
     end if
-
-    deallocate(message)
 
     POP_SUB(states_elec_count_pairs)
   end subroutine states_elec_count_pairs
@@ -2493,11 +2479,8 @@ contains
 
     integer :: ist
     FLOAT, parameter :: M_THRESHOLD = CNST(1.0e-6)
-    class(message_t), allocatable :: message
 
     PUSH_SUB(occupied_states)
-
-    allocate(message, source=st%message)
 
     if(present(filled))           filled(:) = 0
     if(present(partially_filled)) partially_filled(:) = 0
@@ -2520,7 +2503,7 @@ contains
           if(present(partially_filled)) partially_filled(n_partially_filled) = ist
         elseif(abs(st%occ(ist, ik)) > M_THRESHOLD ) then
           write(messages(1),*) 'Internal error in occupied_states: Illegal occupation value ', st%occ(ist, ik)
-          call message%fatal(1)
+          call st%message%fatal(1)
          end if
       end do
     case(SPIN_POLARIZED, SPINORS)
@@ -2533,12 +2516,10 @@ contains
           if(present(partially_filled)) partially_filled(n_partially_filled) = ist
         elseif(abs(st%occ(ist, ik)) > M_THRESHOLD ) then
           write(messages(1),*) 'Internal error in occupied_states: Illegal occupation value ', st%occ(ist, ik)
-          call message%fatal(1)
+          call st%message%fatal(1)
          end if
       end do
     end select
-
-    deallocate(message)
 
     POP_SUB(occupied_states)
   end subroutine occupied_states

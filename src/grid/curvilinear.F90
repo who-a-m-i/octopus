@@ -253,11 +253,8 @@ contains
     type(curvilinear_t), intent(in) :: cv
     integer,            intent(in) :: unit
 
-    class(message_t), allocatable :: message
-
     PUSH_SUB(curvilinear_write_info)
 
-    allocate(message, source=cv%message)
 
     select case(cv%method)
     case(CURV_METHOD_GYGI)
@@ -270,19 +267,18 @@ contains
       write(messages(5), '(4x,3a,f6.3)') 'beta  [', &
         trim(units_abbrev(units_out%length)), '] = ', &
         units_from_atomic(units_out%length, cv%gygi%beta)
-      call message%info(5, unit)
+      call cv%message%info(5, unit)
 
     case(CURV_METHOD_BRIGGS)
       write(messages(1), '(a)') '  Curvilinear Method = briggs'
-      call message%info(1, unit)
+      call cv%message%info(1, unit)
 
     case(CURV_METHOD_MODINE)
       write(messages(1), '(a)') ' Curvilinear  Method = modine'
-      call message%info(1, unit)
+      call cv%message%info(1, unit)
 
     end select
 
-    deallocate(message)
 
     POP_SUB(curvilinear_write_info)
   end subroutine curvilinear_write_info

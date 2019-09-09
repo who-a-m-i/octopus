@@ -212,7 +212,7 @@ contains
       end do
     else
       ! initialize eigensolver. No preconditioner for rdmft is implemented, so we disable it.
-      call eigensolver_init(rdm%eigens, namespace, gr, st, disable_preconditioner=.true.)
+      call eigensolver_init(rdm%eigens, namespace, gr, st)
       if (rdm%eigens%additional_terms) call messages_not_implemented("CG Additional Terms with RDMFT.")
     end if
 

@@ -954,6 +954,10 @@ contains
       rdm%eigens%matvec = rdm%eigens%matvec + maxiter ! necessary?  
     end do
     
+    if(mpi_grp_is_root(mpi_world) .and. .not. debug%info) then
+      write(stdout, '(1x)')
+    end if
+    
     ! calculate total energy with new states
     call density_calc (st, gr, st%rho)
     call v_ks_calc(ks, namespace, hm, st, geo)

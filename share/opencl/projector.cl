@@ -23,6 +23,36 @@
 
 #define OFFSET_SIZE 6 /* defined in src/hamiltonian/hamiltonian_base.F90 */
 
+// Define the CUDA warpReduce function
+
+#ifdef CUDA
+// shuffle instructions wrappers
+#if __CUDACC_VER_MAJOR__ >= 9
+
+#define MASK_ALL_WARP 0xFFFFFFFF
+
+#define warpShflDown(var, delta)   __shfl_down_sync (MASK_ALL_WARP, var, delta)
+
+#else
+
+#define warpShflDown(var, delta)   __shfl_down (var, delta)
+
+#endif
+
+__device__ inline  double2 warpReduce(double2 val)
+{
+#pragma unroll
+    for (int offset = warpSize/2; offset > 0; offset /= 2)
+    {
+        val.x += warpShflDown(val.x, offset);
+        val.y += warpShflDown(val.y, offset);
+    }
+    return val;
+}
+
+#endif
+
+
 __kernel void projector_bra(const int nmat,
 			    __global int const * restrict offsets,
 			    __global double const * restrict matrix,
@@ -32,10 +62,17 @@ __kernel void projector_bra(const int nmat,
 			    __global double * restrict projection, const int ldprojection
 			    ){
   
-  const int ist = get_global_id(0);
+#ifdef CUDA
+  const int myWarpSize = warpSize;
+#else
+  const int myWarpSize=1;
+#endif
+
+  const int ist = get_global_id(0)/myWarpSize;
   const int ipj = get_global_id(1);
   const int imat = get_global_id(2);
 
+/*
 #ifdef SHARED_MEM
   __local int loff[OFFSET_SIZE];
 
@@ -50,23 +87,30 @@ __kernel void projector_bra(const int nmat,
   const int scal_offset   = loff[4];
 
 #else
-
+*/
   const int npoints       = offsets[OFFSET_SIZE*imat + 0];
   const int nprojs        = offsets[OFFSET_SIZE*imat + 1];
   const int matrix_offset = offsets[OFFSET_SIZE*imat + 2];
   const int map_offset    = offsets[OFFSET_SIZE*imat + 3];
   const int scal_offset   = offsets[OFFSET_SIZE*imat + 4];
-
+/*
 #endif
-  
+*/
+
   if(ipj >= nprojs) return;
 
   const int nppj = npoints*ipj;
 
   double aa = 0.0;
-  for(int ip = 0; ip < npoints; ip++){
+  for(int ip = get_local_id(0)%myWarpSize; ip < npoints; ip+=myWarpSize){
     aa += matrix[matrix_offset + ip + nppj]*psi[((map[map_offset + ip] - 1)<<ldpsi) + ist];
   }
+
+#ifdef CUDA
+  aa = warpReduce(aa)
+#endif
+
+  if(get_local_id(0)%myWarpSize == 0)  
   projection[ist + ((scal_offset + ipj)<<ldprojection)] = scal[scal_offset + ipj]*aa;
 
 }
@@ -81,10 +125,18 @@ __kernel void projector_bra_phase(const int nmat,
 				  __global double2 const * restrict phases, const int phases_offset
 				  ){
   
-  const int ist = get_global_id(0);
+
+#ifdef CUDA
+  const int myWarpSize = warpSize;
+#else
+  const int myWarpSize=1;
+#endif
+
+  const int ist = get_global_id(0)/myWarpSize;
   const int ipj = get_global_id(1);
   const int imat = get_global_id(2);
 
+/*
 #ifdef SHARED_MEM
   __local int loff[OFFSET_SIZE];
 
@@ -99,25 +151,31 @@ __kernel void projector_bra_phase(const int nmat,
   const int scal_offset   = loff[4];
   
 #else
-
+*/
   const int npoints       = offsets[OFFSET_SIZE*imat + 0];
   const int nprojs        = offsets[OFFSET_SIZE*imat + 1];
   const int matrix_offset = offsets[OFFSET_SIZE*imat + 2];
   const int map_offset    = offsets[OFFSET_SIZE*imat + 3];
   const int scal_offset   = offsets[OFFSET_SIZE*imat + 4];
-  
+/*  
 #endif
-
+*/
 
   if(ipj >= nprojs) return;
 
   const int nppj = npoints*ipj;
 
   double2 aa = 0.0;
-  for(int ip = 0; ip < npoints; ip++){
+  for(int ip = get_local_id(0)%myWarpSize; ip < npoints; ip+=myWarpSize){
     double2 phasepsi = complex_mul(phases[phases_offset + map_offset + ip], psi[((map[map_offset + ip] - 1)<<ldpsi) + ist]);
     aa += matrix[matrix_offset + ip + nppj]*phasepsi;
   }
+
+#ifdef CUDA
+  aa = warpreduce(aa);
+#endif
+
+  if(get_local_id(0)%myWarpSize==0) 
   projection[ist + ((scal_offset + ipj)<<ldprojection)] = scal[scal_offset + ipj]*aa;
 
 }
@@ -132,7 +190,7 @@ __kernel void projector_commutator_bra(const int nmat,
 				       __global double * restrict projection, const int ldprojection
 				       ){
   
-  const int ist = get_global_id(0);
+  const int ist = get_global_id(0)/myWarpSize;
   const int ipj = get_global_id(1);
   const int imat = get_global_id(2);
 

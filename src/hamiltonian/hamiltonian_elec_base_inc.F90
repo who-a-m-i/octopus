@@ -514,6 +514,7 @@ subroutine X(hamiltonian_elec_base_nlocal_start)(this, mesh, std, ik, psib, proj
   CMPLX, allocatable :: tmp_proj(:, :)
 
   integer :: block_size
+  integer :: size_unfolded
   
   if(.not. this%apply_projector_matrices) return
 
@@ -562,11 +563,12 @@ subroutine X(hamiltonian_elec_base_nlocal_start)(this, mesh, std, ik, psib, proj
         call accel_set_kernel_arg(kernel, 10, (ik - std%kpt%start)*this%total_points)
       end if
 
+      size_unfolded = size * accel%warp_size
       padnprojs = pad_pow2(this%max_nprojs)
       lnprojs = min(accel_kernel_workgroup_size(kernel)/size, padnprojs)
 
       call accel_kernel_run(kernel, &
-        (/size, padnprojs, this%nprojector_matrices/), (/size, lnprojs, 1/))
+        (/size_unfolded, padnprojs, this%nprojector_matrices/), (/size_unfolded, lnprojs, 1/))
 
       do imat = 1, this%nprojector_matrices
         pmat => this%projector_matrices(imat)

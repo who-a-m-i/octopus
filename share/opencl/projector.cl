@@ -39,7 +39,18 @@
 
 #endif
 
-__device__ inline  double2 warpReduce(double2 val)
+
+__device__ inline  double warpReduce(double val)
+{
+#pragma unroll
+    for (int offset = warpSize/2; offset > 0; offset /= 2)
+    {
+        val += warpShflDown(val, offset);
+    }
+    return val;
+}
+
+__device__ inline  double2 warpReduce2(double2 val)
 {
 #pragma unroll
     for (int offset = warpSize/2; offset > 0; offset /= 2)
@@ -107,11 +118,12 @@ __kernel void projector_bra(const int nmat,
   }
 
 #ifdef CUDA
-  aa = warpReduce(aa)
+  aa = warpReduce(aa);
 #endif
 
-  if(get_local_id(0)%myWarpSize == 0)  
-  projection[ist + ((scal_offset + ipj)<<ldprojection)] = scal[scal_offset + ipj]*aa;
+  if(get_local_id(0)%myWarpSize == 0) { 
+    projection[ist + ((scal_offset + ipj)<<ldprojection)] = scal[scal_offset + ipj]*aa;
+  }
 
 }
 
@@ -172,7 +184,7 @@ __kernel void projector_bra_phase(const int nmat,
   }
 
 #ifdef CUDA
-  aa = warpreduce(aa);
+  aa = warpReduce2(aa);
 #endif
 
   if(get_local_id(0)%myWarpSize==0) 
@@ -190,7 +202,7 @@ __kernel void projector_commutator_bra(const int nmat,
 				       __global double * restrict projection, const int ldprojection
 				       ){
   
-  const int ist = get_global_id(0)/myWarpSize;
+  const int ist = get_global_id(0);
   const int ipj = get_global_id(1);
   const int imat = get_global_id(2);
 

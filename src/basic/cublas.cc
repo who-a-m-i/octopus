@@ -168,9 +168,9 @@ extern "C" void FC_FUNC_(cuda_blas_dgemm_off, CUDA_BLAS_DGEMM_OFF)
 
 #ifdef HAVE_CUDA
   CUBLAS_SAFE_CALL(cublasDgemm(**handle, (cublasOperation_t) *transa, (cublasOperation_t) *transb, *m, *n, *k,
-			       (double *) ** alpha, (double *) **A + *offa, *lda,
-                               (double *) **B + *offb, *ldb,
-			       (double *) ** beta, (double *) **C + *offc, *ldc));
+			       (double *) ** alpha, ((double *) **A) + *offa, *lda,
+                               ((double *) **B) + *offb, *ldb,
+			       (double *) ** beta, ((double *) **C) + *offc, *ldc));
 #endif
 }
 
@@ -182,9 +182,9 @@ extern "C" void FC_FUNC_(cuda_blas_zgemm_off, CUDA_BLAS_zGEMM_OFF)
 
 #ifdef HAVE_CUDA
   CUBLAS_SAFE_CALL(cublasZgemm(**handle, (cublasOperation_t) *transa, (cublasOperation_t) *transb, *m, *n, *k,
-			       (cuDoubleComplex *) ** alpha, (cuDoubleComplex *) **A + *offa, *lda,
-                               (cuDoubleComplex *) **B + *offb, *ldb,
-			       (cuDoubleComplex *) ** beta, (cuDoubleComplex *) **C + *offc, *ldc));
+			       (cuDoubleComplex *) ** alpha, ((cuDoubleComplex *) **A) + *offa, *lda,
+                               ((cuDoubleComplex *) **B) + *offb, *ldb,
+			       (cuDoubleComplex *) ** beta, ((cuDoubleComplex *) **C) + *offc, *ldc));
 #endif
 }
 

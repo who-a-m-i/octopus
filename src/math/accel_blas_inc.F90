@@ -176,9 +176,6 @@ subroutine X(accel_gemm)(transa, transb, m, n, k, alpha, A, offa, lda, B, offb, 
 
   PUSH_SUB(X(accel_gemm))
 
-  ASSERT(offa == 0)
-  ASSERT(offb == 0)
-
 #ifdef HAVE_CLBLAS
 
   call aX(clblas,gemmEx)(order = clblasColumnMajor, transA = transa, transB = transb, &
@@ -198,17 +195,16 @@ subroutine X(accel_gemm)(transa, transb, m, n, k, alpha, A, offa, lda, B, offb, 
   call accel_write_buffer(alpha_buffer, alpha)
   call accel_write_buffer(beta_buffer, beta)
 
-  call aX(cuda_blas_,gemm)(handle = accel%cublas_handle, transa = transa, transb = transb, &
+  call aX(cuda_blas_,gemm_off)(handle = accel%cublas_handle, transa = transa, transb = transb, &
     m = m, n = n, k = k, &
-    alpha = alpha_buffer%mem, a = a%mem, lda = lda, &
-    b = b%mem, ldb = ldb, &
-    beta = beta_buffer%mem, c = c%mem, ldc = ldc)
+    alpha = alpha_buffer%mem, a = a%mem, lda = lda, offa = offa, &
+    b = b%mem, ldb = ldb, offb = offb, &
+    beta = beta_buffer%mem, c = c%mem, ldc = ldc, offc = offc)
 
   call accel_finish()
 
   call accel_release_buffer(alpha_buffer)
   call accel_release_buffer(beta_buffer)
-
 #endif
 
   POP_SUB(X(accel_gemm))

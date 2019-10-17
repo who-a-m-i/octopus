@@ -211,6 +211,69 @@ subroutine X(accel_gemm)(transa, transb, m, n, k, alpha, A, offa, lda, B, offb, 
 end subroutine X(accel_gemm)
 
 ! -----------------------------------------------------------------
+subroutine X(accel_gemm_strided_batched)(transa, transb, m, n, k, alpha, &
+  A, strideA, lda, B, strideB, ldb, beta, C, strideC, ldc, batchCount)
+  integer,            intent(in)    :: transa
+  integer,            intent(in)    :: transb
+  integer(8),         intent(in)    :: m
+  integer(8),         intent(in)    :: n
+  integer(8),         intent(in)    :: k
+  R_TYPE,             intent(in)    :: alpha
+  type(accel_mem_t),  intent(in)    :: A
+  integer(8),         intent(in)    :: strideA
+  integer(8),         intent(in)    :: lda
+  type(accel_mem_t),  intent(in)    :: B
+  integer(8),         intent(in)    :: strideB
+  integer(8),         intent(in)    :: ldb
+  R_TYPE,             intent(in)    :: beta
+  type(accel_mem_t),  intent(inout) :: C
+  integer(8),         intent(in)    :: strideC
+  integer(8),         intent(in)    :: ldc
+  integer(8),         intent(in)    :: batchCount
+
+#ifdef HAVE_CLBLAS
+  integer :: ierr, ibatch
+#endif
+#ifdef HAVE_CUDA
+  type(accel_mem_t) :: alpha_buffer, beta_buffer
+  integer :: ibatch
+#endif
+
+  PUSH_SUB(X(accel_gemm_strided_batched))
+
+#ifdef HAVE_CLBLAS
+  do ibatch = 1, batchCount
+    call X(accel_gemm)(transa=transa, transb=transb, m=m, n=n, k=k, alpha=alpha, &
+      A=A, offa=int(ibatch - 1, 8), lda=lda, B=B, offb=int(ibatch - 1, 8), ldb=ldb, &
+      beta=beta, C=C, offc=int(ibatch - 1, 8), ldc=ldc)
+  end do
+#endif
+#ifdef HAVE_CUDA
+  call accel_create_buffer(alpha_buffer, ACCEL_MEM_READ_ONLY, R_TYPE_VAL, 1)
+  call accel_create_buffer(beta_buffer, ACCEL_MEM_READ_ONLY, R_TYPE_VAL, 1)
+
+  call accel_write_buffer(alpha_buffer, alpha)
+  call accel_write_buffer(beta_buffer, beta)
+
+
+  call aX(cuda_blas_,gemm_strided_batched)(handle = accel%cublas_handle, &
+    transa = transa, transb = transb, &
+    m = m, n = n, k = k, &
+    alpha = alpha_buffer%mem, a = a%mem, lda = lda, strideA = strideA, &
+    b = b%mem, ldb = ldb, strideB = strideB, &
+    beta = beta_buffer%mem, c = c%mem, ldc = ldc, strideC = strideC, &
+    batchCount = batchCount)
+
+  call accel_finish()
+
+  call accel_release_buffer(alpha_buffer)
+  call accel_release_buffer(beta_buffer)
+#endif
+
+  POP_SUB(X(accel_gemm_strided_batched))
+end subroutine X(accel_gemm_strided_batched)
+! -----------------------------------------------------------------
+
 
 subroutine X(accel_dot)(n, x, offx, incx, y, offy, incy, res, offres)
   integer(8),        intent(in)    :: n

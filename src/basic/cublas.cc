@@ -237,3 +237,30 @@ extern "C" void FC_FUNC_(cuda_blas_ztrsm, CUDA_BLAS_ZTRSM)
 			       *m, *n, (cuDoubleComplex *) **alpha, (cuDoubleComplex *) **A, *lda, (cuDoubleComplex *) **B, *ldb));
 #endif
 }
+
+extern "C" void FC_FUNC_(cuda_blas_dgemm_strided_batched, CUDA_BLAS_DGEMM_STRIDED_BATCHED)
+  (cublasHandle_t ** handle, fint * transa, fint * transb, fint8 * m, fint8 * n, fint8 * k,
+   CUdeviceptr ** alpha, CUdeviceptr ** A, fint8 * lda, fint8 * strideA,
+   CUdeviceptr ** B, fint8 * ldb, fint8 * strideB,
+   CUdeviceptr ** beta, CUdeviceptr ** C, fint8 * ldc, fint8 * strideC, fint8 * batchCount){
+#ifdef HAVE_CUDA
+  CUBLAS_SAFE_CALL(cublasDgemmStridedBatched(**handle,
+        (cublasOperation_t) *transa, (cublasOperation_t) *transb, *m, *n, *k,
+        (double *) ** alpha, (double *) **A, *lda, *strideA, (double *) **B, *ldb, *strideB,
+        (double *) ** beta, (double *) **C, *ldc, *strideC, *batchCount));
+#endif
+}
+
+extern "C" void FC_FUNC_(cuda_blas_zgemm_strided_batched, CUDA_BLAS_ZGEMM_STRIDED_BATCHED)
+  (cublasHandle_t ** handle, fint * transa, fint * transb, fint8 * m, fint8 * n, fint8 * k,
+   CUdeviceptr ** alpha, CUdeviceptr ** A, fint8 * lda, fint8 * strideA,
+   CUdeviceptr ** B, fint8 * ldb, fint8 * strideB,
+   CUdeviceptr ** beta, CUdeviceptr ** C, fint8 * ldc, fint8 * strideC, fint8 * batchCount){
+#ifdef HAVE_CUDA
+  CUBLAS_SAFE_CALL(cublasZgemmStridedBatched(**handle,
+        (cublasOperation_t) *transa, (cublasOperation_t) *transb, *m, *n, *k,
+        (cuDoubleComplex *) ** alpha, (cuDoubleComplex *) **A, *lda, *strideA,
+        (cuDoubleComplex *) **B, *ldb, *strideB,
+        (cuDoubleComplex *) ** beta, (cuDoubleComplex *) **C, *ldc, *strideC, *batchCount));
+#endif
+}

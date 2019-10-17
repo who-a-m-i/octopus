@@ -43,7 +43,9 @@ module accel_blas_oct_m
     daccel_trsm,                   &
     zaccel_trsm,                   &
     daccel_gemm,                   &
-    zaccel_gemm
+    zaccel_gemm,                   &
+    daccel_gemm_strided_batched,   &
+    zaccel_gemm_strided_batched
 
   integer, parameter, public ::                      &
     CUBLAS_DIAG_NON_UNIT = 0,                        &
@@ -260,6 +262,61 @@ module accel_blas_oct_m
       integer(8),   intent(in)    :: ldc
       integer(8),   intent(in)    :: offc
     end subroutine cuda_blas_zgemm_off
+  end interface
+
+  ! batched and strided GEMM
+  interface
+    subroutine cuda_blas_dgemm_strided_batched(handle, transa, transb, m, n, k, alpha, &
+        A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount)
+      use iso_c_binding
+
+      implicit none
+
+      type(c_ptr),  intent(in)    :: handle
+      integer,      intent(in)    :: transa
+      integer,      intent(in)    :: transb
+      integer(8),   intent(in)    :: m
+      integer(8),   intent(in)    :: n
+      integer(8),   intent(in)    :: k
+      type(c_ptr),  intent(in)    :: alpha
+      type(c_ptr),  intent(in)    :: A
+      integer(8),   intent(in)    :: lda
+      integer(8),   intent(in)    :: strideA
+      type(c_ptr),  intent(in)    :: B
+      integer(8),   intent(in)    :: ldb
+      integer(8),   intent(in)    :: strideB
+      type(c_ptr),  intent(in)    :: beta
+      type(c_ptr),  intent(inout) :: C
+      integer(8),   intent(in)    :: ldc
+      integer(8),   intent(in)    :: strideC
+      integer(8),   intent(in)    :: batchCount
+    end subroutine cuda_blas_dgemm_strided_batched
+
+    subroutine cuda_blas_zgemm_strided_batched(handle, transa, transb, m, n, k, alpha, &
+        A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount)
+      use iso_c_binding
+
+      implicit none
+
+      type(c_ptr),  intent(in)    :: handle
+      integer,      intent(in)    :: transa
+      integer,      intent(in)    :: transb
+      integer(8),   intent(in)    :: m
+      integer(8),   intent(in)    :: n
+      integer(8),   intent(in)    :: k
+      type(c_ptr),  intent(in)    :: alpha
+      type(c_ptr),  intent(in)    :: A
+      integer(8),   intent(in)    :: lda
+      integer(8),   intent(in)    :: strideA
+      type(c_ptr),  intent(in)    :: B
+      integer(8),   intent(in)    :: ldb
+      integer(8),   intent(in)    :: strideB
+      type(c_ptr),  intent(in)    :: beta
+      type(c_ptr),  intent(inout) :: C
+      integer(8),   intent(in)    :: ldc
+      integer(8),   intent(in)    :: strideC
+      integer(8),   intent(in)    :: batchCount
+    end subroutine cuda_blas_zgemm_strided_batched
   end interface
 
   ! SYRK/HERK

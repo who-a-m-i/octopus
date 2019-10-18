@@ -785,7 +785,8 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
 
     call accel_kernel_run(kernel, (/pad(mesh%np, wgsize)/), (/wgsize/)) ! Update the kernel sizes !!!!
 
-    call daccel_gemv(CUBLAS_OP_T, int(aa%pack%size(1), 8), int(aa%pack%size(2), 8), M_ONE, scratch_buffer, int(mesh%np, 8), one_buffer, 1_8, M_ZERO, nrm2_buffer, 1_8)
+    call daccel_gemv(CUBLAS_OP_T, int(aa%pack%size(1), 8), int(aa%pack%size(2), 8), M_ONE, scratch_buffer, int(mesh%np, 8), & 
+                     one_buffer, 1_8, M_ZERO, nrm2_buffer, 1_8)
 
     call accel_read_buffer(nrm2_buffer, aa%pack%size(1), ssq)
 

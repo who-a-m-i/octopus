@@ -672,7 +672,8 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
   integer :: ist, idim, indb, ip
   R_TYPE :: a0
   FLOAT, allocatable :: scal(:), ssq(:)
-  type(accel_mem_t)  :: nrm2_buffer
+  type(accel_kernel_t), pointer :: kernel
+  type(accel_mem_t)  :: nrm2_buffer, one_buffer, scratch_buffer
   type(profile_t), save :: prof
   integer :: wgsize
 
@@ -759,32 +760,37 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
     call accel_create_buffer(one_buffer, ACCEL_MEM_READ_WRITE, TYPE_FLOAT, aa%pack%size(1))
 
     call accel_set_kernel_arg(set_one, 0, mesh%np)
-    call accel_set_kernel_arg(set_one, 1, one_buffer%mem)
+    call accel_set_kernel_arg(set_one, 1, one_buffer)
 
     wgsize = accel_kernel_workgroup_size(set_one)
-    call accel_kernel_run(set_one, (/pad(this%gr%mesh%np, wgsize)/), (/wgsize/))
+    call accel_kernel_run(set_one, (/pad(mesh%np, wgsize)/), (/wgsize/))
 
-    if(states_are_real(this%st)) then
+    !nullify(kernel)
+
+    if (batch_type(aa) == TYPE_FLOAT ) then 
       kernel => kernel_mod_sqr_real
-    else
+    else if (batch_type(aa) == TYPE_CMPLX) then
       kernel => kernel_mod_sqr_complex
     end if
 
-    call accel_set_kernel_arg(kernel, 0, psib%nst)
+    if(.not.associated(kernel)) then
+      call message_fatal("No mod_sqr kernel for single precision implemented.")
+    endif
+
+    call accel_set_kernel_arg(kernel, 0, aa%nst_linear)
     call accel_set_kernel_arg(kernel, 1, mesh%np)
     call accel_set_kernel_arg(kernel, 4, aa%pack%buffer)
-    call accel_set_kernel_arg(kernel, 5, log2(psib%pack%size(1)))
-    call accel_set_kernel_arg(kernel, 6, scratch_buffer%mem)
+    call accel_set_kernel_arg(kernel, 5, log2(aa%pack%size(1)))
+    call accel_set_kernel_arg(kernel, 6, scratch_buffer)
 
-    call accel_kernel_run(kernel, (/pad(this%gr%mesh%np, wgsize)/), (/wgsize/)) ! Update the kernel sizes !!!!
+    call accel_kernel_run(kernel, (/pad(mesh%np, wgsize)/), (/wgsize/)) ! Update the kernel sizes !!!!
 
-
-    call daccel_gemv(CUBLAS_OP_T, M_ONE, scratch_buffer, mesh%np, one_buffer, 1, M_ZERO, nrm2_buffer, 1)
-
+    call daccel_gemv(CUBLAS_OP_T, int(aa%pack%size(1), 8), int(aa%pack%size(2), 8), M_ONE, scratch_buffer, int(mesh%np, 8), one_buffer, 1_8, M_ZERO, nrm2_buffer, 1_8)
 
     call accel_read_buffer(nrm2_buffer, aa%pack%size(1), ssq)
 
     call accel_release_buffer(nrm2_buffer)
+    call accel_release_buffer(one_buffer)
 
     do ist = 1, aa%nst
       nrm2(ist) = M_ZERO

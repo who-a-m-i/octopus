@@ -317,13 +317,12 @@ end subroutine X(accel_nrm2)
     
 ! -----------------------------------------------------------------------------------
 
-subroutine X(accel_gemv)(transa, m, n, alpha, A, offa, lda, x, incx, beta, y, incy)
+subroutine X(accel_gemv)(transa, m, n, alpha, A, lda, x, incx, beta, y, incy)
   integer,            intent(in)    :: transa
   integer(8),         intent(in)    :: m
   integer(8),         intent(in)    :: n
   R_TYPE,             intent(in)    :: alpha
   type(accel_mem_t),  intent(in)    :: A
-  integer(8),         intent(in)    :: offa !< ??
   integer(8),         intent(in)    :: lda
   type(accel_mem_t),  intent(in)    :: x
   integer(8),         intent(in)    :: incx
@@ -338,7 +337,7 @@ subroutine X(accel_gemv)(transa, m, n, alpha, A, offa, lda, x, incx, beta, y, in
   type(accel_mem_t) :: alpha_buffer, beta_buffer
 #endif
 
-  PUSH_SUB(X(accel_gemm))
+  PUSH_SUB(X(accel_gemv))
 
 #ifdef HAVE_CLBLAS
 
@@ -374,5 +373,5 @@ subroutine X(accel_gemv)(transa, m, n, alpha, A, offa, lda, x, incx, beta, y, in
 
 #endif
 
-  POP_SUB(X(accel_gemm))
-end subroutine X(accel_gemm)
+  POP_SUB(X(accel_gemv))
+end subroutine X(accel_gemv)

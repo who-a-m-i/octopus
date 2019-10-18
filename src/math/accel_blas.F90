@@ -43,7 +43,9 @@ module accel_blas_oct_m
     daccel_trsm,                   &
     zaccel_trsm,                   &
     daccel_gemm,                   &
-    zaccel_gemm
+    zaccel_gemm,                   &
+    daccel_gemv,                   &
+    zaccel_gemv
 
   integer, parameter, public ::                      &
     CUBLAS_DIAG_NON_UNIT = 0,                        &

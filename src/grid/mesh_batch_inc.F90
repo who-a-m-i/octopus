@@ -674,6 +674,7 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
   FLOAT, allocatable :: scal(:), ssq(:)
   type(accel_mem_t)  :: nrm2_buffer
   type(profile_t), save :: prof
+  integer :: wgsize
 
   PUSH_SUB(X(priv_mesh_batch_nrm2))
   call profiling_in(prof, 'MESH_BATCH_NRM2')
@@ -744,12 +745,42 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
 
     call accel_create_buffer(nrm2_buffer, ACCEL_MEM_WRITE_ONLY, TYPE_FLOAT, aa%pack%size(1))
 
-    do ist = 1, aa%nst_linear
+    !do ist = 1, aa%nst_linear
+    !
+    !  call X(accel_nrm2)(N = int(mesh%np, 8), X = aa%pack%buffer, offx = int(ist - 1, 8), incx = int(aa%pack%size(1), 8), &
+    !    res = nrm2_buffer, offres = int(ist - 1, 8))
+    !  
+    !end do
 
-      call X(accel_nrm2)(N = int(mesh%np, 8), X = aa%pack%buffer, offx = int(ist - 1, 8), incx = int(aa%pack%size(1), 8), &
-        res = nrm2_buffer, offres = int(ist - 1, 8))
-      
-    end do
+
+    ! Perform pointwise modulus square on the wave functions, and store result in a scratch buffer:
+
+    call accel_create_buffer(scratch_buffer, ACCEL_MEM_READ_WRITE, TYPE_FLOAT, aa%pack%size(1)*aa%pack%size(2))
+    call accel_create_buffer(one_buffer, ACCEL_MEM_READ_WRITE, TYPE_FLOAT, aa%pack%size(1))
+
+    call accel_set_kernel_arg(set_one, 0, mesh%np)
+    call accel_set_kernel_arg(set_one, 1, one_buffer%mem)
+
+    wgsize = accel_kernel_workgroup_size(set_one)
+    call accel_kernel_run(set_one, (/pad(this%gr%mesh%np, wgsize)/), (/wgsize/))
+
+    if(states_are_real(this%st)) then
+      kernel => kernel_mod_sqr_real
+    else
+      kernel => kernel_mod_sqr_complex
+    end if
+
+    call accel_set_kernel_arg(kernel, 0, psib%nst)
+    call accel_set_kernel_arg(kernel, 1, mesh%np)
+    call accel_set_kernel_arg(kernel, 4, aa%pack%buffer)
+    call accel_set_kernel_arg(kernel, 5, log2(psib%pack%size(1)))
+    call accel_set_kernel_arg(kernel, 6, scratch_buffer%mem)
+
+    call accel_kernel_run(kernel, (/pad(this%gr%mesh%np, wgsize)/), (/wgsize/)) ! Update the kernel sizes !!!!
+
+
+    call daccel_gemv(CUBLAS_OP_T, M_ONE, scratch_buffer, mesh%np, one_buffer, 1, M_ZERO, nrm2_buffer, 1)
+
 
     call accel_read_buffer(nrm2_buffer, aa%pack%size(1), ssq)
 

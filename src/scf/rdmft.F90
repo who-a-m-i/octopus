@@ -211,7 +211,7 @@ contains
         rdm%vecnat(ist, ist) = M_ONE
       end do
     else
-      ! initialize eigensolver. No preconditioner for rdmft is implemented, so we disable it.
+      ! initialize eigensolver.
       call eigensolver_init(rdm%eigens, namespace, gr, st)
       if (rdm%eigens%additional_terms) call messages_not_implemented("CG Additional Terms with RDMFT.")
     end if
@@ -1006,7 +1006,7 @@ contains
           
           ! calculate <phi_i|H|phi_j>=lam_ij
           if (.not. iorb == jorb ) then
-            call dhamiltonian_elec_apply(hm,gr%der, dpsi1, hpsi1, jorb, 1)
+            call dhamiltonian_elec_apply(hm, gr%mesh, dpsi1, hpsi1, jorb, 1)
             lambda(iorb, jorb) = dmf_dotp(gr%mesh, dpsi(:,1), hpsi1(:,1))
           end if
         end do

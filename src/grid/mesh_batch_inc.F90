@@ -757,7 +757,7 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
     ! Perform pointwise modulus square on the wave functions, and store result in a scratch buffer:
 
     call accel_create_buffer(scratch_buffer, ACCEL_MEM_READ_WRITE, TYPE_FLOAT, aa%pack%size(1)*aa%pack%size(2))
-    call accel_create_buffer(one_buffer, ACCEL_MEM_READ_WRITE, TYPE_FLOAT, aa%pack%size(1))
+    call accel_create_buffer(one_buffer, ACCEL_MEM_READ_WRITE, TYPE_FLOAT, aa%pack%size(2))
 
     call accel_set_kernel_arg(set_one, 0, mesh%np)
     call accel_set_kernel_arg(set_one, 1, one_buffer)
@@ -779,19 +779,21 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
 
     call accel_set_kernel_arg(kernel, 0, aa%nst_linear)
     call accel_set_kernel_arg(kernel, 1, mesh%np)
-    call accel_set_kernel_arg(kernel, 4, aa%pack%buffer)
-    call accel_set_kernel_arg(kernel, 5, log2(aa%pack%size(1)))
-    call accel_set_kernel_arg(kernel, 6, scratch_buffer)
+    call accel_set_kernel_arg(kernel, 2, aa%pack%buffer)
+    call accel_set_kernel_arg(kernel, 3, log2(aa%pack%size(1)))
+    call accel_set_kernel_arg(kernel, 4, scratch_buffer)
 
     call accel_kernel_run(kernel, (/pad(mesh%np, wgsize)/), (/wgsize/)) ! Update the kernel sizes !!!!
 
-    call daccel_gemv(CUBLAS_OP_T, int(aa%pack%size(1), 8), int(aa%pack%size(2), 8), M_ONE, scratch_buffer, int(mesh%np, 8), & 
+    call daccel_gemv(CUBLAS_OP_T, int(aa%nst_linear, 8), int(mesh%np, 8), &
+                     M_ONE, scratch_buffer, int(aa%pack%size(1), 8), & 
                      one_buffer, 1_8, M_ZERO, nrm2_buffer, 1_8)
 
     call accel_read_buffer(nrm2_buffer, aa%pack%size(1), ssq)
 
     call accel_release_buffer(nrm2_buffer)
     call accel_release_buffer(one_buffer)
+    call accel_release_buffer(scratch_buffer)
 
     do ist = 1, aa%nst
       nrm2(ist) = M_ZERO

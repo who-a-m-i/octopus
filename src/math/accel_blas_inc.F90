@@ -358,12 +358,12 @@ subroutine X(accel_gemv)(transa, m, n, alpha, A, lda, x, incx, beta, y, incy)
   call accel_write_buffer(alpha_buffer, alpha)
   call accel_write_buffer(beta_buffer, beta)
 
-  call aX(cuda_blas_,gemv)(handle = accel%cublas_handle, transa = transa, transb = transb, &
+  call aX(cuda_blas_,gemv)(handle = accel%cublas_handle, transa = transa, &
     m = m, n = n,  &
-    alpha = alpha_buffer%mem, 
+    alpha = alpha_buffer%mem, &
     a = a%mem, lda = lda, &
     x = x%mem, incx = incx, &
-    beta = beta_buffer%mem, 
+    beta = beta_buffer%mem, &
     y = y%mem, incy = incy)
 
   call accel_finish()

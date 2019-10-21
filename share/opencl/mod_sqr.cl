@@ -23,11 +23,12 @@
 
 __kernel void mod_sqr_real(const int nst,
 			   const int np,
-			   const __global double * restrict psi, const int ldpsi,
+			   const __global double * restrict psi, 
+               const int ldpsi,
 			   __global double * restrict mod_sqr){
   
-  int ip  = get_global_id(0);
-  int ist = get_global_id(1);
+  int ist = get_global_id(0);
+  int ip  = get_global_id(1);
 
   if(ip >= np || ist >= nst) return;
 
@@ -38,11 +39,12 @@ __kernel void mod_sqr_real(const int nst,
 
 __kernel void mod_sqr_complex(const int nst,
 			      const int np,
-			      const __global double2 * restrict psi, const int ldpsi,
+			      const __global double2 * restrict psi, 
+                  const int ldpsi,
 			      __global double * restrict mod_sqr){
   
-  int ip  = get_global_id(0);
-  int ist = get_global_id(1);
+  int ist = get_global_id(0);
+  int ip  = get_global_id(1);
 
   if(ip >= np || ist >= nst) return;
 

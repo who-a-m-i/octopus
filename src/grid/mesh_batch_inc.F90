@@ -675,7 +675,7 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
   type(accel_kernel_t), pointer :: kernel
   type(accel_mem_t)  :: nrm2_buffer, one_buffer, scratch_buffer
   type(profile_t), save :: prof
-  integer :: wgsize
+  integer :: wgsize, local_size_1, local_size_2
 
   PUSH_SUB(X(priv_mesh_batch_nrm2))
   call profiling_in(prof, 'MESH_BATCH_NRM2')
@@ -746,13 +746,19 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
 
     call accel_create_buffer(nrm2_buffer, ACCEL_MEM_WRITE_ONLY, TYPE_FLOAT, aa%pack%size(1))
 
-    !do ist = 1, aa%nst_linear
-    !
-    !  call X(accel_nrm2)(N = int(mesh%np, 8), X = aa%pack%buffer, offx = int(ist - 1, 8), incx = int(aa%pack%size(1), 8), &
-    !    res = nrm2_buffer, offres = int(ist - 1, 8))
-    !  
-    !end do
+#define NEW_MODE
 
+#ifdef OLD_MODE
+
+    do ist = 1, aa%nst_linear
+    
+      call X(accel_nrm2)(N = int(mesh%np, 8), X = aa%pack%buffer, offx = int(ist - 1, 8), incx = int(aa%pack%size(1), 8), &
+        res = nrm2_buffer, offres = int(ist - 1, 8))
+      
+    end do
+#endif
+
+#ifdef NEW_MODE
 
     ! Perform pointwise modulus square on the wave functions, and store result in a scratch buffer:
 
@@ -763,9 +769,11 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
     call accel_set_kernel_arg(set_one, 1, one_buffer)
 
     wgsize = accel_kernel_workgroup_size(set_one)
-    call accel_kernel_run(set_one, (/pad(mesh%np, wgsize)/), (/wgsize/))
 
-    !nullify(kernel)
+    local_size_2 = min(aa%pack%size(2), wgsize)
+    call accel_kernel_run(set_one, (/pad(mesh%np, local_size_2)/), (/local_size_2/))
+
+    nullify(kernel)
 
     if (batch_type(aa) == TYPE_FLOAT ) then 
       kernel => kernel_mod_sqr_real
@@ -774,7 +782,8 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
     end if
 
     if(.not.associated(kernel)) then
-      call message_fatal("No mod_sqr kernel for single precision implemented.")
+      message(1) = "No mod_sqr kernel for single precision implemented."
+      call messages_fatal(1)
     endif
 
     call accel_set_kernel_arg(kernel, 0, aa%nst_linear)
@@ -783,17 +792,28 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
     call accel_set_kernel_arg(kernel, 3, log2(aa%pack%size(1)))
     call accel_set_kernel_arg(kernel, 4, scratch_buffer)
 
-    call accel_kernel_run(kernel, (/pad(mesh%np, wgsize)/), (/wgsize/)) ! Update the kernel sizes !!!!
+    local_size_1 = min(1, wgsize / local_size_2)
 
-    call daccel_gemv(CUBLAS_OP_T, int(aa%nst_linear, 8), int(mesh%np, 8), &
+    call accel_kernel_run(kernel, (/ pad(aa%pack%size(1), local_size_1),  pad(aa%pack%size(2), local_size_2), 1 /), &
+                                  (/ local_size_1,                        local_size_2,                       1 /)) 
+
+    call daccel_gemv(CUBLAS_OP_N, int(aa%nst_linear, 8), int(mesh%np, 8), &
                      M_ONE, scratch_buffer, int(aa%pack%size(1), 8), & 
                      one_buffer, 1_8, M_ZERO, nrm2_buffer, 1_8)
+
+    call accel_release_buffer(one_buffer)
+    call accel_release_buffer(scratch_buffer)
+#endif                 
 
     call accel_read_buffer(nrm2_buffer, aa%pack%size(1), ssq)
 
     call accel_release_buffer(nrm2_buffer)
-    call accel_release_buffer(one_buffer)
-    call accel_release_buffer(scratch_buffer)
+
+#ifdef NEW_MODE
+    do ist = 1, aa%nst_linear
+      ssq(ist) = sqrt(ssq(ist))
+    enddo
+#endif
 
     do ist = 1, aa%nst
       nrm2(ist) = M_ZERO

@@ -356,7 +356,7 @@ subroutine X(accel_gemv)(transa, m, n, alpha, A, lda, x, incx, beta, y, incy)
   call accel_create_buffer(beta_buffer, ACCEL_MEM_READ_ONLY, R_TYPE_VAL, 1)
 
   call accel_write_buffer(alpha_buffer, alpha)
-  call accel_write_buffer(beta_buffer, beta))
+  call accel_write_buffer(beta_buffer, beta)
 
   call aX(cuda_blas_,gemv)(handle = accel%cublas_handle, transa = transa, &
     m = m, n = n,  &

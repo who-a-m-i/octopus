@@ -746,20 +746,6 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
 
     call accel_create_buffer(nrm2_buffer, ACCEL_MEM_WRITE_ONLY, TYPE_FLOAT, aa%pack%size(1))
 
-#define NEW_MODE
-
-#ifdef OLD_MODE
-
-    do ist = 1, aa%nst_linear
-    
-      call X(accel_nrm2)(N = int(mesh%np, 8), X = aa%pack%buffer, offx = int(ist - 1, 8), incx = int(aa%pack%size(1), 8), &
-        res = nrm2_buffer, offres = int(ist - 1, 8))
-      
-    end do
-#endif
-
-#ifdef NEW_MODE
-
     ! Perform pointwise modulus square on the wave functions, and store result in a scratch buffer:
 
     call accel_create_buffer(scratch_buffer, ACCEL_MEM_READ_WRITE, TYPE_FLOAT, aa%pack%size(1)*aa%pack%size(2))
@@ -792,10 +778,10 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
     call accel_set_kernel_arg(kernel, 3, log2(aa%pack%size(1)))
     call accel_set_kernel_arg(kernel, 4, scratch_buffer)
 
-    local_size_1 = min(1, wgsize / local_size_2)
+    local_size_1 = min(1, wgsize/local_size_2)
 
-    call accel_kernel_run(kernel, (/ pad(aa%pack%size(1), local_size_1),  pad(aa%pack%size(2), local_size_2), 1 /), &
-                                  (/ local_size_1,                        local_size_2,                       1 /)) 
+    call accel_kernel_run(kernel, (/pad(aa%pack%size(1), local_size_1), pad(aa%pack%size(2), local_size_2), 1/), &
+                                  (/local_size_1, local_size_2, 1/)) 
 
     call daccel_gemv(CUBLAS_OP_N, int(aa%nst_linear, 8), int(mesh%np, 8), &
                      M_ONE, scratch_buffer, int(aa%pack%size(1), 8), & 
@@ -803,23 +789,16 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
 
     call accel_release_buffer(one_buffer)
     call accel_release_buffer(scratch_buffer)
-#endif                 
 
     call accel_read_buffer(nrm2_buffer, aa%pack%size(1), ssq)
 
     call accel_release_buffer(nrm2_buffer)
 
-#ifdef NEW_MODE
-    do ist = 1, aa%nst_linear
-      ssq(ist) = sqrt(ssq(ist))
-    enddo
-#endif
-
     do ist = 1, aa%nst
       nrm2(ist) = M_ZERO
       do idim = 1, aa%dim
         indb = batch_ist_idim_to_linear(aa, (/ist, idim/))
-        nrm2(ist) = hypot(nrm2(ist), sqrt(mesh%volume_element)*ssq(indb))
+        nrm2(ist) = hypot(nrm2(ist), sqrt(mesh%volume_element*ssq(indb)))
       end do
     end do
 

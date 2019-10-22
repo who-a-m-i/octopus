@@ -334,7 +334,7 @@ subroutine X(accel_gemv)(transa, m, n, alpha, A, lda, x, incx, beta, y, incy)
   integer :: ierr
 #endif
 #ifdef HAVE_CUDA
-  type(accel_mem_t) :: alpha_buffer, beta_buffer
+  type(accel_mem_t) :: param_buffer
 #endif
 
   PUSH_SUB(X(accel_gemv))
@@ -352,24 +352,20 @@ subroutine X(accel_gemv)(transa, m, n, alpha, A, lda, x, incx, beta, y, incy)
 #endif
 #ifdef HAVE_CUDA
 
-  call accel_create_buffer(alpha_buffer, ACCEL_MEM_READ_ONLY, R_TYPE_VAL, 1)
-  call accel_create_buffer(beta_buffer, ACCEL_MEM_READ_ONLY, R_TYPE_VAL, 1)
-
-  call accel_write_buffer(alpha_buffer, alpha)
-  call accel_write_buffer(beta_buffer, beta)
+  call accel_create_buffer(param_buffer, ACCEL_MEM_READ_ONLY, R_TYPE_VAL, 2)
+  call accel_write_buffer(param_buffer, (/alpha, beta/))
 
   call aX(cuda_blas_,gemv)(handle = accel%cublas_handle, transa = transa, &
     m = m, n = n,  &
-    alpha = alpha_buffer%mem, &
+    alpha = param_buffer%mem, &
     a = a%mem, lda = lda, &
     x = x%mem, incx = incx, &
-    beta = beta_buffer%mem, &
+    beta = param_buffer%mem + types_get_size(R_TYPE_VAL), &
     y = y%mem, incy = incy)
 
   call accel_finish()
 
-  call accel_release_buffer(alpha_buffer)
-  call accel_release_buffer(beta_buffer)
+  call accel_release_buffer(param_buffer)
 
 #endif
 

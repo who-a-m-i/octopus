@@ -794,11 +794,15 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
 
     call accel_release_buffer(nrm2_buffer)
 
+    do ist=1, aa%nst_linear
+      ssq(ist) = sqrt(ssq(ist))
+    end do
+
     do ist = 1, aa%nst
       nrm2(ist) = M_ZERO
       do idim = 1, aa%dim
         indb = batch_ist_idim_to_linear(aa, (/ist, idim/))
-        nrm2(ist) = hypot(nrm2(ist), sqrt(mesh%volume_element*ssq(indb)))
+        nrm2(ist) = hypot(nrm2(ist), sqrt(mesh%volume_element)*ssq(indb))
       end do
     end do
 

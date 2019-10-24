@@ -49,8 +49,7 @@ __kernel void mod_sqr_complex(const int nst,
   if(ip >= np || ist >= nst) return;
 
   double2 ff = psi[(ip<<ldpsi) + ist];
-  ff = ff*ff;  
-  mod_sqr[(ip<<ldpsi) + ist] = (ff.x + ff.y);
+  mod_sqr[(ip<<ldpsi) + ist] = (ff.x*ff.x + ff.y*ff.y);
 
 }
 

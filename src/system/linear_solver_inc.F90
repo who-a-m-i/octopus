@@ -820,13 +820,13 @@ subroutine X(linear_solver_qmr_dotp)(this, hm, gr, st, ik, xb, bb, shift, iter_u
 
   SAFE_ALLOCATE(exception_saved(1:gr%mesh%np, 1:st%d%dim, 1:xb%nst))
 
-  call batch_copy(xb, vvb, pack=.true.)
-  call batch_copy(xb, res, pack=.true.)
-  call batch_copy(xb, zzb, pack=.true.)
-  call batch_copy(xb, qqb, pack=.true.)
-  call batch_copy(xb, ppb, pack=.true.)
-  call batch_copy(xb, deltax, pack=.true.)
-  call batch_copy(xb, deltar, pack=.true.)
+  call batch_copy(xb, vvb)
+  call batch_copy(xb, res)
+  call batch_copy(xb, zzb)
+  call batch_copy(xb, qqb)
+  call batch_copy(xb, ppb)
+  call batch_copy(xb, deltax)
+  call batch_copy(xb, deltar)
 
   call X(linear_solver_operator_batch)(hm, gr, st, ik, shift, xb, vvb)
 

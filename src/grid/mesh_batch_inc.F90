@@ -700,6 +700,7 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
     
     if(.not. mesh%use_curvilinear) then
 
+      !$omp parallel do private(a0)
       do ip = 1, mesh%np
         do ist = 1, aa%nst_linear
           a0 = aa%pack%X(psi)(ist, ip)
@@ -715,6 +716,7 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
 
     else
 
+      !$omp parallel do private(a0)
       do ip = 1, mesh%np
         do ist = 1, aa%nst_linear
           a0 = aa%pack%X(psi)(ist, ip)

@@ -53,8 +53,6 @@ __kernel void mod_sqr_complex(const int nst,
 
 }
 
-// TODO: kernel for spinors!!
-
 /*
  Local Variables:
  mode: c

@@ -3,7 +3,7 @@
 Test       : Biot-Savart law
 Program    : octopus
 TestGroups : long-run, finite_systems_2d
-Enabled    : Yes
+Enabled    : No
 
 # The code calculates the Lz=1 state of one electron sitting in a
 # potential circular ring. The result is a uniform electronic ring

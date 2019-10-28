@@ -3,7 +3,7 @@
 Test       : Tkatchenko-Scheffler van der Waals correction (self-consistent) in solids 
 Program    : octopus
 TestGroups : functionals, long-run
-Enabled    : Yes
+Enabled    : No
 
 Processors : 3
 Input      : 12-vdw_solid_c6.01-gs_diamond.inp 

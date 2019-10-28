@@ -3,7 +3,7 @@
 Test       : Recipe
 Program    : octopus
 TestGroups : short-run, components
-Enabled    : Yes
+Enabled    : No
 
 Input: 17-recipe.inp
 #nothing to test, just whether the execution didn't crash

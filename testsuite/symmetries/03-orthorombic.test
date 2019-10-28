@@ -3,7 +3,7 @@
 Test       : Orthorombic symmetries
 Program    : octopus
 TestGroups : long-run, periodic_systems, symmetries
-Enabled    : Yes
+Enabled    : No
 
 Input      : 03-orthorombic.01-spg16.inp
 match ; Space group        ; GREPFIELD(out, 'Space group', 4) ; 16

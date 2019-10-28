@@ -3,7 +3,7 @@
 Test       : Fock-Darwin spectrum
 Program    : octopus
 TestGroups : long-run, finite_systems_2d
-Enabled    : Yes
+Enabled    : No
 
 
 # This is a 2D system of 20 non-interacting electrons in 2D, confined

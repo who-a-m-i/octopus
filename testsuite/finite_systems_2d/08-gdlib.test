@@ -4,7 +4,7 @@ Test       : gdlib: particle in an octopus
 Options    : gdlib
 Program    : octopus
 TestGroups : short-run, finite_systems_2d
-Enabled    : Yes
+Enabled    : No
 
 Input : 08-gdlib.01-gs.inp
 

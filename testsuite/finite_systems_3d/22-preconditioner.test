@@ -3,7 +3,7 @@
 Test       : Preconditioner
 Program    : octopus
 TestGroups : short-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 
 # This test checks the preconditioners filter, jacobi, poisson, and multigrid with CH4.
 

@@ -3,7 +3,7 @@
 Test       : Aluminium real-time
 Program    : octopus
 TestGroups : long-run, periodic_systems
-Enabled    : Yes
+Enabled    : No
 
 # ground state
 Input      : 17-aluminium.01-gs.inp

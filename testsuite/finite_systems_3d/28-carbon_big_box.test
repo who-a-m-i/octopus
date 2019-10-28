@@ -3,7 +3,7 @@
 Test       : Big box
 Program    : octopus
 TestGroups : short-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 
 Input: 28-carbon_big_box.01-ground_state.inp
 Precision: 0.0001

@@ -3,7 +3,7 @@
 Test       : Carbon pseudojo PSP8 format
 Program    : octopus
 TestGroups : long-run, pseudopotentials
-Enabled    : Yes
+Enabled    : No
 
 ExtraFile  : 14-carbon_dojo_psp8.pseudo.psp8
 Input: 14-carbon_dojo_psp8.01-gs.inp

@@ -3,7 +3,7 @@
 Test       : Absorption spectrum
 Program    : octopus
 TestGroups : short-run, real_time
-Enabled    : Yes
+Enabled    : No
 
 # Note: the results differ from 13-absorption-spin.test because here we are doing
 # an odd number of electrons without spin-polarization, which is wrong.

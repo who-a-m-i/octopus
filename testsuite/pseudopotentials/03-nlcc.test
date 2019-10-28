@@ -3,7 +3,7 @@
 Test       : Non-linear core corrections
 Program    : octopus
 TestGroups : short-run, pseudopotentials
-Enabled    : Yes
+Enabled    : No
 
 ExtraFile : 03-nlcc.F.UPF
 Input      : 03-nlcc.01-Fatom.inp

@@ -3,7 +3,7 @@
 Test       : Static magnetic field
 Program    : octopus
 TestGroups : long-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 
 Input: 03-magnetic.01-gs-unpolarized.inp
 match ; SCF convergence  ; GREPCOUNT(static/info, 'SCF converged') ; 1

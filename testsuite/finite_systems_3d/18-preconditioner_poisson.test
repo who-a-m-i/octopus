@@ -3,7 +3,7 @@
 Test       : Poisson preconditioner
 Program    : octopus
 TestGroups : long-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 
 Input: 18-preconditioner_poisson.01-poisson.inp
 match ; SCF convergence ; GREPCOUNT(static/info, 'SCF converged') ; 1

@@ -4,7 +4,7 @@ Test       : Cholesky (parallel) orthogonalization
 Options    : scalapack
 Program    : octopus
 TestGroups : short-run, components
-Enabled    : Yes
+Enabled    : No
 
 Precision : 1.0e-13
 Input: 15-cholesky_parallel.01-real.inp

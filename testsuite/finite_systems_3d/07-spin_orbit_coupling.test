@@ -3,7 +3,7 @@
 Test       : Spin-orbit coupling
 Program    : octopus
 TestGroups : short-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 
 
 Input: 07-spin_orbit_coupling.01-hgh.inp

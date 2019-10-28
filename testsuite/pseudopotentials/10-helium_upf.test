@@ -3,7 +3,7 @@
 Test       : Helium UPF
 Program    : octopus
 TestGroups : short-run, pseudopotentials
-Enabled    : Yes
+Enabled    : No
 
 
 ExtraFile: 10-helium_upf.pbe-mt.UPF

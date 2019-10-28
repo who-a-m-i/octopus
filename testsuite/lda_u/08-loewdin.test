@@ -3,7 +3,7 @@
 Test       : Loewdin orthogonalization and intersite ACBN0+V functional
 Program    : octopus
 TestGroups : long-run, periodic_systems, lda_u
-Enabled    : Yes
+Enabled    : No
 
 Processors : 3
 

@@ -3,7 +3,7 @@
 Test       : Quadratic Box
 Program    : octopus
 TestGroups : short-run, finite_systems_2d
-Enabled    : Yes
+Enabled    : No
 
 # The following tests reproduced some basic results from:
 # E. Rasanen et al., Phys. Rev. B 67, 235307 (2003).

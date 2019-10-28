@@ -3,7 +3,7 @@
 Test       : Full-Potential Hydrogen
 Program    : octopus
 TestGroups : short-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 
 # Calculation of a Hydrogen atom placed on a very small magnetic field (in order
 # to get orbitals with the proper symmetry). The electron is placed on the p_{-1}

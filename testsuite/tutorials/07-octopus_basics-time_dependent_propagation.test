@@ -3,7 +3,7 @@
 Test       : Octopus basics - Time-dependent propagation
 Program    : octopus
 TestGroups : short-run, tutorials
-Enabled    : Yes
+Enabled    : No
 
 Input: 07-octopus_basics-time_dependent_propagation.01-gs.inp
 match ; SCF convergence ; GREPCOUNT(static/info, 'SCF converged') ; 1

@@ -3,7 +3,7 @@
 Test       : ACBN0 functional for (AF) NiO and LiF bulk crystals
 Program    : octopus
 TestGroups : long-run, periodic_systems, lda_u
-Enabled    : Yes
+Enabled    : No
 
 
 Input      : 02-ACBN0.01-nio.inp

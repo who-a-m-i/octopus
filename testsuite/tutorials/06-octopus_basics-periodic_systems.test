@@ -3,7 +3,7 @@
 Test       : Octopus basics - Periodic systems
 Program    : octopus
 TestGroups : long-run, tutorials
-Enabled    : Yes
+Enabled    : No
 
 Input: 06-octopus_basics-periodic_systems.01-silicon.inp
 match ; SCF convergence          ; GREPCOUNT(static/info, 'SCF converged') ; 1

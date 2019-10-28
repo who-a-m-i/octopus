@@ -3,7 +3,7 @@
 Test       : Sodium chain with cylinder box
 Program    : octopus
 TestGroups : long-run, periodic_systems
-Enabled    : Yes
+Enabled    : No
 
 Input: 16-sodium_chain_cylinder.01-ground_state.inp
 

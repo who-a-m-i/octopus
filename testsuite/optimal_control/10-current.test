@@ -3,7 +3,7 @@
 Test       : current
 Program    : octopus
 TestGroups : long-run, optimal_control
-Enabled    : Yes
+Enabled    : No
 
 # calculate GS and first excited state of 1D
 # asymmetric quantum well

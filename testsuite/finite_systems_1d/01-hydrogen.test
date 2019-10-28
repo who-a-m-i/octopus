@@ -3,7 +3,7 @@
 Test       : 1D-Hydrogen
 Program    : octopus
 TestGroups : short-run; finite_systems_1d
-Enabled    : Yes
+Enabled    : No
 
 # This test calculates a one-dimensional model for Hydrogen, considering
 # a soft-Coulomb nucleus-electron interaction. It calculates the ground-state

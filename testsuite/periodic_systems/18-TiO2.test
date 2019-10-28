@@ -3,7 +3,7 @@
 Test       : TiO2 and matrix elements
 Program    : octopus
 TestGroups : long-run, periodic_systems
-Enabled    : Yes
+Enabled    : No
 
 Input      : 18-TiO2.01-gs.inp
 

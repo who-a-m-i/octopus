@@ -3,7 +3,7 @@
 Test       : Derivatives 2D
 Program    : octopus
 TestGroups : short-run, components
-Enabled    : Yes
+Enabled    : No
 
 Precision : 1.0e-5
 Input: 02-derivatives_2d.01.inp

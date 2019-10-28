@@ -4,7 +4,7 @@
 Test       : DFT-D3 functional test
 Program    : octopus
 TestGroups : short-run, functionals
-Enabled    : Yes
+Enabled    : No
 
 Input      : 11-vdw_d3.01-gs.inp
 match ; SCF convergence      ; GREPCOUNT(static/info, 'SCF converged') ; 1

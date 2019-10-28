@@ -3,7 +3,7 @@
 Test       : Oct-test Hamiltonian_apply
 Program    : octopus
 TestGroups : short-run, components
-Enabled    : Yes
+Enabled    : No
 
 Processors: 1
 Input: 21-hamiltonian_apply.01-Si.inp

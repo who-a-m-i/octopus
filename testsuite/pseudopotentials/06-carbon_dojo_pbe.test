@@ -3,7 +3,7 @@
 Test       : Carbon pseudodojo PBE
 Program    : octopus
 TestGroups : short-run, pseudopotentials
-Enabled    : Yes
+Enabled    : No
 
 Input: 06-carbon_dojo_pbe.01-gs.inp
 Precision: 0.00011

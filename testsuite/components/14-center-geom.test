@@ -2,7 +2,7 @@
 
 Test       : oct-center-geom
 TestGroups : short-run; components
-Enabled    : Yes
+Enabled    : No
 
 # quadricyclane molecule
 

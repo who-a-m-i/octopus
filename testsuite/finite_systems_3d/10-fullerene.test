@@ -3,7 +3,7 @@
 Test       : Fullerene
 Program    : octopus
 TestGroups : long-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 
 Processors : 4
 ExtraFile  : 10-fullerene.geometry.xyz

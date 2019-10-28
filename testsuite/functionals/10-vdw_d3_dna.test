@@ -4,7 +4,7 @@
 Test       : DFT-D3 DNA
 Program    : octopus
 TestGroups : long-run, functionals
-Enabled    : Yes
+Enabled    : No
 
 Processors : 4
 ExtraFile  : 10-vdw_d3_dna.xyz

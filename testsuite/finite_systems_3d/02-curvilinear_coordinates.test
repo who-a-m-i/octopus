@@ -3,7 +3,7 @@
 Test       : Curvilinear Coordinates
 Program    : octopus
 TestGroups : short-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 
 Processors : 1
 # curvilinear not compatible with domain parallelization

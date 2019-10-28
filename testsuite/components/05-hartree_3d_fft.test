@@ -3,7 +3,7 @@
 Test       : Hartree FFT
 Program    : octopus
 TestGroups : short-run, components
-Enabled    : Yes
+Enabled    : No
 
 Precision : 0.005
 Input: 05-hartree_3d_fft.01-fft.inp

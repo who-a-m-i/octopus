@@ -3,7 +3,7 @@
 Test       : Octopus basics - Basic input options
 Program    : octopus
 TestGroups : short-run, tutorials
-Enabled    : Yes
+Enabled    : No
 
 ExtraFile  : N.xyz
 Input: 02-octopus_basics-basic_input_options.01-N_atom.inp

@@ -3,7 +3,7 @@
 Test       : Monoclinic symmetries
 Program    : octopus
 TestGroups : long-run, periodic_systems, symmetries
-Enabled    : Yes
+Enabled    : No
 
 Input      : 02-monoclinic.01-spg3.inp
 #match ; Space group        ; GREPFIELD(out, 'Space group', 4) ; 3

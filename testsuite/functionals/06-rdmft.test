@@ -3,7 +3,7 @@
 Test       : RDMFT
 Program    : octopus
 TestGroups : long-run, functionals
-Enabled    : Yes
+Enabled    : No
 
 Processors: 4
 

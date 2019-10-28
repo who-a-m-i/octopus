@@ -3,7 +3,7 @@
 Test       : Van der Waals coefficient; Sternheimer method
 Program    : octopus
 TestGroups : long-run, linear_response
-Enabled    : Yes
+Enabled    : No
 
 # This test is the calculation of the C6 Hamaker coefficient for the
 # dispersion interaction between two He atoms.

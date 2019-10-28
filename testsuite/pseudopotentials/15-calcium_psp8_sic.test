@@ -3,7 +3,7 @@
 Test       : Calcium SIC PSP8 
 Program    : octopus
 TestGroups : short-run, pseudopotentials
-Enabled    : Yes
+Enabled    : No
 
 ExtraFile  : 15-calcium_psp8_sic.20ca_sic.drh
 Input: 15-calcium_psp8_sic.01-gs.inp

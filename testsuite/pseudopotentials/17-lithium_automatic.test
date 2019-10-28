@@ -3,7 +3,7 @@
 Test       : Lithium automatic spacing
 Program    : octopus
 TestGroups : short-run, pseudopotentials
-Enabled    : Yes
+Enabled    : No
 
 Input: 17-lithium_automatic.01-gs.inp
 Precision: 0.00011

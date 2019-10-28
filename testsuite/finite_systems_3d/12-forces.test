@@ -2,7 +2,7 @@
 Test       : Forces
 Program    : octopus
 TestGroups : short-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 
 # This is a calculation of the ground-state of a Nitrogen at different
 # configurations. The parameters of the calculation are not optimal

@@ -3,7 +3,7 @@
 Test       : Cubic symmetries
 Program    : octopus
 TestGroups : long-run, periodic_systems, symmetries
-Enabled    : Yes
+Enabled    : No
 
 Input      : 06-cubic.01-spg195.inp
 match ; Space group        ; GREPFIELD(static/info, 'Space group', 4) ; 195

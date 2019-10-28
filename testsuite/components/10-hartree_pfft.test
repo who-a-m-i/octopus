@@ -4,7 +4,7 @@ Test       : Hartree pfft
 Options    : pfft
 Program    : octopus
 TestGroups : short-run, components
-Enabled    : Yes
+Enabled    : No
 
 Precision : 0.005
 Input: 10-hartree_pfft.01-fft.inp

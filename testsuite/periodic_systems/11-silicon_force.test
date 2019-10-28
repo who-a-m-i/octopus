@@ -3,7 +3,7 @@
 Test       : Silicon force
 Program    : octopus
 TestGroups : short-run, periodic_systems
-Enabled    : Yes
+Enabled    : No
 
 Input      : 11-silicon_force.01-gs.inp
 

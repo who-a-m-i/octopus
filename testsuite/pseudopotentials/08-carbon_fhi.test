@@ -3,7 +3,7 @@
 Test       : Carbon FHI
 Program    : octopus
 TestGroups : long-run, pseudopotentials
-Enabled    : Yes
+Enabled    : No
 
 ExtraFile: 08-carbon_fhi.01-C.fhi
 Input: 08-carbon_fhi.01-gs.inp

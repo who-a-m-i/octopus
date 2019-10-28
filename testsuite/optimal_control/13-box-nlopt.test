@@ -4,7 +4,7 @@ Test       : 1D Box (NLOPT)
 Options    : nlopt
 Program    : octopus
 TestGroups : long-run, optimal_control
-Enabled    : Yes
+Enabled    : No
 
 # The test checks several optimal-control algorithms, all of them based on the NLOPT library.
 # It calculates the optimal laser field that transfers the ground state to the first excited state. 

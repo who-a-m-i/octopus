@@ -3,7 +3,7 @@
 Test       : Cosine Potential in 1D
 Program    : octopus
 TestGroups : short-run, periodic_systems
-Enabled    : Yes
+Enabled    : No
 
 Input: 02-cosine_potential.01-ground_state.inp
 

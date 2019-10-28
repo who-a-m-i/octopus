@@ -3,7 +3,7 @@
 Test       : Photoelectron restart
 Program    : octopus
 TestGroups : short-run, photo_electron
-Enabled    : Yes
+Enabled    : No
 
 
 # Start the evolution with BA

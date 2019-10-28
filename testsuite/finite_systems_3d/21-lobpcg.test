@@ -3,7 +3,7 @@
 Test       : LOBPCG
 Program    : octopus
 TestGroups : long-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 
 # Depending on the context, the LOBPCG routine takes different branches, which
 # are checked with this test:

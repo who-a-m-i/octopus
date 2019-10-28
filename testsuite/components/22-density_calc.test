@@ -3,7 +3,7 @@
 Test       : Oct-test density calculation
 Program    : octopus
 TestGroups : short-run, components
-Enabled    : Yes
+Enabled    : No
 
 Processors: 1
 Input: 22-density_calc.01-Si.inp

@@ -3,7 +3,7 @@
 Test       : Carbon pseudodojo LDA
 Program    : octopus
 TestGroups : long-run, pseudopotentials
-Enabled    : Yes
+Enabled    : No
 
 Input: 07-carbon_dojo_lda.01-gs.inp
 Precision: 0.00011

@@ -3,7 +3,7 @@
 Test       : Real space symmetrization with GGA
 Program    : octopus
 TestGroups : long-run, periodic_systems, symmetries
-Enabled    : Yes
+Enabled    : No
 
 #Here the reference values should be copied from the calculation without symmetries
 Input : 09-symmetrization_gga.01-spg143_sym.inp

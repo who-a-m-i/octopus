@@ -3,7 +3,7 @@
 Test       : OEP
 Program    : octopus
 TestGroups : long-run, functionals
-Enabled    : Yes
+Enabled    : No
 
 # This input files reproduces results from:
 # [M. Payami and T. Mahmoodi, J. Phys.: Condens. Matter 18, 75 (2006)].

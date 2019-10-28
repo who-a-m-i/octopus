@@ -3,7 +3,7 @@
 Test       : Local Multipoles analysis (ld)
 Program    : octopus
 TestGroups : short-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 Processors : 1
 
 Input      : 30-local_multipoles.01-gs.inp

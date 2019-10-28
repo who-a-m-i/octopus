@@ -3,7 +3,7 @@
 Test       : ACBN0 functional for LiF bulk crystals - spin restricted case
 Program    : octopus
 TestGroups : short-run, periodic_systems, lda_u
-Enabled    : Yes
+Enabled    : No
 
 Input      : 03-ACBN0_restricted.01-lif.inp
 

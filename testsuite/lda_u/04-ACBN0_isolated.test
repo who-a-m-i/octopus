@@ -3,7 +3,7 @@
 Test       : ACBN0 functional for isolated systems
 Program    : octopus
 TestGroups : short-run, finite_systems_3d, lda_u
-Enabled    : Yes
+Enabled    : No
 
 Processors : 4
 

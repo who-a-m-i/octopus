@@ -3,7 +3,7 @@
 Test       : Isotopes
 Program    : octopus
 TestGroups : short-run, pseudopotentials
-Enabled    : Yes
+Enabled    : No
 
 Input: 11-isotopes.01-deuterium.inp
 Precision: 0.00011

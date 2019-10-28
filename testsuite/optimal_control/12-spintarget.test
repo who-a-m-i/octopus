@@ -3,7 +3,7 @@
 Test       : testsuite/optimal_control/12-spintarget.test
 Program    : octopus
 TestGroups : long-run, optimal_control
-Enabled    : Yes
+Enabled    : No
 
 Input: 12-spintarget.01-ground_state.inp
 match ; Total energy ; GREPFIELD(static/info, 'Total       =', 3) ; 0.12132913

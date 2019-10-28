@@ -3,7 +3,7 @@
 Test       : Walltime
 Program    : octopus
 TestGroups : short-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 
 # Note: the first 4 runs should _not_ reach full SCF convergence, otherwise
 # all the final results will be identical whether or not the restart of the 

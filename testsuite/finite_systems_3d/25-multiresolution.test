@@ -3,7 +3,7 @@
 Test       : Multiresolution
 Program    : octopus
 TestGroups : long-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 
 # incredibly, all buildslaves give exactly the same values here.
 Precision : 1e-6

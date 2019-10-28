@@ -3,7 +3,7 @@
 Test       : Acetylene - B3LYP
 Program    : octopus
 TestGroups : long-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 
 Processors: 4
 Input: 31-acetylene_b3lyp.01-gs.inp

@@ -3,7 +3,7 @@
 Test       : Carbon CPI
 Program    : octopus
 TestGroups : long-run, pseudopotentials
-Enabled    : Yes
+Enabled    : No
 
 ExtraFile: 09-carbon_cpi.C.cpi
 Input: 09-carbon_cpi.01-gs.inp

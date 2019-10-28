@@ -2,7 +2,7 @@
 Test       : Cu2 HGH 
 Program    : octopus
 TestGroups : long-run, pseudopotentials
-Enabled    : Yes
+Enabled    : No
 
 Input: 02-cu2_hgh.01_gs.inp
 match ; SCF convergence    ; GREPCOUNT(static/info, 'SCF converged') ; 1

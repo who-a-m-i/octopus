@@ -3,7 +3,7 @@
 Test       : XC 2D
 Program    : octopus
 TestGroups : short-run, functionals
-Enabled    : Yes
+Enabled    : No
 
 Input: 02-xc_2d.00-hartree.inp
 match ; SCF convergence                          ; GREPCOUNT(static/info, 'SCF converged') ; 1.0

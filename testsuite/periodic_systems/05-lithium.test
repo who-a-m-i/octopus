@@ -3,7 +3,7 @@
 Test       : Lithium
 Program    : octopus
 TestGroups : short-run, periodic_systems
-Enabled    : Yes
+Enabled    : No
 
 # ground state
 Input      : 05-lithium.01-gs.inp

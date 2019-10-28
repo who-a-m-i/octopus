@@ -3,7 +3,7 @@
 Test       : Platinum PSP8 
 Program    : octopus
 TestGroups : short-run, pseudopotentials
-Enabled    : Yes
+Enabled    : No
 
 ExtraFile  : 16-platinum_psp8.78_Pt_r.oncvpsp.psp8
 Input: 16-platinum_psp8.01-gs.inp

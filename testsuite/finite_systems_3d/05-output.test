@@ -3,7 +3,7 @@
 Test       : Output
 Program    : octopus
 TestGroups : short-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 
 Input: 05-output.01-gs.inp
 match ; SCF convergence ; GREPCOUNT(static/info, 'SCF converged') ; 1

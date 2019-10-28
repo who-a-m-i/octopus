@@ -3,7 +3,7 @@
 Test       : Cholesky orthogonalization
 Program    : octopus
 TestGroups : short-run, components
-Enabled    : Yes
+Enabled    : No
 
 Processors: 4
 

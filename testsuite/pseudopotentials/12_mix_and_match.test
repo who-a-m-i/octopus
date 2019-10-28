@@ -3,7 +3,7 @@
 Test       : Mix and Match: MgO
 Program    : octopus
 TestGroups : short-run, pseudopotentials
-Enabled    : Yes
+Enabled    : No
 
 Input: 12_mix_and_match.01-mgo.inp
 Precision: 0.00011

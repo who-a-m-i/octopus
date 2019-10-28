@@ -4,7 +4,7 @@ Test       : ETSF_IO
 Options    : etsf_io
 Program    : octopus
 TestGroups : long-run, periodic_systems
-Enabled    : Yes
+Enabled    : No
 
 Input      : 09-etsf_io.01-gs.inp
 

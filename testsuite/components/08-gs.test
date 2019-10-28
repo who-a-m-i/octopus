@@ -3,7 +3,7 @@
 Test       : Gram-Schmidt orthogonalization
 Program    : octopus
 TestGroups : long-run, components
-Enabled    : Yes
+Enabled    : No
 
 Precision : 1.0e-13
 Input: 08-gs.01-cgs_real.inp

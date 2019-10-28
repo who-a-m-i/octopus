@@ -3,7 +3,7 @@
 Test       : Fullerene, unpacked
 Program    : octopus
 TestGroups : long-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 
 Processors: 4
 Input: 14-fullerene_unpacked.01-gs.inp

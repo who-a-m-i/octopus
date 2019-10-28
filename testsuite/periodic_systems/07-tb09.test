@@ -3,7 +3,7 @@
 Test       : Diamond TB09 functional
 Program    : octopus
 TestGroups : long-run, periodic_systems
-Enabled    : Yes
+Enabled    : No
 
 # ground state
 Input      : 07-tb09.01-gs_symm.inp

@@ -3,7 +3,7 @@
 Test       : Boron Nitride Sheet
 Program    : octopus
 TestGroups : short-run, periodic_systems
-Enabled    : Yes
+Enabled    : No
 
 Processors : 4
 

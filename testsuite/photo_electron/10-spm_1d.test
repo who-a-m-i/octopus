@@ -3,7 +3,7 @@
 Test       : Photoelectron linear regime (spm 1D)
 Program    : octopus
 TestGroups : short-run, photo_electron
-Enabled    : Yes
+Enabled    : No
 
 
 # Sample point method

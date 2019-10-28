@@ -3,7 +3,7 @@
 Test       : Spin-orbit coupling (fully converged SCF)
 Program    : octopus
 TestGroups : long-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 
 
 Input: 08-spin_orbit_coupling_full.01-hgh.inp

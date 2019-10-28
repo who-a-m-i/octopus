@@ -3,7 +3,7 @@
 Test       : Tkatchenko-Scheffler van der Waals correction (self-consistent)
 Program    : octopus
 TestGroups : short-run, functionals
-Enabled    : Yes
+Enabled    : No
 
 Input      : 09-vdw_ts_sc.01-gs.inp
 match ; SCF convergence      ; GREPCOUNT(static/info, 'SCF converged') ; 1

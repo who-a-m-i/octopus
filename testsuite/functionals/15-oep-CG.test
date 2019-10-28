@@ -3,7 +3,7 @@
 Test       : XC Functionals 3D
 Program    : octopus
 TestGroups : short-run, functionals
-Enabled    : Yes
+Enabled    : No
 
 Input: 15-oep-CG.01-kli.inp
 match ; SCF convergence                          ; GREPCOUNT(static/info, 'SCF converged') ; 1

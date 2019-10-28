@@ -4,7 +4,7 @@ Test       : BerkeleyGW
 Options    : berkeleygw
 Program    : octopus
 TestGroups : long-run, periodic_systems
-Enabled    : Yes
+Enabled    : No
 
 Processors : 4
 

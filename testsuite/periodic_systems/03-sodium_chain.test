@@ -3,7 +3,7 @@
 Test       : Sodium chain
 Program    : octopus
 TestGroups : long-run, periodic_systems
-Enabled    : Yes
+Enabled    : No
 
 # this test is based on CA Rozzi et al., Phys Rev B 73, 205119 (2006) Section V.A
 

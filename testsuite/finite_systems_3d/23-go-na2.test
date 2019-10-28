@@ -3,7 +3,7 @@
 Test       : Geometry optimization
 Program    : octopus
 TestGroups : long-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 
 Input      : 23-go-na2.01-steep.inp
 match ; Total energy ; GREPFIELD(static/info, 'Total       =', 3) ; -0.41784559 

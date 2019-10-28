@@ -3,7 +3,7 @@
 Test       : Absorption spectrum (non-collinear spin)
 Program    : octopus
 TestGroups : long-run, real_time
-Enabled    : Yes
+Enabled    : No
 
 Processors : 1
 Input      : 14-absorption-spinors.01-gs.inp

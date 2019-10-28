@@ -3,7 +3,7 @@
 Test       : Model MB
 Program    : octopus
 TestGroups : short-run, finite_systems_2d
-Enabled    : Yes
+Enabled    : No
 
 Input : 07-modelmb.01-gs.inp
 

@@ -3,7 +3,7 @@
 Test       : QOCT+TDDFT
 Program    : octopus
 TestGroups : long-run, optimal_control
-Enabled    : Yes
+Enabled    : No
 
 
 Input: 07-qoct+tddft.01-ground_state.inp

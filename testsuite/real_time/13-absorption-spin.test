@@ -3,7 +3,7 @@
 Test       : Absorption spectrum (spin-polarized)
 Program    : octopus
 TestGroups : long-run, real_time
-Enabled    : Yes
+Enabled    : No
 
 Processors : 1
 Input      : 13-absorption-spin.01-gs.inp

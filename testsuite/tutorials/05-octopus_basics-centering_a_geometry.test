@@ -3,7 +3,7 @@
 Test       : Octopus basics - Centering a geometry
 Program    : octopus
 TestGroups : short-run, tutorials
-Enabled    : Yes
+Enabled    : No
 
 ExtraFile  : tAB.xyz
 Util       : oct-center-geom

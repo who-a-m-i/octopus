@@ -2,7 +2,7 @@ Test       : vdW-DF-cx with libvdwxc - Be hcp
 Options    : libvdwxc
 Program    : octopus
 TestGroups : short-run, functionals
-Enabled    : Yes
+Enabled    : No
 
 Input      : 14-libvdwxc_Be_hcp.01-vdwdfcx.inp
 

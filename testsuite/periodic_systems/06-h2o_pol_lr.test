@@ -3,7 +3,7 @@
 Test       : Water in Supercell
 Program    : octopus
 TestGroups : long-run, periodic_systems
-Enabled    : Yes
+Enabled    : No
 
 Input: 06-h2o_pol_lr.01_gs.inp
 match ; SCF convergence ; GREPCOUNT(static/info, 'SCF converged') ; 1

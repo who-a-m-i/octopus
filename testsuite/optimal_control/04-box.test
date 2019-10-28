@@ -3,7 +3,7 @@
 Test       : 1D Box
 Program    : octopus
 TestGroups : long-run, optimal_control
-Enabled    : Yes
+Enabled    : No
 
 # The test checks several optimal-control algorithm. 
 # It calculates the optimal laser field that transfers the ground state to the first excited state. 

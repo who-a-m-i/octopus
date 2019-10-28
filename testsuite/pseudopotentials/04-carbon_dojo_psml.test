@@ -3,7 +3,7 @@
 Test       : Carbon pseudojo PSML format
 Program    : octopus
 TestGroups : long-run, pseudopotentials
-Enabled    : Yes
+Enabled    : No
 
 ExtraFile  : 04-carbon_dojo_psml.pseudo.psml
 Input: 04-carbon_dojo_psml.01-gs.inp

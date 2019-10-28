@@ -3,7 +3,7 @@
 Test       : SCF in LCAO (standard)
 Program    : octopus
 TestGroups : long-run, finite_systems_3d
-Enabled    : Yes
+Enabled    : No
 
 ExtraFile: 16-scfinlcao_std.Cl.psf
 Input: 16-scfinlcao_std.01-gs.inp

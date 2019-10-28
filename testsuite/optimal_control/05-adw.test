@@ -3,7 +3,7 @@
 Test       : 1D Asymmetric Double Well
 Program    : octopus
 TestGroups : long-run, optimal_control
-Enabled    : Yes
+Enabled    : No
 
 # The test ensures a number of features of the optimal control implementation in octopus.
 # It replicates some of the results given in:

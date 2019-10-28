@@ -3,7 +3,7 @@
 Test       : Derivatives 1D
 Program    : octopus
 TestGroups : short-run, components
-Enabled    : Yes
+Enabled    : No
 
 # FIXME: this was 3.5e-9 but loosened to shut up erlo temporarily
 Precision : 9e-9

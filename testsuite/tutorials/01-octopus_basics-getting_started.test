@@ -3,7 +3,7 @@
 Test       : Octopus basics - Getting started
 Program    : octopus
 TestGroups : short-run, tutorials
-Enabled    : Yes
+Enabled    : No
 
 Input: 01-octopus_basics-getting_started.01-H_atom.inp
 match ; SCF convergence          ; GREPCOUNT(static/info, 'SCF converged') ; 1

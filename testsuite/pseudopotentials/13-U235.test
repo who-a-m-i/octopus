@@ -3,7 +3,7 @@
 Test       : Uranium 235
 Program    : octopus
 TestGroups : long-run, pseudopotentials
-Enabled    : Yes
+Enabled    : No
 
 #This tests whether we can modify a pseudopotential from a set without
 #having to specify the pseudopotential file or the set.

@@ -412,6 +412,7 @@ subroutine X(mesh_batch_dotp_vector)(mesh, aa, bb, dot, reduce, cproduct)
 
     call accel_create_buffer(dot_buffer, ACCEL_MEM_WRITE_ONLY, R_TYPE_VAL, aa%pack%size(1))
 
+#define NEW_CODE
 
 #ifdef NEW_CODE
     ! Perform pointwise modulus square on the wave functions, and store result in a scratch buffer:

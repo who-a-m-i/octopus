@@ -188,6 +188,8 @@ module accel_oct_m
   type(accel_kernel_t), public, target, save :: kernel_mod_sqr_real
   type(accel_kernel_t), public, target, save :: kernel_mod_sqr_complex
   type(accel_kernel_t), public, target, save :: set_one
+  type(accel_kernel_t), public, target, save :: kernel_batch_mult_real
+  type(accel_kernel_t), public, target, save :: kernel_batch_mult_complex
 
   ! kernels used locally
   type(accel_kernel_t), save :: set_zero
@@ -589,6 +591,8 @@ contains
     call accel_kernel_start_call(zzmul, 'mul.cl', "zzmul", flags = '-DRTYPE_COMPLEX')
     call accel_kernel_start_call(kernel_mod_sqr_real, 'mod_sqr.cl', "mod_sqr_real")
     call accel_kernel_start_call(kernel_mod_sqr_complex, 'mod_sqr.cl', "mod_sqr_complex")
+    call accel_kernel_start_call(kernel_batch_mult_real, 'batch_mult.cl', "batch_mult_real")
+    call accel_kernel_start_call(kernel_batch_mult_complex, 'batch_mult.cl', "batch_mult_complex")
 
     !%Variable AccelBenchmark
     !%Type logical

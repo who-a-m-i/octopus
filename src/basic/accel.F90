@@ -187,7 +187,8 @@ module accel_oct_m
   type(accel_kernel_t), public, target, save :: zzmul
   type(accel_kernel_t), public, target, save :: kernel_mod_sqr_real
   type(accel_kernel_t), public, target, save :: kernel_mod_sqr_complex
-  type(accel_kernel_t), public, target, save :: set_one
+  type(accel_kernel_t), public, target, save :: set_one_real
+  type(accel_kernel_t), public, target, save :: set_one_complex
   type(accel_kernel_t), public, target, save :: kernel_batch_mult_real
   type(accel_kernel_t), public, target, save :: kernel_batch_mult_complex
 
@@ -570,7 +571,8 @@ contains
     call accel_kernel_global_init()
 
     call accel_kernel_start_call(set_zero, 'set_zero.cl', "set_zero")
-    call accel_kernel_start_call(set_one, 'set_one.cl', "set_one")
+    call accel_kernel_start_call(set_one_real, 'set_one.cl', "set_one_real")
+    call accel_kernel_start_call(set_one_complex, 'set_one.cl', "set_one_complex")
     call accel_kernel_start_call(kernel_vpsi, 'vpsi.cl', "vpsi")
     call accel_kernel_start_call(kernel_vpsi_spinors, 'vpsi.cl', "vpsi_spinors")
     call accel_kernel_start_call(kernel_daxpy, 'axpy.cl', "daxpy", flags = '-DRTYPE_DOUBLE')

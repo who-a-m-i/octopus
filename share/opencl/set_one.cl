@@ -20,11 +20,21 @@
 
 #include <cl_global.h>
 
-__kernel void set_one(const int np, __global double * restrict aa){
+__kernel void set_one_real(const int np, __global double * restrict aa){
   int ip = get_global_id(0);
 
   if(ip < np) aa[ip] = 1.0;
 }
+
+__kernel void set_one_complex(const int np, __global double2 * restrict aa){
+  int ip = get_global_id(0);
+
+  if(ip < np) {
+    aa[ip].x = 1.0;
+    aa[ip].y = 0.0;
+  }
+}
+
 
 /*
  Local Variables:

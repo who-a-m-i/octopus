@@ -335,6 +335,7 @@ subroutine X(mesh_batch_dotp_vector)(mesh, aa, bb, dot, reduce, cproduct)
   type(accel_mem_t)  :: dot_buffer, one_buffer, scratch_buffer
 
   integer :: wgsize, local_size_1, local_size_2
+  R_TYPE  :: alpha, beta
 
   PUSH_SUB(X(mesh_batch_dotp_vector))
   call profiling_in(prof, "DOTPV_BATCH")
@@ -417,16 +418,22 @@ subroutine X(mesh_batch_dotp_vector)(mesh, aa, bb, dot, reduce, cproduct)
 #ifdef NEW_CODE
     ! Perform pointwise modulus square on the wave functions, and store result in a scratch buffer:
 
-    call accel_create_buffer(scratch_buffer, ACCEL_MEM_READ_WRITE, TYPE_FLOAT, aa%pack%size(1)*aa%pack%size(2))
-    call accel_create_buffer(one_buffer, ACCEL_MEM_READ_WRITE, TYPE_FLOAT, aa%pack%size(2))
+    call accel_create_buffer(scratch_buffer, ACCEL_MEM_READ_WRITE, R_TYPE_VAL, aa%pack%size(1)*aa%pack%size(2))
+    call accel_create_buffer(one_buffer, ACCEL_MEM_READ_WRITE, R_TYPE_VAL, aa%pack%size(2))
 
-    call accel_set_kernel_arg(set_one, 0, mesh%np)
-    call accel_set_kernel_arg(set_one, 1, one_buffer)
+    if (batch_type(aa) == TYPE_FLOAT ) then 
+      kernel => set_one_real
+    else if (batch_type(aa) == TYPE_CMPLX) then
+      kernel => set_one_complex
+    end if
 
-    wgsize = accel_kernel_workgroup_size(set_one)
+    call accel_set_kernel_arg(kernel, 0, mesh%np)
+    call accel_set_kernel_arg(kernel, 1, one_buffer)
+
+    wgsize = accel_kernel_workgroup_size(kernel)
 
     local_size_2 = min(aa%pack%size(2), wgsize)
-    call accel_kernel_run(set_one, (/pad(mesh%np, local_size_2)/), (/local_size_2/))
+    call accel_kernel_run(kernel, (/pad(mesh%np, local_size_2)/), (/local_size_2/))
 
     nullify(kernel)
 
@@ -444,18 +451,21 @@ subroutine X(mesh_batch_dotp_vector)(mesh, aa, bb, dot, reduce, cproduct)
     call accel_set_kernel_arg(kernel, 0, aa%nst_linear)
     call accel_set_kernel_arg(kernel, 1, mesh%np)
     call accel_set_kernel_arg(kernel, 2, aa%pack%buffer)
-    call accel_set_kernel_arg(kernel, 2, bb%pack%buffer)
-    call accel_set_kernel_arg(kernel, 3, log2(aa%pack%size(1)))
-    call accel_set_kernel_arg(kernel, 4, scratch_buffer)
+    call accel_set_kernel_arg(kernel, 3, bb%pack%buffer)
+    call accel_set_kernel_arg(kernel, 4, log2(aa%pack%size(1)))
+    call accel_set_kernel_arg(kernel, 5, scratch_buffer)
 
     local_size_1 = min(1, wgsize/local_size_2)
 
     call accel_kernel_run(kernel, (/pad(aa%pack%size(1), local_size_1), pad(aa%pack%size(2), local_size_2), 1/), &
                                   (/local_size_1, local_size_2, 1/)) 
 
-    call daccel_gemv(CUBLAS_OP_N, int(aa%nst_linear, 8), int(mesh%np, 8), &
-                     M_ONE, scratch_buffer, int(aa%pack%size(1), 8), & 
-                     one_buffer, 1_8, M_ZERO, dot_buffer, 1_8)
+    alpha = R_TOTYPE(M_ONE)
+    beta  = R_TOTYPE(M_ZERO)
+
+    call X(accel_gemv)(CUBLAS_OP_N, int(aa%nst_linear, 8), int(mesh%np, 8), &
+                     alpha, scratch_buffer, int(aa%pack%size(1), 8), & 
+                     one_buffer, 1_8, beta, dot_buffer, 1_8)
 
     call accel_release_buffer(one_buffer)
     call accel_release_buffer(scratch_buffer)
@@ -807,13 +817,13 @@ subroutine X(priv_mesh_batch_nrm2)(mesh, aa, nrm2)
     call accel_create_buffer(scratch_buffer, ACCEL_MEM_READ_WRITE, TYPE_FLOAT, aa%pack%size(1)*aa%pack%size(2))
     call accel_create_buffer(one_buffer, ACCEL_MEM_READ_WRITE, TYPE_FLOAT, aa%pack%size(2))
 
-    call accel_set_kernel_arg(set_one, 0, mesh%np)
-    call accel_set_kernel_arg(set_one, 1, one_buffer)
+    call accel_set_kernel_arg(set_one_real, 0, mesh%np)
+    call accel_set_kernel_arg(set_one_real, 1, one_buffer)
 
-    wgsize = accel_kernel_workgroup_size(set_one)
+    wgsize = accel_kernel_workgroup_size(set_one_real)
 
     local_size_2 = min(aa%pack%size(2), wgsize)
-    call accel_kernel_run(set_one, (/pad(mesh%np, local_size_2)/), (/local_size_2/))
+    call accel_kernel_run(set_one_real, (/pad(mesh%np, local_size_2)/), (/local_size_2/))
 
     nullify(kernel)
 

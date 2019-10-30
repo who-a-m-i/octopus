@@ -22,11 +22,11 @@
 #include <cl_complex.h>
 
 __kernel void batch_mult_real(const int nst,
-			   const int np,
-			   const __global double * restrict psi1, 
-			   const __global double * restrict psi2, 
-         const int ldpsi,
-			   __global double * restrict mod_sqr){
+   const int np,
+   const __global double * restrict psi1, 
+   const __global double * restrict psi2, 
+   const int ldpsi,
+   __global double * restrict result){
   
   int ist = get_global_id(0);
   int ip  = get_global_id(1);
@@ -35,16 +35,16 @@ __kernel void batch_mult_real(const int nst,
 
   double ff1 = psi1[(ip<<ldpsi) + ist];
   double ff2 = psi2[(ip<<ldpsi) + ist];
-  mod_sqr[(ip<<ldpsi) + ist] = ff1*ff2;
+  result[(ip<<ldpsi) + ist] = ff1*ff2;
 
 }
 
 __kernel void batch_mult_complex(const int nst,
-			      const int np,
-			      const __global double2 * restrict psi1, 
-			      const __global double2 * restrict psi2, 
-            const int ldpsi,
-			      __global double * restrict mod_sqr){
+  const int np,
+  const __global double2 * restrict psi1, 
+  const __global double2 * restrict psi2, 
+  const int ldpsi,
+  __global double2 * restrict result){
   
   int ist = get_global_id(0);
   int ip  = get_global_id(1);
@@ -53,7 +53,7 @@ __kernel void batch_mult_complex(const int nst,
 
   double2 ff1 = psi1[(ip<<ldpsi) + ist];
   double2 ff2 = psi2[(ip<<ldpsi) + ist];
-  mod_sqr[(ip<<ldpsi) + ist] = (ff1.x*ff2.x + ff1.y*ff2.y);
+  result[(ip<<ldpsi) + ist] = complex_mul( complex_conj(ff1), ff2);
 
 }
 

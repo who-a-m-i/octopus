@@ -778,7 +778,7 @@ subroutine pes_mask_output_full_mapM(pesK, file, Lk, ll, how, sb, pmesh)
   character(len=*),  intent(in) :: file
   FLOAT,             intent(in) :: Lk(:,:)
   integer,           intent(in) :: ll(:)  
-  integer,           intent(in) :: how
+  integer(8),        intent(in) :: how
   type(simul_box_t), intent(in) :: sb 
   FLOAT, optional,   intent(in) :: pmesh(:,:,:,:)  
   

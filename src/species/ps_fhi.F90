@@ -23,6 +23,7 @@ module ps_fhi_oct_m
   use global_oct_m
   use io_oct_m
   use messages_oct_m
+  use namespace_oct_m
   use profiling_oct_m
   use ps_cpi_file_oct_m
   use ps_cpi_oct_m
@@ -50,9 +51,10 @@ module ps_fhi_oct_m
 contains
 
   ! ---------------------------------------------------------
-  subroutine ps_fhi_init(ps_fhi, filename)
-    type(ps_fhi_t),   intent(inout) :: ps_fhi
-    character(len=*), intent(in)    :: filename
+  subroutine ps_fhi_init(ps_fhi, filename, namespace)
+    type(ps_fhi_t),    intent(inout) :: ps_fhi
+    character(len=*),  intent(in)    :: filename
+    type(namespace_t), intent(in)    :: namespace
 
     integer :: iunit
     logical :: found
@@ -68,11 +70,11 @@ contains
 
     if(.not.found) then
       call messages_write("Pseudopotential file '" // trim(filename) // "' not found")
-      call messages_fatal()
+      call messages_fatal(namespace=namespace)
     end if
 
-    iunit = io_open(filename, action='read', form='formatted', status='old')
-    call ps_fhi_file_read(iunit, ps_fhi%fhi_file)
+    iunit = io_open(filename, namespace, action='read', form='formatted', status='old')
+    call ps_fhi_file_read(iunit, ps_fhi%fhi_file, namespace)
     call ps_cpi_file_read(iunit, ps_fhi%cpi_file)
     call io_close(iunit)
 
@@ -102,9 +104,10 @@ contains
 
 
   ! ---------------------------------------------------------
-  subroutine ps_fhi_process(ps_fhi, lmax, lloc)
-    type(ps_fhi_t), intent(inout) :: ps_fhi
-    integer,        intent(in)    :: lmax, lloc
+  subroutine ps_fhi_process(ps_fhi, lmax, lloc, namespace)
+    type(ps_fhi_t),    intent(inout) :: ps_fhi
+    integer,           intent(in)    :: lmax, lloc
+    type(namespace_t), intent(in)    :: namespace
 
     PUSH_SUB(ps_fhi_process)
 
@@ -112,20 +115,20 @@ contains
       message(1) = "Inconsistency in pseudopotential :"
       write(message(2),'(a,i2,a,i2)') "  Input file says lmax = ", lmax, &
         " but ps file says lmax = ", ps_fhi%fhi_file%lmax
-      call messages_warning(2)
+      call messages_warning(2, namespace=namespace)
     end if
     if(lloc /= ps_fhi%fhi_file%lloc) then
       message(1) = "Inconsistency in pseudopotential :"
       write(message(2),'(a,i2,a,i2)') "  Input file says lloc = ", lloc, &
         " but ps file says lloc = ", ps_fhi%fhi_file%lloc
-      call messages_warning(2)
+      call messages_warning(2, namespace=namespace)
     end if
 
     ! check norm of rphi
-    call ps_in_grid_check_rphi(ps_fhi%ps_grid)
+    call ps_in_grid_check_rphi(ps_fhi%ps_grid, namespace)
 
     ! Fix the local potential. Final argument is the core radius
-    call ps_in_grid_vlocal(ps_fhi%ps_grid, lloc, M_THREE)
+    call ps_in_grid_vlocal(ps_fhi%ps_grid, lloc, M_THREE, namespace)
 
     ! Calculate kb cosines and norms
     call ps_in_grid_kb_cosines(ps_fhi%ps_grid, lloc)

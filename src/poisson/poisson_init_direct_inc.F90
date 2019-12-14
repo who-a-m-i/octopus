@@ -17,9 +17,10 @@
 !!
 
 ! ---------------------------------------------------------
-subroutine poisson_kernel_init(this, all_nodes_comm)
-  type(poisson_t),  intent(inout) :: this
-  integer,          intent(in)    :: all_nodes_comm
+subroutine poisson_kernel_init(this, namespace, all_nodes_comm)
+  type(poisson_t),   intent(inout) :: this
+  type(namespace_t), intent(in)    :: namespace
+  integer,           intent(in)    :: all_nodes_comm
 
   integer :: maxl, iter
   logical :: valid_solver
@@ -115,7 +116,7 @@ subroutine poisson_kernel_init(this, all_nodes_comm)
     !% When <tt>Dimensions = 1</tt>, to prevent divergence, the Coulomb interaction treated by the Poisson
     !% solver is not <math>1/r</math> but <math>1/\sqrt{a^2 + r^2}</math>, where this variable sets the value of <math>a</math>.
     !%End
-    call parse_variable('Poisson1DSoftCoulombParam', M_ONE, this%poisson_soft_coulomb_param, units_inp%length)
+    call parse_variable(namespace, 'Poisson1DSoftCoulombParam', M_ONE, this%poisson_soft_coulomb_param, units_inp%length)
   else
     this%poisson_soft_coulomb_param = M_ZERO
   end if
@@ -125,39 +126,39 @@ subroutine poisson_kernel_init(this, all_nodes_comm)
     call poisson_fmm_init(this%params_fmm, this%der, all_nodes_comm)
 
   case(POISSON_CG)
-    call parse_variable('PoissonSolverMaxMultipole', 4, maxl)
+    call parse_variable(namespace, 'PoissonSolverMaxMultipole', 4, maxl)
     write(message(1),'(a,i2)')'Info: Boundary conditions fixed up to L =',  maxl
     call messages_info(1)
-    call parse_variable('PoissonSolverMaxIter', 400, iter)
-    call parse_variable('PoissonSolverThreshold', CNST(1.0e-6), threshold)
-    call poisson_corrections_init(this%corrector, maxl, this%der%mesh)
+    call parse_variable(namespace, 'PoissonSolverMaxIter', 400, iter)
+    call parse_variable(namespace, 'PoissonSolverThreshold', CNST(1.0e-6), threshold)
+    call poisson_corrections_init(this%corrector, namespace, maxl, this%der%mesh)
     call poisson_cg_init(threshold, iter)
 
   case(POISSON_CG_CORRECTED)
-    call parse_variable('PoissonSolverMaxMultipole', 4, maxl)
-    call parse_variable('PoissonSolverMaxIter', 400, iter)
-    call parse_variable('PoissonSolverThreshold', CNST(1.0e-6), threshold)
+    call parse_variable(namespace, 'PoissonSolverMaxMultipole', 4, maxl)
+    call parse_variable(namespace, 'PoissonSolverMaxIter', 400, iter)
+    call parse_variable(namespace, 'PoissonSolverThreshold', CNST(1.0e-6), threshold)
     write(message(1),'(a,i2)')'Info: Multipoles corrected up to L =',  maxl
     call messages_info(1)
-    call poisson_corrections_init(this%corrector, maxl, this%der%mesh)
+    call poisson_corrections_init(this%corrector, namespace, maxl, this%der%mesh)
     call poisson_cg_init(threshold, iter)
 
   case(POISSON_MULTIGRID)
-    call parse_variable('PoissonSolverMaxMultipole', 4, maxl)
-    call parse_variable('PoissonSolverThreshold', CNST(1.0e-6), threshold)
+    call parse_variable(namespace, 'PoissonSolverMaxMultipole', 4, maxl)
+    call parse_variable(namespace, 'PoissonSolverThreshold', CNST(1.0e-6), threshold)
     write(message(1),'(a,i2)')'Info: Multipoles corrected up to L =',  maxl
     call messages_info(1)
 
-    call poisson_multigrid_init(this%mg, this%der%mesh, maxl, threshold)
+    call poisson_multigrid_init(this%mg, namespace, this%der%mesh, maxl, threshold)
      
   case(POISSON_ISF)
-    call poisson_isf_init(this%isf_solver, this%der%mesh, this%cube, all_nodes_comm, init_world = this%all_nodes_default)
+    call poisson_isf_init(this%isf_solver, namespace, this%der%mesh, this%cube, all_nodes_comm, init_world = this%all_nodes_default)
     
   case(POISSON_LIBISF)
     !! We`ll use the MPI_WORLD_COMM, to use all the available processes for the
     !! Poisson solver
     this%cube%mpi_grp = mpi_world
-    call poisson_libisf_init(this%libisf_solver, this%der%mesh, this%cube)
+    call poisson_libisf_init(this%libisf_solver, namespace, this%der%mesh, this%cube)
     call poisson_libisf_get_dims(this%libisf_solver, this%cube)
     this%cube%parallel_in_domains = this%libisf_solver%datacode == "D" .and. mpi_world%size > 1
     if (this%cube%parallel_in_domains) then
@@ -166,15 +167,15 @@ subroutine poisson_kernel_init(this, all_nodes_comm)
     
   case(POISSON_FFT)
 
-    call poisson_fft_init(this%fft_solver, this%der%mesh, this%cube, this%kernel, &
+    call poisson_fft_init(this%fft_solver, namespace, this%der%mesh, this%cube, this%kernel, &
       soft_coulb_param = this%poisson_soft_coulomb_param, qq = this%qq)
     ! soft parameter has no effect unless in 1D
 
     if (this%kernel == POISSON_FFT_KERNEL_CORRECTED) then
-      call parse_variable('PoissonSolverMaxMultipole', 2, maxl)
+      call parse_variable(namespace, 'PoissonSolverMaxMultipole', 2, maxl)
       write(message(1),'(a,i2)')'Info: Multipoles corrected up to L =',  maxl
       call messages_info(1)
-      call poisson_corrections_init(this%corrector, maxl, this%der%mesh)
+      call poisson_corrections_init(this%corrector, namespace, maxl, this%der%mesh)
     end if
 
   case(POISSON_NO)
@@ -186,9 +187,10 @@ end subroutine poisson_kernel_init
 
 
 !-----------------------------------------------------------------
-subroutine poisson_kernel_reinit(this, qq)
-  type(poisson_t), intent(inout) :: this
-  FLOAT,           intent(in)    :: qq(:)
+subroutine poisson_kernel_reinit(this, namespace, qq)
+  type(poisson_t),   intent(inout) :: this
+  type(namespace_t), intent(in)    :: namespace
+  FLOAT,             intent(in)    :: qq(:)
 
   PUSH_SUB(poisson_kernel_reinit)
 
@@ -197,7 +199,7 @@ subroutine poisson_kernel_reinit(this, qq)
     if(any(abs(this%qq(1:this%der%mesh%sb%periodic_dim) - qq(1:this%der%mesh%sb%periodic_dim)) > M_EPSILON)) then
       this%qq(1:this%der%mesh%sb%periodic_dim) = qq(1:this%der%mesh%sb%periodic_dim)
       call poisson_fft_end(this%fft_solver)
-      call poisson_fft_init(this%fft_solver, this%der%mesh, this%cube, this%kernel, &
+      call poisson_fft_init(this%fft_solver, namespace, this%der%mesh, this%cube, this%kernel, &
         soft_coulb_param = this%poisson_soft_coulomb_param, qq = this%qq)
     end if
   case default
@@ -215,13 +217,20 @@ subroutine poisson_solve_direct(this, pot, rho)
   FLOAT,           intent(in)  :: rho(:)
 
   FLOAT                :: prefactor, aa1, aa2, aa3, aa4
-  integer              :: ip, jp, dim
-  FLOAT                :: xx1(1:MAX_DIM), xx2(1:MAX_DIM), xx3(1:MAX_DIM), xx4(1:MAX_DIM)
+  integer              :: ip, jp
+  integer              :: dim           !< physical dimensions
+  integer              :: dim_effective !< effective dimensions (= dim,  if no soft coulomb)
+                                        !<                      (= dim+1 if soft coulomb)
+
+  FLOAT                :: xx1(1:MAX_DIM+1), xx2(1:MAX_DIM+1), xx3(1:MAX_DIM+1), xx4(1:MAX_DIM+1)
+  FLOAT                :: xx(1:MAX_DIM+1), yy(1:MAX_DIM+1) 
+
+  logical              :: include_diag
+
 #ifdef HAVE_MPI
-  FLOAT                :: xx(1:this%der%mesh%sb%dim), yy(1:this%der%mesh%sb%dim) 
-  FLOAT                :: tmp, xg(MAX_DIM)
+  FLOAT                :: xg(MAX_DIM)
   integer, allocatable :: ip_v(:), part_v(:)
-  FLOAT, allocatable   :: pvec(:) 
+  FLOAT, allocatable   :: pvec(:), tmp(:)
 #endif
 
   PUSH_SUB(poisson_solve_direct)
@@ -229,13 +238,31 @@ subroutine poisson_solve_direct(this, pot, rho)
   dim = this%der%mesh%sb%dim
   ASSERT(this%method == POISSON_DIRECT_SUM)
 
+
+  if (this%poisson_soft_coulomb_param**2 > M_ZERO) then
+    dim_effective = dim+1
+    xx(dim_effective) = this%poisson_soft_coulomb_param
+    xx1(dim_effective) = this%poisson_soft_coulomb_param
+    xx2(dim_effective) = this%poisson_soft_coulomb_param
+    xx3(dim_effective) = this%poisson_soft_coulomb_param
+    xx4(dim_effective) = this%poisson_soft_coulomb_param
+    yy(dim_effective) = M_ZERO
+    include_diag = .true.
+  else
+    dim_effective = dim
+    include_diag = .false.
+  endif
+
+
   select case(dim)
   case(3)
     prefactor = M_TWO*M_PI*(M_THREE/(M_PI*M_FOUR))**(M_TWOTHIRD)
   case(2)
     prefactor = M_TWO*sqrt(M_PI)
+  case(1)
+    prefactor = M_ONE 
   case default
-    message(1) = "Internal error: poisson_solve_direct can only be called for 2D or 3D."
+    message(1) = "Internal error: poisson_solve_direct can only be called for 1D, 2D or 3D."
     ! why not? all that is needed is the appropriate prefactors to be defined above, actually. then 1D, 4D etc. can be done
     call messages_fatal(1)
   end select
@@ -249,6 +276,7 @@ subroutine poisson_solve_direct(this, pot, rho)
     SAFE_ALLOCATE(pvec(1:this%der%mesh%np))
     SAFE_ALLOCATE(part_v(1:this%der%mesh%np_global))
     SAFE_ALLOCATE(ip_v(1:this%der%mesh%np_global))
+    SAFE_ALLOCATE(tmp(1:this%der%mesh%np_global))
     do ip = 1, this%der%mesh%np_global
       ip_v(ip) = ip
     end do
@@ -260,31 +288,36 @@ subroutine poisson_solve_direct(this, pot, rho)
       xx(1:dim) = xg(1:dim)
       if(this%der%mesh%use_curvilinear) then
         do jp = 1, this%der%mesh%np
-          if(vec_global2local(this%der%mesh%vp, ip, this%der%mesh%vp%partno) == jp) then
+          if(vec_global2local(this%der%mesh%vp, ip, this%der%mesh%vp%partno) == jp .and. .not. include_diag) then
             pvec(jp) = rho(jp)*prefactor**(M_ONE - M_ONE/this%der%mesh%sb%dim)
           else
             yy(1:dim) = this%der%mesh%x(jp, 1:dim)
-            pvec(jp) = rho(jp)/sqrt(sum((xx(1:dim) - yy(1:dim))**2))
+            pvec(jp) = rho(jp)/sqrt(sum((xx(1:dim_effective) - yy(1:dim_effective))**2))
           end if
         end do
       else
         do jp = 1, this%der%mesh%np
-          if(vec_global2local(this%der%mesh%vp, ip, this%der%mesh%vp%partno) == jp) then
+          if(vec_global2local(this%der%mesh%vp, ip, this%der%mesh%vp%partno) == jp .and. .not. include_diag) then
             pvec(jp) = rho(jp)*prefactor
           else
             yy(1:dim) = this%der%mesh%x(jp, 1:dim)
-            pvec(jp) = rho(jp)/sqrt(sum((xx(1:dim) - yy(1:dim))**2))
+            pvec(jp) = rho(jp)/sqrt(sum((xx(1:dim_effective) - yy(1:dim_effective))**2))
           end if
         end do
       end if
-      tmp = dmf_integrate(this%der%mesh, pvec)
+      tmp(ip) = dmf_integrate(this%der%mesh, pvec, reduce = .false.)
+    end do
 
+    call comm_allreduce(this%der%mesh%mpi_grp%comm, tmp)
+
+    do ip = 1, this%der%mesh%np_global
       if (part_v(ip) == this%der%mesh%vp%partno) then
-        pot(vec_global2local(this%der%mesh%vp, ip, this%der%mesh%vp%partno)) = tmp
+        pot(vec_global2local(this%der%mesh%vp, ip, this%der%mesh%vp%partno)) = tmp(ip)
       end if
     end do
 
     SAFE_DEALLOCATE_A(pvec)
+    SAFE_DEALLOCATE_A(tmp)
 
   else ! serial mode
 #endif
@@ -298,32 +331,49 @@ subroutine poisson_solve_direct(this, pot, rho)
       
       if(this%der%mesh%use_curvilinear) then
 
-        aa1 = prefactor*rho(ip    )*this%der%mesh%vol_pp(ip    )**(M_ONE - M_ONE/this%der%mesh%sb%dim)
-        aa2 = prefactor*rho(ip + 1)*this%der%mesh%vol_pp(ip + 1)**(M_ONE - M_ONE/this%der%mesh%sb%dim)
-        aa3 = prefactor*rho(ip + 2)*this%der%mesh%vol_pp(ip + 2)**(M_ONE - M_ONE/this%der%mesh%sb%dim)
-        aa4 = prefactor*rho(ip + 3)*this%der%mesh%vol_pp(ip + 3)**(M_ONE - M_ONE/this%der%mesh%sb%dim)
-
+        if(.not. include_diag) then
+          aa1 = prefactor*rho(ip    )*this%der%mesh%vol_pp(ip    )**(M_ONE - M_ONE/this%der%mesh%sb%dim)
+          aa2 = prefactor*rho(ip + 1)*this%der%mesh%vol_pp(ip + 1)**(M_ONE - M_ONE/this%der%mesh%sb%dim)
+          aa3 = prefactor*rho(ip + 2)*this%der%mesh%vol_pp(ip + 2)**(M_ONE - M_ONE/this%der%mesh%sb%dim)
+          aa4 = prefactor*rho(ip + 3)*this%der%mesh%vol_pp(ip + 3)**(M_ONE - M_ONE/this%der%mesh%sb%dim)
+        end if
+        
         !$omp parallel do reduction(+:aa1,aa2,aa3,aa4)
+
         do jp = 1, this%der%mesh%np
-          if(ip     /= jp) aa1 = aa1 + rho(jp)/sqrt(sum((xx1(1:dim) - this%der%mesh%x(jp, 1:dim))**2))*this%der%mesh%vol_pp(jp)
-          if(ip + 1 /= jp) aa2 = aa2 + rho(jp)/sqrt(sum((xx2(1:dim) - this%der%mesh%x(jp, 1:dim))**2))*this%der%mesh%vol_pp(jp)
-          if(ip + 2 /= jp) aa3 = aa3 + rho(jp)/sqrt(sum((xx3(1:dim) - this%der%mesh%x(jp, 1:dim))**2))*this%der%mesh%vol_pp(jp)
-          if(ip + 3 /= jp) aa4 = aa4 + rho(jp)/sqrt(sum((xx4(1:dim) - this%der%mesh%x(jp, 1:dim))**2))*this%der%mesh%vol_pp(jp)
+          yy(1:dim) = this%der%mesh%x(jp, 1:dim)
+          if(ip     /= jp .or. include_diag) aa1 = aa1 + rho(jp)/sqrt(sum((xx1(1:dim_effective) - yy(1:dim_effective))**2)) & 
+                                                         *this%der%mesh%vol_pp(jp)
+          if(ip + 1 /= jp .or. include_diag) aa2 = aa2 + rho(jp)/sqrt(sum((xx2(1:dim_effective) - yy(1:dim_effective))**2)) & 
+                                                         *this%der%mesh%vol_pp(jp)
+          if(ip + 2 /= jp .or. include_diag) aa3 = aa3 + rho(jp)/sqrt(sum((xx3(1:dim_effective) - yy(1:dim_effective))**2)) & 
+                                                         *this%der%mesh%vol_pp(jp)
+          if(ip + 3 /= jp .or. include_diag) aa4 = aa4 + rho(jp)/sqrt(sum((xx4(1:dim_effective) - yy(1:dim_effective))**2)) & 
+                                                         *this%der%mesh%vol_pp(jp)
         end do
 
       else
 
-        aa1 = prefactor*rho(ip    )
-        aa2 = prefactor*rho(ip + 1)
-        aa3 = prefactor*rho(ip + 2)
-        aa4 = prefactor*rho(ip + 3)
+        if(.not. include_diag) then
+          aa1 = prefactor*rho(ip    )
+          aa2 = prefactor*rho(ip + 1)
+          aa3 = prefactor*rho(ip + 2)
+          aa4 = prefactor*rho(ip + 3)
+        else
+          aa1 = M_ZERO
+          aa2 = M_ZERO
+          aa3 = M_ZERO
+          aa4 = M_ZERO
+        end if
 
         !$omp parallel do reduction(+:aa1,aa2,aa3,aa4)
+
         do jp = 1, this%der%mesh%np
-          if(ip     /= jp) aa1 = aa1 + rho(jp)/sqrt(sum((xx1(1:dim) - this%der%mesh%x(jp, 1:dim))**2))
-          if(ip + 1 /= jp) aa2 = aa2 + rho(jp)/sqrt(sum((xx2(1:dim) - this%der%mesh%x(jp, 1:dim))**2))
-          if(ip + 2 /= jp) aa3 = aa3 + rho(jp)/sqrt(sum((xx3(1:dim) - this%der%mesh%x(jp, 1:dim))**2))
-          if(ip + 3 /= jp) aa4 = aa4 + rho(jp)/sqrt(sum((xx4(1:dim) - this%der%mesh%x(jp, 1:dim))**2))
+          yy(1:dim) = this%der%mesh%x(jp, 1:dim)
+          if(ip     /= jp .or. include_diag) aa1 = aa1 + rho(jp)/sqrt(sum((xx1(1:dim_effective) - yy(1:dim_effective))**2))
+          if(ip + 1 /= jp .or. include_diag) aa2 = aa2 + rho(jp)/sqrt(sum((xx2(1:dim_effective) - yy(1:dim_effective))**2))
+          if(ip + 2 /= jp .or. include_diag) aa3 = aa3 + rho(jp)/sqrt(sum((xx3(1:dim_effective) - yy(1:dim_effective))**2))
+          if(ip + 3 /= jp .or. include_diag) aa4 = aa4 + rho(jp)/sqrt(sum((xx4(1:dim_effective) - yy(1:dim_effective))**2))
         end do
         
       end if
@@ -342,18 +392,20 @@ subroutine poisson_solve_direct(this, pot, rho)
       xx1(1:dim) = this%der%mesh%x(ip,1:dim)
       if(this%der%mesh%use_curvilinear) then
         do jp = 1, this%der%mesh%np
-          if(ip == jp) then
+          yy(1:dim) = this%der%mesh%x(jp, 1:dim)
+          if(ip == jp .and. .not. include_diag) then
             aa1 = aa1 + prefactor*rho(ip)*this%der%mesh%vol_pp(jp)**(M_ONE - M_ONE/this%der%mesh%sb%dim)
           else
-            aa1 = aa1 + rho(jp)/sqrt(sum((xx1(1:dim) - this%der%mesh%x(jp, 1:dim))**2))*this%der%mesh%vol_pp(jp)
+            aa1 = aa1 + rho(jp)/sqrt(sum((xx1(1:dim_effective) - yy(1:dim_effective))**2))*this%der%mesh%vol_pp(jp)
           end if
         end do
       else
         do jp = 1, this%der%mesh%np
+          yy(1:dim) = this%der%mesh%x(jp, 1:dim)
           if(ip == jp) then
             aa1 = aa1 + prefactor*rho(ip)
           else
-            aa1 = aa1 + rho(jp)/sqrt(sum((xx1(1:dim) - this%der%mesh%x(jp, 1:dim))**2))
+            aa1 = aa1 + rho(jp)/sqrt(sum((xx1(1:dim_effective) - yy(1:dim_effective))**2))
           end if
         end do
       end if

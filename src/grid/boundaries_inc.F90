@@ -59,7 +59,7 @@ subroutine X(ghost_update_batch_start)(vp, v_local, handle)
   type(batch_t), target,    intent(inout) :: v_local
   type(pv_handle_batch_t),  intent(out)   :: handle
 
-  integer :: ipart, pos, ii, tag, nn
+  integer :: ipart, pos, ii, tag, nn, offset
 
   call profiling_in(prof_start, "GHOST_UPDATE_START")
   PUSH_SUB(X(ghost_update_batch_start))
@@ -76,14 +76,23 @@ subroutine X(ghost_update_batch_start)(vp, v_local, handle)
   select case(batch_status(v_local))
 
   case(BATCH_DEVICE_PACKED)
-    SAFE_ALLOCATE(handle%X(recv_buffer)(1:v_local%pack%size(1)*vp%np_ghost))
+    if(.not. accel%cuda_mpi) then
+      SAFE_ALLOCATE(handle%X(recv_buffer)(1:v_local%pack%size(1)*vp%np_ghost))
+      offset = 0
+    else
+      ! get device pointer for CUDA-aware MPI
+      call accel_get_device_pointer(handle%X(recv_buffer), handle%v_local%pack%buffer, &
+        [product(v_local%pack%size)])
+      ! offset needed because the device pointer represents the full vector
+      offset = v_local%pack%size(1)*vp%np_local
+    end if
 
     do ipart = 1, vp%npart
       if(vp%ghost_rcounts(ipart) == 0) cycle
       
       handle%nnb = handle%nnb + 1
       tag = 0
-      pos = 1 + vp%ghost_rdispls(ipart)*v_local%pack%size(1)
+      pos = 1 + vp%ghost_rdispls(ipart)*v_local%pack%size(1) + offset
 #ifdef HAVE_MPI
       call MPI_Irecv(handle%X(recv_buffer)(pos), vp%ghost_rcounts(ipart)*v_local%pack%size(1), R_MPITYPE, &
            ipart - 1, tag, vp%comm, handle%requests(handle%nnb), mpi_err)
@@ -132,8 +141,12 @@ subroutine X(ghost_update_batch_start)(vp, v_local, handle)
 
   if(batch_status(v_local) == BATCH_DEVICE_PACKED) then
     nn = product(handle%ghost_send%pack%size(1:2))
-    SAFE_ALLOCATE(handle%X(send_buffer)(1:nn))
-    call accel_read_buffer(handle%ghost_send%pack%buffer, nn, handle%X(send_buffer))
+    if(.not. accel%cuda_mpi) then
+      SAFE_ALLOCATE(handle%X(send_buffer)(1:nn))
+      call accel_read_buffer(handle%ghost_send%pack%buffer, nn, handle%X(send_buffer))
+    else
+      call accel_get_device_pointer(handle%X(send_buffer), handle%ghost_send%pack%buffer, [nn])
+    end if
   end if
 
   select case(batch_status(v_local))
@@ -197,15 +210,23 @@ subroutine X(ghost_update_batch_finish)(handle)
   SAFE_ALLOCATE(status(1:MPI_STATUS_SIZE, 1:handle%nnb))
   call MPI_Waitall(handle%nnb, handle%requests(1), status(1, 1), mpi_err)
 #endif
-
   SAFE_DEALLOCATE_A(status)
   SAFE_DEALLOCATE_P(handle%requests)
 
   if(batch_status(handle%v_local) == BATCH_DEVICE_PACKED) then
-    call accel_write_buffer(handle%v_local%pack%buffer, handle%v_local%pack%size(1)*handle%vp%np_ghost, &
-      handle%X(recv_buffer), offset = handle%v_local%pack%size(1)*handle%vp%np_local)
-    SAFE_DEALLOCATE_P(handle%X(send_buffer))
-    SAFE_DEALLOCATE_P(handle%X(recv_buffer))
+    ! First call MPI_Waitall to make the transfer happen, then call accel_finish to
+    ! synchronize the operate_map kernel for the inner points
+    call accel_finish()
+
+    if(.not. accel%cuda_mpi) then
+      call accel_write_buffer(handle%v_local%pack%buffer, handle%v_local%pack%size(1)*handle%vp%np_ghost, &
+        handle%X(recv_buffer), offset = handle%v_local%pack%size(1)*handle%vp%np_local)
+      SAFE_DEALLOCATE_P(handle%X(send_buffer))
+      SAFE_DEALLOCATE_P(handle%X(recv_buffer))
+    else
+      nullify(handle%X(send_buffer))
+      nullify(handle%X(recv_buffer))
+    end if
   end if
 
   call batch_end(handle%ghost_send)
@@ -265,16 +286,21 @@ contains
       np = ffb%pack%size(1)*(bndry_end - bndry_start + 1)
       call accel_set_buffer_to_zero(ffb%pack%buffer, batch_type(ffb), np, offset = ffb%pack%size(1)*(bndry_start - 1))
       call accel_finish()
+
     case(BATCH_PACKED)
-      forall(ip = bndry_start:bndry_end) 
-        forall(ist = 1:ffb%nst_linear)
+      !$omp parallel do simd schedule(static)
+      do ip = bndry_start, bndry_end
+        do ist = 1, ffb%nst_linear
           ffb%pack%X(psi)(ist, ip) = R_TOTYPE(M_ZERO)
-        end forall
-      end forall
+        end do
+      end do
 
     case(BATCH_NOT_PACKED)
       do ist = 1, ffb%nst_linear
-        forall (ip = bndry_start:bndry_end) ffb%states_linear(ist)%X(psi)(ip) = R_TOTYPE(M_ZERO)
+        !$omp parallel do simd schedule(static)
+        do ip = bndry_start, bndry_end
+          ffb%states_linear(ist)%X(psi)(ip) = R_TOTYPE(M_ZERO)
+        end do
       end do
 
     end select
@@ -377,6 +403,7 @@ contains
       case(BATCH_NOT_PACKED)
 
         do ipart = 1, npart
+          !$omp parallel do private(ip2)
           do ip = 1, boundaries%nsend(ipart)
             ip2 = boundaries%per_send(ip, ipart)
             do ist = 1, ffb%nst_linear
@@ -388,7 +415,7 @@ contains
       case(BATCH_PACKED)
 
         do ipart = 1, npart
-          !$omp parallel do private(ip, ip2, ist)
+          !$omp parallel do private(ip2)
           do ip = 1, boundaries%nsend(ipart)
             ip2 = boundaries%per_send(ip, ipart)
             do ist = 1, ffb%nst_linear
@@ -469,6 +496,7 @@ contains
         if(.not. present(phase_correction)) then
           ! do not apply phase correction; phase is set in another step
           do ipart = 1, npart
+            !$omp parallel do private(ip2)
             do ip = 1, boundaries%nrecv(ipart)
               ip2 = boundaries%per_recv(ip, ipart)
               do ist = 1, ffb%nst_linear
@@ -481,6 +509,7 @@ contains
           ASSERT(lbound(phase_correction, 1) == 1)
           ASSERT(ubound(phase_correction, 1) == boundaries%mesh%np_part - boundaries%mesh%np)
           do ipart = 1, npart
+            !$omp parallel do private(ip2)
             do ip = 1, boundaries%nrecv(ipart)
               ip2 = boundaries%per_recv(ip, ipart)
               do ist = 1, ffb%nst_linear
@@ -496,7 +525,7 @@ contains
         if(.not. present(phase_correction)) then
           ! do not apply phase correction; phase is set in another step
           do ipart = 1, npart
-            !$omp parallel do private(ip, ip2, ist)
+            !$omp parallel do private(ip2)
             do ip = 1, boundaries%nrecv(ipart)
               ip2 = boundaries%per_recv(ip, ipart)
               do ist = 1, ffb%nst_linear
@@ -509,7 +538,7 @@ contains
           ASSERT(lbound(phase_correction, 1) == 1)
           ASSERT(ubound(phase_correction, 1) == boundaries%mesh%np_part - boundaries%mesh%np)
           do ipart = 1, npart
-            !$omp parallel do private(ip, ip2, ist)
+            !$omp parallel do private(ip2)
             do ip = 1, boundaries%nrecv(ipart)
               ip2 = boundaries%per_recv(ip, ipart)
               do ist = 1, ffb%nst_linear
@@ -600,19 +629,21 @@ contains
       end if
 
     case(BATCH_DEVICE_PACKED)
-      call accel_kernel_start_call(kernel, 'boundaries.cl', 'boundaries_periodic')
+      if(boundaries%nper > 0) then
+        call accel_kernel_start_call(kernel, 'boundaries.cl', 'boundaries_periodic')
 
-      call accel_set_kernel_arg(kernel, 0, boundaries%nper)
-      call accel_set_kernel_arg(kernel, 1, boundaries%buff_per_points)
-      call accel_set_kernel_arg(kernel, 2, ffb%pack%buffer)
-      call accel_set_kernel_arg(kernel, 3, log2(ffb%pack%size_real(1)))
+        call accel_set_kernel_arg(kernel, 0, boundaries%nper)
+        call accel_set_kernel_arg(kernel, 1, boundaries%buff_per_points)
+        call accel_set_kernel_arg(kernel, 2, ffb%pack%buffer)
+        call accel_set_kernel_arg(kernel, 3, log2(ffb%pack%size_real(1)))
 
-      wgsize = accel_kernel_workgroup_size(kernel)/ffb%pack%size_real(1)
+        wgsize = accel_kernel_workgroup_size(kernel)/ffb%pack%size_real(1)
 
-      call accel_kernel_run(kernel, (/ffb%pack%size_real(1), pad(boundaries%nper, wgsize)/), &
-        (/ffb%pack%size_real(1), wgsize/))
+        call accel_kernel_run(kernel, (/ffb%pack%size_real(1), pad(boundaries%nper, wgsize)/), &
+          (/ffb%pack%size_real(1), wgsize/))
 
-      call accel_finish()
+        call accel_finish()
+      end if
 
     end select
 

@@ -1,4 +1,4 @@
-!! Copyright (C) 2015 H. Huebener
+!! Copyright (C) 2019 H. Huebener, X. Andrade
 !!
 !! This program is free software; you can redistribute it and/or modify
 !! it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ module scdm_oct_m
   use messages_oct_m
   use mpi_oct_m
   use multicomm_oct_m
+  use namespace_oct_m
   use par_vec_oct_m
   use parser_oct_m
   use poisson_oct_m
@@ -41,9 +42,10 @@ module scdm_oct_m
   use profiling_oct_m
   use scalapack_oct_m
   use simul_box_oct_m
-  use states_oct_m
-  use states_dim_oct_m
-  use states_parallel_oct_m
+  use states_abst_oct_m
+  use states_elec_oct_m
+  use states_elec_dim_oct_m
+  use states_elec_parallel_oct_m
   use unit_oct_m
   use unit_system_oct_m
 
@@ -55,11 +57,12 @@ module scdm_oct_m
        scdm_init,         &
        dscdm_localize,    &
        zscdm_localize,    &
-       scdm_rotate_states
+       scdm_rotate_states, &
+       zscdm_rrqr
   
   type scdm_t
     private
-    type(states_t)           :: st          !< localized orthogonal states
+    type(states_elec_t)      :: st          !< localized orthogonal states
     FLOAT, pointer,   public :: center(:,:) !< coordinates of centers of states (in same units as mesh%x)
     integer,          public :: box_size    !< number of mesh points in the dimension of local box around scdm states 
                                             !! NOTE: this could be dynamic and state dependent
@@ -106,14 +109,14 @@ contains
 !! A. Damle, L. Lin, L. Ying: Compressed representation of Kohn-Sham orbitals via 
 !!                            selected columns of the density matrix
 !! http://arxiv.org/abs/1408.4926 (accepted in JCTC as of 17th March 2015)
-subroutine scdm_init(st,der,fullcube,scdm,operate_on_scdm)
-    
-  type(states_t), intent(in)  :: st !< this contains the KS set (for now from hm%hf_st which is confusing)
-  type(derivatives_t) :: der
-  type(cube_t) :: fullcube !< cube of the full cell
-  type(scdm_t) :: scdm
-  logical, optional :: operate_on_scdm  !< apply exchange to SCDM states by performing a basis rotation on the st object
-  
+subroutine scdm_init(scdm, namespace, st, der, fullcube, operate_on_scdm)
+  type(scdm_t),        intent(inout) :: scdm
+  type(namespace_t),   intent(in)    :: namespace
+  type(states_elec_t), intent(in)    :: st !< this contains the KS set (for now from hm%hf_st which is confusing)
+  type(derivatives_t), intent(in)    :: der
+  type(cube_t),        intent(in)    :: fullcube !< cube of the full cell
+  logical, optional,   intent(in)    :: operate_on_scdm  !< apply exchange to SCDM states by performing a basis rotation on the st object
+
   integer :: ii, jj, kk, ip
   logical :: operate_on_scdm_
   
@@ -131,9 +134,9 @@ subroutine scdm_init(st,der,fullcube,scdm,operate_on_scdm)
     return
   end if
   
-  if (st%d%nik > 1) call messages_not_implemented("SCDM with k-point sampling")
+  if (st%d%nik > 1) call messages_not_implemented("SCDM with k-point sampling", namespace=namespace)
   if (der%mesh%sb%periodic_dim > 0 .and. der%mesh%sb%periodic_dim /= 3) &
-       call messages_not_implemented("SCDM with mixed-periodicity")  
+       call messages_not_implemented("SCDM with mixed-periodicity", namespace=namespace)
   
   ! determine whether we are applying the scdm exchange operator to scdm states
   ! NOTE: this should be always the case, but for now only in td
@@ -156,7 +159,7 @@ subroutine scdm_init(st,der,fullcube,scdm,operate_on_scdm)
   scdm%nst   = st%nst
   
   ! initialize state object for the SCDM states by copying
-  call states_copy(scdm%st,st)
+  call states_elec_copy(scdm%st,st)
   
   !%Variable SCDM_verbose
   !%Type logical
@@ -165,7 +168,7 @@ subroutine scdm_init(st,der,fullcube,scdm,operate_on_scdm)
   !%Description
   !% Output detailed information on SCDM procedure.
   !%End
-  call parse_variable('SCDM_verbose', .false., scdm%verbose)
+  call parse_variable(namespace, 'SCDM_verbose', .false., scdm%verbose)
   
   scdm%full_cube_n = fullcube%rs_n_global
   
@@ -182,7 +185,7 @@ subroutine scdm_init(st,der,fullcube,scdm,operate_on_scdm)
   !%Description
   !% Controls the size of the box on which the SCDM states are defined (box size = 2*radius).
   !%End  
-  call parse_variable('SCDMCutoffRadius', 3._8, rcut, units_inp%length)
+  call parse_variable(namespace, 'SCDMCutoffRadius', 3._8, rcut, units_inp%length)
   if (scdm%root.and.scdm%verbose) call messages_print_var_value(stdout, 'SCDM cutoff', rcut)
   ! box_size is half the size of the  box
   scdm%box_size = 0
@@ -198,7 +201,7 @@ subroutine scdm_init(st,der,fullcube,scdm,operate_on_scdm)
   !check if scdm is not bigger than fft-grid of full simualtion cell  
   if (scdm%full_box > der%mesh%np_global) then
     message(1) = 'SCDM box larger than mesh, no point in using it'
-    call messages_fatal(1,only_root_writes = .true.)
+    call messages_fatal(1,only_root_writes = .true., namespace=namespace)
   end if
   dummy = 2*(2*scdm%box_size+1)*der%mesh%spacing(1)*0.529177249
   if (scdm%root .and. scdm%verbose) call messages_print_var_value(stdout, 'SCDM fullbox[Ang]', dummy)
@@ -270,16 +273,16 @@ subroutine scdm_init(st,der,fullcube,scdm,operate_on_scdm)
   
   ! create a cube object for the small box, with double size for coulomb truncation
   box(1:3) = scdm%boxmesh%idx%ll(1:3)*2
-  call cube_init(scdm%boxcube, box, scdm%boxmesh%sb,fft_type=FFT_REAL, fft_library=FFTLIB_FFTW)
+  call cube_init(scdm%boxcube, box, scdm%boxmesh%sb, namespace, fft_type=FFT_REAL, fft_library=FFTLIB_FFTW)
   
   ! set up poisson solver used for the exchange operator with scdm states
   ! this replicates poisson_kernel_init()
   scdm%poisson%poisson_soft_coulomb_param = M_ZERO
   if (der%mesh%sb%periodic_dim.eq.3) then
-    call poisson_fft_init(scdm%poisson_fft, scdm%boxmesh, scdm%boxcube, &
+    call poisson_fft_init(scdm%poisson_fft, namespace, scdm%boxmesh, scdm%boxcube, &
          kernel=POISSON_FFT_KERNEL_HOCKNEY,fullcube=fullcube)
   else !non periodic case
-    call poisson_fft_init(scdm%poisson_fft, scdm%boxmesh, scdm%boxcube, kernel=POISSON_FFT_KERNEL_SPH)
+    call poisson_fft_init(scdm%poisson_fft, namespace, scdm%boxmesh, scdm%boxcube, kernel=POISSON_FFT_KERNEL_SPH)
   end if
   
   ! create poisson object
@@ -311,21 +314,21 @@ subroutine scdm_init(st,der,fullcube,scdm,operate_on_scdm)
 end subroutine scdm_init
 
 !> wrapper routine to rotate  KS states into their SCDM representation
-subroutine scdm_rotate_states(st,mesh,scdm)
-  type(states_t), intent(inout)  :: st
-  type(mesh_t), intent(in)       :: mesh
-  type(scdm_t), intent(inout)    :: scdm
+subroutine scdm_rotate_states(scdm, namespace, st, mesh)
+  type(scdm_t),        intent(inout)  :: scdm
+  type(namespace_t),   intent(in)     :: namespace
+  type(states_elec_t), intent(inout)  :: st
+  type(mesh_t),        intent(in)     :: mesh
   
   PUSH_SUB(scdm_rotate_states)
   
   if (.not.states_are_real(st)) then
-    call zscdm_rotate_states(st,mesh,scdm)
+    call zscdm_rotate_states(scdm, namespace, st, mesh)
   else
-    call dscdm_rotate_states(st,mesh,scdm)
+    call dscdm_rotate_states(scdm, namespace, st, mesh)
   end if
   
-  POP_SUB(scdm_rotate_states)
-  
+  POP_SUB(scdm_rotate_states)  
 end subroutine scdm_rotate_states
   
 subroutine check_box_in_index(idx,center,size,out)

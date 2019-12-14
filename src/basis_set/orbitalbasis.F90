@@ -25,6 +25,7 @@ module orbitalbasis_oct_m
   use io_oct_m
   use messages_oct_m
   use mesh_oct_m
+  use namespace_oct_m
   use orbitalset_oct_m
   use orbitalset_utils_oct_m
   use parser_oct_m
@@ -94,8 +95,9 @@ contains
 
  end subroutine orbitalbasis_nullify
 
- subroutine orbitalbasis_init(this)
-  type(orbitalbasis_t),    intent(inout) :: this
+ subroutine orbitalbasis_init(this, namespace)
+   type(orbitalbasis_t),    intent(inout) :: this
+   type(namespace_t),       intent(in)    :: namespace
 
   PUSH_SUB(orbitalbasis_init)
 
@@ -104,7 +106,7 @@ contains
   !%Variable AOTruncation
   !%Type flag
   !%Default ao_full
-  !%Section Hamiltonian::DFT+U
+  !%Section Atomic Orbitals
   !%Description
   !% This option determines how Octopus will truncate the orbitals used for LDA+U.
   !% Except for the full method, the other options are only there to get a quick idea.
@@ -117,58 +119,58 @@ contains
   !% The radius of the orbitals are restricted to the radius of the non-local part of the pseudopotential 
   !% of the corresponding atom.
   !%End
-  call parse_variable('AOTruncation', OPTION__AOTRUNCATION__AO_FULL, this%truncation)
+  call parse_variable(namespace, 'AOTruncation', OPTION__AOTRUNCATION__AO_FULL, this%truncation)
   call messages_print_var_option(stdout, 'AOTruncation', this%truncation)
 
   !%Variable AOThreshold
   !%Type float
   !%Default 0.01
-  !%Section Hamiltonian::DFT+U
+  !%Section Atomic Orbitals
   !%Description
-  !% Determines the threshold used to compute the radius of the atomic orbitals for LDA+U.
+  !% Determines the threshold used to compute the radius of the atomic orbitals for LDA+U and for Wannier90.
   !% This radius is computed by making sure that the 
   !% absolute value of the radial part of the atomic orbital is below the specified threshold.
   !% This value should be converged to be sure that results do not depend on this value. 
   !% However increasing this value increases the number of grid points covered by the orbitals and directly affect performances.
   !%End
-  call parse_variable('AOThreshold', CNST(0.01), this%threshold)
+  call parse_variable(namespace, 'AOThreshold', CNST(0.01), this%threshold)
   if(this%threshold <= M_ZERO) call messages_input_error('AOThreshold')
   call messages_print_var_value(stdout, 'AOThreshold', this%threshold)
 
   !%Variable AONormalize
   !%Type logical
   !%Default yes
-  !%Section Hamiltonian::DFT+U
+  !%Section Atomic Orbitals
   !%Description
   !% If set to yes, Octopus will normalize the atomic orbitals
   !%End
-  call parse_variable('AONormalize', .true., this%normalize)
+  call parse_variable(namespace, 'AONormalize', .true., this%normalize)
   call messages_print_var_value(stdout, 'AONormalize', this%normalize)
 
   !%Variable AOSubmeshForPeriodic
   !%Type logical
   !%Default no
-  !%Section Hamiltonian::DFT+U
+  !%Section Atomic Orbitals
   !%Description
   !% If set to yes, Octopus will use submeshes to internally store the orbitals with
   !% their phase instead of storing them on the mesh. This is usually slower for small
   !% periodic systems, but becomes advantageous for large supercells.
   !% At the moment this option is not compatible with Loewdin orthogonalization
   !%End
-  call parse_variable('AOSubmeshForPeriodic', .false., this%submeshforperiodic)
+  call parse_variable(namespace, 'AOSubmeshForPeriodic', .false., this%submeshforperiodic)
   call messages_print_var_value(stdout, 'AOSubmeshForPeriodic', this%submeshforperiodic)
 
   !%Variable AOLoewdin
   !%Type logical
   !%Default no
-  !%Section Hamiltonian::DFT+U
+  !%Section Atomic Orbitals
   !%Description
   !% This option determines if the atomic orbital basis is orthogonalized or not.
   !% This is done for using the Loewdin orthogonalization scheme.
   !% The default is set to no for the moment as this option is
   !% not yet implemented for isolated systems, and seems to lead to important egg-box effect
   !%End
-  call parse_variable('AOLoewdin', .false., this%orthogonalization)
+  call parse_variable(namespace, 'AOLoewdin', .false., this%orthogonalization)
   call messages_print_var_value(stdout, 'AOLoewdin', this%orthogonalization)
   if(this%orthogonalization) call messages_experimental("AOLoewdin")
 
@@ -177,7 +179,7 @@ contains
 
   if(debug%info) then
     write(this%debugdir, '(a)') 'debug/ao_basis'
-    call io_mkdir(this%debugdir)
+    call io_mkdir(this%debugdir, namespace)
   end if
 
   POP_SUB(orbitalbasis_init)

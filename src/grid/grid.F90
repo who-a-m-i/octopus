@@ -31,6 +31,7 @@ module grid_oct_m
   use mpi_oct_m
   use multicomm_oct_m
   use multigrid_oct_m
+  use namespace_oct_m
   use nl_operator_oct_m
   use parser_oct_m
   use profiling_oct_m
@@ -73,24 +74,24 @@ contains
   !-------------------------------------------------------------------
   !>
   !! "Zero-th" stage of grid initialization. It initializes the simulation box.
-  subroutine grid_init_stage_0(gr, parser, geo, space)
+  subroutine grid_init_stage_0(gr, namespace, geo, space)
     type(grid_t),          intent(inout) :: gr
-    type(parser_t),        intent(in)    :: parser
+    type(namespace_t),     intent(in)    :: namespace
     type(geometry_t),      intent(inout) :: geo
     type(space_t),         intent(in)    :: space
 
     PUSH_SUB(grid_init_stage_0)
 
-    call simul_box_init(gr%sb, parser, geo, space)
+    call simul_box_init(gr%sb, namespace, geo, space)
       
     POP_SUB(grid_init_stage_0)
   end subroutine grid_init_stage_0
 
 
   !-------------------------------------------------------------------
-  subroutine grid_init_stage_1(gr, parser, geo)
+  subroutine grid_init_stage_1(gr, namespace, geo)
     type(grid_t),      intent(inout) :: gr
-    type(parser_t),    intent(in)    :: parser
+    type(namespace_t), intent(in)    :: namespace
     type(geometry_t),  intent(in)    :: geo
 
     type(stencil_t) :: cube
@@ -112,7 +113,7 @@ contains
     !% Experimental, and incompatible with domain-parallelization.
     !%End
     if (gr%sb%dim == 3) then 
-      call parse_variable('UseFineMesh', .false., gr%have_fine_mesh)
+      call parse_variable(namespace, 'UseFineMesh', .false., gr%have_fine_mesh)
     else
       gr%have_fine_mesh = .false.
     end if
@@ -150,7 +151,7 @@ contains
     !% <br>%</tt>
     !%End
 
-    if(parse_block('Spacing', blk) == 0) then
+    if(parse_block(namespace, 'Spacing', blk) == 0) then
       if(parse_block_cols(blk,0) < gr%sb%dim) call messages_input_error('Spacing')
       do idir = 1, gr%sb%dim
         call parse_block_float(blk, 0, idir - 1, grid_spacing(idir), units_inp%length)
@@ -158,7 +159,7 @@ contains
       end do
       call parse_block_end(blk)
     else
-      call parse_variable('Spacing', -M_ONE, grid_spacing(1), units_inp%length)
+      call parse_variable(namespace, 'Spacing', -M_ONE, grid_spacing(1), units_inp%length)
       grid_spacing(1:gr%sb%dim) = grid_spacing(1)
       if(def_h > M_ZERO) call messages_check_def(grid_spacing(1), .true., def_h, 'Spacing', units_out%length)
     end if
@@ -194,13 +195,27 @@ contains
       end if
     end if
 
+    !%Variable PeriodicBoundaryMask
+    !%Type block
+    !%Section Mesh
+    !%Description
+    !% (Experimental) Defines a mask for which periodic boundaries are replaced by zero boundary conditions.
+    !%End
+    if(parse_block(namespace, 'PeriodicBoundaryMask', blk) < 0) then
+      gr%mesh%masked_periodic_boundaries = .false.
+    else
+      gr%mesh%masked_periodic_boundaries = .true.
+      call parse_block_string(blk, 0, 0, gr%mesh%periodic_boundary_mask)
+      call messages_experimental('PeriodicBoundaryMask')
+    end if
+
     ! initialize curvilinear coordinates
-    call curvilinear_init(gr%cv, gr%sb, geo, grid_spacing)
+    call curvilinear_init(gr%cv, namespace, gr%sb, geo, grid_spacing)
 
     ! initialize derivatives
-    call derivatives_init(gr%der, parser, gr%sb, gr%cv%method /= CURV_METHOD_UNIFORM)
+    call derivatives_init(gr%der, namespace, gr%sb, gr%cv%method /= CURV_METHOD_UNIFORM)
 
-    call double_grid_init(gr%dgrid, gr%sb)
+    call double_grid_init(gr%dgrid, namespace, gr%sb)
 
     enlarge = 0
     enlarge(1:gr%sb%dim) = 2
@@ -216,7 +231,7 @@ contains
     call stencil_union(gr%sb%dim, cube, gr%der%lapl%stencil, gr%stencil)
     call stencil_end(cube)
 
-    call mesh_init_stage_2(gr%mesh, gr%sb, geo, gr%cv, gr%stencil)
+    call mesh_init_stage_2(gr%mesh, gr%sb, geo, gr%cv, gr%stencil, namespace)
 
     POP_SUB(grid_init_stage_1)
 
@@ -224,17 +239,17 @@ contains
 
 
   !-------------------------------------------------------------------
-  subroutine grid_init_stage_2(gr, parser, mc, geo)
+  subroutine grid_init_stage_2(gr, namespace, mc, geo)
     type(grid_t), target, intent(inout) :: gr
-    type(parser_t),       intent(in)    :: parser
+    type(namespace_t),    intent(in)    :: namespace
     type(multicomm_t),    intent(in)    :: mc
     type(geometry_t),     intent(in)    :: geo
 
     PUSH_SUB(grid_init_stage_2)
 
-    call mesh_init_stage_3(gr%mesh, parser, gr%stencil, mc)
+    call mesh_init_stage_3(gr%mesh, namespace, gr%stencil, mc)
 
-    call nl_operator_global_init(parser)
+    call nl_operator_global_init(namespace)
     if(gr%have_fine_mesh) then
       message(1) = "Info: coarse mesh"
       call messages_info(1)
@@ -254,11 +269,11 @@ contains
       SAFE_ALLOCATE(gr%fine%mesh)
       SAFE_ALLOCATE(gr%fine%der)
       
-      call multigrid_mesh_double(geo, gr%cv, gr%mesh, gr%fine%mesh, gr%stencil)
+      call multigrid_mesh_double(geo, gr%cv, gr%mesh, gr%fine%mesh, gr%stencil, namespace)
       
-      call derivatives_init(gr%fine%der, parser, gr%mesh%sb, gr%cv%method /= CURV_METHOD_UNIFORM)
+      call derivatives_init(gr%fine%der, namespace, gr%mesh%sb, gr%cv%method /= CURV_METHOD_UNIFORM)
       
-      call mesh_init_stage_3(gr%fine%mesh, parser, gr%stencil, mc)
+      call mesh_init_stage_3(gr%fine%mesh, namespace, gr%stencil, mc)
       
       call multigrid_get_transfer_tables(gr%fine%tt, gr%fine%mesh, gr%mesh)
       
@@ -363,16 +378,16 @@ contains
 
 
   !-------------------------------------------------------------------
-  subroutine grid_create_multigrid(gr, parser, geo, mc)
+  subroutine grid_create_multigrid(gr, namespace, geo, mc)
     type(grid_t),      intent(inout) :: gr
-    type(parser_t),    intent(in)    :: parser
+    type(namespace_t), intent(in)    :: namespace
     type(geometry_t),  intent(in)    :: geo
     type(multicomm_t), intent(in)    :: mc
 
     PUSH_SUB(grid_create_multigrid)
 
     SAFE_ALLOCATE(gr%mgrid)
-    call multigrid_init(gr%mgrid, parser, geo, gr%cv, gr%mesh, gr%der, gr%stencil, mc)
+    call multigrid_init(gr%mgrid, namespace, geo, gr%cv, gr%mesh, gr%der, gr%stencil, mc)
 
     POP_SUB(grid_create_multigrid)
   end subroutine grid_create_multigrid

@@ -20,9 +20,10 @@
 
 module xc_functl_oct_m
   use global_oct_m
-  use parser_oct_m
   use libvdwxc_oct_m
   use messages_oct_m
+  use namespace_oct_m
+  use parser_oct_m
   use XC_F90(lib_m)
 
   implicit none
@@ -99,9 +100,9 @@ contains
 
   ! ---------------------------------------------------------
 
- subroutine xc_functl_init_functl(functl, parser, id, ndim, nel, spin_channels)
+ subroutine xc_functl_init_functl(functl, namespace, id, ndim, nel, spin_channels)
    type(xc_functl_t),  intent(out) :: functl
-   type(parser_t),     intent(in)  :: parser
+   type(namespace_t),  intent(in)  :: namespace
     integer,           intent(in)  :: id
     integer,           intent(in)  :: ndim
     FLOAT,             intent(in)  :: nel
@@ -159,7 +160,7 @@ contains
       functl%type = XC_F90(info_kind)(functl%info)
       functl%flags = XC_F90(info_flags)(functl%info)
       ! Convert Octopus code for functional into corresponding libvdwxc code:
-      call libvdwxc_init(functl%libvdwxc, functl%id - XC_VDW_C_VDWDF + 1)
+      call libvdwxc_init(functl%libvdwxc, namespace, functl%id - XC_VDW_C_VDWDF + 1)
 
     else if(functl%id == XC_HALF_HARTREE) then
       functl%type = XC_EXCHANGE_CORRELATION
@@ -178,43 +179,43 @@ contains
       if(bitand(functl%flags, XC_FLAGS_HAVE_EXC) == 0) then
         message(1) = 'Specified functional does not have total energy available.'
         message(2) = 'Corresponding component of energy will just be left as zero.'
-        call messages_warning(2)
+        call messages_warning(2, namespace=namespace)
       end if
 
       if(bitand(functl%flags, XC_FLAGS_HAVE_VXC) == 0) then
         message(1) = 'Specified functional does not have XC potential available.'
         message(2) = 'Cannot run calculations. Choose another XCFunctional.'
-        call messages_fatal(2)
+        call messages_fatal(2, namespace=namespace)
       end if
 
       ok = bitand(functl%flags, XC_FLAGS_1D) /= 0
       if((ndim /= 1).and.ok) then
         message(1) = 'Specified functional is only allowed in 1D.'
-        call messages_fatal(1)
+        call messages_fatal(1, namespace=namespace)
       end if
       if(ndim==1.and.(.not.ok)) then
         message(1) = 'Cannot use the specified functionals in 1D.'
-        call messages_fatal(1)
+        call messages_fatal(1, namespace=namespace)
       end if
 
       ok = bitand(functl%flags, XC_FLAGS_2D) /= 0
       if((ndim /= 2).and.ok) then
         message(1) = 'Specified functional is only allowed in 2D.'
-        call messages_fatal(1)
+        call messages_fatal(1, namespace=namespace)
       end if
       if(ndim==2.and.(.not.ok)) then
         message(1) = 'Cannot use the specified functionals in 2D.'
-        call messages_fatal(1)
+        call messages_fatal(1, namespace=namespace)
       end if
 
       ok = bitand(functl%flags, XC_FLAGS_3D) /= 0
       if((ndim /= 3).and.ok) then
         message(1) = 'Specified functional is only allowed in 3D.'
-        call messages_fatal(1)
+        call messages_fatal(1, namespace=namespace)
       end if
       if(ndim==3.and.(.not.ok)) then
         message(1) = 'Cannot use the specified functionals in 3D.'
-        call messages_fatal(1)
+        call messages_fatal(1, namespace=namespace)
       end if
     end if
     
@@ -235,7 +236,7 @@ contains
       !% The parameter of the Slater X<math>\alpha</math> functional. Applies only for
       !% <tt>XCFunctional = xc_lda_c_xalpha</tt>.
       !%End
-      call parse_variable('Xalpha', M_ONE, alpha)
+      call parse_variable(namespace, 'Xalpha', M_ONE, alpha)
 #ifdef HAVE_LIBXC4
       parameters(1) = alpha
       call XC_F90(func_set_ext_params)(functl%conf, parameters(1))
@@ -258,8 +259,8 @@ contains
       !%Option interaction_soft_coulomb 1
       !% Soft Coulomb interaction of the form <math>1/\sqrt{x^2 + \alpha^2}</math>.
       !%End
-      call messages_obsolete_variable(parser, 'SoftInteraction1D_alpha', 'Interaction1D')
-      call parse_variable('Interaction1D', INT_SOFT_COULOMB, interact_1d)
+      call messages_obsolete_variable(namespace, 'SoftInteraction1D_alpha', 'Interaction1D')
+      call parse_variable(namespace, 'Interaction1D', INT_SOFT_COULOMB, interact_1d)
 
       !%Variable Interaction1DScreening
       !%Type float
@@ -269,8 +270,8 @@ contains
       !% Defines the screening parameter <math>\alpha</math> of the softened Coulomb interaction
       !% when running in 1D.
       !%End
-      call messages_obsolete_variable(parser, 'SoftInteraction1D_alpha', 'Interaction1DScreening')
-      call parse_variable('Interaction1DScreening', M_ONE, alpha)
+      call messages_obsolete_variable(namespace, 'SoftInteraction1D_alpha', 'Interaction1DScreening')
+      call parse_variable(namespace, 'Interaction1DScreening', M_ONE, alpha)
 #ifdef HAVE_LIBXC4
       parameters(1) = real(interact_1d, REAL_PRECISION)
       parameters(2) = alpha
@@ -300,7 +301,7 @@ contains
       !%Description
       !% Whether to use a modified form of the LB94 functional (<tt>XCFunctional = xc_gga_x_lb</tt>).
       !%End
-      call parse_variable('LB94_modified', .false., lb94_modified)
+      call parse_variable(namespace, 'LB94_modified', .false., lb94_modified)
       if(lb94_modified) then
         functl%LB94_modified = 1
       else
@@ -315,7 +316,7 @@ contains
       !%Description
       !% A threshold for the LB94 functional (<tt>XCFunctional = xc_gga_x_lb</tt>).
       !%End
-      call parse_variable('LB94_threshold', CNST(1.0e-6), functl%LB94_threshold)
+      call parse_variable(namespace, 'LB94_threshold', CNST(1.0e-6), functl%LB94_threshold)
       
     end select
     
@@ -343,9 +344,10 @@ contains
 
 
   ! ---------------------------------------------------------
-  subroutine xc_functl_write_info(functl, iunit)
+  subroutine xc_functl_write_info(functl, iunit, namespace)
     type(xc_functl_t), intent(in) :: functl
     integer,           intent(in) :: iunit
+    type(namespace_t), intent(in) :: namespace
 
     character(len=120) :: s1, s2
     integer :: ii
@@ -391,10 +393,10 @@ contains
       case(XC_EXCHANGE_CORRELATION)
         write(message(1), '(2x,a)') 'Exchange-correlation'
       case(XC_KINETIC)
-        call messages_not_implemented("kinetic-energy functionals")
+        call messages_not_implemented("kinetic-energy functionals", namespace=namespace)
       case default
         write(message(1), '(a,i6,a,i6)') "Unknown functional type ", functl%type, ' for functional ', functl%id
-        call messages_fatal(1)
+        call messages_fatal(1, namespace=namespace)
       end select
 
       call XC_F90(info_name)  (functl%info, s1)

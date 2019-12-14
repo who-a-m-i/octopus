@@ -43,6 +43,7 @@ module accel_oct_m
   use loct_oct_m
   use messages_oct_m
   use mpi_oct_m
+  use namespace_oct_m
   use types_oct_m
   use parser_oct_m
   use profiling_oct_m
@@ -81,7 +82,10 @@ module accel_oct_m
     clfft_print_error,            &
     accel_local_memory_size,      &
     accel_global_memory_size,     &
-    accel_max_size_per_dim
+    accel_max_size_per_dim,       &
+    accel_get_device_pointer,     &
+    accel_set_stream,             &
+    accel_synchronize_all_streams
   
 #ifdef HAVE_OPENCL
   integer, public, parameter ::                 &
@@ -125,12 +129,15 @@ module accel_oct_m
     type(cl_command_queue) :: command_queue
 #endif
     type(c_ptr)            :: cublas_handle
+    type(c_ptr)            :: cuda_stream
     type(c_ptr)            :: module_map
     integer                :: max_workgroup_size
     integer(8)             :: local_memory_size
     integer(8)             :: global_memory_size
     logical                :: enabled
     logical                :: shared_mem
+    logical                :: cuda_mpi
+    integer                :: warp_size
   end type accel_t
 
   type accel_mem_t
@@ -177,12 +184,14 @@ module accel_oct_m
   type(accel_kernel_t), public, target, save :: kernel_subarray_gather
   type(accel_kernel_t), public, target, save :: kernel_density_real
   type(accel_kernel_t), public, target, save :: kernel_density_complex
+  type(accel_kernel_t), public, target, save :: kernel_density_spinors
   type(accel_kernel_t), public, target, save :: kernel_phase
   type(accel_kernel_t), public, target, save :: dkernel_dot_matrix
   type(accel_kernel_t), public, target, save :: zkernel_dot_matrix
   type(accel_kernel_t), public, target, save :: zkernel_dot_matrix_spinors
   type(accel_kernel_t), public, target, save :: dzmul
   type(accel_kernel_t), public, target, save :: zzmul
+  type(accel_kernel_t), public, target, save :: set_one
 
   ! kernels used locally
   type(accel_kernel_t), save :: set_zero
@@ -196,18 +205,12 @@ module accel_oct_m
     module procedure iaccel_write_buffer_1, daccel_write_buffer_1, zaccel_write_buffer_1
     module procedure iaccel_write_buffer_2, daccel_write_buffer_2, zaccel_write_buffer_2
     module procedure iaccel_write_buffer_3, daccel_write_buffer_3, zaccel_write_buffer_3
-    module procedure saccel_write_buffer_1, caccel_write_buffer_1
-    module procedure saccel_write_buffer_2, caccel_write_buffer_2
-    module procedure saccel_write_buffer_3, caccel_write_buffer_3
   end interface accel_write_buffer
 
   interface accel_read_buffer
     module procedure iaccel_read_buffer_1, daccel_read_buffer_1, zaccel_read_buffer_1
     module procedure iaccel_read_buffer_2, daccel_read_buffer_2, zaccel_read_buffer_2
     module procedure iaccel_read_buffer_3, daccel_read_buffer_3, zaccel_read_buffer_3
-    module procedure saccel_read_buffer_1, caccel_read_buffer_1
-    module procedure saccel_read_buffer_2, caccel_read_buffer_2
-    module procedure saccel_read_buffer_3, caccel_read_buffer_3
   end interface accel_read_buffer
 
   interface accel_set_kernel_arg
@@ -218,6 +221,13 @@ module accel_oct_m
       zaccel_set_kernel_arg_data,   &
       accel_set_kernel_arg_local
   end interface accel_set_kernel_arg
+
+  interface accel_get_device_pointer
+    module procedure iaccel_get_device_pointer_1
+    module procedure iaccel_get_device_pointer_2
+    module procedure daccel_get_device_pointer_1, zaccel_get_device_pointer_1
+    module procedure daccel_get_device_pointer_2, zaccel_get_device_pointer_2
+  end interface accel_get_device_pointer
 
   type(profile_t), save :: prof_read, prof_write
 
@@ -255,9 +265,9 @@ contains
 
   ! ------------------------------------------
 
-  subroutine accel_init(base_grp, parser)
-    type(mpi_grp_t),  intent(inout) :: base_grp
-    type(parser_t),   intent(in)    :: parser
+  subroutine accel_init(base_grp, namespace)
+    type(mpi_grp_t),     intent(inout) :: base_grp
+    type(namespace_t),   intent(in)    :: namespace
     
     logical  :: disable, default, run_benchmark
     integer  :: idevice, iplatform
@@ -286,13 +296,13 @@ contains
     !% try to initialize and use an accelerator device. By setting this
     !% variable to <tt>yes</tt> you force Octopus not to use an accelerator even it is available.
     !%End
-    call messages_obsolete_variable(parser, 'DisableOpenCL', 'DisableAccel')
+    call messages_obsolete_variable(namespace, 'DisableOpenCL', 'DisableAccel')
 #ifdef HAVE_ACCEL
     default = .false.
 #else
     default = .true.
 #endif
-    call parse_variable('DisableAccel', default, disable)
+    call parse_variable(namespace, 'DisableAccel', default, disable)
     accel%enabled = .not. disable
     
 #ifndef HAVE_ACCEL
@@ -327,9 +337,9 @@ contains
     !%Option intel -5
     !% Use the Intel OpenCL platform.
     !%End
-    call parse_variable('AccelPlatform', 0, iplatform)
+    call parse_variable(namespace, 'AccelPlatform', 0, iplatform)
 
-    call messages_obsolete_variable(parser, 'OpenCLPlatform', 'AccelPlatform')
+    call messages_obsolete_variable(namespace, 'OpenCLPlatform', 'AccelPlatform')
     
     !%Variable AccelDevice
     !%Type integer
@@ -352,9 +362,9 @@ contains
     !% Octopus will use the default device specified by the implementation.
     !% implementation.
     !%End
-    call parse_variable('AccelDevice', OPENCL_GPU, idevice)
+    call parse_variable(namespace, 'AccelDevice', OPENCL_GPU, idevice)
 
-    call messages_obsolete_variable(parser, 'OpenCLDevice', 'AccelDevice')
+    call messages_obsolete_variable(namespace, 'OpenCLDevice', 'AccelDevice')
     
     if(idevice < OPENCL_DEFAULT) then
       call messages_write('Invalid AccelDevice')
@@ -365,7 +375,8 @@ contains
 
 #ifdef HAVE_CUDA
     if(idevice<0) idevice = 0
-    call cuda_init(accel%context%cuda_context, accel%device%cuda_device, idevice, base_grp%rank)
+    call cuda_init(accel%context%cuda_context, accel%device%cuda_device, accel%cuda_stream, &
+      idevice, base_grp%rank)
 #ifdef HAVE_MPI
     write(message(1), '(A, I5.5, A, I5.5)') "Rank ", base_grp%rank, " uses device number ", idevice
     call messages_info(1, all_nodes = .true.)
@@ -374,7 +385,7 @@ contains
     ! no shared mem support in our cuda interface (for the moment)
     accel%shared_mem = .true.
 
-    call cublas_init(accel%cublas_handle)
+    call cublas_init(accel%cublas_handle, accel%cuda_stream)
 #endif
     
 #ifdef HAVE_OPENCL
@@ -545,11 +556,13 @@ contains
     call clGetDeviceInfo(accel%device%cl_device, CL_DEVICE_GLOBAL_MEM_SIZE, accel%global_memory_size, cl_status)
     call clGetDeviceInfo(accel%device%cl_device, CL_DEVICE_LOCAL_MEM_SIZE, accel%local_memory_size, cl_status)
     call clGetDeviceInfo(accel%device%cl_device, CL_DEVICE_MAX_WORK_GROUP_SIZE, accel%max_workgroup_size, cl_status)
+    accel%warp_size = 1
 #endif
 #ifdef HAVE_CUDA
     call cuda_device_total_memory(accel%device%cuda_device, accel%global_memory_size)
     call cuda_device_shared_memory(accel%device%cuda_device, accel%local_memory_size)
     call cuda_device_max_threads_per_block(accel%device%cuda_device, accel%max_workgroup_size)
+    call cuda_device_get_warpsize(accel%device%cuda_device, accel%warp_size)
 #endif
       
     if(mpi_grp_is_root(base_grp)) call device_info()
@@ -561,6 +574,7 @@ contains
     call accel_kernel_global_init()
 
     call accel_kernel_start_call(set_zero, 'set_zero.cl', "set_zero")
+    call accel_kernel_start_call(set_one, 'set_one.cl', "set_one")
     call accel_kernel_start_call(kernel_vpsi, 'vpsi.cl', "vpsi")
     call accel_kernel_start_call(kernel_vpsi_spinors, 'vpsi.cl', "vpsi_spinors")
     call accel_kernel_start_call(kernel_daxpy, 'axpy.cl', "daxpy", flags = '-DRTYPE_DOUBLE')
@@ -573,6 +587,7 @@ contains
     call accel_kernel_start_call(kernel_subarray_gather, 'subarray.cl', "subarray_gather")
     call accel_kernel_start_call(kernel_density_real, 'density.cl', "density_real")
     call accel_kernel_start_call(kernel_density_complex, 'density.cl', "density_complex")
+    call accel_kernel_start_call(kernel_density_spinors, 'density.cl', "density_spinors")
     call accel_kernel_start_call(kernel_phase, 'phase.cl', "phase")
     call accel_kernel_start_call(dkernel_dot_matrix, 'mesh_batch.cl', "ddot_matrix")
     call accel_kernel_start_call(zkernel_dot_matrix, 'mesh_batch.cl', "zdot_matrix")
@@ -588,12 +603,35 @@ contains
     !% If this variable is set to yes, Octopus will run some
     !% routines to benchmark the performance of the accelerator device.
     !%End
-    call parse_variable('AccelBenchmark', .false., run_benchmark)
+    call parse_variable(namespace, 'AccelBenchmark', .false., run_benchmark)
 
-    call messages_obsolete_variable(parser, 'OpenCLBenchmark', 'AccelBenchmark')
+    call messages_obsolete_variable(namespace, 'OpenCLBenchmark', 'AccelBenchmark')
     
     if(run_benchmark) then
       call opencl_check_bandwidth()
+    end if
+
+    !%Variable CudaAwareMPI
+    !%Type logical
+    !%Section Execution::Accel
+    !%Description
+    !% If Octopus was compiled with CUDA support and MPI support and if the MPI
+    !% implementation is CUDA-aware (i.e., it supports communication using device pointers),
+    !% this switch can be set to true to use the CUDA-aware MPI features. The advantage
+    !% of this approach is that it can do, e.g., peer-to-peer copies between devices without
+    !% going through the host memmory.
+    !% The default is false, except when the configure switch --enable-cudampi is set, in which
+    !% case this variable is set to true.
+    !%End
+#ifdef HAVE_CUDA_MPI
+    default = .true.
+#else
+    default = .false.
+#endif
+    call parse_variable(namespace, 'CudaAwareMPI', default, accel%cuda_mpi)
+    if(accel%cuda_mpi) then
+      call messages_write("Using CUDA-aware MPI.")
+      call messages_info()
     end if
 
     call messages_print_stress(stdout)
@@ -1826,21 +1864,38 @@ contains
   end function accel_max_size_per_dim
 
   ! ------------------------------------------------------
-  
+
+  subroutine accel_set_stream(stream_number)
+    integer, intent(in) :: stream_number
+
+    PUSH_SUB(accel_set_stream)
+
+#ifdef HAVE_CUDA
+    call cuda_set_stream(accel%cuda_stream, stream_number)
+    call cublas_set_stream(accel%cublas_handle, accel%cuda_stream)
+#endif
+
+    POP_SUB(accel_set_stream)
+  end subroutine accel_set_stream
+
+  ! ------------------------------------------------------
+
+  subroutine accel_synchronize_all_streams()
+    PUSH_SUB(accel_synchronize_all_streams)
+
+#ifdef HAVE_CUDA
+    call cuda_synchronize_all_streams()
+#endif
+
+    POP_SUB(accel_synchronize_all_streams)
+  end subroutine accel_synchronize_all_streams
+
 #include "undef.F90"
 #include "real.F90"
 #include "accel_inc.F90"
 
 #include "undef.F90"
 #include "complex.F90"
-#include "accel_inc.F90"
-
-#include "undef.F90"
-#include "real_single.F90"
-#include "accel_inc.F90"
-
-#include "undef.F90"
-#include "complex_single.F90"
 #include "accel_inc.F90"
 
 #include "undef.F90"

@@ -27,6 +27,7 @@ module derivatives_oct_m
   use mesh_oct_m
   use mesh_function_oct_m
   use messages_oct_m
+  use namespace_oct_m
   use nl_operator_oct_m
   use par_vec_oct_m
   use parser_oct_m
@@ -59,8 +60,6 @@ module derivatives_oct_m
     derivatives_handle_batch_t,         &
     dderivatives_test,                  &
     zderivatives_test,                  &
-    sderivatives_test,                  &
-    cderivatives_test,                  &
     dderivatives_batch_start,           &
     zderivatives_batch_start,           &
     dderivatives_batch_finish,          &
@@ -77,7 +76,9 @@ module derivatives_oct_m
     dderivatives_div,                   &
     zderivatives_div,                   &
     dderivatives_curl,                  &
-    zderivatives_curl
+    zderivatives_curl,                  &
+    dderivatives_partial,               &
+    zderivatives_partial
 
 
   integer, parameter ::     &
@@ -144,9 +145,9 @@ module derivatives_oct_m
 contains
 
   ! ---------------------------------------------------------
-  subroutine derivatives_init(der, parser, sb, use_curvilinear, order)
+  subroutine derivatives_init(der, namespace, sb, use_curvilinear, order)
     type(derivatives_t), target, intent(out) :: der
-    type(parser_t),              intent(in)  :: parser
+    type(namespace_t),           intent(in)  :: namespace
     type(simul_box_t),           intent(in)  :: sb
     logical,                     intent(in)  :: use_curvilinear
     integer, optional,           intent(in)  :: order
@@ -186,14 +187,14 @@ contains
     if(use_curvilinear) default_stencil = DER_STARPLUS
     if(sb%nonorthogonal) default_stencil = DER_STARGENERAL
 
-    call parse_variable('DerivativesStencil', default_stencil, der%stencil_type)
+    call parse_variable(namespace, 'DerivativesStencil', default_stencil, der%stencil_type)
     
     if(.not.varinfo_valid_option('DerivativesStencil', der%stencil_type)) call messages_input_error('DerivativesStencil')
     call messages_print_var_option(stdout, "DerivativesStencil", der%stencil_type)
 
     if(use_curvilinear  .and.  der%stencil_type < DER_CUBE) call messages_input_error('DerivativesStencil')
     if(der%stencil_type == DER_VARIATIONAL) then
-      call parse_variable('DerivativesLaplacianFilter', M_ONE, der%lapl_cutoff)
+      call parse_variable(namespace, 'DerivativesLaplacianFilter', M_ONE, der%lapl_cutoff)
     end if
 
     !%Variable DerivativesOrder
@@ -215,7 +216,7 @@ contains
     !% in 2D and 24 in 3D.
     !% </ul>
     !%End
-    call parse_variable('DerivativesOrder', 4, der%order)
+    call parse_variable(namespace, 'DerivativesOrder', 4, der%order)
     ! overwrite order if given as argument
     if(present(order)) then
       der%order = order
@@ -234,13 +235,13 @@ contains
     !% Communication is based on non-blocking point-to-point communication.
     !%End
     
-    call parse_variable('ParallelizationOfDerivatives', NON_BLOCKING, der%comm_method)
+    call parse_variable(namespace, 'ParallelizationOfDerivatives', NON_BLOCKING, der%comm_method)
     
     if(.not. varinfo_valid_option('ParallelizationOfDerivatives', der%comm_method)) then
       call messages_input_error('ParallelizationOfDerivatives')
     end if
 
-    call messages_obsolete_variable(parser, 'OverlapDerivatives', 'ParallelizationOfDerivatives')
+    call messages_obsolete_variable(namespace, 'OverlapDerivatives', 'ParallelizationOfDerivatives')
 #endif
 
     ! if needed, der%masses should be initialized in modelmb_particles_init
@@ -732,14 +733,6 @@ contains
 
 #include "undef.F90"
 #include "complex.F90"
-#include "derivatives_inc.F90"
-
-#include "undef.F90"
-#include "real_single.F90"
-#include "derivatives_inc.F90"
-
-#include "undef.F90"
-#include "complex_single.F90"
 #include "derivatives_inc.F90"
 
 end module derivatives_oct_m

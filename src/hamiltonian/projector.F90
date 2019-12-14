@@ -31,12 +31,13 @@ module projector_oct_m
   use mesh_oct_m
   use messages_oct_m
   use mpi_oct_m
+  use namespace_oct_m
   use profiling_oct_m
   use ps_oct_m
   use rkb_projector_oct_m
   use simul_box_oct_m
   use species_oct_m
-  use states_dim_oct_m
+  use states_elec_dim_oct_m
   use submesh_oct_m
 
   implicit none
@@ -131,10 +132,10 @@ contains
   end function projector_is
 
   !---------------------------------------------------------
-  subroutine projector_init(p, mesh, atm, dim, reltype)
+  subroutine projector_init(p, atm, namespace, dim, reltype)
     type(projector_t),    intent(inout) :: p
-    type(mesh_t),         intent(in)    :: mesh
     type(atom_t), target, intent(in)    :: atm
+    type(namespace_t),    intent(in)    :: namespace
     integer,              intent(in)    :: dim
     integer,              intent(in)    :: reltype
 
@@ -164,7 +165,7 @@ contains
         p%type = PROJ_RKB
       else
         call messages_write("Spin-orbit coupling for species '"//trim(species_label(atm%species))//" is not available.")
-        call messages_warning()
+        call messages_warning(namespace=namespace)
       end if
     end if
     
@@ -185,7 +186,7 @@ contains
   subroutine projector_init_phases(this, sb, std, vec_pot, vec_pot_var)
     type(projector_t),             intent(inout) :: this
     type(simul_box_t),             intent(in)    :: sb
-    type(states_dim_t),            intent(in)    :: std
+    type(states_elec_dim_t),       intent(in)    :: std
     FLOAT, optional,  allocatable, intent(in)    :: vec_pot(:) !< (sb%dim)
     FLOAT, optional,  allocatable, intent(in)    :: vec_pot_var(:, :) !< (1:sb%dim, 1:ns)
 
@@ -209,7 +210,7 @@ contains
     end do
 
     do iq = std%kpt%start, std%kpt%end
-      ikpoint = states_dim_get_kpoint_index(std, iq)
+      ikpoint = states_elec_dim_get_kpoint_index(std, iq)
 
       ! if this fails, it probably means that sb is not compatible with std
       ASSERT(ikpoint <= kpoints_number(sb%kpoints))

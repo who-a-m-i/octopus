@@ -24,10 +24,11 @@
 !! BIT 36 563-578 (1996) doi:10.1007/BF01731934 .
 !!
 !! We also implement the "smoothing" preconditioning described in that paper.
-subroutine X(eigensolver_plan) (gr, st, hm, pre, tol, niter, converged, ik, diff)
+subroutine X(eigensolver_plan) (namespace, gr, st, hm, pre, tol, niter, converged, ik, diff)
+  type(namespace_t),           intent(in)    :: namespace
   type(grid_t),                intent(in)    :: gr
-  type(states_t),              intent(inout) :: st
-  type(hamiltonian_t),         intent(in)    :: hm
+  type(states_elec_t),         intent(inout) :: st
+  type(hamiltonian_elec_t),    intent(in)    :: hm
   type(preconditioner_t),      intent(in)    :: pre
   FLOAT,                       intent(in)    :: tol
   integer,                     intent(inout) :: niter
@@ -96,7 +97,7 @@ subroutine X(eigensolver_plan) (gr, st, hm, pre, tol, niter, converged, ik, diff
 
   ! First of all, copy the initial estimates.
   do ist = 1, st%nst
-    call states_get_state(st, gr%mesh, ist, ik, eigenvec(:, :, ist))
+    call states_elec_get_state(st, gr%mesh, ist, ik, eigenvec(:, :, ist))
     eigenval(ist) = st%eigenval(ist, ik)
   end do
 
@@ -177,7 +178,7 @@ subroutine X(eigensolver_plan) (gr, st, hm, pre, tol, niter, converged, ik, diff
         end do
       end do
 
-      call X(hamiltonian_apply_batch)(hm, gr%der, vvb, avb, ik)
+      call X(hamiltonian_elec_apply_batch)(hm, namespace, gr%mesh, vvb, avb, ik)
       INCR(matvec, blk)
 
       call batch_end(vvb)
@@ -298,13 +299,13 @@ subroutine X(eigensolver_plan) (gr, st, hm, pre, tol, niter, converged, ik, diff
       do idim = 1, dim
         call lalg_copy(gr%mesh%np, av(:, idim, d1 + 1), aux(:, idim))
       end do
-      call X(preconditioner_apply)(pre, gr, hm, ik, aux(:,:), vv(:,:, d1+1))
+      call X(preconditioner_apply)(pre, namespace, gr, hm, aux(:,:), vv(:,:, d1+1))
 
     end do inner_loop
   end do outer_loop
 
   do ist = 1, st%nst
-    call states_set_state(st, gr%mesh, ist, ik, eigenvec(:, :, ist))
+    call states_elec_set_state(st, gr%mesh, ist, ik, eigenvec(:, :, ist))
     st%eigenval(ist, ik) = eigenval(ist)
     diff(ist) = res(ist)
   end do

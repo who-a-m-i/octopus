@@ -195,7 +195,7 @@ contains
     !% to communicate most often. Depending on the system, this can improve
     !% communication speeds.
     !%End
-    call parse_variable(namespace, 'ReorderRanks', .false., mc%reorder_ranks)
+    call parse_variable(namespace, 'ReorderRanks', .true., mc%reorder_ranks)
 
     call messages_obsolete_variable(namespace, 'ParallelizationStrategy')
     call messages_obsolete_variable(namespace, 'ParallelizationGroupRanks')

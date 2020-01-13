@@ -24,7 +24,7 @@ AC_CONFIG_SRCDIR([src/basic/global.F90])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([subdir-objects])
 
-AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_HEADERS([config.h external_libs/yaml-0.1.4/config.h])
 
 # Installation prefix by default
 AC_PREFIX_DEFAULT([/usr/local])
@@ -355,7 +355,9 @@ ACX_PATH_PARMETIS
 AC_LANG_POP(C)
 AM_CONDITIONAL(COMPILE_METIS, test x${HAVE_COMP_METIS} = x1)
 
+dnl check for YAML
 ACX_YAML
+AM_CONDITIONAL(COMPILE_YAML, test x${HAVE_COMP_YAML} = x1)
 
 dnl performance analysis using the likwid marker API
 ACX_LIKWID

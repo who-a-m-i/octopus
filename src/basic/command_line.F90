@@ -134,24 +134,24 @@ module command_line_oct_m
                                           l, m, damping, file)
       implicit none
       integer, intent(inout) :: mode
-      real(8), intent(inout) :: omega
-      real(8), intent(inout) :: searchinterval
+      FLOAT,   intent(inout) :: omega
+      FLOAT,   intent(inout) :: searchinterval
       integer, intent(inout) :: order, nresonances, nfrequencies
-      real(8), intent(inout) :: time
+      FLOAT,   intent(inout) :: time
       integer, intent(inout) :: l, m
-      real(8), intent(inout) :: damping
+      FLOAT,   intent(inout) :: damping
       character(len=*), intent(inout) :: file
     end subroutine getopt_oscillator_strength
 
     subroutine getopt_harmonic_spectrum(w0, m, ar, x, y, z, pol)
       implicit none
-      real(8)         , intent(inout) :: w0
+      FLOAT           , intent(inout) :: w0
       integer         , intent(inout) :: m
       integer         , intent(inout) :: ar
       character(len=*), intent(inout) :: pol
-      real(8)         , intent(inout) :: x
-      real(8)         , intent(inout) :: y
-      real(8)         , intent(inout) :: z
+      FLOAT           , intent(inout) :: x
+      FLOAT           , intent(inout) :: y
+      FLOAT           , intent(inout) :: z
     end subroutine getopt_harmonic_spectrum
 
     subroutine getopt_help(mode, name)
@@ -163,15 +163,15 @@ module command_line_oct_m
     subroutine getopt_photoelectron_spectrum(estep, espan, &
       thstep, thspan, phstep, phspan, pol, center, pvec, integrate)
       implicit none
-      real(8), intent(inout) :: estep
-      real(8), intent(inout) :: espan(2)
-      real(8), intent(inout) :: thstep
-      real(8), intent(inout) :: thspan(2)
-      real(8), intent(inout) :: phstep
-      real(8), intent(inout) :: phspan(2)
-      real(8), intent(inout) :: pol(3)
-      real(8), intent(inout) :: center(3)
-      real(8), intent(inout) :: pvec(3)
+      FLOAT, intent(inout) :: estep
+      FLOAT, intent(inout) :: espan(2)
+      FLOAT, intent(inout) :: thstep
+      FLOAT, intent(inout) :: thspan(2)
+      FLOAT, intent(inout) :: phstep
+      FLOAT, intent(inout) :: phspan(2)
+      FLOAT, intent(inout) :: pol(3)
+      FLOAT, intent(inout) :: center(3)
+      FLOAT, intent(inout) :: pvec(3)
       integer, intent(inout) :: integrate
     end subroutine getopt_photoelectron_spectrum
 

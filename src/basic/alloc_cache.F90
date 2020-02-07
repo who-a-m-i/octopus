@@ -64,8 +64,8 @@ module alloc_cache_oct_m
       type(alloc_cache_t),   intent(inout) :: alloc_cache
       integer(8),            intent(out)   :: hits
       integer(8),            intent(out)   :: misses
-      real(8),               intent(out)   :: vol_hits
-      real(8),               intent(out)   :: vol_misses
+      FLOAT,                 intent(out)   :: vol_hits
+      FLOAT,                 intent(out)   :: vol_misses
     end subroutine alloc_cache_end
 
   end interface

@@ -151,7 +151,7 @@ contains
 
     call dgeev(jobvl, jobvr, n, a(1, 1), lda, wr(1), wi(1), vl(1, 1), ldvl, vr(1, 1), ldvr, work(1), lwork, rwork(1), info)
 
-    w(1:n) = cmplx(wr(1:n), wi(1:n), REAL_PRECISION)
+    w(1:n) = TOCMPLX(wr(1:n), wi(1:n))
     
     SAFE_DEALLOCATE_A(wr)
     SAFE_DEALLOCATE_A(wi)

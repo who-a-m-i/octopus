@@ -425,7 +425,7 @@ contains
              do jj = 1, cube%rs_n_global(2)
                 do ii = 1, cube%rs_n_global(1)
                    ss = ss + abs(rho_total_fs(ii,jj,kk))**2 &
-                        *2d0*Gvec_G(ii, jj, kk,idir)*Gvec_G(ii, jj, kk,jdir) &
+                        *M_TWO*Gvec_G(ii, jj, kk,idir)*Gvec_G(ii, jj, kk,jdir) &
                         *FourPi_G2(ii, jj, kk)
                 end do
              end do
@@ -449,7 +449,7 @@ contains
     do idir = 1,3
        stress_l(idir,idir) = stress_l(idir,idir) + ss
     end do
-    stress_l = 0.5d0 * stress_l
+    stress_l = CNST(0.5) * stress_l
 
     
     stress_Hartree =  stress_l

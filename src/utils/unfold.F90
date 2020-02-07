@@ -355,7 +355,8 @@ contains
     CMPLX, allocatable :: zpsi(:), field_g(:)
     integer :: file_ake, iq, ist, idim, nenergy 
     integer :: ig, ix, iy, iz, ik, ie, gmin, gmax
-    FLOAT   :: eigmin, eigmax, de, norm, tol=1e-7
+    FLOAT   :: eigmin, eigmax, de, norm
+    FLOAT, parameter :: tol = CNST(1e-7)
     integer, parameter          :: nextend = 10
     FLOAT :: vec_pc(MAX_DIM),vec_sc(MAX_DIM)
     type(fourier_shell_t)       :: shell 

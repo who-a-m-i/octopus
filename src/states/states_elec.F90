@@ -2194,12 +2194,12 @@ contains
 
   ! ---------------------------------------------------------
 
-  real(8) function states_elec_wfns_memory(st, mesh) result(memory)
+  FLOAT function states_elec_wfns_memory(st, mesh) result(memory)
     type(states_elec_t), intent(in) :: st
     type(mesh_t),        intent(in) :: mesh
 
     PUSH_SUB(states_elec_wfns_memory)
-    memory = 0.0_8
+    memory = M_ZERO
 
     ! orbitals
     memory = memory + REAL_PRECISION*TOFLOAT(mesh%np_part_global)*st%d%dim*TOFLOAT(st%nst)*st%d%kpt%nglobal

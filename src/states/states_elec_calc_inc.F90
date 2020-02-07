@@ -1464,7 +1464,7 @@ subroutine X(states_elec_calc_overlap)(st, mesh, ik, overlap)
         n = int(st%nst, 8), k = int(size*st%d%dim, 8), &
         alpha = mesh%volume_element, &
         A = psi_buffer, offa = 0_8, lda = int(st%nst, 8), &
-        beta = 1.0_8, &
+        beta = M_ONE, &
         C = overlap_buffer, offc = 0_8, ldc = int(st%nst, 8))
       call accel_finish()
     end do

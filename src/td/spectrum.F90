@@ -2757,7 +2757,7 @@ contains
       if (symmetrize) then
         do idir = 1, 3
           do jdir = idir + 1, 3
-            pp(idir, jdir) = (pp(idir, jdir) + pp(jdir, idir) )/2.
+            pp(idir, jdir) = (pp(idir, jdir) + pp(jdir, idir) )/M_TWO
             pp(jdir, idir) = pp(idir, jdir)
           end do 
         end do
@@ -2786,7 +2786,7 @@ contains
         if (symmetrize) then
           do idir = 1, 3
             do jdir = idir + 1, 3
-              pp2(idir, jdir) = (pp2(idir, jdir) + pp2(jdir, idir) )/2.
+              pp2(idir, jdir) = (pp2(idir, jdir) + pp2(jdir, idir) )/M_TWO
               pp2(jdir, idir) = pp2(idir, jdir)
             end do 
           end do

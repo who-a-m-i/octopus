@@ -23,13 +23,17 @@ module celestial_body_oct_m
   use global_oct_m
   use interaction_abst_oct_m
   use interaction_gravity_oct_m
+  use io_oct_m
+  use iso_c_binding  
   use messages_oct_m
+  use mpi_oct_m
   use namespace_oct_m
   use parser_oct_m
   use profiling_oct_m
   use propagator_abst_oct_m
   use space_oct_m
   use system_abst_oct_m
+  use write_iter_oct_m
 
   implicit none
 
@@ -53,16 +57,17 @@ module celestial_body_oct_m
 
     type(space_t) :: space
 
-    class(propagator_abst_t), pointer :: prop
-
+    type(c_ptr) :: output_handle
   contains
     procedure :: add_interaction_partner => celestial_body_add_interaction_partner
     procedure :: has_interaction => celestial_body_has_interaction
     procedure :: do_td_operation => celestial_body_do_td
     procedure :: update_interactions => celestial_body_update_interactions
     procedure :: update_interaction_as_partner => celestial_body_update_interaction_as_partner
-    procedure :: set_propagator => celestial_body_set_prop
     procedure :: write_td_info => celestial_body_write_td_info
+    procedure :: td_write_init => celestial_body_td_write_init
+    procedure :: td_write_iter => celestial_body_td_write_iter
+    procedure :: td_write_end => celestial_body_td_write_end
     procedure :: end => celestial_body_end
     procedure :: is_tolerance_reached => celestial_body_is_tolerance_reached
     procedure :: store_current_status => celestial_body_store_current_status
@@ -94,7 +99,7 @@ contains
     !%Type float
     !%Section CelestialDynamics
     !%Description
-    !% Mass of celestial body.
+    !% Mass of celestial body in Kg.
     !%End
     call parse_variable(namespace, 'CelestialBodyMass', M_ONE, sys%mass)
     call messages_print_var_value(stdout, 'CelestialBodyMass', sys%mass)
@@ -103,7 +108,7 @@ contains
     !%Type block
     !%Section CelestialDynamics
     !%Description
-    !% Initial position of celestial body.
+    !% Initial position of celestial body, in Km.
     !%End
     sys%pos = M_ZERO
     if (parse_block(namespace, 'CelestialBodyInitialPosition', blk) == 0) then
@@ -121,7 +126,7 @@ contains
     !%Type block
     !%Section CelestialDynamics
     !%Description
-    !% Initial velocity of celestial body.
+    !% Initial velocity of celestial body in Km/s.
     !%End
     sys%vel = M_ZERO
     if (parse_block(namespace, 'CelestialBodyInitialVelocity', blk) == 0) then
@@ -176,18 +181,6 @@ contains
 
     POP_SUB(celestial_body_has_interaction)
   end function celestial_body_has_interaction
-
-  ! ---------------------------------------------------------
-  subroutine celestial_body_set_prop(this, prop)
-    class(celestial_body_t),          intent(inout) :: this
-    class(propagator_abst_t), target, intent(in)    :: prop
-
-    PUSH_SUB(celestial_body_set_prop)
-
-    this%prop => prop
-
-    POP_SUB(celestial_body_set_prop)
-  end subroutine celestial_body_set_prop
 
   ! ---------------------------------------------------------
   subroutine celestial_body_do_td(this, operation)
@@ -380,6 +373,86 @@ contains
 
     POP_SUB(celestial_body_write_td_info)
   end subroutine celestial_body_write_td_info
+
+  ! ---------------------------------------------------------
+  subroutine celestial_body_td_write_init(this, dt)
+    class(celestial_body_t), intent(inout) :: this
+    FLOAT,                   intent(in)    :: dt
+
+    PUSH_SUB(celestial_body_td_write_init)
+
+    call io_mkdir('td.general', this%namespace)
+    if (mpi_grp_is_root(mpi_world)) then
+      call write_iter_init(this%output_handle, 0, dt, trim(io_workpath("td.general/coordinates", this%namespace)))
+    end if
+
+    POP_SUB(celestial_body_td_write_init)
+  end subroutine celestial_body_td_write_init
+
+  ! ---------------------------------------------------------
+  subroutine celestial_body_td_write_iter(this, iter)
+    class(celestial_body_t), intent(inout) :: this
+    integer,                 intent(in)    :: iter
+
+    integer :: idir
+    character(len=50) :: aux
+
+    if(.not.mpi_grp_is_root(mpi_world)) return ! only first node outputs
+
+    PUSH_SUB(celestial_body_td_write_iter)
+
+    if(iter == 0) then
+      ! header
+      call write_iter_clear(this%output_handle)
+      call write_iter_string(this%output_handle,'################################################################################')
+      call write_iter_nl(this%output_handle)
+      call write_iter_string(this%output_handle,'# HEADER')
+      call write_iter_nl(this%output_handle)
+
+      ! first line: column names
+      call write_iter_header_start(this%output_handle)
+
+      do idir = 1, this%space%dim
+        write(aux, '(a2,i3,a1)') 'x(', idir, ')'
+        call write_iter_header(this%output_handle, aux)
+      end do
+      do idir = 1, this%space%dim
+        write(aux, '(a2,i3,a1)') 'v(', idir, ')'
+        call write_iter_header(this%output_handle, aux)
+      end do
+      call write_iter_nl(this%output_handle)
+
+      ! second line: units
+      call write_iter_string(this%output_handle, '#[Iter n.]')
+      call write_iter_header(this%output_handle, '[seconds]')
+      call write_iter_string(this%output_handle, 'Positions in Km, Velocities in Km/s')
+      call write_iter_nl(this%output_handle)
+
+      call write_iter_string(this%output_handle,'################################################################################')
+      call write_iter_nl(this%output_handle)
+    end if
+
+    call write_iter_start(this%output_handle)
+
+    call write_iter_double(this%output_handle, this%pos, this%space%dim)
+    call write_iter_double(this%output_handle, this%vel, this%space%dim)
+    call write_iter_nl(this%output_handle)
+    
+    POP_SUB(celestial_body_td_write_iter)
+  end subroutine celestial_body_td_write_iter
+
+  ! ---------------------------------------------------------
+  subroutine celestial_body_td_write_end(this)
+    class(celestial_body_t), intent(inout) :: this
+
+    PUSH_SUB(celestial_body_td_write_end)
+
+    if (mpi_grp_is_root(mpi_world)) then
+      call write_iter_end(this%output_handle)
+    end if
+
+    POP_SUB(celestial_body_td_write_end)
+  end subroutine celestial_body_td_write_end
 
   ! ---------------------------------------------------------
   subroutine celestial_body_end(this)

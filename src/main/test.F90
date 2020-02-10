@@ -911,9 +911,9 @@ contains
 
     type(namespace_t) :: global_namespace, earth_namespace, moon_namespace, sun_namespace
     type(celestial_body_t) :: sun, earth, moon
-    type(propagator_verlet_t) :: prop_sun, prop_earth !, prop_moon
+    type(propagator_verlet_t) :: prop_sun, prop_earth
     type(propagator_beeman_t) :: prop_moon
-    integer :: it, Nstep, internal_loop, iunit
+    integer :: it, Nstep, internal_loop
     logical :: all_done
     FLOAT :: dt
 
@@ -946,8 +946,6 @@ contains
     call parse_variable(global_namespace, 'TDTimeStep', CNST(10.0), dt)
     prop_sun = propagator_verlet_t(M_ZERO, dt)
     prop_earth = propagator_verlet_t(M_ZERO, dt)
-
-    !prop_moon = propagator_verlet_t(M_ZERO, dt,.false.)
     prop_moon = propagator_beeman_t(M_ZERO, dt,.true.)
 
     !Associate them to subsystems
@@ -955,8 +953,13 @@ contains
     call earth%set_propagator(prop_earth)
     call moon%set_propagator(prop_moon)
 
-    iunit = io_open('celestial_dynamics.dat', global_namespace, action='write')
-    write(iunit, '(i5,6(e13.6,1x))') 0, sun%pos(1:2), earth%pos(1:2), moon%pos(1:2)
+    !Initialize output and write data at time zero
+    call sun%td_write_init(dt)
+    call earth%td_write_init(dt)
+    call moon%td_write_init(dt)
+    call sun%td_write_iter(0)
+    call earth%td_write_iter(0)
+    call moon%td_write_iter(0)
 
     call parse_variable(global_namespace, 'TDMaxSteps', 1000, Nstep)
     do it = 1, Nstep
@@ -970,22 +973,28 @@ contains
 
       do while(.not. all_done .and. internal_loop < 1000)
 
-        call sun%system_dt(prop_sun)
-        call earth%system_dt(prop_earth)
-        call moon%system_dt(prop_moon)
+        call sun%dt_operation()
+        call earth%dt_operation()
+        call moon%dt_operation()
 
         !We check the exit condition
         all_done = prop_sun%step_is_done() .and. prop_earth%step_is_done() .and. prop_moon%step_is_done()
         INCR(internal_loop, 1)
       end do
+
+      !Output
       call sun%write_td_info()
       call earth%write_td_info()
       call moon%write_td_info()
-      write(stdout,'(a,i5)') 'Iteraction : ', it
-      write(iunit, '(i5,6(1x,e13.6))') it, sun%pos(1:2), earth%pos(1:2), moon%pos(1:2)
+
+      call sun%td_write_iter(it)
+      call earth%td_write_iter(it)
+      call moon%td_write_iter(it)
     end do
 
-    call io_close(iunit)
+    call sun%td_write_end()
+    call earth%td_write_end()
+    call moon%td_write_end()
 
     call moon%end()
     call earth%end()

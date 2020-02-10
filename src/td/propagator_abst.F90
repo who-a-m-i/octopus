@@ -58,6 +58,22 @@ module propagator_abst_oct_m
     procedure :: reset_scf_loop => propagator_reset_scf_loop
   end type propagator_abst_t
 
+  ! Known propagation operations
+  integer, public, parameter ::        &
+    FINISHED                     =  0,  &
+    VERLET_UPDATE_POS            =  1,  &
+    VERLET_COMPUTE_ACC           =  2,  &
+    VERLET_COMPUTE_VEL           =  3,  &
+    VERLET_SYNC_DT               =  4,  &
+    UPDATE_INTERACTIONS          =  5,  &
+    START_SCF_LOOP               =  6,  &
+    END_SCF_LOOP                 =  7,  &
+    STORE_CURRENT_STATUS         =  8,  &
+    BEEMAN_PREDICT_POS           =  9,  &
+    BEEMAN_PREDICT_VEL           = 10,  &
+    BEEMAN_CORRECT_POS           = 11,  &
+    BEEMAN_CORRECT_VEL           = 12
+
 contains
 
   subroutine propagator_rewind(this)

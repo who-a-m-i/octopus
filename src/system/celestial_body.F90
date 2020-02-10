@@ -272,7 +272,7 @@ contains
         call messages_info(1)
       end if
  
-      this%pos(1:this%space%dim) = this%save_pos(1:this%space%dim) + this%prop%dt * this%vel(1:this%space%dim) &
+      this%pos(1:this%space%dim) = this%save_pos(1:this%space%dim) + this%prop%dt * this%save_vel(1:this%space%dim) &
                        + CNST(1.0/6.0) * this%prop%dt**2  &
                              * ( M_TWO * this%acc(1:this%space%dim) + this%tot_force(1:this%space%dim))
       call this%prop%list%next()
@@ -340,7 +340,7 @@ contains
 
     !Here we put the criterium that acceleration change is below the tolerance
     converged = .false.
-    if(sum((this%acc(1:this%space%dim) -this%tot_force(1:this%space%dim))**2) < tol) then
+    if(sum((this%acc(1:this%space%dim) -this%tot_force(1:this%space%dim))**2) < tol**2) then
       converged = .true.
     end if 
 

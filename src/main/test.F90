@@ -911,8 +911,8 @@ contains
 
     type(namespace_t) :: global_namespace, earth_namespace, moon_namespace, sun_namespace
     type(celestial_body_t) :: sun, earth, moon
-    type(propagator_verlet_t) :: prop_sun, prop_earth, prop_moon
-    !type(propagator_beeman_t) :: prop_moon
+    type(propagator_verlet_t) :: prop_sun, prop_earth !, prop_moon
+    type(propagator_beeman_t) :: prop_moon
     integer :: it, Nstep, internal_loop, iunit
     logical :: all_done
     FLOAT :: dt
@@ -946,7 +946,9 @@ contains
     call parse_variable(global_namespace, 'TDTimeStep', CNST(10.0), dt)
     prop_sun = propagator_verlet_t(M_ZERO, dt)
     prop_earth = propagator_verlet_t(M_ZERO, dt)
-    prop_moon = propagator_verlet_t(M_ZERO, dt)!,.false.)
+
+    !prop_moon = propagator_verlet_t(M_ZERO, dt,.false.)
+    prop_moon = propagator_beeman_t(M_ZERO, dt,.true.)
 
     !Associate them to subsystems
     call sun%set_propagator(prop_sun)

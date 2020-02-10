@@ -139,7 +139,7 @@ contains
     tdop = prop%get_td_operation()
     select case(tdop)
     case(FINISHED)
-      if (debug%info) then
+      if (debug%info .and. .not. prop%step_is_done()) then
         message(1) = "Debug: Propagation step finished for " + trim(this%namespace%get())
         call messages_info(1)
       end if
@@ -165,7 +165,6 @@ contains
       end if
 
       call prop%save_scf_start()
-      call prop%list%next()
 
     case(END_SCF_LOOP)
       !Here we first check if we did the maximum number of steps.
@@ -186,6 +185,10 @@ contains
           call prop%list%next()
         else
           call prop%reset_scf_loop()
+          if (debug%info) then
+            write(message(1), '(a,i3,a)') "Debug: SCF iter ", prop%scf_count, " for " + trim(this%namespace%get())
+           call messages_info(1)
+         end if 
         end if
       end if
 

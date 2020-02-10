@@ -53,8 +53,8 @@ contains
 
     if(predictor_corrector) then
 
-      call this%list%add_node(BEEMAN_PREDICT_POS)
       call this%list%add_node(STORE_CURRENT_STATUS)
+      call this%list%add_node(BEEMAN_PREDICT_POS)
       call this%list%add_node(START_SCF_LOOP)
       call this%list%add_node(VERLET_SYNC_DT)
       call this%list%add_node(UPDATE_INTERACTIONS)
@@ -65,7 +65,7 @@ contains
       call this%list%add_node(FINISHED)
 
       this%max_scf_count = 2 !From Wikipedia
-      this%scf_tol = CNST(1e-4) !At the moment arbitrary
+      this%scf_tol = CNST(1e-6) !At the moment arbitrary
  
     else
 

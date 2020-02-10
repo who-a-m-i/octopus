@@ -113,8 +113,12 @@ contains
     
     PUSH_SUB(propagator_save_scf_start)
 
+    !We first move to the next step and then we store it.
+    !Otherwise we end up in an infinite loop
+    call this%list%next()
     this%scf_start => this%list%get_current_node()
     this%scf_count = 0
+    
 
     POP_SUB(propagator_save_scf_start) 
 

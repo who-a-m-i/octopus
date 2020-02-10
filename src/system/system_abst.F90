@@ -193,6 +193,12 @@ contains
       end if
 
     case(STORE_CURRENT_STATUS)
+ 
+      if (debug%info) then
+        message(1) = "Debug: Storing the current status for " + trim(this%namespace%get())
+        call messages_info(1)
+      end if
+
 
       call this%store_current_status()
       call prop%list%next()

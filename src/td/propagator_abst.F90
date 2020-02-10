@@ -21,6 +21,7 @@
 module propagator_abst_oct_m
   use global_oct_m
   use linked_list_oct_m
+  use list_node_oct_m
   use messages_oct_m
   use profiling_oct_m
 
@@ -37,6 +38,14 @@ module propagator_abst_oct_m
 
     FLOAT, public :: internal_time
     FLOAT, public :: dt
+
+    !< Options related to predictor-corrector propagators
+    logical, public :: predictor_corrector
+    integer, public :: scf_count
+    integer, public :: max_scf_count
+    FLOAT, public   :: scf_tol
+    class(list_node_t), pointer :: scf_start => null()
+
     logical :: step_done
 
   contains
@@ -45,6 +54,8 @@ module propagator_abst_oct_m
     procedure :: step_is_done => propagator_step_is_done
     procedure :: rewind => propagator_rewind
     procedure :: finished => propagator_finished
+    procedure :: save_scf_start => propagator_save_scf_start
+    procedure :: reset_scf_loop => propagator_reset_scf_loop
   end type propagator_abst_t
 
 contains
@@ -96,6 +107,30 @@ contains
     step_is_done = this%step_done
 
   end function propagator_step_is_done
+
+  subroutine propagator_save_scf_start(this)
+    class(propagator_abst_t), intent(inout) :: this
+    
+    PUSH_SUB(propagator_save_scf_start)
+
+    this%scf_start => this%list%get_current_node()
+    this%scf_count = 0
+
+    POP_SUB(propagator_save_scf_start) 
+
+  end subroutine propagator_save_scf_start
+
+  subroutine propagator_reset_scf_loop(this)
+    class(propagator_abst_t), intent(inout) :: this
+
+    PUSH_SUB(propagator_reset_scf_loop)
+
+    call this%list%set_current_node(this%scf_start)
+    this%scf_count = this%scf_count + 1
+
+    POP_SUB(propagator_reset_scf_loop)
+
+  end subroutine propagator_reset_scf_loop
 
 end module propagator_abst_oct_m
 

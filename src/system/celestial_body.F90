@@ -44,6 +44,9 @@ module celestial_body_oct_m
     FLOAT, public :: pos(1:MAX_DIM)
     FLOAT, public :: vel(1:MAX_DIM)
     FLOAT, public :: acc(1:MAX_DIM)
+    FLOAT, public :: prev_acc(1:MAX_DIM)
+    FLOAT, public :: save_pos(1:MAX_DIM)
+    FLOAT, public :: save_vel(1:MAX_DIM)
     FLOAT, public :: tot_force(1:MAX_DIM)
     integer :: n_interactions
     type(interaction_gravity_t) :: interactions(10)
@@ -61,6 +64,8 @@ module celestial_body_oct_m
     procedure :: set_propagator => celestial_body_set_prop
     procedure :: write_td_info => celestial_body_write_td_info
     procedure :: end => celestial_body_end
+    procedure :: is_tolerance_reached => celestial_body_is_tolerance_reached
+    procedure :: store_current_status => celestial_body_store_current_status
     final :: celestial_body_finalize
   end type celestial_body_t
 
@@ -130,6 +135,7 @@ contains
     call messages_print_var_value(stdout, 'CelestialBodyInitialVelocity', sys%vel(1:sys%space%dim))
 
     sys%acc = M_ZERO
+    sys%prev_acc = M_ZERO
     sys%tot_force = M_ZERO
 
     sys%n_interactions = 0
@@ -237,6 +243,50 @@ contains
          M_HALF * this%prop%dt * (this%acc(1:this%space%dim) + this%tot_force(1:this%space%dim))
       call this%prop%list%next()
 
+    case(BEEMAN_PREDICT_POS)
+      if (debug%info) then
+        message(1) = "Debug: Prediction step - Computing position for " + trim(this%namespace%get())
+        call messages_info(1)
+      end if
+
+      this%pos(1:this%space%dim) = this%pos(1:this%space%dim) + this%prop%dt * this%vel(1:this%space%dim) &
+                       + CNST(1.0/6.0) * this%prop%dt**2  &
+                             * ( M_FOUR*this%acc(1:this%space%dim) - this%prev_acc(1:this%space%dim))
+      this%prev_acc(1:this%space%dim) = this%acc(1:this%space%dim)
+      this%acc(1:this%space%dim) = this%tot_force(1:this%space%dim)
+      call this%prop%list%next()
+
+    case(BEEMAN_PREDICT_VEL)
+      if (debug%info) then
+        message(1) = "Debug: Prediction step - Computing velocity for " + trim(this%namespace%get())
+        call messages_info(1)
+      end if
+      this%vel(1:this%space%dim) = this%vel(1:this%space%dim)  &
+                       + CNST(1.0/6.0) * this%prop%dt * (this%acc(1:this%space%dim) &
+                         + M_TWO * this%tot_force(1:this%space%dim) - this%prev_acc(1:this%space%dim))
+
+
+    case(BEEMAN_CORRECT_POS)
+      if (debug%info) then
+        message(1) = "Debug: Correction step - Computing position for " + trim(this%namespace%get())
+        call messages_info(1)
+      end if
+ 
+      this%pos(1:this%space%dim) = this%save_pos(1:this%space%dim) + this%prop%dt * this%vel(1:this%space%dim) &
+                       + CNST(1.0/6.0) * this%prop%dt**2  &
+                             * ( M_TWO * this%acc(1:this%space%dim) + this%tot_force(1:this%space%dim))
+      call this%prop%list%next()
+
+    case(BEEMAN_CORRECT_VEL)
+      if (debug%info) then
+        message(1) = "Debug: Correction step - Computing velocity for " + trim(this%namespace%get())
+        call messages_info(1)
+      end if
+
+      this%vel(1:this%space%dim) = this%save_vel(1:this%space%dim) + &
+         M_HALF * this%prop%dt * (this%acc(1:this%space%dim) + this%tot_force(1:this%space%dim))
+      call this%prop%list%next()
+
     case default
       message(1) = "Unsupported TD operation."
       call messages_fatal(1, namespace=this%namespace)
@@ -280,6 +330,36 @@ contains
 
     POP_SUB(celestial_body_update_interaction_as_partner)
   end subroutine celestial_body_update_interaction_as_partner
+
+  ! ---------------------------------------------------------
+  logical function celestial_body_is_tolerance_reached(this, tol) result(converged)
+    class(celestial_body_t),   intent(in)    :: this
+    FLOAT,                     intent(in)    :: tol
+
+    PUSH_SUB(celestial_body_is_tolerance_reached)
+
+    !Here we put the criterium that acceleration change is below the tolerance
+    converged = .false.
+    if(sum((this%acc(1:this%space%dim) -this%tot_force(1:this%space%dim))**2) < tol) then
+      converged = .true.
+    end if 
+
+    POP_SUB(celestial_body_is_tolerance_reached)
+  
+   end function celestial_body_is_tolerance_reached
+
+   ! ---------------------------------------------------------
+   subroutine celestial_body_store_current_status(this)
+     class(celestial_body_t),   intent(inout)    :: this
+
+     PUSH_SUB(celestial_body_store_current_status) 
+
+     this%save_pos(1:this%space%dim) = this%pos(1:this%space%dim)
+     this%save_vel(1:this%space%dim) = this%vel(1:this%space%dim)
+
+     POP_SUB(celestial_body_store_current_status)
+
+   end subroutine celestial_body_store_current_status
 
   ! ---------------------------------------------------------
   subroutine celestial_body_write_td_info(this)

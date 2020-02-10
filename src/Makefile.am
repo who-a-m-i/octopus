@@ -564,6 +564,7 @@ td_f_srcs =                                 \
 	td/potential_interpolation.F90      \
 	td/propagator_abst.F90              \
 	td/propagator_base.F90              \
+        td/propagator_beeman.F90            \
 	td/propagator_cn.F90                \
 	td/propagator_etrs.F90              \
 	td/propagator_expmid.F90            \

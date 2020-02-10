@@ -39,6 +39,8 @@ module linked_list_oct_m
     procedure :: current
     procedure :: rewind
     procedure :: has_more_values
+    procedure :: get_current_node
+    procedure :: set_current_node
     generic   :: add => add_node
     final     :: finalize
   end type linked_list_t
@@ -96,6 +98,28 @@ contains
 
     POP_SUB(next)
   end subroutine next
+
+  function get_current_node(this) result(current)
+    class(linked_list_t), intent(inout) :: this
+    class(list_node_t),         pointer :: current
+
+    PUSH_SUB(get_current_node)
+
+    current => this%current_node
+
+    POP_SUB(get_current_node)
+  end function get_current_node
+
+  subroutine set_current_node(this, current)
+    class(linked_list_t), intent(inout) :: this
+    class(list_node_t), target :: current
+  
+    PUSH_SUB(set_current_node)
+
+    this%current_node => current
+
+    POP_SUB(set_current_node)
+  end subroutine set_current_node
 
   logical function has_more_values(this)
     class(linked_list_t), intent(in) :: this

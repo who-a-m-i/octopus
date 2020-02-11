@@ -15,6 +15,7 @@
 !! Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 !! 02110-1301, USA.
 !!
+#include "global.h"
 
 module interaction_abst_oct_m
   implicit none
@@ -28,6 +29,7 @@ module interaction_abst_oct_m
   type, abstract :: interaction_abst_t
     private
   end type interaction_abst_t
+   
 
 end module interaction_abst_oct_m
 

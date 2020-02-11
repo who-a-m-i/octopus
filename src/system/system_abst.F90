@@ -46,6 +46,8 @@ module system_abst_oct_m
     class(propagator_abst_t), pointer, public :: prop
     type(simulation_clock_t),          public :: clock
 
+    integer, public :: n_interactions
+
   contains
     procedure :: dt_operation =>  system_dt_operation
     procedure :: set_propagator => system_set_propagator
@@ -58,6 +60,7 @@ module system_abst_oct_m
     procedure(system_write_td_info),                 deferred :: write_td_info
     procedure(system_is_tolerance_reached),          deferred :: is_tolerance_reached
     procedure(system_store_current_status),          deferred :: store_current_status
+    procedure(system_get_interaction_partner),       deferred :: get_interaction_partner
   end type system_abst_t
 
   abstract interface
@@ -108,6 +111,13 @@ module system_abst_oct_m
       class(system_abst_t), intent(inout) :: this
     end subroutine system_store_current_status
 
+    function system_get_interaction_partner(this, iint) result(partner)
+      import system_abst_t
+      class(system_abst_t), intent(in) :: this
+      integer,              intent(in) :: iint
+      class(system_abst_t), pointer :: partner
+    end function system_get_interaction_partner
+
   end interface
 
 contains
@@ -116,6 +126,7 @@ contains
   subroutine system_dt_operation(this)
     class(system_abst_t),     intent(inout) :: this
 
+    class(system_abst_t), pointer :: partner
     integer :: tdop, iint
     logical :: all_sys_sync
 
@@ -142,7 +153,8 @@ contains
       all_sys_sync = .true.
       
       do iint = 1, this%n_interactions
-       if(this%interactions(iint)%clock%is_smaller(this%prop%clock)) then
+        partner => this%get_interaction_partner(iint)
+        if(this%prop%clock%is_larger(partner%clock)) then
          all_sys_sync = .false.
          exit
         end if

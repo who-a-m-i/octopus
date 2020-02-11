@@ -53,7 +53,6 @@ module celestial_body_oct_m
     FLOAT, public :: save_vel(1:MAX_DIM)
     FLOAT, public :: tot_force(1:MAX_DIM)
     FLOAT, public :: prev_tot_force(1:MAX_DIM)
-    integer :: n_interactions
     type(interaction_gravity_t) :: interactions(10)
 
     type(space_t) :: space
@@ -72,6 +71,7 @@ module celestial_body_oct_m
     procedure :: end => celestial_body_end
     procedure :: is_tolerance_reached => celestial_body_is_tolerance_reached
     procedure :: store_current_status => celestial_body_store_current_status
+    procedure :: get_interaction_partner => celestial_body_get_interaction_partner
     final :: celestial_body_finalize
   end type celestial_body_t
 
@@ -457,6 +457,19 @@ contains
 
     POP_SUB(celestial_body_td_write_end)
   end subroutine celestial_body_td_write_end
+
+  function celestial_body_get_interaction_partner(this, iint) result(partner)
+     class(celestial_body_t), intent(in) :: this
+     integer,              intent(in) :: iint
+     class(system_abst_t), pointer :: partner
+
+     PUSH_SUB(celestial_body_get_interaction_partner)
+
+     partner => this%interactions(iint)%partner
+
+     POP_SUB(celestial_body_get_interaction_partner)
+
+   end function celestial_body_get_interaction_partner
 
   ! ---------------------------------------------------------
   subroutine celestial_body_end(this)

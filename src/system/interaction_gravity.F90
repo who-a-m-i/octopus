@@ -37,6 +37,7 @@ module interaction_gravity_oct_m
     FLOAT :: force(MAX_DIM)
 
     class(system_abst_t), pointer :: partner
+
     FLOAT :: partner_mass
     FLOAT :: partner_pos(MAX_DIM)
 

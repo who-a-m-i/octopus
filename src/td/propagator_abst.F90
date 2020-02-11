@@ -49,7 +49,7 @@ module propagator_abst_oct_m
 
     logical :: step_done
 
-    type(simulation_clock_t) :: clock
+    type(simulation_clock_t), public :: clock
 
   contains
     !Below are the list of operations that needs to be implemented

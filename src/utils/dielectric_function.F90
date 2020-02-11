@@ -245,16 +245,25 @@ program dielectric_function
 
   SAFE_DEALLOCATE_A(fullmat)
 
-  write(header, '(7a15)') '#        energy', 'Re x', 'Im x', 'Re y', 'Im y', 'Re z', 'Im z'
-
   out_file = io_open('td.general/inverse_dielectric_function', default_namespace, action='write')
+  select case(space%dim)
+  case(1)
+    write(header, '(7a15)') '#        energy', 'Re x', 'Im x'
+  case(2)
+    write(header, '(7a15)') '#        energy', 'Re x', 'Im x', 'Re y', 'Im y'
+  case(3)
+    write(header, '(7a15)') '#        energy', 'Re x', 'Im x', 'Re y', 'Im y', 'Re z', 'Im z'
+  end select
+
+
   write(out_file,'(a)') trim(header)
   do kk = 1, energy_steps
     ww = (kk-1)*spectrum%energy_step + spectrum%min_energy
-    write(out_file, '(7e15.6)') ww,                                         &
-         TOFLOAT(invdielectric(1, kk)), aimag(invdielectric(1, kk)), &
-         TOFLOAT(invdielectric(2, kk)), aimag(invdielectric(2, kk)), &
-         TOFLOAT(invdielectric(3, kk)), aimag(invdielectric(3, kk))
+    write(out_file, '(e15.6)', advance='no') ww
+    do idir = 1, space%dim
+      write(out_file, '(2e15.6)', advance='no') TOFLOAT(invdielectric(idir, kk)), aimag(invdielectric(idir, kk))
+    end do
+    write(out_file, '()')
   end do
   call io_close(out_file)
  
@@ -262,10 +271,11 @@ program dielectric_function
   write(out_file,'(a)') trim(header)
   do kk = 1, energy_steps
     ww = (kk-1)*spectrum%energy_step + spectrum%min_energy
-    write(out_file, '(7e15.6)') ww,                                         &
-         TOFLOAT(dielectric(1, kk)), aimag(dielectric(1, kk)), &
-         TOFLOAT(dielectric(2, kk)), aimag(dielectric(2, kk)), &
-         TOFLOAT(dielectric(3, kk)), aimag(dielectric(3, kk))
+    write(out_file, '(e15.6)', advance='no') ww
+    do idir = 1, space%dim
+      write(out_file, '(2e15.6)', advance='no') TOFLOAT(dielectric(idir, kk)), aimag(dielectric(idir, kk))
+    end do
+    write(out_file, '()')
   end do
   call io_close(out_file)
 
@@ -274,10 +284,11 @@ program dielectric_function
   do kk = 1, energy_steps
     dielectric(1:3, kk) = (dielectric(1:3, kk) - M_ONE)/(CNST(4.0)*M_PI)
     ww = (kk-1)*spectrum%energy_step + spectrum%min_energy
-    write(out_file, '(7e15.6)') ww, &
-      TOFLOAT(chi(1, kk)), aimag(chi(1, kk)), &
-      TOFLOAT(chi(2, kk)), aimag(chi(2, kk)), &
-      TOFLOAT(chi(3, kk)), aimag(chi(3, kk))
+    write(out_file, '(e15.6)', advance='no') ww
+    do idir = 1, space%dim
+      write(out_file, '(2e15.6)', advance='no') TOFLOAT(chi(idir, kk)), aimag(chi(idir, kk))
+    end do
+    write(out_file, '()')
   end do
   call io_close(out_file)
 

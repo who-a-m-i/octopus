@@ -58,6 +58,7 @@ module alloc_cache_oct_m
     ! -------------------------------------------------
     
     subroutine alloc_cache_end(alloc_cache, hits, misses, vol_hits, vol_misses)
+      use iso_c_binding
       import :: alloc_cache_t
       implicit none
 

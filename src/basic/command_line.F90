@@ -132,6 +132,7 @@ module command_line_oct_m
     subroutine getopt_oscillator_strength(mode, omega, searchinterval, &
                                           order, nresonances, nfrequencies, time, &
                                           l, m, damping, file)
+      use iso_c_binding
       implicit none
       integer,          intent(inout) :: mode
       real(c_double),   intent(inout) :: omega
@@ -144,6 +145,7 @@ module command_line_oct_m
     end subroutine getopt_oscillator_strength
 
     subroutine getopt_harmonic_spectrum(w0, m, ar, x, y, z, pol)
+      use iso_c_binding
       implicit none
       real(c_double)           , intent(inout) :: w0
       integer                  , intent(inout) :: m
@@ -162,6 +164,7 @@ module command_line_oct_m
     
     subroutine getopt_photoelectron_spectrum(estep, espan, &
       thstep, thspan, phstep, phspan, pol, center, pvec, integrate)
+      use iso_c_binding
       implicit none
       real(c_double), intent(inout) :: estep
       real(c_double), intent(inout) :: espan(2)

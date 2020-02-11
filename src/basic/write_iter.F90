@@ -48,7 +48,7 @@ module write_iter_oct_m
       implicit none
       type(c_ptr),      intent(inout) :: out    !< Write C object
       integer,          intent(in)    :: iter   !< Iteration number
-      FLOAT,            intent(in)    :: factor !< Time interval
+      real(c_double),   intent(in)    :: factor !< Time interval
       character(len=*), intent(in)    :: file   !< The name of the file
     end subroutine write_iter_init
 
@@ -118,17 +118,17 @@ module write_iter_oct_m
     subroutine write_iter_double_1(out, d, n)
       use iso_c_binding
       implicit none
-      type(c_ptr), intent(inout) :: out !< Write C object
-      integer,     intent(in)    :: n
-      FLOAT,       intent(in)    :: d
+      type(c_ptr),          intent(inout) :: out !< Write C object
+      integer,              intent(in)    :: n
+      real(c_double),       intent(in)    :: d
     end subroutine write_iter_double_1
 
     subroutine write_iter_double_n(out, d, n)
       use iso_c_binding
       implicit none
-      type(c_ptr), intent(inout) :: out !< Write C object
-      integer,     intent(in)    :: n
-      FLOAT,       intent(in)    :: d(n)
+      type(c_ptr),          intent(inout) :: out !< Write C object
+      integer,              intent(in)    :: n
+      real(c_double),       intent(in)    :: d(n)
     end subroutine write_iter_double_n
   end interface write_iter_double
 

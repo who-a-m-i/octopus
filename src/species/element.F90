@@ -60,7 +60,7 @@ module element_oct_m
 
     ! ------------------------------------
 
-    FLOAT function element_mass(self)
+    real(8) function element_mass(self)
       import :: element_t
       implicit none
       
@@ -69,7 +69,7 @@ module element_oct_m
 
     ! ------------------------------------
 
-    FLOAT function element_vdw_radius(self)
+    real(8) function element_vdw_radius(self)
       import :: element_t
       implicit none
       

@@ -27,6 +27,7 @@ module system_abst_oct_m
   use linked_list_oct_m
   use profiling_oct_m
   use propagator_abst_oct_m
+  use simulation_clock_oct_m
 
   implicit none
 
@@ -43,9 +44,12 @@ module system_abst_oct_m
     type(namespace_t),   public :: namespace
 
     class(propagator_abst_t), pointer, public :: prop
+    type(simulation_clock_t),          public :: clock
+
   contains
     procedure :: dt_operation =>  system_dt_operation
     procedure :: set_propagator => system_set_propagator
+    procedure :: init_clock => system_init_clock
     procedure(system_add_interaction_partner),       deferred :: add_interaction_partner
     procedure(system_has_interaction),               deferred :: has_interaction
     procedure(system_do_td_op),                      deferred :: do_td_operation
@@ -112,7 +116,8 @@ contains
   subroutine system_dt_operation(this)
     class(system_abst_t),     intent(inout) :: this
 
-    integer :: tdop
+    integer :: tdop, iint
+    logical :: all_sys_sync
 
     PUSH_SUB(system_dt_operation)
 
@@ -124,8 +129,30 @@ contains
         call messages_info(1)
       end if
       call this%prop%finished()
+      call this%clock%increment()
       !DO OUTPUT HERE AND BROADCAST NEEDED QUANTITIES
       !ONLY IF WE ARE NOT YET FINISHED
+
+    case(SYNC_DT)
+      if (debug%info) then
+        message(1) = "Debug: Propagation step - Synchronizing time for " + trim(this%namespace%get())
+        call messages_info(1)
+      end if
+
+      all_sys_sync = .true.
+      
+      do iint = 1, this%n_interactions
+       if(this%interactions(iint)%clock%is_smaller(this%prop%clock)) then
+         all_sys_sync = .false.
+         exit
+        end if
+      end do
+      
+      if(all_sys_sync) then
+        call this%prop%clock%increment()
+        call this%prop%list%next()
+      end if
+
 
     case(UPDATE_INTERACTIONS)
       if (debug%info) then
@@ -200,6 +227,18 @@ contains
 
     POP_SUB(system_set_propagator)
   end subroutine system_set_propagator
+
+  ! ---------------------------------------------------------
+  subroutine system_init_clock(this, dt)
+    class(system_abst_t), intent(inout) :: this
+    FLOAT                               :: dt
+
+    PUSH_SUB(system_set_propagator)
+
+    this%clock = simulation_clock_t(dt)
+
+    POP_SUB(system_set_propagator)
+  end subroutine system_init_clock
 
 end module system_abst_oct_m
 

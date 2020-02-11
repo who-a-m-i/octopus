@@ -192,16 +192,8 @@ contains
 
     PUSH_SUB(celestial_body_do_td)
 
+
     select case(operation)
-    case(VERLET_SYNC_DT)
-      if (debug%info) then
-        message(1) = "Debug: Propagation step - Synchronizing time for " + trim(this%namespace%get())
-        call messages_info(1)
-      end if
-
-      this%prop%internal_time = this%prop%internal_time + this%prop%dt
-      call this%prop%list%next()
-
     case(VERLET_UPDATE_POS)
       if (debug%info) then
         message(1) = "Debug: Propagation step - Updating positions for " + trim(this%namespace%get())
@@ -380,7 +372,8 @@ contains
     write(message(2),fmt) "Coordinates: ", (this%pos(idir), idir = 1, this%space%dim)
     write(message(3),fmt) "Velocity:    ", (this%vel(idir), idir = 1, this%space%dim)
     write(message(4),fmt) "Acceleration:", (this%acc(idir), idir = 1, this%space%dim)
-    call messages_info(4)
+    write(message(5),'(4x,A,I8.7)') 'Clock tick: ', this%clock%get_tick()
+    call messages_info(5)
 
     POP_SUB(celestial_body_write_td_info)
   end subroutine celestial_body_write_td_info

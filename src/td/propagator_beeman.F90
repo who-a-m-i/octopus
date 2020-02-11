@@ -81,6 +81,8 @@ contains
     this%internal_time = time
     this%dt = dt
 
+    this%clock = simulation_clock_t(this%dt)
+
     POP_SUB(propagator_beeman_init)
   end function propagator_beeman_init
 

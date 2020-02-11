@@ -24,6 +24,7 @@ module propagator_abst_oct_m
   use list_node_oct_m
   use messages_oct_m
   use profiling_oct_m
+  use simulation_clock_oct_m
 
   implicit none
 
@@ -48,6 +49,8 @@ module propagator_abst_oct_m
 
     logical :: step_done
 
+    type(simulation_clock_t) :: clock
+
   contains
     !Below are the list of operations that needs to be implemented
     procedure :: get_td_operation => propagator_get_tdop
@@ -64,7 +67,7 @@ module propagator_abst_oct_m
     VERLET_UPDATE_POS            =  1,  &
     VERLET_COMPUTE_ACC           =  2,  &
     VERLET_COMPUTE_VEL           =  3,  &
-    VERLET_SYNC_DT               =  4,  &
+    SYNC_DT                      =  4,  &
     UPDATE_INTERACTIONS          =  5,  &
     START_SCF_LOOP               =  6,  &
     END_SCF_LOOP                 =  7,  &

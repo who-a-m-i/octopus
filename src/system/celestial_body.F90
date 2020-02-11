@@ -52,6 +52,7 @@ module celestial_body_oct_m
     FLOAT, public :: save_pos(1:MAX_DIM)
     FLOAT, public :: save_vel(1:MAX_DIM)
     FLOAT, public :: tot_force(1:MAX_DIM)
+    FLOAT, public :: prev_tot_force(1:MAX_DIM)
     integer :: n_interactions
     type(interaction_gravity_t) :: interactions(10)
 
@@ -218,6 +219,9 @@ contains
         call messages_info(1)
       end if
 
+      !Use as SCF criterium
+      this%prev_tot_force(1:this%space%dim) = this%tot_force(1:this%space%dim)
+
       !We sum the forces from the different partners
       this%tot_force(1:this%space%dim) = M_ZERO
       do iint = 1, this%n_interactions
@@ -243,7 +247,7 @@ contains
       end if
 
       this%pos(1:this%space%dim) = this%pos(1:this%space%dim) + this%prop%dt * this%vel(1:this%space%dim) &
-                       + CNST(1.0/6.0) * this%prop%dt**2  &
+                       + M_ONE/CNST(6.0) * this%prop%dt**2  &
                              * ( M_FOUR*this%acc(1:this%space%dim) - this%prev_acc(1:this%space%dim))
       this%prev_acc(1:this%space%dim) = this%acc(1:this%space%dim)
       this%acc(1:this%space%dim) = this%tot_force(1:this%space%dim)
@@ -255,7 +259,7 @@ contains
         call messages_info(1)
       end if
       this%vel(1:this%space%dim) = this%vel(1:this%space%dim)  &
-                       + CNST(1.0/6.0) * this%prop%dt * (this%acc(1:this%space%dim) &
+                       + M_ONE/CNST(6.0) * this%prop%dt * (this%acc(1:this%space%dim) &
                          + M_TWO * this%tot_force(1:this%space%dim) - this%prev_acc(1:this%space%dim))
 
 
@@ -266,7 +270,7 @@ contains
       end if
  
       this%pos(1:this%space%dim) = this%save_pos(1:this%space%dim) + this%prop%dt * this%save_vel(1:this%space%dim) &
-                       + CNST(1.0/6.0) * this%prop%dt**2  &
+                       + M_ONE/CNST(6.0) * this%prop%dt**2  &
                              * ( M_TWO * this%acc(1:this%space%dim) + this%tot_force(1:this%space%dim))
       call this%prop%list%next()
 
@@ -333,9 +337,16 @@ contains
 
     !Here we put the criterium that acceleration change is below the tolerance
     converged = .false.
-    if(sum((this%acc(1:this%space%dim) -this%tot_force(1:this%space%dim))**2) < tol**2) then
+    if(sum((this%prev_tot_force(1:this%space%dim) -this%tot_force(1:this%space%dim))**2) < tol**2) then
       converged = .true.
     end if 
+
+    if (debug%info) then
+      write(message(1), '(a, e12.6, a, e12.6)') "Debug: Change in acceleration  ", &
+          sqrt(sum((this%prev_tot_force(1:this%space%dim) -this%tot_force(1:this%space%dim))**2)), " and tolerance ", tol
+      call messages_info(1)
+    end if
+
 
     POP_SUB(celestial_body_is_tolerance_reached)
   

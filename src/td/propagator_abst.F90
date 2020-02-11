@@ -39,6 +39,7 @@ module propagator_abst_oct_m
 
     FLOAT, public :: internal_time
     FLOAT, public :: dt
+    integer, public :: algo_steps
 
     !< Options related to predictor-corrector propagators
     logical, public :: predictor_corrector

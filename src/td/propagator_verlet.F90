@@ -60,7 +60,8 @@ contains
     this%internal_time = time
     this%dt = dt
 
-    this%clock = simulation_clock_t(this%dt) 
+    ! Verlet has only one algorithmic step
+    this%algo_steps = 1
 
     POP_SUB(propagator_verlet_init)
   end function propagator_verlet_init

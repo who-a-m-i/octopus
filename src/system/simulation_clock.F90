@@ -31,6 +31,7 @@ module simulation_clock_oct_m
 
   type simulation_clock_t
     integer :: clock_tick
+    integer :: granularity
     FLOAT   :: time_step
     integer :: time_since_epoch
 
@@ -39,8 +40,8 @@ module simulation_clock_oct_m
     procedure :: get_sim_time => simulation_clock_get_sim_time
     procedure :: increment => simulation_clock_increment
     procedure :: reset => simulation_clock_reset
-    procedure :: is_smaller => simulation_clock_is_smaller
-    procedure :: is_larger => simulation_clock_is_larger
+    procedure :: is_earlier => simulation_clock_is_earlier
+    procedure :: is_later => simulation_clock_is_later
     procedure :: is_equal => simulation_clock_is_equal
 
   end type simulation_clock_t
@@ -52,12 +53,13 @@ module simulation_clock_oct_m
 contains
 
   ! ---------------------------------------------------------
-  type(simulation_clock_t) function simulation_clock_init(time_step) result(this)
-    FLOAT, intent(in)   :: time_step
+  type(simulation_clock_t) function simulation_clock_init(time_step, smallest_algo_dt) result(this)
+    FLOAT, intent(in)   :: time_step, smallest_algo_dt
 
     PUSH_SUB(simulation_clock_init)
 
     this%clock_tick = 0
+    this%granularity = ceiling(time_step/smallest_algo_dt)
     this%time_step = time_step
     this%time_since_epoch = 0 ! Fixme: get time since epoch here from OS
 
@@ -65,12 +67,12 @@ contains
   end function simulation_clock_init
 
   ! ---------------------------------------------------------
-  integer function simulation_clock_get_tick(this) result(current_tick)
+  integer function simulation_clock_get_tick(this) result(current_global_tick)
     class(simulation_clock_t), intent(in) :: this
 
     PUSH_SUB(simulation_clock_get_tick)
 
-    current_tick = this%clock_tick
+    current_global_tick = this%clock_tick*this%granularity
 
     POP_SUB(simulation_clock_get_tick)
   end function simulation_clock_get_tick
@@ -109,30 +111,30 @@ contains
   end subroutine simulation_clock_reset
 
   ! ---------------------------------------------------------
-  logical function simulation_clock_is_smaller(clock_a, clock_b) result(is_smaller)
+  logical function simulation_clock_is_earlier(clock_a, clock_b) result(is_earlier)
     class(simulation_clock_t), intent(in) :: clock_a, clock_b
 
-    PUSH_SUB(simulation_clock_is_smaller)
+    PUSH_SUB(simulation_clock_is_earlier)
 
     if(clock_a%get_tick() < clock_b%get_tick()) then
-        is_smaller = .true.
+        is_earlier = .true.
     else
-        is_smaller = .false.
+        is_earlier = .false.
     end if
 
-    POP_SUB(simulation_clock_is_smaller)
-  end function simulation_clock_is_smaller
+    POP_SUB(simulation_clock_is_earlier)
+  end function simulation_clock_is_earlier
 
   ! ---------------------------------------------------------
-  logical function simulation_clock_is_larger(clock_a, clock_b) result(is_smaller)
+  logical function simulation_clock_is_later(clock_a, clock_b) result(is_earlier)
     class(simulation_clock_t), intent(in) :: clock_a, clock_b
 
-    PUSH_SUB(simulation_clock_is_larger)
+    PUSH_SUB(simulation_clock_is_later)
 
-    is_smaller = simulation_clock_is_smaller(clock_b, clock_a)
+    is_earlier = simulation_clock_is_earlier(clock_b, clock_a)
 
-    POP_SUB(simulation_clock_is_larger)
-  end function simulation_clock_is_larger
+    POP_SUB(simulation_clock_is_later)
+  end function simulation_clock_is_later
 
   ! ---------------------------------------------------------
   logical function simulation_clock_is_equal(clock_a, clock_b) result(are_equal)

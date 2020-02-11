@@ -154,7 +154,7 @@ contains
       
       do iint = 1, this%n_interactions
         partner => this%get_interaction_partner(iint)
-        if(this%prop%clock%is_larger(partner%clock)) then
+        if(this%prop%clock%is_later(partner%clock)) then
          all_sys_sync = .false.
          exit
         end if
@@ -241,13 +241,14 @@ contains
   end subroutine system_set_propagator
 
   ! ---------------------------------------------------------
-  subroutine system_init_clock(this, dt)
+  subroutine system_init_clock(this, dt, smallest_algo_dt)
     class(system_abst_t), intent(inout) :: this
-    FLOAT                               :: dt
+    FLOAT                               :: dt, smallest_algo_dt
 
     PUSH_SUB(system_set_propagator)
 
-    this%clock = simulation_clock_t(dt)
+    this%clock = simulation_clock_t(dt, smallest_algo_dt)
+    this%prop%clock = simulation_clock_t(dt, smallest_algo_dt)
 
     POP_SUB(system_set_propagator)
   end subroutine system_init_clock

@@ -49,7 +49,6 @@ contains
     PUSH_SUB(propagator_verlet_init)
 
     call this%list%add_node(VERLET_UPDATE_POS)
-    call this%list%add_node(SYNC)
     call this%list%add_node(UPDATE_INTERACTIONS)
     call this%list%add_node(VERLET_COMPUTE_ACC)
     call this%list%add_node(VERLET_COMPUTE_VEL)

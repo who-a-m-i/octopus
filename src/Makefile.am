@@ -494,6 +494,7 @@ system_f_srcs =                                 \
 	system/linear_solver.F90                \
 	system/magnetic.F90                     \
 	system/multisystem.F90                  \
+	system/observable.F90                   \
 	system/output.F90                       \
 	system/output_me.F90                    \
 	system/partial_charges.F90              \

@@ -55,7 +55,6 @@ contains
       call this%list%add_node(STORE_CURRENT_STATUS)
       call this%list%add_node(BEEMAN_PREDICT_POS)
       call this%list%add_node(START_SCF_LOOP)
-      call this%list%add_node(SYNC)
       call this%list%add_node(UPDATE_INTERACTIONS)
       call this%list%add_node(VERLET_COMPUTE_ACC)
       call this%list%add_node(BEEMAN_CORRECT_POS)
@@ -69,7 +68,6 @@ contains
     else
 
       call this%list%add_node(BEEMAN_PREDICT_POS)
-      call this%list%add_node(SYNC)
       call this%list%add_node(UPDATE_INTERACTIONS)
       call this%list%add_node(VERLET_COMPUTE_ACC)
       call this%list%add_node(BEEMAN_PREDICT_VEL)

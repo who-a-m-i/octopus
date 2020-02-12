@@ -38,8 +38,11 @@ module interaction_gravity_oct_m
 
     class(system_abst_t), pointer :: partner
 
-    FLOAT :: partner_mass
-    FLOAT :: partner_pos(MAX_DIM)
+    FLOAT, pointer :: system_mass
+    FLOAT, pointer :: system_pos(:)
+
+    FLOAT, pointer :: partner_mass
+    FLOAT, pointer :: partner_pos(:)
 
   contains
     procedure :: update => interaction_gravity_update
@@ -54,8 +57,9 @@ module interaction_gravity_oct_m
 contains
 
   ! ---------------------------------------------------------
-  type(interaction_gravity_t) function interaction_gravity_init(dim, partner) result(this)
+  type(interaction_gravity_t) function interaction_gravity_init(dim, system, partner) result(this)
     integer,                      intent(in) :: dim
+    class(system_abst_t), target, intent(in) :: system
     class(system_abst_t), target, intent(in) :: partner
 
     PUSH_SUB(interaction_gravity_init)
@@ -63,27 +67,27 @@ contains
     this%dim = dim
     this%partner => partner
 
+    this%system_mass => system%mass
+    this%system_pos  => system%pos
+    this%partner_mass => partner%mass
+    this%partner_pos => partner%pos
+
     POP_SUB(interaction_gravity_init)
   end function interaction_gravity_init
 
   ! ---------------------------------------------------------
-  subroutine interaction_gravity_update(this, mass, position)
+  subroutine interaction_gravity_update(this)
     class(interaction_gravity_t), intent(inout) :: this
-    FLOAT,                        intent(in)    :: mass
-    FLOAT,                        intent(in)    :: position(:)
 
     FLOAT, parameter :: GG = CNST(6.67430e-11)
     FLOAT :: dist3
 
     PUSH_SUB(interaction_gravity_update)
 
-    ! Update information from partner
-    call this%partner%update_interaction_as_partner(this)
-
     ! Now calculate the gravitational force
-    dist3 = sum((this%partner_pos(1:this%dim) - position(1:this%dim))**2)**(M_THREE/M_TWO)
+    dist3 = sum((this%partner_pos(1:this%dim) - this%system_pos(1:this%dim))**2)**(M_THREE/M_TWO)
 
-    this%force(1:this%dim) = (this%partner_pos(1:this%dim) - position(1:this%dim)) / dist3 * (GG * mass * this%partner_mass)
+    this%force(1:this%dim) = (this%partner_pos(1:this%dim) - this%system_pos(1:this%dim)) / dist3 * (GG * this%system_mass * this%partner_mass)
 
     POP_SUB(interaction_gravity_update)
   end subroutine interaction_gravity_update
@@ -96,8 +100,10 @@ contains
 
     nullify(this%partner)
     this%force = M_ZERO
-    this%partner_mass = M_ZERO
-    this%partner_pos = M_ZERO
+    nullify(this%system_mass)
+    nullify(this%system_pos)
+    nullify(this%partner_mass)
+    nullify(this%partner_pos)
 
     POP_SUB(interaction_gravity_end)
   end subroutine interaction_gravity_end

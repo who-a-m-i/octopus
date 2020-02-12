@@ -160,7 +160,7 @@ contains
 
     if (partner%has_interaction(this%interactions(1))) then
       this%n_interactions = this%n_interactions + 1
-      this%interactions(this%n_interactions) = interaction_gravity_t(this%space%dim, partner)
+      this%interactions(this%n_interactions) = interaction_gravity_t(this%space%dim, this, partner)
     end if
 
     POP_SUB(celestial_body_add_interaction_partner)
@@ -286,19 +286,38 @@ contains
   end subroutine celestial_body_do_td
 
   ! ---------------------------------------------------------
-  subroutine celestial_body_update_interactions(this)
+  logical function celestial_body_update_interactions(this) result(all_updated)
     class(celestial_body_t), intent(inout) :: this
 
     integer :: iint
 
     PUSH_SUB(celestial_body_update_interactions)
 
+    all_updated = .true.
+
     do iint = 1, this%n_interactions
-      call this%interactions(iint)%update(this%mass, this%pos)
+      !I am already updated to the desired time
+      if(this%interactions(iint)%clock == this%prop%clock) cycle
+
+      !I am earlier and won't become equal or be ahead after a step
+      !therefore this is not a good time to update the interaction
+      !You (system) need to wait for partner to reach a further point in time
+      if(this%interactions(iint)%partner%clock%is_earlier(this%prop%clock) &
+            .not.this%interactions(iint)%partner%clock%with_step_ahead(this%prop%clock)) then
+        all_updated = .false.
+      else !That the best moment to update the interaction
+        !We first update the observables from target if needed
+        !The observables from system have already been updated
+        call this%interactions(iint)%partner%update_observables_as_partner(this, this%prop%clock)
+   
+        !We can now compute the interaction from the updated pointers
+        call this%interactions(iint)%update()
+        this%interactions(iint)%clock = this%prop%clock
+      end if
     end do
 
     POP_SUB(celestial_body_update_interactions)
-  end subroutine celestial_body_update_interactions
+  end function celestial_body_update_interactions
 
   ! ---------------------------------------------------------
   subroutine celestial_body_update_interaction_as_partner(this, interaction)

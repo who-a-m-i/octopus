@@ -35,10 +35,6 @@ module system_abst_oct_m
   public ::               &
     system_abst_t
 
-  integer, public, parameter ::        &
-    TOTAL_CURRENT                = 1,  &
-    FORCE                        = 2
-
   type, abstract :: system_abst_t
     private
     type(namespace_t),   public :: namespace
@@ -54,15 +50,17 @@ module system_abst_oct_m
     procedure :: dt_operation =>  system_dt_operation
     procedure :: set_propagator => system_set_propagator
     procedure :: init_clock => system_init_clock
-    procedure(system_add_interaction_partner),       deferred :: add_interaction_partner
-    procedure(system_has_interaction),               deferred :: has_interaction
-    procedure(system_do_td_op),                      deferred :: do_td_operation
-    procedure(system_update_interaction_as_partner), deferred :: update_interaction_as_partner
-    procedure(system_update_interactions),           deferred :: update_interactions
-    procedure(system_write_td_info),                 deferred :: write_td_info
-    procedure(system_is_tolerance_reached),          deferred :: is_tolerance_reached
-    procedure(system_store_current_status),          deferred :: store_current_status
-    procedure(system_get_interaction_partner),       deferred :: get_interaction_partner
+    procedure(system_add_interaction_partner),        deferred :: add_interaction_partner
+    procedure(system_has_interaction),                deferred :: has_interaction
+    procedure(system_do_td_op),                       deferred :: do_td_operation
+    procedure(system_update_interaction_as_partner),  deferred :: update_interaction_as_partner
+    procedure(system_update_interactions),            deferred :: update_interactions
+    procedure(system_write_td_info),                  deferred :: write_td_info
+    procedure(system_is_tolerance_reached),           deferred :: is_tolerance_reached
+    procedure(system_store_current_status),           deferred :: store_current_status
+    procedure(system_get_interaction_partner),        deferred :: get_interaction_partner
+    procedure(system_update_observables_as_system),  deferred :: update_observables_as_system
+    procedure(system_update_observables_as_partner), deferred :: update_observables_as_partner
   end type system_abst_t
 
   abstract interface
@@ -92,10 +90,10 @@ module system_abst_oct_m
       class(interaction_abst_t), intent(inout) :: interaction
     end subroutine system_update_interaction_as_partner
 
-    subroutine system_update_interactions(this)
+    logical function system_update_interactions(this)
       import system_abst_t
       class(system_abst_t),      intent(inout) :: this
-    end subroutine system_update_interactions
+    end function system_update_interactions
 
     subroutine system_write_td_info(this)
       import system_abst_t
@@ -120,6 +118,22 @@ module system_abst_oct_m
       class(system_abst_t), pointer :: partner
     end function system_get_interaction_partner
 
+    subroutine system_update_observables_as_system(this, clock)
+      import system_abst_t
+      import simulation_clock_t
+      class(system_abst_t),      intent(in)    :: this
+      class(simulation_clock_t), intent(inout) :: clock
+    end subroutine system_update_observables_as_system
+
+    subroutine system_update_observables_as_partner(this, interaction, clock)
+      import system_abst_t
+      import interaction_abst_t
+      import simulation_clock_t
+      class(system_abst_t),      intent(in)    :: this
+      class(interaction_abst_t), intent(inout) :: interaction
+      class(simulation_clock_t), intent(inout) :: clock
+    end subroutine system_update_observables_as_partner
+
   end interface
 
 contains
@@ -129,8 +143,8 @@ contains
     class(system_abst_t),     intent(inout) :: this
 
     class(system_abst_t), pointer :: partner
-    integer :: tdop, iint
-    logical :: all_sys_sync
+    integer :: tdop, iint, accumulated_loop_ticks
+    logical :: all_updated
 
     PUSH_SUB(system_dt_operation)
 
@@ -146,40 +160,25 @@ contains
       !DO OUTPUT HERE AND BROADCAST NEEDED QUANTITIES
       !ONLY IF WE ARE NOT YET FINISHED
 
-    case(SYNC)
+    case(UPDATE_INTERACTIONS)
       if (debug%info) then
         message(1) = "Debug: Propagation step - Synchronizing time for " + trim(this%namespace%get())
         call messages_info(1)
       end if
 
-      all_sys_sync = .true.
+      call this%prop%clock%increment()
+
+      !I update my oservables that will be needed for computing the interaction
+      call this%update_observables_as_system(this%prop%clock)
       
-      do iint = 1, this%n_interactions
-        partner => this%get_interaction_partner(iint)
-        ASSERT(same_type_as(this%prop, partner%prop))
-        if(partner%prop%clock%is_earlier(this%prop%clock) .and. &
-            .not.partner%prop%clock%with_step_ahead(this%prop%clock)) then
-         all_sys_sync = .false.
-         exit
-        end if
-      end do
-      
-      if(all_sys_sync) then
-        this%prop%clock%increment()
+      all_updated = this%update_interactions()
+
+      if(all_updated) then
         accumulated_loop_ticks = accumulated_loop_ticks + 1
         call this%prop%list%next()
+      else
+        call this%prop%clock%decrement()
       end if
-
-
-    case(UPDATE_INTERACTIONS)
-      if (debug%info) then
-        message(1) = "Debug: Propagation step - Updating interactions for " + trim(this%namespace%get())
-        call messages_info(1)
-      end if
-
-      call this%update_interactions()
-
-      call this%prop%list%next()
 
     case(START_SCF_LOOP)
       ASSERT(this%prop%predictor_corrector)

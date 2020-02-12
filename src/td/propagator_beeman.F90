@@ -43,9 +43,7 @@ module propagator_beeman_oct_m
 contains
 
   ! ---------------------------------------------------------
-  type(propagator_beeman_t) function propagator_beeman_init(time, dt, predictor_corrector) result(this)
-    FLOAT,   intent(in)    :: time
-    FLOAT,   intent(in)    :: dt
+  type(propagator_beeman_t) function propagator_beeman_init(predictor_corrector) result(this)
     logical, intent(in)    :: predictor_corrector
 
     PUSH_SUB(propagator_beeman_init)
@@ -57,7 +55,7 @@ contains
       call this%list%add_node(STORE_CURRENT_STATUS)
       call this%list%add_node(BEEMAN_PREDICT_POS)
       call this%list%add_node(START_SCF_LOOP)
-      call this%list%add_node(SYNC_DT)
+      call this%list%add_node(SYNC)
       call this%list%add_node(UPDATE_INTERACTIONS)
       call this%list%add_node(VERLET_COMPUTE_ACC)
       call this%list%add_node(BEEMAN_CORRECT_POS)
@@ -71,16 +69,13 @@ contains
     else
 
       call this%list%add_node(BEEMAN_PREDICT_POS)
-      call this%list%add_node(SYNC_DT)
+      call this%list%add_node(SYNC)
       call this%list%add_node(UPDATE_INTERACTIONS)
       call this%list%add_node(VERLET_COMPUTE_ACC)
       call this%list%add_node(BEEMAN_PREDICT_VEL)
       call this%list%add_node(FINISHED)
 
     end if
-
-    this%internal_time = time
-    this%dt = dt
 
     ! Beeman has only one algorithmic step
     this%algo_steps = 1

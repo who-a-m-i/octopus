@@ -37,8 +37,6 @@ module propagator_abst_oct_m
 
     type(linked_list_t), public :: list
 
-    FLOAT, public :: internal_time
-    FLOAT, public :: dt
     integer, public :: algo_steps
 
     !< Options related to predictor-corrector propagators
@@ -68,7 +66,7 @@ module propagator_abst_oct_m
     VERLET_UPDATE_POS            =  1,  &
     VERLET_COMPUTE_ACC           =  2,  &
     VERLET_COMPUTE_VEL           =  3,  &
-    SYNC_DT                      =  4,  &
+    SYNC                         =  4,  &
     UPDATE_INTERACTIONS          =  5,  &
     START_SCF_LOOP               =  6,  &
     END_SCF_LOOP                 =  7,  &

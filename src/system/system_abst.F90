@@ -48,6 +48,8 @@ module system_abst_oct_m
 
     integer, public :: n_interactions
 
+    integer :: accumulated_loop_ticks
+
   contains
     procedure :: dt_operation =>  system_dt_operation
     procedure :: set_propagator => system_set_propagator
@@ -144,7 +146,7 @@ contains
       !DO OUTPUT HERE AND BROADCAST NEEDED QUANTITIES
       !ONLY IF WE ARE NOT YET FINISHED
 
-    case(SYNC_DT)
+    case(SYNC)
       if (debug%info) then
         message(1) = "Debug: Propagation step - Synchronizing time for " + trim(this%namespace%get())
         call messages_info(1)
@@ -154,14 +156,17 @@ contains
       
       do iint = 1, this%n_interactions
         partner => this%get_interaction_partner(iint)
-        if(this%prop%clock%is_later(partner%clock)) then
+        ASSERT(same_type_as(this%prop, partner%prop))
+        if(partner%prop%clock%is_earlier(this%prop%clock) .and. &
+            .not.partner%prop%clock%with_step_ahead(this%prop%clock)) then
          all_sys_sync = .false.
          exit
         end if
       end do
       
       if(all_sys_sync) then
-        call this%prop%clock%increment()
+        this%prop%clock%increment()
+        accumulated_loop_ticks = accumulated_loop_ticks + 1
         call this%prop%list%next()
       end if
 
@@ -184,6 +189,8 @@ contains
       end if
 
       call this%prop%save_scf_start()
+ 
+      this%accumulated_loop_ticks = 0
 
     case(END_SCF_LOOP)
       !Here we first check if we did the maximum number of steps.
@@ -204,6 +211,8 @@ contains
           call this%prop%list%next()
         else
           call this%prop%reset_scf_loop()
+          call this%prop%decrement(this%accumulated_loop_ticks)
+          this%accumulated_loop_ticks = 0
           if (debug%info) then
             write(message(1), '(a,i3,a)') "Debug: SCF iter ", this%prop%scf_count, " for " + trim(this%namespace%get())
            call messages_info(1)
@@ -248,7 +257,7 @@ contains
     PUSH_SUB(system_set_propagator)
 
     this%clock = simulation_clock_t(dt, smallest_algo_dt)
-    this%prop%clock = simulation_clock_t(dt, smallest_algo_dt)
+    this%prop%clock = simulation_clock_t(dt/this%prop%algo_steps, smallest_algo_dt)
 
     POP_SUB(system_set_propagator)
   end subroutine system_init_clock

@@ -706,28 +706,36 @@ contains
       !   end if
       ! end if
 
-      ! if (fromScratch) then
-!      call restart_init(restart_mxll, sys%namespace, RESTART_TD, RESTART_TYPE_DUMP, sys%mc, ierr, &
-!        mesh=sys%gr%mesh, exact=.true.)          
-      if (parse_is_defined(sys%namespace, 'UserDefinedInitialMaxwellStates')) then
-        call states_mxll_read_user_def(sys%gr%mesh, sys%st, rs_state_init, sys%namespace)
-        print *,'Setting initial EM field inside box'
-        sys%st%rs_state = sys%st%rs_state + rs_state_init
-        if (td%tr_mxll%bc_plane_waves) then
-          sys%st%rs_state_plane_waves = rs_state_init
+      if (fromScratch) then
+        call restart_init(restart_mxll, sys%namespace, RESTART_MAXWELL, RESTART_TYPE_LOAD, sys%mc, ierr, &
+          mesh=sys%gr%mesh, exact=.true.)          
+        if (parse_is_defined(sys%namespace, 'UserDefinedInitialMaxwellStates')) then
+          call states_mxll_read_user_def(sys%gr%mesh, sys%st, rs_state_init, sys%namespace)
+          print *,'Setting initial EM field inside box'
+          sys%st%rs_state = sys%st%rs_state + rs_state_init
+          if (td%tr_mxll%bc_plane_waves) then
+            sys%st%rs_state_plane_waves = rs_state_init
+          end if
+          if (td%tr_mxll%bc_constant) &
+            sys%st%rs_state_const(:) = rs_state_init(sys%gr%mesh%idx%lxyz_inv(0,0,0),:)
+          call constant_boundaries_calculation(td%tr_mxll%bc_constant, sys%hm%bc, sys%hm, sys%st, sys%st%rs_state)
         end if
-        if (td%tr_mxll%bc_constant) &
-          sys%st%rs_state_const(:) = rs_state_init(sys%gr%mesh%idx%lxyz_inv(0,0,0),:)
-        call constant_boundaries_calculation(td%tr_mxll%bc_constant, sys%hm%bc, sys%hm, sys%st, sys%st%rs_state)
+        call restart_end(restart_mxll)
       end if
-!      call restart_end(restart_mxll)
-      !end if
 
       if (parse_is_defined(sys%namespace, 'UserDefinedInitialMaxwellStates')) then
         SAFE_DEALLOCATE_A(rs_state_init)
       end if
 
       call hamiltonian_mxll_update(sys%hm, time = td%iter*td%dt)
+
+      if(td%iter >= td%max_iter) then
+        ! free memory
+        call states_mxll_end(sys%st)
+        call td_end(td)
+        POP_SUB(td_run)
+        return
+      end if
 
       ! calculate Maxwell energy density
       call energy_density_calc(sys%gr, sys%st, sys%st%rs_state, sys%hm%energy_density(:), sys%hm%e_energy_density(:), &
@@ -742,7 +750,7 @@ contains
 
       call td_write_mxll_init(write_handler, sys%namespace, sys%gr, sys%st, sys%hm, td%iter, td%max_iter, td%dt)
 
-      call get_rs_state_at_point(sys%st%selected_points_rs_state(:,:), sys%st%rs_state, sys%st%selected_points_coordinate(:,:),&
+      call get_rs_state_at_point(sys%st%selected_points_rs_state, sys%st%rs_state, sys%st%selected_points_coordinate,&
         sys%st, sys%gr%mesh)
 
       if(td%iter == 0) then
@@ -845,7 +853,7 @@ contains
 
       ! if(st%d%pack_states .and. hamiltonian_apply_packed(hm, sys%gr%mesh)) call states_unpack(st)
 
-      call restart_end(restart_dump)
+      call restart_end(restart_mxll_dump)
 
       ! free memory
       call states_mxll_end(sys%st)

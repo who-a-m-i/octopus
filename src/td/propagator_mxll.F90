@@ -323,9 +323,7 @@ contains
     !% follows
     !%Option no 0
     !% follows
-    !%Option no_etrs 1
-    !% follows
-    !%Option const_steps 2
+    !%Option const_steps 1
     !% follows
     !%End
     call parse_variable(namespace, 'MaxwellTDETRSApprox', OPTION__MAXWELLTDETRSAPPROX__NO, tr%tr_etrs_approx)
@@ -370,7 +368,7 @@ contains
     !%Section States
     !%Description
     !% Analytic evaluation of the incoming waves inside the box,
-    !% not doing any numerical propagation of Maxwell's equations.
+    !% not doing any numerical propagation of Maxwells equations.
     !%End
     call parse_variable(namespace, 'MaxwellPlaneWavesInBox', .false., tr%plane_waves_in_box)
     call set_medium_rs_state(st, gr, hm)
@@ -450,35 +448,32 @@ contains
     if ((hm%ma_mx_coupling_apply .or. hm%current_density_ext_flag) .and. &
       (tr%tr_etrs_approx == OPTION__MAXWELLTDETRSAPPROX__CONST_STEPS)) then
 
-      message(1) = "Maxwell-matter coupling or external current not implemented yet"
-      call messages_fatal(1)
-      
-!       !AFE_ALLOCATE(ff_rs_inhom_1(1:gr%mesh%np_part,ff_dim))
-!       !AFE_ALLOCATE(ff_rs_inhom_2(1:gr%mesh%np_part,ff_dim))
-!       !AFE_ALLOCATE(ff_rs_inhom_mean(1:gr%mesh%np_part,ff_dim))
-!       ! inhomogeneity propagation
-! 4      call transform_rs_densities_forward(hm, rs_charge_density_t1, rs_current_density_t1, ff_rs_inhom_1)
-!       call transform_rs_densities_forward(hm, rs_charge_density_t2, rs_current_density_t2, ff_rs_inhom_2)
-!       ff_rs_inhom_mean = (ff_rs_inhom_1 + ff_rs_inhom_2)/M_TWO
-!       ! add term J(time)
-!       ff_rs_inhom_1 = ff_rs_inhom_mean
-!       ff_rs_inhom_2 = ff_rs_inhom_mean
-!       call hamiltonian_mxll_update(hm, time=time)
-!       call exponential_mxll_apply(hm, gr, st, tr, time, inter_dt, ff_rs_inhom_2)
-!       ! add term U(time+dt,time)J(time)
-!       ff_rs_inhom_1 = ff_rs_inhom_1 + ff_rs_inhom_2
-!       ff_rs_inhom_2 = ff_rs_inhom_mean
-!       call hamiltonian_mxll_update(hm, time=time)
-!       call exponential_mxll_apply(hm, gr, st, tr, time, inter_dt/M_TWO, ff_rs_inhom_2)
-!       ! add term U(time+dt/2,time)J(time)
-!       ff_rs_inhom_1 = ff_rs_inhom_1 + ff_rs_inhom_2
-!       ff_rs_inhom_2 = ff_rs_inhom_mean
-!       call hamiltonian_mxll_update(hm, time=time)
-!       call exponential_mxll_apply(hm, gr, st, tr, time, -inter_dt/M_TWO, ff_rs_inhom_2)
-!       ! add term U(time,time+dt/2)J(time)
-!       ff_rs_inhom_1 = ff_rs_inhom_1 + ff_rs_inhom_2
-!       !AFE_DEALLOCATE_A(ff_rs_inhom_2)
-!       !AFE_DEALLOCATE_A(ff_rs_inhom_mean)
+      SAFE_ALLOCATE(ff_rs_inhom_1(1:gr%mesh%np_part,ff_dim))
+      SAFE_ALLOCATE(ff_rs_inhom_2(1:gr%mesh%np_part,ff_dim))
+      SAFE_ALLOCATE(ff_rs_inhom_mean(1:gr%mesh%np_part,ff_dim))
+      ! inhomogeneity propagation
+      call transform_rs_densities_forward(hm, rs_charge_density_t1, rs_current_density_t1, ff_rs_inhom_1)
+      call transform_rs_densities_forward(hm, rs_charge_density_t2, rs_current_density_t2, ff_rs_inhom_2)
+      ff_rs_inhom_mean = (ff_rs_inhom_1 + ff_rs_inhom_2)/M_TWO
+      ! add term J(time)
+      ff_rs_inhom_1 = ff_rs_inhom_mean
+      ff_rs_inhom_2 = ff_rs_inhom_mean
+      call hamiltonian_mxll_update(hm, time=time)
+      call exponential_mxll_apply(hm, namespace, gr, st, tr, inter_dt, ff_rs_inhom_2)
+      ! add term U(time+dt,time)J(time)
+      ff_rs_inhom_1 = ff_rs_inhom_1 + ff_rs_inhom_2
+      ff_rs_inhom_2 = ff_rs_inhom_mean
+      call hamiltonian_mxll_update(hm, time=time)
+      call exponential_mxll_apply(hm, namespace, gr, st, tr, inter_dt/M_TWO, ff_rs_inhom_2)
+      ! add term U(time+dt/2,time)J(time)
+      ff_rs_inhom_1 = ff_rs_inhom_1 + ff_rs_inhom_2
+      ff_rs_inhom_2 = ff_rs_inhom_mean
+      call hamiltonian_mxll_update(hm, time=time)
+      call exponential_mxll_apply(hm, namespace, gr, st, tr, -inter_dt/M_TWO, ff_rs_inhom_2)
+      ! add term U(time,time+dt/2)J(time)
+      ff_rs_inhom_1 = ff_rs_inhom_1 + ff_rs_inhom_2
+      SAFE_DEALLOCATE_A(ff_rs_inhom_2)
+      SAFE_DEALLOCATE_A(ff_rs_inhom_mean)
     end if
 
     do ii=1, inter_steps
@@ -491,87 +486,58 @@ contains
 
       if ((hm%ma_mx_coupling_apply) .or. hm%current_density_ext_flag) then
 
-        message(1) = "Maxwell-matter coupling or external current not implemented yet"
-        call messages_fatal(1)
+      ! Maxwell etrs propagation without any approximations
+        if (tr%tr_etrs_approx == OPTION__MAXWELLTDETRSAPPROX__NO) then
+          SAFE_ALLOCATE(ff_rs_inhom_1(1:gr%mesh%np_part,ff_dim))
+          SAFE_ALLOCATE(ff_rs_inhom_2(1:gr%mesh%np_part,ff_dim))
+          ! RS state propagation
+          call hamiltonian_mxll_update(hm, time=inter_time)
+          if (pml_check) then
+            call pml_propagation_stage_1(hm, gr, st, tr, ff_rs_state, ff_rs_state_pml)
+            hm%cpml_hamiltonian = .true.
+          end if
+          call exponential_mxll_apply(hm, namespace, gr, st, tr, inter_dt, ff_rs_state)
+          if (pml_check) then
+            hm%cpml_hamiltonian = .false.
+            call pml_propagation_stage_2(hm, namespace, gr, st, tr, inter_time, inter_dt, delay, &
+              ff_rs_state_pml, ff_rs_state)
+          end if
+          ! inhomogeneity propagation
+          call transform_rs_densities_forward(hm, rs_charge_density_t1, rs_current_density_t1, ff_rs_inhom_1)
+          call transform_rs_densities_forward(hm, rs_charge_density_t2, rs_current_density_t2, ff_rs_inhom_2)
+          ff_rs_inhom_1 = ff_rs_inhom_1 + (ff_rs_inhom_2 - ff_rs_inhom_1) / real(inter_steps) * inter_dt * (ii-1)
+          ff_rs_inhom_2 = ff_rs_inhom_1 + (ff_rs_inhom_2 - ff_rs_inhom_1) / real(inter_steps) * inter_dt * (ii)
+          call exponential_mxll_apply(hm, namespace, gr, st, tr, inter_dt, ff_rs_inhom_1)
+          ! add terms U(time+dt,time)J(time) and J(time+dt)
+          ff_rs_state = ff_rs_state + M_FOURTH * inter_dt * (ff_rs_inhom_1 + ff_rs_inhom_2)
+          call transform_rs_densities_forward(hm, rs_charge_density_t1, rs_current_density_t1, ff_rs_inhom_1)
+          call transform_rs_densities_forward(hm, rs_charge_density_t2, rs_current_density_t2, ff_rs_inhom_2)
+          ff_rs_inhom_1 = M_HALF * (ff_rs_inhom_1 + ff_rs_inhom_2)
+          ff_rs_inhom_2 = M_HALF * (ff_rs_inhom_1 + ff_rs_inhom_2)
+          call exponential_mxll_apply(hm, namespace, gr, st, tr,  inter_dt/M_TWO, ff_rs_inhom_1)
+          call exponential_mxll_apply(hm, namespace, gr, st, tr, -inter_dt/M_TWO, ff_rs_inhom_2)
+          ! add terms U(time+dt/2,time)J(time) and U(time,time+dt/2)J(time+dt)
+          ff_rs_state = ff_rs_state + M_FOURTH * inter_dt * (ff_rs_inhom_1 + ff_rs_inhom_2)
+          SAFE_DEALLOCATE_A(ff_rs_inhom_1)
+          SAFE_DEALLOCATE_A(ff_rs_inhom_2)
 
-      ! ! Maxwell etrs propagation without any approximations
-      !   if (tr%tr_etrs_approx == OPTION__MAXWELLTDETRSAPPROX__NO) then
-      !     !AFE_ALLOCATE(ff_rs_inhom_1(1:gr%mesh%np_part,ff_dim))
-      !     !AFE_ALLOCATE(ff_rs_inhom_2(1:gr%mesh%np_part,ff_dim))
-      !     ! RS state propagation
-      !     call hamiltonian_mxll_update(hm, time=inter_time)
-      !     if (pml_check) then
-      !       call pml_propagation_stage_1(hm, gr, st, tr, ff_rs_state, ff_rs_state_pml)
-      !       hm%cpml_hamiltonian = .true.
-      !     end if
-      !     call exponential_mxll_apply(hm, gr, st, tr, inter_time, inter_dt, ff_rs_state)
-      !     if (pml_check) then
-      !       hm%cpml_hamiltonian = .false.
-      !       call pml_propagation_stage_2(hm, gr, st, tr, inter_time, inter_dt, delay, &
-      !                                           ff_rs_state_pml, ff_rs_state)
-      !     end if
-      !     ! inhomogeneity propagation
-      !     call transform_rs_densities_forward(hm, rs_charge_density_t1, rs_current_density_t1, ff_rs_inhom_1)
-      !     call transform_rs_densities_forward(hm, rs_charge_density_t2, rs_current_density_t2, ff_rs_inhom_2)
-      !     ff_rs_inhom_1 = ff_rs_inhom_1 + (ff_rs_inhom_2 - ff_rs_inhom_1) / real(inter_steps) * inter_dt * (ii-1)
-      !     ff_rs_inhom_2 = ff_rs_inhom_1 + (ff_rs_inhom_2 - ff_rs_inhom_1) / real(inter_steps) * inter_dt * (ii)
-      !     call exponential_mxll_apply(hm, gr, st, tr, inter_time, inter_dt, ff_rs_inhom_1)
-      !     ! add terms U(time+dt,time)J(time) and J(time+dt)
-      !     ff_rs_state = ff_rs_state + M_FOURTH * inter_dt * (ff_rs_inhom_1 + ff_rs_inhom_2)
-      !     call transform_rs_densities_forward(hm, rs_charge_density_t1, rs_current_density_t1, ff_rs_inhom_1)
-      !     call transform_rs_densities_forward(hm, rs_charge_density_t2, rs_current_density_t2, ff_rs_inhom_2)
-      !     ff_rs_inhom_1 = M_HALF * (ff_rs_inhom_1 + ff_rs_inhom_2)
-      !     ff_rs_inhom_2 = M_HALF * (ff_rs_inhom_1 + ff_rs_inhom_2)
-      !     call exponential_mxll_apply(hm, gr, st, tr, inter_time, inter_dt/M_TWO, ff_rs_inhom_1)
-      !     call exponential_mxll_apply(hm, gr, st, tr, inter_time, -inter_dt/M_TWO, ff_rs_inhom_2)
-      !     ! add terms U(time+dt/2,time)J(time) and U(time,time+dt/2)J(time+dt)
-      !     ff_rs_state = ff_rs_state + M_FOURTH * inter_dt * (ff_rs_inhom_1 + ff_rs_inhom_2)
-      !     !AFE_DEALLOCATE_A(ff_rs_inhom_1)
-      !     !AFE_DEALLOCATE_A(ff_rs_inhom_2)
+        ! Maxwell etrs propagation for small current density changes in matter time to assume them as constant
+        else if (tr%tr_etrs_approx == OPTION__MAXWELLTDETRSAPPROX__CONST_STEPS) then
+          ! RS state propagation
+          call hamiltonian_mxll_update(hm, time=inter_time)
+          if (pml_check) then
+            call pml_propagation_stage_1(hm, gr, st, tr, ff_rs_state, ff_rs_state_pml)
+            hm%cpml_hamiltonian = .true.
+          end if
+          call exponential_mxll_apply(hm, namespace, gr, st, tr, inter_dt, ff_rs_state)
+          if (pml_check) then
+            hm%cpml_hamiltonian = .false.
+            call pml_propagation_stage_2(hm, namespace, gr, st, tr, inter_time, inter_dt, delay, ff_rs_state_pml, &
+              ff_rs_state)
+          end if
+          ff_rs_state = ff_rs_state + M_FOURTH * inter_dt * ff_rs_inhom_1
 
-      !   ! Maxwell no etrs propagation, just straight forward with the time evolution operator
-      !   else if (tr%tr_etrs_approx == OPTION__MAXWELLTDETRSAPPROX__NO_ETRS) then
-      !     !AFE_ALLOCATE(ff_rs_inhom_1(1:gr%mesh%np_part,ff_dim))
-      !     !AFE_ALLOCATE(ff_rs_inhom_2(1:gr%mesh%np_part,ff_dim))
-      !     call transform_rs_densities_forward(hm, rs_charge_density_t1, rs_current_density_t1, ff_rs_inhom_1)
-      !     call transform_rs_densities_forward(hm, rs_charge_density_t2, rs_current_density_t2, ff_rs_inhom_2)
-      !     ! RS state propagation
-      !     call hamiltonian_mxll_update(hm, time=inter_time)
-      !     if (pml_check) then
-      !       call pml_propagation_stage_1(hm, gr, st, tr, ff_rs_state, ff_rs_state_pml)
-      !       hm%cpml_hamiltonian = .true.
-      !     end if
-      !     call exponential_mxll_apply(hm, gr, st, tr, inter_time, inter_dt, ff_rs_state)
-      !     if (pml_check) then
-      !       hm%cpml_hamiltonian = .false.
-      !       call pml_propagation_stage_2(hm, gr, st, tr, inter_time, inter_dt, delay, ff_rs_state_pml, ff_rs_state)
-      !     end if
-      !     ! inhomogeneity propagation
-      !     ff_rs_inhom_1 = ff_rs_inhom_1 + (ff_rs_inhom_2 - ff_rs_inhom_1) / real(inter_steps) * inter_dt * (ii-1)
-      !     ff_rs_inhom_2 = ff_rs_inhom_1 + (ff_rs_inhom_2 - ff_rs_inhom_1) / real(inter_steps) * inter_dt * (ii)
-      !     call exponential_mxll_apply(hm, gr, st, tr, inter_time, inter_dt, ff_rs_inhom_1)
-      !     ! add terms U(time+dt,time)J(time) and J(time+dt)
-      !     ff_rs_state = ff_rs_state + M_HALF * inter_dt * (ff_rs_inhom_1 + ff_rs_inhom_2)
-      !     !AFE_DEALLOCATE_A(ff_rs_inhom_1)
-      !     !AFE_DEALLOCATE_A(ff_rs_inhom_2)
-
-      !   ! Maxwell etrs propagation for small current density changes in matter time to assume them as constant
-      !   else if (tr%tr_etrs_approx == OPTION__MAXWELLTDETRSAPPROX__CONST_STEPS) then
-      !     ! RS state propagation
-      !     call hamiltonian_mxll_update(hm, time=inter_time)
-      !     if (pml_check) then
-      !       call pml_propagation_stage_1(hm, gr, st, tr, ff_rs_state, ff_rs_state_pml)
-      !       hm%cpml_hamiltonian = .true.
-      !     end if
-      !     call exponential_mxll_apply(hm, gr, st, tr, inter_time, inter_dt, ff_rs_state)
-      !     if (pml_check) then
-      !       hm%cpml_hamiltonian = .false.
-      !       call pml_propagation_stage_2(hm, gr, st, tr, inter_time, inter_dt, delay, &
-      !                                           ff_rs_state_pml, ff_rs_state)
-      !     end if
-      !     ff_rs_state = ff_rs_state + M_FOURTH * inter_dt * ff_rs_inhom_1
-
-      !   end if
+        end if
 
       else
 
@@ -581,25 +547,12 @@ contains
           call pml_propagation_stage_1(hm, gr, st, tr, ff_rs_state, ff_rs_state_pml)
           hm%cpml_hamiltonian = .true.
         end if
-
-        call zbatch_init(st%rsb, 1, 1, st%d%dim, gr%mesh%np_part)
-
-        do istate = 1, st%d%dim
-          call batch_set_state(st%rsb, istate, gr%mesh%np_part, rs_state(:, istate))
-        end do
-
-        call exponential_apply_batch(tr%te, namespace, gr%mesh, hm, st%rsb, inter_dt)
-
-        do istate = 1, st%d%dim
-          call batch_get_state(st%rsb, istate, gr%mesh%np_part, rs_state(:, istate))
-        end do
-
-        call st%rsb%end()
-
+        call exponential_mxll_apply(hm, namespace, gr, st, tr, inter_dt, rs_state)
         if (pml_check) then
           hm%cpml_hamiltonian = .false.
-          call pml_propagation_stage_2(hm, gr, st, tr, inter_time, inter_dt, delay, ff_rs_state_pml, ff_rs_state)
+          call pml_propagation_stage_2(hm, namespace, gr, st, tr, inter_time, inter_dt, delay, ff_rs_state_pml, ff_rs_state)
         end if
+        
       end if
 
       ! PML convolution function update
@@ -608,7 +561,7 @@ contains
       end if
 
       ! back tranformation of RS state representation
-!      call transform_rs_state_backward(hm, gr, st, ff_rs_state, rs_state)
+      call transform_rs_state_backward(hm, gr, st, ff_rs_state, rs_state)
 
       if (tr%bc_constant) then
         ! Propagation dt with H(inter_time+inter_dt) for constant boundaries
@@ -649,23 +602,31 @@ contains
 
 
   ! ---------------------------------------------------------
-  subroutine exponential_mxll_apply(hm, gr, st, tr, time, dt, ff)
-    type(hamiltonian_mxll_t),        intent(in)    :: hm
+  subroutine exponential_mxll_apply(hm, namespace, gr, st, tr, dt, ff)
+    type(hamiltonian_mxll_t),   intent(inout)    :: hm
+    type(namespace_t),          intent(in)    :: namespace
     type(grid_t),               intent(in)    :: gr
-    type(states_mxll_t),             intent(inout) :: st
-    type(propagator_mxll_t), intent(inout) :: tr
-    FLOAT,                      intent(in)    :: time
+    type(states_mxll_t),        intent(inout) :: st
+    type(propagator_mxll_t),    intent(inout) :: tr
     FLOAT,                      intent(in)    :: dt
     CMPLX,                      intent(inout) :: ff(:,:)
 
+    type(batch_t) :: ff_batch
+    integer :: istate
+    
     PUSH_SUB(exponential_mxll_apply)
 
-    select case (tr%op_method)
-      case(OPTION__MAXWELLTDOPERATORMETHOD__OP_FD)
-!        call exponential_apply(tr%te, gr%mesh, gr%der, hm, ff, 1, 1, dt, time)
-      case(OPTION__MAXWELLTDOPERATORMETHOD__OP_FFT)
-!        call exponential_mxll_fft_apply(hm, gr, st, tr, time, dt, ff)
-    end select
+    call zbatch_init(ff_batch, 1, 1, st%d%dim, gr%mesh%np_part)
+    do istate = 1, st%d%dim
+      call batch_set_state(ff_batch, istate, gr%mesh%np_part, ff(:, istate))
+    end do
+
+    call exponential_apply_batch(tr%te, namespace, gr%mesh, hm, ff_batch, dt)
+
+    do istate = 1, st%d%dim
+      call batch_get_state(ff_batch, istate, gr%mesh%np_part, ff(:, istate))
+    end do
+    call ff_batch%end()
 
     POP_SUB(exponential_mxll_apply)
   end subroutine exponential_mxll_apply
@@ -2712,11 +2673,12 @@ contains
 
 
   ! ---------------------------------------------------------
-  subroutine pml_propagation_stage_2(hm, gr, st, tr, time, dt, time_delay, ff_rs_state_pml, ff_rs_state)
-    type(hamiltonian_mxll_t),        intent(inout) :: hm
+  subroutine pml_propagation_stage_2(hm, namespace, gr, st, tr, time, dt, time_delay, ff_rs_state_pml, ff_rs_state)
+    type(hamiltonian_mxll_t),   intent(inout) :: hm
+    type(namespace_t),          intent(in)    :: namespace
     type(grid_t),               intent(in)    :: gr
-    type(states_mxll_t),             intent(inout) :: st
-    type(propagator_mxll_t), intent(inout) :: tr
+    type(states_mxll_t),        intent(inout) :: st
+    type(propagator_mxll_t),    intent(inout) :: tr
     FLOAT,                      intent(in)    :: time
     FLOAT,                      intent(in)    :: dt
     FLOAT,                      intent(in)    :: time_delay
@@ -2732,7 +2694,7 @@ contains
       ff_points = size(ff_rs_state(:,1))
       ff_dim    = size(ff_rs_state(1,:))
       hm%cpml_hamiltonian = .true.
-      call exponential_mxll_apply(hm, gr, st, tr, time, dt, ff_rs_state_pml)
+      call exponential_mxll_apply(hm, namespace, gr, st, tr, dt, ff_rs_state_pml)
       hm%cpml_hamiltonian = .false.
       call plane_waves_propagation(hm, st, gr, tr, time, dt, time_delay)
       SAFE_ALLOCATE(ff_rs_state_plane_waves(1:ff_points,1:ff_dim))
@@ -2745,7 +2707,7 @@ contains
     else if (tr%bc_constant .and. hm%spatial_constant_apply) then
       ff_dim    = size(ff_rs_state(1,:))
       hm%cpml_hamiltonian = .true.
-      call exponential_mxll_apply(hm, gr, st, tr, time, dt, ff_rs_state_pml)
+      call exponential_mxll_apply(hm, namespace, gr, st, tr, dt, ff_rs_state_pml)
       hm%cpml_hamiltonian = .false.
       SAFE_ALLOCATE(rs_state_constant(1,1:ff_dim))
       SAFE_ALLOCATE(ff_rs_state_constant(1,1:ff_dim))
@@ -3231,7 +3193,7 @@ contains
           tmp_grad(ip,:)/(M_FOUR * hm%medium_box_mu(ip_in,il))
       end do
 
-      ! print information about the medium box -- get from Rene's version in maxwell_propagator.F90
+      ! print information about the medium box -- get from Renes version in maxwell_propagator.F90
 
       SAFE_DEALLOCATE_A(tmp)
     end do

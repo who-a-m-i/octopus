@@ -912,8 +912,8 @@ contains
 
     type(namespace_t) :: global_namespace, earth_namespace, moon_namespace, sun_namespace
     type(celestial_body_t) :: sun, earth, moon
-    type(propagator_verlet_t) :: prop_sun, prop_earth
-    type(propagator_beeman_t) :: prop_moon
+    type(propagator_verlet_t) :: prop_sun, prop_earth, prop_moon
+!    type(propagator_beeman_t) :: prop_moon
     type(simulation_clock_t) :: clock_sun, clock_earth, clock_moon
     integer :: Nstep, sun_Nstep, earth_Nstep, moon_Nstep
     integer :: it, internal_loop
@@ -957,9 +957,10 @@ contains
     all_done_max_td_steps = .false.
 
     !Creates Verlet propagators
-    prop_sun = propagator_verlet_t(M_ZERO, sun_dt)
-    prop_earth = propagator_verlet_t(M_ZERO, earth_dt)
-    prop_moon = propagator_beeman_t(M_ZERO, moon_dt, .true.)
+    prop_sun = propagator_verlet_t(sun_dt)
+    prop_earth = propagator_verlet_t(earth_dt)
+    !prop_moon = propagator_beeman_t(moon_dt, .false.)
+    prop_moon = propagator_verlet_t(moon_dt)
 
     !Associate them to subsystems
     call sun%set_propagator(prop_sun)

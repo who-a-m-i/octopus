@@ -28,9 +28,11 @@ module celestial_body_oct_m
   use messages_oct_m
   use mpi_oct_m
   use namespace_oct_m
+  use observable_oct_m
   use parser_oct_m
   use profiling_oct_m
   use propagator_abst_oct_m
+  use simulation_clock_oct_m
   use space_oct_m
   use system_abst_oct_m
   use write_iter_oct_m
@@ -72,6 +74,10 @@ module celestial_body_oct_m
     procedure :: is_tolerance_reached => celestial_body_is_tolerance_reached
     procedure :: store_current_status => celestial_body_store_current_status
     procedure :: get_interaction_partner => celestial_body_get_interaction_partner
+    procedure :: update_observables_as_system => celestial_body_update_observables_as_system
+    procedure :: update_observables_as_partner => celestial_body_update_observables_as_partner
+    procedure :: reset_protected_observable_clocks => celestial_body_reset_protected_observable_clocks
+    procedure :: init_interaction_clocks => celestial_body_init_interaction_clocks
     final :: celestial_body_finalize
   end type celestial_body_t
 
@@ -153,14 +159,25 @@ contains
 
   ! ---------------------------------------------------------
   subroutine celestial_body_add_interaction_partner(this, partner)
-    class(celestial_body_t), intent(inout) :: this
-    class(system_abst_t),    intent(in)    :: partner
+    class(celestial_body_t), target, intent(inout) :: this
+    class(system_abst_t),    target, intent(in)    :: partner
 
     PUSH_SUB(celestial_body_add_interaction_partner)
 
     if (partner%has_interaction(this%interactions(1))) then
       this%n_interactions = this%n_interactions + 1
-      this%interactions(this%n_interactions) = interaction_gravity_t(this%space%dim, this, partner)
+      this%interactions(this%n_interactions) = interaction_gravity_t(this%space%dim, partner)
+      this%interactions(this%n_interactions)%system_mass => this%mass
+      this%interactions(this%n_interactions)%system_pos  => this%pos
+
+      select type(partner)
+      type is(celestial_body_t)
+        this%interactions(this%n_interactions)%partner_mass => partner%mass
+        this%interactions(this%n_interactions)%partner_pos => partner%pos
+      class default
+        message(1) = "Interaction partner not compatible with gravity."
+        call messages_fatal(1)
+      end select
     end if
 
     POP_SUB(celestial_body_add_interaction_partner)
@@ -205,6 +222,8 @@ contains
                                    + M_HALF * this%prop%dt**2 * this%tot_force(1:this%space%dim)
       call this%prop%list%next()
 
+      call this%observables(POSITION)%clock%increment()
+
     case(VERLET_COMPUTE_ACC)
       if (debug%info) then
         message(1) = "Debug: Propagation step - Computing acceleration for " + trim(this%namespace%get())
@@ -232,6 +251,8 @@ contains
          M_HALF * this%prop%dt * (this%acc(1:this%space%dim) + this%tot_force(1:this%space%dim))
       call this%prop%list%next()
 
+      call this%observables(VELOCITY)%clock%increment()
+
     case(BEEMAN_PREDICT_POS)
       if (debug%info) then
         message(1) = "Debug: Prediction step - Computing position for " + trim(this%namespace%get())
@@ -245,6 +266,8 @@ contains
       this%acc(1:this%space%dim) = this%tot_force(1:this%space%dim)
       call this%prop%list%next()
 
+      call this%observables(POSITION)%clock%increment()
+
     case(BEEMAN_PREDICT_VEL)
       if (debug%info) then
         message(1) = "Debug: Prediction step - Computing velocity for " + trim(this%namespace%get())
@@ -253,6 +276,8 @@ contains
       this%vel(1:this%space%dim) = this%vel(1:this%space%dim)  &
                        + M_ONE/CNST(6.0) * this%prop%dt * (this%acc(1:this%space%dim) &
                          + M_TWO * this%tot_force(1:this%space%dim) - this%prev_acc(1:this%space%dim))
+
+      call this%observables(VELOCITY)%clock%increment()
 
 
     case(BEEMAN_CORRECT_POS)
@@ -266,6 +291,9 @@ contains
                              * ( M_TWO * this%acc(1:this%space%dim) + this%tot_force(1:this%space%dim))
       call this%prop%list%next()
 
+      !We set it to the propagation time to avoid double increment
+      call this%observables(POSITION)%clock%set(this%prop%clock)
+
     case(BEEMAN_CORRECT_VEL)
       if (debug%info) then
         message(1) = "Debug: Correction step - Computing velocity for " + trim(this%namespace%get())
@@ -275,6 +303,9 @@ contains
       this%vel(1:this%space%dim) = this%save_vel(1:this%space%dim) + &
          M_HALF * this%prop%dt * (this%acc(1:this%space%dim) + this%tot_force(1:this%space%dim))
       call this%prop%list%next()
+
+      !We set it to the propagation time to avoid double increment
+      call this%observables(VELOCITY)%clock%set(this%prop%clock)
 
     case default
       message(1) = "Unsupported TD operation."
@@ -297,22 +328,22 @@ contains
 
     do iint = 1, this%n_interactions
       !I am already updated to the desired time
-      if(this%interactions(iint)%clock == this%prop%clock) cycle
+      if(this%interactions(iint)%clock%is_equal(this%prop%clock)) cycle
 
-      !I am earlier and won't become equal or be ahead after a step
+      !I am earlier and won`t become equal or be ahead after a step
       !therefore this is not a good time to update the interaction
       !You (system) need to wait for partner to reach a further point in time
       if(this%interactions(iint)%partner%clock%is_earlier(this%prop%clock) &
-            .not.this%interactions(iint)%partner%clock%with_step_ahead(this%prop%clock)) then
+         .and. this%interactions(iint)%partner%clock%is_earlier_with_step(this%prop%clock)) then
         all_updated = .false.
       else !That the best moment to update the interaction
         !We first update the observables from target if needed
         !The observables from system have already been updated
-        call this%interactions(iint)%partner%update_observables_as_partner(this, this%prop%clock)
+        call this%interactions(iint)%partner%update_observables_as_partner(this%interactions(iint), this%prop%clock)
    
         !We can now compute the interaction from the updated pointers
         call this%interactions(iint)%update()
-        this%interactions(iint)%clock = this%prop%clock
+        call this%interactions(iint)%clock%set(this%prop%clock)
       end if
     end do
 
@@ -456,7 +487,6 @@ contains
     end if
 
     call write_iter_start(this%output_handle)
-
     call write_iter_double(this%output_handle, this%pos, this%space%dim)
     call write_iter_double(this%output_handle, this%vel, this%space%dim)
     call write_iter_nl(this%output_handle)
@@ -477,6 +507,7 @@ contains
     POP_SUB(celestial_body_td_write_end)
   end subroutine celestial_body_td_write_end
 
+  ! ---------------------------------------------------------
   function celestial_body_get_interaction_partner(this, iint) result(partner)
      class(celestial_body_t), intent(in) :: this
      integer,              intent(in) :: iint
@@ -489,6 +520,99 @@ contains
      POP_SUB(celestial_body_get_interaction_partner)
 
    end function celestial_body_get_interaction_partner
+
+  ! ---------------------------------------------------------
+  subroutine celestial_body_update_observables_as_system(this, clock)
+    class(celestial_body_t),   intent(inout) :: this
+    class(simulation_clock_t), intent(inout) :: clock
+
+    integer :: iint, iobs
+
+    PUSH_SUB(celestial_body_update_observables_as_system)
+
+    do iint = 1, this%n_interactions
+      do iobs = 1, this%interactions(iint)%n_system_observables
+        select case(this%interactions(iint)%partner_observables(iobs))
+        case(POSITION)
+          !Don`t do anything, this is a protected quantity. The propagator update it
+        case(VELOCITY)
+          !Don`t do anything, this is a protected quantity. The propagator update it
+        case default
+          message(1) = "Incompatible observable."
+          call messages_fatal(1)
+        end select
+      end do
+    end do
+
+    POP_SUB(celestial_body_update_observables_as_system)
+  
+  end subroutine celestial_body_update_observables_as_system
+
+ ! ---------------------------------------------------------
+ subroutine celestial_body_update_observables_as_partner(this, interaction, clock)
+    class(celestial_body_t),   intent(inout) :: this
+    class(interaction_abst_t), intent(inout) :: interaction
+    class(simulation_clock_t), intent(inout) :: clock
+
+    integer :: iint, iobs
+
+    PUSH_SUB(celestial_body_update_observables_as_partner)
+
+    do iint = 1, this%n_interactions
+      do iobs = 1, this%interactions(iint)%n_partner_observables
+        select case(this%interactions(iint)%partner_observables(iobs))
+        case(POSITION)
+          !Don`t do anything, this is a protected quantity. The propagator update it
+        case(VELOCITY)
+          !Don`t do anything, this is a protected quantity. The propagator update it
+        case default
+          message(1) = "Incompatible observable."
+          call messages_fatal(1)
+        end select
+      end do
+    end do
+
+    POP_SUB(celestial_body_update_observables_as_partner)
+
+  end subroutine celestial_body_update_observables_as_partner
+
+  ! ---------------------------------------------------------
+  subroutine celestial_body_reset_protected_observable_clocks(this, accumulated_ticks)
+    class(celestial_body_t),      intent(inout) :: this
+    integer,                      intent(in)    :: accumulated_ticks
+
+    integer :: it
+
+    PUSH_SUB(celestial_body_reset_protected_observable_clocks)
+
+    do it = 1, accumulated_ticks
+      call this%observables(POSITION)%clock%decrement()
+      call this%observables(VELOCITY)%clock%decrement()
+    end do
+ 
+    POP_SUB(celestial_body_reset_protected_observable_clocks)
+
+  end subroutine celestial_body_reset_protected_observable_clocks
+
+  ! ---------------------------------------------------------
+  subroutine celestial_body_init_interaction_clocks(this, dt, smallest_algo_dt)
+    class(celestial_body_t),  intent(inout)    :: this
+    FLOAT                                      :: dt, smallest_algo_dt
+
+    integer :: iint
+
+    PUSH_SUB(celestial_body_init_interaction_clocks)
+
+    do iint = 1, this%n_interactions
+      this%interactions(iint)%clock = simulation_clock_t(dt, smallest_algo_dt) 
+    end do
+
+    this%observables(POSITION)%clock = simulation_clock_t(dt, smallest_algo_dt)
+    this%observables(VELOCITY)%clock = simulation_clock_t(dt, smallest_algo_dt)
+
+    POP_SUB(celestial_body_init_interaction_clocks)
+
+  end subroutine celestial_body_init_interaction_clocks
 
   ! ---------------------------------------------------------
   subroutine celestial_body_end(this)

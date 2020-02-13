@@ -22,6 +22,7 @@ module interaction_gravity_oct_m
   use global_oct_m
   use interaction_abst_oct_m
   use messages_oct_m
+  use observable_oct_m
   use profiling_oct_m
   use system_abst_oct_m
 
@@ -57,9 +58,8 @@ module interaction_gravity_oct_m
 contains
 
   ! ---------------------------------------------------------
-  type(interaction_gravity_t) function interaction_gravity_init(dim, system, partner) result(this)
+  type(interaction_gravity_t) function interaction_gravity_init(dim, partner) result(this)
     integer,                      intent(in) :: dim
-    class(system_abst_t), target, intent(in) :: system
     class(system_abst_t), target, intent(in) :: partner
 
     PUSH_SUB(interaction_gravity_init)
@@ -67,10 +67,13 @@ contains
     this%dim = dim
     this%partner => partner
 
-    this%system_mass => system%mass
-    this%system_pos  => system%pos
-    this%partner_mass => partner%mass
-    this%partner_pos => partner%pos
+    !Gravity interaction need only one observable from each system, which is the position
+    this%n_system_observables = 1
+    this%n_partner_observables = 1
+    SAFE_ALLOCATE(this%system_observables(this%n_system_observables))
+    SAFE_ALLOCATE(this%partner_observables(this%n_partner_observables))
+    this%system_observables(1) = POSITION
+    this%partner_observables(1) = POSITION
 
     POP_SUB(interaction_gravity_init)
   end function interaction_gravity_init
@@ -115,6 +118,7 @@ contains
     PUSH_SUB(interaction_gravity_finalize)
 
     call this%end()
+!    call this%interaction_abst_t%end()
 
     POP_SUB(interaction_gravity_finalize)
   end subroutine interaction_gravity_finalize

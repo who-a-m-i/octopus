@@ -25,6 +25,7 @@ module system_abst_oct_m
   use messages_oct_m
   use namespace_oct_m
   use linked_list_oct_m
+  use observable_oct_m
   use profiling_oct_m
   use propagator_abst_oct_m
   use simulation_clock_oct_m
@@ -46,6 +47,8 @@ module system_abst_oct_m
 
     integer :: accumulated_loop_ticks
 
+    type(observable_t), public :: observables(MAX_OBSERVABLES)
+
   contains
     procedure :: dt_operation =>  system_dt_operation
     procedure :: set_propagator => system_set_propagator
@@ -59,15 +62,17 @@ module system_abst_oct_m
     procedure(system_is_tolerance_reached),           deferred :: is_tolerance_reached
     procedure(system_store_current_status),           deferred :: store_current_status
     procedure(system_get_interaction_partner),        deferred :: get_interaction_partner
-    procedure(system_update_observables_as_system),  deferred :: update_observables_as_system
-    procedure(system_update_observables_as_partner), deferred :: update_observables_as_partner
+    procedure(system_update_observables_as_system),   deferred :: update_observables_as_system
+    procedure(system_update_observables_as_partner),  deferred :: update_observables_as_partner
+    procedure(system_reset_protected_observable_clocks), deferred :: reset_protected_observable_clocks
+    procedure(system_init_interaction_clocks),        deferred :: init_interaction_clocks
   end type system_abst_t
 
   abstract interface
     subroutine system_add_interaction_partner(this, partner)
       import system_abst_t
-      class(system_abst_t),     intent(inout) :: this
-      class(system_abst_t),     intent(in)    :: partner
+      class(system_abst_t), target,    intent(inout) :: this
+      class(system_abst_t), target,    intent(in)    :: partner
     end subroutine system_add_interaction_partner
 
     logical function system_has_interaction(this, interaction)
@@ -121,7 +126,7 @@ module system_abst_oct_m
     subroutine system_update_observables_as_system(this, clock)
       import system_abst_t
       import simulation_clock_t
-      class(system_abst_t),      intent(in)    :: this
+      class(system_abst_t),      intent(inout) :: this
       class(simulation_clock_t), intent(inout) :: clock
     end subroutine system_update_observables_as_system
 
@@ -129,10 +134,22 @@ module system_abst_oct_m
       import system_abst_t
       import interaction_abst_t
       import simulation_clock_t
-      class(system_abst_t),      intent(in)    :: this
+      class(system_abst_t),      intent(inout) :: this
       class(interaction_abst_t), intent(inout) :: interaction
       class(simulation_clock_t), intent(inout) :: clock
     end subroutine system_update_observables_as_partner
+
+    subroutine system_reset_protected_observable_clocks(this, accumulated_ticks)
+      import system_abst_t
+      class(system_abst_t),      intent(inout) :: this
+      integer,                   intent(in)    :: accumulated_ticks
+    end subroutine system_reset_protected_observable_clocks
+
+    subroutine system_init_interaction_clocks(this, dt, smallest_algo_dt)
+      import system_abst_t
+      class(system_abst_t),      intent(inout) :: this
+      FLOAT                                    :: dt, smallest_algo_dt
+    end subroutine system_init_interaction_clocks
 
   end interface
 
@@ -143,7 +160,7 @@ contains
     class(system_abst_t),     intent(inout) :: this
 
     class(system_abst_t), pointer :: partner
-    integer :: tdop, iint, accumulated_loop_ticks
+    integer :: tdop, ii
     logical :: all_updated
 
     PUSH_SUB(system_dt_operation)
@@ -155,8 +172,11 @@ contains
         message(1) = "Debug: Propagation step finished for " + trim(this%namespace%get())
         call messages_info(1)
       end if
+      if(.not.this%prop%step_is_done()) then
+        call this%clock%increment()
+      end if
       call this%prop%finished()
-      call this%clock%increment()
+
       !DO OUTPUT HERE AND BROADCAST NEEDED QUANTITIES
       !ONLY IF WE ARE NOT YET FINISHED
 
@@ -166,6 +186,7 @@ contains
         call messages_info(1)
       end if
 
+      !We increment by one algorithmic step
       call this%prop%clock%increment()
 
       !I update my oservables that will be needed for computing the interaction
@@ -174,7 +195,7 @@ contains
       all_updated = this%update_interactions()
 
       if(all_updated) then
-        accumulated_loop_ticks = accumulated_loop_ticks + 1
+        this%accumulated_loop_ticks = this%accumulated_loop_ticks + 1
         call this%prop%list%next()
       else
         call this%prop%clock%decrement()
@@ -209,8 +230,14 @@ contains
           end if
           call this%prop%list%next()
         else
-          call this%prop%reset_scf_loop()
-          call this%prop%decrement(this%accumulated_loop_ticks)
+          !We rewind the intrusction stack
+          call this%prop%rewind_scf_loop()
+
+          !We reset the clock
+          call this%reset_protected_observable_clocks(this%accumulated_loop_ticks)
+          do ii = 1, this%accumulated_loop_ticks
+            call this%prop%clock%decrement()
+          end do
           this%accumulated_loop_ticks = 0
           if (debug%info) then
             write(message(1), '(a,i3,a)') "Debug: SCF iter ", this%prop%scf_count, " for " + trim(this%namespace%get())
@@ -257,6 +284,7 @@ contains
 
     this%clock = simulation_clock_t(dt, smallest_algo_dt)
     this%prop%clock = simulation_clock_t(dt/this%prop%algo_steps, smallest_algo_dt)
+    call this%init_interaction_clocks(dt, smallest_algo_dt) 
 
     POP_SUB(system_set_propagator)
   end subroutine system_init_clock

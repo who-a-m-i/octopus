@@ -28,12 +28,14 @@ module observable_oct_m
 
   integer, public, parameter ::         &
     POSITION                     =  1,  &
-    CURRENT                      =  2,  &
-    DENSITY                      =  3,  &
-    SCALAR_POTENTIAL             =  4,  &
-    VECTOR_POTENTIAL             =  5,  &
-    E_FIELD                      =  6,  &
-    B_FIELD                      =  7
+    VELOCITY                     =  2,  &
+    CURRENT                      =  3,  &
+    DENSITY                      =  4,  &
+    SCALAR_POTENTIAL             =  5,  &
+    VECTOR_POTENTIAL             =  6,  &
+    E_FIELD                      =  7,  &
+    B_FIELD                      =  8,  &
+    MAX_OBSERVABLES              =  8
 
 
   type observable_t

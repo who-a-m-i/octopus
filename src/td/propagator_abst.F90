@@ -38,6 +38,7 @@ module propagator_abst_oct_m
     type(linked_list_t), public :: list
 
     integer, public :: algo_steps
+    FLOAT, public   :: dt
 
     !< Options related to predictor-corrector propagators
     logical, public :: predictor_corrector
@@ -57,7 +58,7 @@ module propagator_abst_oct_m
     procedure :: rewind => propagator_rewind
     procedure :: finished => propagator_finished
     procedure :: save_scf_start => propagator_save_scf_start
-    procedure :: reset_scf_loop => propagator_reset_scf_loop
+    procedure :: rewind_scf_loop => propagator_rewind_scf_loop
   end type propagator_abst_t
 
   ! Known propagation operations
@@ -142,17 +143,17 @@ contains
 
   end subroutine propagator_save_scf_start
 
-  subroutine propagator_reset_scf_loop(this)
+  subroutine propagator_rewind_scf_loop(this)
     class(propagator_abst_t), intent(inout) :: this
 
-    PUSH_SUB(propagator_reset_scf_loop)
+    PUSH_SUB(propagator_rewind_scf_loop)
 
     call this%list%set_current_node(this%scf_start)
     this%scf_count = this%scf_count + 1
 
-    POP_SUB(propagator_reset_scf_loop)
+    POP_SUB(propagator_rewind_scf_loop)
 
-  end subroutine propagator_reset_scf_loop
+  end subroutine propagator_rewind_scf_loop
 
 end module propagator_abst_oct_m
 

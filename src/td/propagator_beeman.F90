@@ -43,7 +43,8 @@ module propagator_beeman_oct_m
 contains
 
   ! ---------------------------------------------------------
-  type(propagator_beeman_t) function propagator_beeman_init(predictor_corrector) result(this)
+  type(propagator_beeman_t) function propagator_beeman_init(dt, predictor_corrector) result(this)
+    FLOAT,   intent(in)    :: dt
     logical, intent(in)    :: predictor_corrector
 
     PUSH_SUB(propagator_beeman_init)
@@ -77,6 +78,8 @@ contains
 
     ! Beeman has only one algorithmic step
     this%algo_steps = 1
+
+    this%dt = dt
 
     POP_SUB(propagator_beeman_init)
   end function propagator_beeman_init

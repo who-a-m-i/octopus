@@ -45,7 +45,7 @@ module simulation_clock_oct_m
     procedure :: is_earlier => simulation_clock_is_earlier
     procedure :: is_later => simulation_clock_is_later
     procedure :: is_equal => simulation_clock_is_equal
-    procedure :: is_later_with_step => simulation_clock_is_later_with_step
+    procedure :: is_earlier_with_step => simulation_clock_is_earlier_with_step
   end type simulation_clock_t
 
   interface simulation_clock_t
@@ -56,9 +56,9 @@ module simulation_clock_oct_m
     procedure simulation_clock_is_equal
   end interface
 
-  interface assignment(=)
-    procedure simulation_clock_set
-  end interface
+!  interface assignment(=)
+!    procedure simulation_clock_set
+!  end interface
 
   interface operator(<)
     procedure simulation_clock_is_earlier
@@ -85,7 +85,7 @@ contains
   end function simulation_clock_init
 
   ! ---------------------------------------------------------
-  subroutine simulation_clock_set(clock_out, clock_in)
+  subroutine simulation_clock_set(clock_in, clock_out)
     class(simulation_clock_t), intent(in) :: clock_in
     class(simulation_clock_t), intent(out) :: clock_out
     
@@ -196,19 +196,19 @@ contains
   end function simulation_clock_is_equal
 
   ! ---------------------------------------------------------
-  logical function simulation_clock_is_later_with_step(clock_a, clock_b) result(is_later_with_step)
+  logical function simulation_clock_is_earlier_with_step(clock_a, clock_b) result(is_earlier_with_step)
     class(simulation_clock_t), intent(in) :: clock_a, clock_b
 
-    PUSH_SUB(simulation_clock_is_later_with_step)
+    PUSH_SUB(simulation_clock_is_earlier_with_step)
 
-    if(clock_a%get_tick() + clock_a%granularity > clock_b%get_tick()) then
-        is_later_with_step = .true.
+    if(clock_a%get_tick() + clock_a%granularity < clock_b%get_tick()) then
+        is_earlier_with_step = .true.
     else
-        is_later_with_step = .false.
+        is_earlier_with_step = .false.
     end if
 
-    POP_SUB(simulation_clock_is_later_with_step)
-  end function simulation_clock_is_later_with_step
+    POP_SUB(simulation_clock_is_earlier_with_step)
+  end function simulation_clock_is_earlier_with_step
 
 end module simulation_clock_oct_m
 

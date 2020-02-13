@@ -18,6 +18,11 @@
 #include "global.h"
 
 module interaction_abst_oct_m
+  use global_oct_m
+  use messages_oct_m
+  use profiling_oct_m
+  use simulation_clock_oct_m
+
   implicit none
 
   private
@@ -28,8 +33,31 @@ module interaction_abst_oct_m
   !> avoid circular dependencies between the interactions and the systems.
   type, abstract :: interaction_abst_t
     private
+
+    integer, public :: n_system_observables
+    integer, public :: n_partner_observables
+    integer, allocatable, public :: system_observables(:)
+    integer, allocatable, public :: partner_observables(:)
+
+    type(simulation_clock_t), public :: clock
+    
+    contains
+    procedure :: end => interaction_abst_end
   end type interaction_abst_t
+
+  contains
    
+    ! ---------------------------------------------------------
+  subroutine interaction_abst_end(this)
+    class(interaction_abst_t), intent(inout) :: this
+
+    PUSH_SUB(interaction_abst_end)
+
+    SAFE_DEALLOCATE_A(this%system_observables)
+    SAFE_DEALLOCATE_A(this%partner_observables)
+
+    POP_SUB(interaction_abst_end)
+  end subroutine interaction_abst_end
 
 end module interaction_abst_oct_m
 

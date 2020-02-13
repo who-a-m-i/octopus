@@ -44,7 +44,8 @@ module propagator_verlet_oct_m
 contains
 
   ! ---------------------------------------------------------
-  type(propagator_verlet_t) function propagator_verlet_init() result(this)
+  type(propagator_verlet_t) function propagator_verlet_init(dt) result(this)
+    FLOAT, intent(in) :: dt
 
     PUSH_SUB(propagator_verlet_init)
 
@@ -56,6 +57,8 @@ contains
 
     ! Verlet has only one algorithmic step
     this%algo_steps = 1
+
+    this%dt = dt
 
     POP_SUB(propagator_verlet_init)
   end function propagator_verlet_init

@@ -63,7 +63,7 @@ module system_abst_oct_m
     procedure(system_get_interaction_partner),        deferred :: get_interaction_partner
     procedure(system_update_observables_as_system),   deferred :: update_observables_as_system
     procedure(system_update_observables_as_partner),  deferred :: update_observables_as_partner
-    procedure(system_reset_protected_observable_clocks), deferred :: reset_protected_observable_clocks
+    procedure(system_reset_clocks),                   deferred :: reset_clocks
     procedure(system_init_interaction_clocks),        deferred :: init_interaction_clocks
     procedure(system_set_pointers_to_interaction),    deferred :: set_pointers_to_interaction
   end type system_abst_t
@@ -132,11 +132,11 @@ module system_abst_oct_m
       class(simulation_clock_t), intent(inout) :: clock
     end subroutine system_update_observables_as_partner
 
-    subroutine system_reset_protected_observable_clocks(this, accumulated_ticks)
+    subroutine system_reset_clocks(this, accumulated_ticks)
       import system_abst_t
       class(system_abst_t),      intent(inout) :: this
       integer,                   intent(in)    :: accumulated_ticks
-    end subroutine system_reset_protected_observable_clocks
+    end subroutine system_reset_clocks
 
     subroutine system_init_interaction_clocks(this, dt, smallest_algo_dt)
       import system_abst_t
@@ -231,7 +231,7 @@ contains
           call this%prop%rewind_scf_loop()
 
           !We reset the clock
-          call this%reset_protected_observable_clocks(this%accumulated_loop_ticks)
+          call this%reset_clocks(this%accumulated_loop_ticks)
           do ii = 1, this%accumulated_loop_ticks
             call this%prop%clock%decrement()
           end do

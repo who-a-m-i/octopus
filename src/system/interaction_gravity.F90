@@ -89,6 +89,11 @@ contains
 
     PUSH_SUB(interaction_gravity_update)
 
+    ASSERT(associated(this%partner_pos))
+    ASSERT(associated(this%system_pos))
+    ASSERT(associated(this%partner_mass))
+    ASSERT(associated(this%system_mass))
+
     ! Now calculate the gravitational force
     dist3 = sum((this%partner_pos(1:this%dim) - this%system_pos(1:this%dim))**2)**(M_THREE/M_TWO)
 
@@ -110,8 +115,7 @@ contains
     nullify(this%partner_mass)
     nullify(this%partner_pos)
 
-    SAFE_DEALLOCATE_A(this%system_observables)
-    SAFE_DEALLOCATE_A(this%partner_observables)
+    call interaction_abst_end(this)
 
     POP_SUB(interaction_gravity_end)
   end subroutine interaction_gravity_end

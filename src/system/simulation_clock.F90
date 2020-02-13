@@ -85,7 +85,7 @@ contains
   end function simulation_clock_init
 
   ! ---------------------------------------------------------
-  subroutine simulation_clock_set(clock_in, clock_out)
+  subroutine simulation_clock_set(clock_out, clock_in)
     class(simulation_clock_t), intent(in) :: clock_in
     class(simulation_clock_t), intent(out) :: clock_out
     

@@ -75,7 +75,7 @@ module celestial_body_oct_m
     procedure :: get_interaction_partner => celestial_body_get_interaction_partner
     procedure :: update_observables_as_system => celestial_body_update_observables_as_system
     procedure :: update_observables_as_partner => celestial_body_update_observables_as_partner
-    procedure :: reset_protected_observable_clocks => celestial_body_reset_protected_observable_clocks
+    procedure :: reset_clocks => celestial_body_reset_clocks
     procedure :: init_interaction_clocks => celestial_body_init_interaction_clocks
     procedure :: set_pointers_to_interaction => celestial_set_pointers_to_interaction
     final :: celestial_body_finalize
@@ -266,6 +266,7 @@ contains
       this%vel(1:this%space%dim) = this%vel(1:this%space%dim)  &
                        + M_ONE/CNST(6.0) * this%prop%dt * (this%acc(1:this%space%dim) &
                          + M_TWO * this%tot_force(1:this%space%dim) - this%prev_acc(1:this%space%dim))
+      call this%prop%list%next()
 
       call this%observables(VELOCITY)%clock%increment()
 
@@ -408,7 +409,6 @@ contains
 
     PUSH_SUB(celestial_body_td_write_init)
 
-    print *, "coucou"
     call io_mkdir('td.general', this%namespace)
     if (mpi_grp_is_root(mpi_world)) then
       call write_iter_init(this%output_handle, 0, dt, trim(io_workpath("td.general/coordinates", this%namespace)))
@@ -551,22 +551,26 @@ contains
   end subroutine celestial_body_update_observables_as_partner
 
   ! ---------------------------------------------------------
-  subroutine celestial_body_reset_protected_observable_clocks(this, accumulated_ticks)
+  subroutine celestial_body_reset_clocks(this, accumulated_ticks)
     class(celestial_body_t),      intent(inout) :: this
     integer,                      intent(in)    :: accumulated_ticks
 
-    integer :: it
+    integer :: it, iint
 
-    PUSH_SUB(celestial_body_reset_protected_observable_clocks)
+    PUSH_SUB(celestial_body_reset_clocks)
 
     do it = 1, accumulated_ticks
       call this%observables(POSITION)%clock%decrement()
       call this%observables(VELOCITY)%clock%decrement()
-    end do
- 
-    POP_SUB(celestial_body_reset_protected_observable_clocks)
 
-  end subroutine celestial_body_reset_protected_observable_clocks
+      do iint = 1, this%n_interactions
+        call this%interactions(iint)%clock%decrement()
+      end do
+    end do
+
+    POP_SUB(celestial_body_reset_clocks)
+
+  end subroutine celestial_body_reset_clocks
 
   ! ---------------------------------------------------------
   subroutine celestial_body_init_interaction_clocks(this, dt, smallest_algo_dt)
@@ -590,7 +594,7 @@ contains
 
   ! ---------------------------------------------------------
   subroutine celestial_set_pointers_to_interaction(this, inter)
-    class(celestial_body_t), target,  intent(in)    :: this
+    class(celestial_body_t), target,  intent(in)   :: this
     class(interaction_abst_t),       intent(inout) :: inter
 
     PUSH_SUB(celestial_set_pointers_to_interaction)

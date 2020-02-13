@@ -912,13 +912,13 @@ contains
 
     type(namespace_t) :: global_namespace, earth_namespace, moon_namespace, sun_namespace
     type(celestial_body_t) :: sun, earth, moon
-    type(propagator_verlet_t) :: prop_sun, prop_earth, prop_moon
-!    type(propagator_beeman_t) :: prop_moon
+    type(propagator_verlet_t) :: prop_sun, prop_earth
+    type(propagator_beeman_t) :: prop_moon
     type(simulation_clock_t) :: clock_sun, clock_earth, clock_moon
     integer :: Nstep, sun_Nstep, earth_Nstep, moon_Nstep
     integer :: it, internal_loop
-    logical :: all_done_td_step, all_done_max_td_steps
-    FLOAT :: dt, sun_dt, earth_dt, moon_dt, smallest_algo_dt
+    logical :: any_td_step_done, all_done_max_td_steps
+    FLOAT :: sun_dt, earth_dt, moon_dt, smallest_algo_dt
 
     PUSH_SUB(test_celestial_dynamics)
 
@@ -959,8 +959,7 @@ contains
     !Creates Verlet propagators
     prop_sun = propagator_verlet_t(sun_dt)
     prop_earth = propagator_verlet_t(earth_dt)
-    !prop_moon = propagator_beeman_t(moon_dt, .false.)
-    prop_moon = propagator_verlet_t(moon_dt)
+    prop_moon = propagator_beeman_t(moon_dt, .true.)
 
     !Associate them to subsystems
     call sun%set_propagator(prop_sun)
@@ -970,56 +969,60 @@ contains
                            prop_earth%dt/prop_earth%algo_steps, &
                            prop_moon%dt/prop_moon%algo_steps)
 
-    ! 'Loop' over systems and initialize simulation clocks
-!    clock_sun = simulation_clock_t(sun_dt)
-!    clock_earth = simulation_clock_t(earth_dt)
-!    clock_moon = simulation_clock_t(moon_dt)
-
     !Associate them to subsystems
     call sun%init_clock(sun_dt, smallest_algo_dt)
     call earth%init_clock(earth_dt, smallest_algo_dt)
     call moon%init_clock(moon_dt, smallest_algo_dt)
 
     !Initialize output and write data at time zero
-    call sun%td_write_init(dt)
-    call earth%td_write_init(dt)
-    call moon%td_write_init(dt)
+    call sun%td_write_init(sun_dt)
+    call earth%td_write_init(earth_dt)
+    call moon%td_write_init(moon_dt)
     call sun%td_write_iter(0)
     call earth%td_write_iter(0)
     call moon%td_write_iter(0)
 
     it = 0
 
+    call prop_sun%rewind()
+    call prop_earth%rewind()
+    call prop_moon%rewind()
+
     do while(.not. all_done_max_td_steps)
 
       it = it + 1
 
-      all_done_td_step = .false.
+      any_td_step_done = .false.
       internal_loop = 1
 
-      call prop_sun%rewind()
-      call prop_earth%rewind()
-      call prop_moon%rewind()
-
-      do while(.not. all_done_td_step .and. internal_loop < 1000)
+      do while(.not. any_td_step_done .and. internal_loop < 1000)
 
         call sun%dt_operation()
         call earth%dt_operation()
         call moon%dt_operation()
 
         !We check the exit condition
-        all_done_td_step = prop_sun%step_is_done() .and. prop_earth%step_is_done() .and. prop_moon%step_is_done()
+        any_td_step_done = prop_sun%step_is_done() .or. prop_earth%step_is_done() .or. prop_moon%step_is_done()
         INCR(internal_loop, 1)
       end do
 
-      !Output
-      call sun%write_td_info()
-      call earth%write_td_info()
-      call moon%write_td_info()
+      if(prop_sun%step_is_done()) then
+        call prop_sun%rewind() 
+        call sun%write_td_info()
+        call sun%td_write_iter(it)
+      end if
 
-      call sun%td_write_iter(it)
-      call earth%td_write_iter(it)
-      call moon%td_write_iter(it)
+      if(prop_earth%step_is_done()) then
+        call prop_earth%rewind()
+        call earth%write_td_info()
+        call earth%td_write_iter(it)
+      end if
+
+      if(prop_moon%step_is_done()) then
+        call prop_moon%rewind()
+        call moon%write_td_info()
+        call moon%td_write_iter(it)
+      end if
 
       ! Fixme: should be changed to final propagation time
       all_done_max_td_steps = (sun%clock%get_tick().ge.sun_Nstep) .and. (earth%clock%get_tick().ge.earth_Nstep) .and. (moon%clock%get_tick().ge.moon_Nstep)

@@ -27,7 +27,8 @@ module interaction_abst_oct_m
 
   private
   public ::               &
-    interaction_abst_t
+    interaction_abst_t,   &
+    interaction_abst_end
 
   !> The only purpose of the following class is to act as a surrogate and
   !> avoid circular dependencies between the interactions and the systems.
@@ -42,9 +43,22 @@ module interaction_abst_oct_m
     type(simulation_clock_t), public :: clock
     
   contains
+
   end type interaction_abst_t
 
   contains
+
+   subroutine interaction_abst_end(this)
+     class(interaction_abst_t), intent(inout) :: this
+
+     PUSH_SUB(interaction_abst_end)
+
+     SAFE_DEALLOCATE_A(this%system_observables)
+     SAFE_DEALLOCATE_A(this%partner_observables)
+
+     POP_SUB(interaction_abst_end)
+
+   end subroutine interaction_abst_end
    
 end module interaction_abst_oct_m
 

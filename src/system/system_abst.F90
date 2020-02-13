@@ -56,7 +56,6 @@ module system_abst_oct_m
     procedure(system_add_interaction_partner),        deferred :: add_interaction_partner
     procedure(system_has_interaction),                deferred :: has_interaction
     procedure(system_do_td_op),                       deferred :: do_td_operation
-    procedure(system_update_interaction_as_partner),  deferred :: update_interaction_as_partner
     procedure(system_update_interactions),            deferred :: update_interactions
     procedure(system_write_td_info),                  deferred :: write_td_info
     procedure(system_is_tolerance_reached),           deferred :: is_tolerance_reached
@@ -66,6 +65,7 @@ module system_abst_oct_m
     procedure(system_update_observables_as_partner),  deferred :: update_observables_as_partner
     procedure(system_reset_protected_observable_clocks), deferred :: reset_protected_observable_clocks
     procedure(system_init_interaction_clocks),        deferred :: init_interaction_clocks
+    procedure(system_set_pointers_to_interaction),    deferred :: set_pointers_to_interaction
   end type system_abst_t
 
   abstract interface
@@ -87,13 +87,6 @@ module system_abst_oct_m
       class(system_abst_t), intent(inout) :: this
       integer             , intent(in)    :: operation
     end subroutine system_do_td_op
-
-    subroutine system_update_interaction_as_partner(this, interaction)
-      import system_abst_t
-      import interaction_abst_t
-      class(system_abst_t),      intent(in)    :: this
-      class(interaction_abst_t), intent(inout) :: interaction
-    end subroutine system_update_interaction_as_partner
 
     logical function system_update_interactions(this)
       import system_abst_t
@@ -151,6 +144,13 @@ module system_abst_oct_m
       FLOAT                                    :: dt, smallest_algo_dt
     end subroutine system_init_interaction_clocks
 
+    subroutine system_set_pointers_to_interaction(this, inter)
+      import system_abst_t
+      import interaction_abst_t
+      class(system_abst_t),   target,   intent(in)    :: this
+      class(interaction_abst_t),        intent(inout) :: inter
+    end subroutine system_set_pointers_to_interaction
+
   end interface
 
 contains
@@ -189,9 +189,6 @@ contains
       !We increment by one algorithmic step
       call this%prop%clock%increment()
 
-      !I update my oservables that will be needed for computing the interaction
-      call this%update_observables_as_system(this%prop%clock)
-      
       all_updated = this%update_interactions()
 
       if(all_updated) then

@@ -41,24 +41,11 @@ module interaction_abst_oct_m
 
     type(simulation_clock_t), public :: clock
     
-    contains
-    procedure :: end => interaction_abst_end
+  contains
   end type interaction_abst_t
 
   contains
    
-    ! ---------------------------------------------------------
-  subroutine interaction_abst_end(this)
-    class(interaction_abst_t), intent(inout) :: this
-
-    PUSH_SUB(interaction_abst_end)
-
-    SAFE_DEALLOCATE_A(this%system_observables)
-    SAFE_DEALLOCATE_A(this%partner_observables)
-
-    POP_SUB(interaction_abst_end)
-  end subroutine interaction_abst_end
-
 end module interaction_abst_oct_m
 
 !! Local Variables:

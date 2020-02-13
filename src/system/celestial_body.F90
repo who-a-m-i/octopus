@@ -65,7 +65,6 @@ module celestial_body_oct_m
     procedure :: has_interaction => celestial_body_has_interaction
     procedure :: do_td_operation => celestial_body_do_td
     procedure :: update_interactions => celestial_body_update_interactions
-    procedure :: update_interaction_as_partner => celestial_body_update_interaction_as_partner
     procedure :: write_td_info => celestial_body_write_td_info
     procedure :: td_write_init => celestial_body_td_write_init
     procedure :: td_write_iter => celestial_body_td_write_iter
@@ -78,6 +77,7 @@ module celestial_body_oct_m
     procedure :: update_observables_as_partner => celestial_body_update_observables_as_partner
     procedure :: reset_protected_observable_clocks => celestial_body_reset_protected_observable_clocks
     procedure :: init_interaction_clocks => celestial_body_init_interaction_clocks
+    procedure :: set_pointers_to_interaction => celestial_set_pointers_to_interaction
     final :: celestial_body_finalize
   end type celestial_body_t
 
@@ -169,15 +169,6 @@ contains
       this%interactions(this%n_interactions) = interaction_gravity_t(this%space%dim, partner)
       this%interactions(this%n_interactions)%system_mass => this%mass
       this%interactions(this%n_interactions)%system_pos  => this%pos
-
-      select type(partner)
-      type is(celestial_body_t)
-        this%interactions(this%n_interactions)%partner_mass => partner%mass
-        this%interactions(this%n_interactions)%partner_pos => partner%pos
-      class default
-        message(1) = "Interaction partner not compatible with gravity."
-        call messages_fatal(1)
-      end select
     end if
 
     POP_SUB(celestial_body_add_interaction_partner)
@@ -208,7 +199,6 @@ contains
     integer :: iint
 
     PUSH_SUB(celestial_body_do_td)
-
 
     select case(operation)
     case(VERLET_UPDATE_POS)
@@ -326,6 +316,9 @@ contains
 
     all_updated = .true.
 
+    !I update my oservables that will be needed for computing the interaction
+  !  call this%update_observables_as_system(this%prop%clock)
+
     do iint = 1, this%n_interactions
       !I am already updated to the desired time
       if(this%interactions(iint)%clock%is_equal(this%prop%clock)) cycle
@@ -339,7 +332,7 @@ contains
       else !That the best moment to update the interaction
         !We first update the observables from target if needed
         !The observables from system have already been updated
-        call this%interactions(iint)%partner%update_observables_as_partner(this%interactions(iint), this%prop%clock)
+ !       call this%interactions(iint)%partner%update_observables_as_partner(this%interactions(iint), this%prop%clock)
    
         !We can now compute the interaction from the updated pointers
         call this%interactions(iint)%update()
@@ -349,26 +342,6 @@ contains
 
     POP_SUB(celestial_body_update_interactions)
   end function celestial_body_update_interactions
-
-  ! ---------------------------------------------------------
-  subroutine celestial_body_update_interaction_as_partner(this, interaction)
-    class(celestial_body_t),   intent(in)    :: this
-    class(interaction_abst_t), intent(inout) :: interaction
-
-    PUSH_SUB(celestial_body_update_interaction_as_partner)
-
-    select type (interaction)
-    type is (interaction_gravity_t)
-      interaction%partner_mass = this%mass
-      interaction%partner_pos = this%pos
-
-    class default
-      message(1) = "Unsupported interaction."
-      call messages_fatal(1, namespace=this%namespace)
-    end select
-
-    POP_SUB(celestial_body_update_interaction_as_partner)
-  end subroutine celestial_body_update_interaction_as_partner
 
   ! ---------------------------------------------------------
   logical function celestial_body_is_tolerance_reached(this, tol) result(converged)
@@ -435,6 +408,7 @@ contains
 
     PUSH_SUB(celestial_body_td_write_init)
 
+    print *, "coucou"
     call io_mkdir('td.general', this%namespace)
     if (mpi_grp_is_root(mpi_world)) then
       call write_iter_init(this%output_handle, 0, dt, trim(io_workpath("td.general/coordinates", this%namespace)))
@@ -613,6 +587,26 @@ contains
     POP_SUB(celestial_body_init_interaction_clocks)
 
   end subroutine celestial_body_init_interaction_clocks
+
+  ! ---------------------------------------------------------
+  subroutine celestial_set_pointers_to_interaction(this, inter)
+    class(celestial_body_t), target,  intent(in)    :: this
+    class(interaction_abst_t),       intent(inout) :: inter
+
+    PUSH_SUB(celestial_set_pointers_to_interaction)
+
+    select type(inter)
+    type is(interaction_gravity_t)
+      inter%partner_mass => this%mass
+      inter%partner_pos => this%pos
+    class default
+      message(1) = "Unsupported interaction."
+      call messages_fatal(1)
+    end select
+
+    POP_SUB(celestial_set_pointers_to_interaction)
+  end subroutine celestial_set_pointers_to_interaction
+
 
   ! ---------------------------------------------------------
   subroutine celestial_body_end(this)

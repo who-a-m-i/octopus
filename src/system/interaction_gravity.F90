@@ -75,6 +75,8 @@ contains
     this%system_observables(1) = POSITION
     this%partner_observables(1) = POSITION
 
+    call partner%set_pointers_to_interaction(this)
+
     POP_SUB(interaction_gravity_init)
   end function interaction_gravity_init
 
@@ -108,6 +110,9 @@ contains
     nullify(this%partner_mass)
     nullify(this%partner_pos)
 
+    SAFE_DEALLOCATE_A(this%system_observables)
+    SAFE_DEALLOCATE_A(this%partner_observables)
+
     POP_SUB(interaction_gravity_end)
   end subroutine interaction_gravity_end
 
@@ -118,7 +123,6 @@ contains
     PUSH_SUB(interaction_gravity_finalize)
 
     call this%end()
-!    call this%interaction_abst_t%end()
 
     POP_SUB(interaction_gravity_finalize)
   end subroutine interaction_gravity_finalize

@@ -988,7 +988,11 @@ contains
     call earth%td_write_iter(0)
     call moon%td_write_iter(0)
 
+    it = 0
+
     do while(.not. all_done_max_td_steps)
+
+      it = it + 1
 
       all_done_td_step = .false.
       internal_loop = 1

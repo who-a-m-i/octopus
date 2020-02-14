@@ -360,6 +360,8 @@ ACX_YAML
 dnl performance analysis using the likwid marker API
 ACX_LIKWID
 
+ACX_DFTBPLUS
+
 AC_SUBST(FCEXTRALIBS)
 
 m4_include([src/fdep/fortran_dependencies.m4])

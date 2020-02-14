@@ -256,7 +256,9 @@ contains
       this%acc(1:this%space%dim) = this%tot_force(1:this%space%dim)
       call this%prop%list%next()
 
-      call this%observables(POSITION)%clock%increment()
+      if(.not. this%prop%predictor_corrector) then
+        call this%observables(POSITION)%clock%increment()
+      end if
 
     case(BEEMAN_PREDICT_VEL)
       if (debug%info) then
@@ -318,7 +320,9 @@ contains
     all_updated = .true.
 
     !I update my oservables that will be needed for computing the interaction
-  !  call this%update_observables_as_system(this%prop%clock)
+    call this%update_observables_as_system(this%prop%clock)
+
+    print *, "Update inter for " + trim(this%namespace%get())  
 
     do iint = 1, this%n_interactions
       !I am already updated to the desired time
@@ -333,8 +337,11 @@ contains
       else !That the best moment to update the interaction
         !We first update the observables from target if needed
         !The observables from system have already been updated
- !       call this%interactions(iint)%partner%update_observables_as_partner(this%interactions(iint), this%prop%clock)
-   
+        call this%interactions(iint)%partner%update_observables_as_partner(this%interactions(iint), this%prop%clock)
+
+        print *, " -- Update interaction with ", trim(this%interactions(iint)%partner%namespace%get())
+        print *, " --- clocks are ", this%prop%clock%get_tick(), " and ", this%interactions(iint)%clock%get_tick()
+
         !We can now compute the interaction from the updated pointers
         call this%interactions(iint)%update()
         call this%interactions(iint)%clock%set(this%prop%clock)
@@ -501,12 +508,19 @@ contains
     class(simulation_clock_t), intent(inout) :: clock
 
     integer :: iint, iobs
+    integer :: obs_index
 
     PUSH_SUB(celestial_body_update_observables_as_system)
 
     do iint = 1, this%n_interactions
       do iobs = 1, this%interactions(iint)%n_system_observables
-        select case(this%interactions(iint)%partner_observables(iobs))
+        obs_index = this%interactions(iint)%system_observables(iobs)
+        if(this%observables(obs_index)%clock%is_later(clock)) then
+          message(1) = "The system observable is in advance compared to the requested clock."
+          call messages_fatal(1)
+        end if
+
+        select case(obs_index)
         case(POSITION)
           !Don`t do anything, this is a protected quantity. The propagator update it
         case(VELOCITY)
@@ -529,12 +543,18 @@ contains
     class(simulation_clock_t), intent(inout) :: clock
 
     integer :: iint, iobs
+    integer :: obs_index
 
     PUSH_SUB(celestial_body_update_observables_as_partner)
 
     do iint = 1, this%n_interactions
       do iobs = 1, this%interactions(iint)%n_partner_observables
-        select case(this%interactions(iint)%partner_observables(iobs))
+        obs_index = this%interactions(iint)%partner_observables(iobs)
+        if(this%interactions(iint)%partner%observables(obs_index)%clock%is_later(clock)) then
+          message(1) = "The partner observable is in advance compared to the requested clock."
+          call messages_fatal(1)
+        end if
+        select case(obs_index)
         case(POSITION)
           !Don`t do anything, this is a protected quantity. The propagator update it
         case(VELOCITY)

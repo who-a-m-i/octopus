@@ -116,21 +116,21 @@ module system_abst_oct_m
       class(system_abst_t), pointer :: partner
     end function system_get_interaction_partner
 
-    subroutine system_update_observables_as_system(this, clock)
+    logical function system_update_observables_as_system(this, clock) result(all_updated)
       import system_abst_t
       import simulation_clock_t
       class(system_abst_t),      intent(inout) :: this
       class(simulation_clock_t), intent(inout) :: clock
-    end subroutine system_update_observables_as_system
+    end function system_update_observables_as_system
 
-    subroutine system_update_observables_as_partner(this, interaction, clock)
+    logical function system_update_observables_as_partner(this, interaction, clock) result(all_updated)
       import system_abst_t
       import interaction_abst_t
       import simulation_clock_t
       class(system_abst_t),      intent(inout) :: this
       class(interaction_abst_t), intent(inout) :: interaction
       class(simulation_clock_t), intent(inout) :: clock
-    end subroutine system_update_observables_as_partner
+    end function system_update_observables_as_partner
 
     subroutine system_reset_clocks(this, accumulated_ticks)
       import system_abst_t
@@ -177,9 +177,6 @@ contains
       end if
       call this%prop%finished()
 
-      !DO OUTPUT HERE AND BROADCAST NEEDED QUANTITIES
-      !ONLY IF WE ARE NOT YET FINISHED
-
     case(UPDATE_INTERACTIONS)
       if (debug%info) then
         message(1) = "Debug: Propagation step - Synchronizing time for " + trim(this%namespace%get())
@@ -200,14 +197,14 @@ contains
 
     case(START_SCF_LOOP)
       ASSERT(this%prop%predictor_corrector)
+ 
+      call this%prop%save_scf_start()
+      this%accumulated_loop_ticks = 0
+
       if (debug%info) then
         write(message(1), '(a,i3,a)') "Debug: SCF iter ", this%prop%scf_count, " for " + trim(this%namespace%get())
         call messages_info(1)
       end if
-
-      call this%prop%save_scf_start()
- 
-      this%accumulated_loop_ticks = 0
 
     case(END_SCF_LOOP)
       !Here we first check if we did the maximum number of steps.

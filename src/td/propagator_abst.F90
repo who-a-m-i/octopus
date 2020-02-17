@@ -41,13 +41,14 @@ module propagator_abst_oct_m
     FLOAT, public   :: dt
 
     !< Options related to predictor-corrector propagators
-    logical, public :: predictor_corrector
+    logical, public :: predictor_corrector = .false.
     integer, public :: scf_count
     integer, public :: max_scf_count
     FLOAT, public   :: scf_tol
     class(list_node_t), pointer :: scf_start => null()
 
     logical :: step_done
+    integer, public :: last_step_done_tick = -1
 
     type(simulation_clock_t), public :: clock
 
@@ -96,6 +97,7 @@ contains
     PUSH_SUB(propagator_finished)
 
     this%step_done = .true.
+    this%last_step_done_tick = this%clock%get_tick()
 
     POP_SUB(propagator_finished)
   end subroutine propagator_finished
@@ -137,7 +139,6 @@ contains
     call this%list%next()
     this%scf_start => this%list%get_current_node()
     this%scf_count = 0
-    
 
     POP_SUB(propagator_save_scf_start) 
 

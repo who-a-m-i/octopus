@@ -916,7 +916,6 @@ contains
     type(namespace_t) :: global_namespace, earth_namespace, moon_namespace, sun_namespace
     type(celestial_body_t) :: sun, earth, moon
     type(propagator_verlet_t) :: prop_sun, prop_earth, prop_moon
-    type(simulation_clock_t) :: clock_sun, clock_earth, clock_moon
     integer :: Nstep, sun_Nstep, earth_Nstep, moon_Nstep
     integer :: it, internal_loop
     logical :: all_done_td_step, all_done_max_td_steps
@@ -970,11 +969,6 @@ contains
     smallest_algo_dt = min(prop_sun%dt/prop_sun%algo_steps,     &
                            prop_earth%dt/prop_earth%algo_steps, &
                            prop_moon%dt/prop_moon%algo_steps)
-
-    ! 'Loop' over systems and initialize simulation clocks
-!    clock_sun = simulation_clock_t(sun_dt)
-!    clock_earth = simulation_clock_t(earth_dt)
-!    clock_moon = simulation_clock_t(moon_dt)
 
     !Associate them to subsystems
     call sun%init_clock(sun_dt, smallest_algo_dt)

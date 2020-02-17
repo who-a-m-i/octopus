@@ -916,7 +916,7 @@ contains
     type(namespace_t) :: global_namespace, earth_namespace, moon_namespace, sun_namespace
     type(celestial_body_t) :: sun, earth, moon
     type(propagator_verlet_t) :: prop_sun, prop_earth, prop_moon
-    integer :: Nstep, sun_Nstep, earth_Nstep, moon_Nstep
+    integer :: sun_Nstep, earth_Nstep, moon_Nstep
     integer :: it, internal_loop
     logical :: all_done_td_step, all_done_max_td_steps
     FLOAT :: dt, sun_dt, earth_dt, moon_dt, smallest_algo_dt

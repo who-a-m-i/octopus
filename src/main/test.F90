@@ -1012,6 +1012,8 @@ contains
       call earth%td_write_iter(it)
       call moon%td_write_iter(it)
 
+      it = it + 1
+
       ! Fixme: should be changed to final propagation time
       all_done_max_td_steps = (sun%clock%get_tick().ge.sun_Nstep)             &
 				.and. (earth%clock%get_tick().ge.earth_Nstep) &

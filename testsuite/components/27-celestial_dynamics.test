@@ -3,7 +3,7 @@
 Test       : Oct-test celestial
 Program    : octopus
 TestGroups : short-run, components
-Enabled    : Yes
+Enabled    : No
 
 Processors: 1
 Input: 27-celestial_dynamics.01-three_body.inp

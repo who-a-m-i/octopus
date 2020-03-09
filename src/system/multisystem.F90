@@ -22,7 +22,9 @@ module multisystem_oct_m
   use celestial_body_oct_m
   use global_oct_m
   use linked_list_oct_m
+  use loct_oct_m
   use messages_oct_m
+  use mpi_oct_m
   use namespace_oct_m
   use parser_oct_m
   use profiling_oct_m
@@ -103,8 +105,16 @@ contains
 
     type(list_iterator_t) :: iter, iter2
     class(*), pointer :: sys, sys2
+    integer :: iunit_out
 
     PUSH_SUB(multisystem_init_interactions)
+
+    if(debug%interaction_graph .and. mpi_grp_is_root(mpi_world)) then
+      call loct_rm('interaction_graph.dot')
+      open(unit=iunit_out, file='interaction_graph.dot', &
+        action='write', status='unknown')
+        write(iunit_out, '(a)') 'digraph {'
+    end if
 
     call iter%start(systems)
     do while (iter%has_next())
@@ -115,13 +125,18 @@ contains
         !At the moment we are doing all system interacting with all of the other systems, 
         !irrespective of their type.
         class is (system_abst_t)
-
           select type (sys2 => iter2%get_next())
           class is (system_abst_t)
 
             !No self interaction
             if(.not.associated(sys, sys2)) then
               call sys%add_interaction_partner(sys2)
+ 
+              !Debug information in form of a DOT graph
+              if(debug%interaction_graph .and. mpi_grp_is_root(mpi_world)) then
+                write(iunit_out, '(a)') '  ' // trim(sys%namespace%get()) // ' -> ' & 
+                                             // trim(sys2%namespace%get()) // ';'
+              end if
             end if
     
           class default
@@ -135,6 +150,11 @@ contains
         end select
       end do
     end do
+
+    if(debug%interaction_graph .and. mpi_grp_is_root(mpi_world)) then
+      write(iunit_out, '(a)') '}'
+      close(iunit_out)
+    end if
 
     POP_SUB(multisystem_init_interactions)
 

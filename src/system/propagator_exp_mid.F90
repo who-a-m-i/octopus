@@ -57,7 +57,7 @@ contains
     call this%add(EXPMID_CORRECT_DT)
     call this%add(FINISHED)
 
-    ! Verlet has only one algorithmic step
+    ! Expmid has only one algorithmic step
     this%algo_steps = 2
 
     call this%parse_td_variables(namespace)

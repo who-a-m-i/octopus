@@ -31,6 +31,7 @@ module system_abst_oct_m
   use propagator_abst_oct_m
   use propagator_verlet_oct_m
   use propagator_beeman_oct_m
+  use propagator_exp_mid_oct_m
   use quantity_oct_m
   use space_oct_m
   use varinfo_oct_m
@@ -390,6 +391,8 @@ contains
     !% Beeman propagator without predictor-corrector.
     !%Option beeman_scf 3
     !% Beeman propagator with predictor-corrector scheme.
+    !%Option expmid 4
+    !% Exponential midpoint rule.
     !%End
     call parse_variable(this%namespace, 'TDSystemPropagator', PROP_VERLET, prop)
     if(.not.varinfo_valid_option('TDSystemPropagator', prop)) call messages_input_error('TDSystemPropagator')
@@ -401,6 +404,8 @@ contains
       call this%set_propagator(propagator_beeman_t(this%namespace, .false.))
     case(PROP_BEEMAN_SCF)
       call this%set_propagator(propagator_beeman_t(this%namespace, .true.))
+    case(PROP_EXP_MID)
+      call this%set_propagator(propagator_exp_mid_t(this%namespace))
     end select
 
     POP_SUB(system_init_propagator)

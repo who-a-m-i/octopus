@@ -82,13 +82,18 @@ module propagator_abst_oct_m
     BEEMAN_PREDICT_POS           =  9,  &
     BEEMAN_PREDICT_VEL           = 10,  &
     BEEMAN_CORRECT_POS           = 11,  &
-    BEEMAN_CORRECT_VEL           = 12
+    BEEMAN_CORRECT_VEL           = 12,  &
+    EXPMID_PREDICT_DT_2          = 13,  &
+    UPDATE_HAMILTONIAN           = 14,  &
+    EXPMID_CORRECT_DT            = 15
+
 
   ! Known multisystem propagators
   integer, public, parameter ::        &
     PROP_VERLET                  = 1,  &
     PROP_BEEMAN                  = 2,  &
-    PROP_BEEMAN_SCF              = 3
+    PROP_BEEMAN_SCF              = 3,  &
+    PROP_EXP_MID                 = 4
 
 contains
 

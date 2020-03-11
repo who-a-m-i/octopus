@@ -21,7 +21,6 @@
 module propagator_exp_mid_oct_m
   use clock_oct_m
   use global_oct_m
-  use gauge_field_oct_m
   use messages_oct_m
   use namespace_oct_m
   use profiling_oct_m

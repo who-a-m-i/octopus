@@ -80,6 +80,7 @@ contains
           call systems%add(sys)
         case (SYSTEM_MAXWELL)
           sys => system_mxll_init(namespace_t(system_name))           
+          call systems%add(sys)
         case default
           call messages_input_error('Systems')
         end select

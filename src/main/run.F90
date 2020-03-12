@@ -132,6 +132,7 @@ contains
     integer,           intent(in) :: cm
 
     type(linked_list_t) :: systems
+    type(list_iterator_t) :: iter
     class(*), pointer :: sys
     type(profile_t), save :: calc_mode_prof
     logical :: fromScratch
@@ -175,15 +176,15 @@ contains
     call multisystem_init(systems, namespace)
 
     ! Loop over systems
-    call systems%rewind()
-    do while (systems%has_more_values())
-      sys => systems%current()
+    call iter%start(systems)
+    do while (iter%has_next())
+      sys => iter%get_next()
       select type (sys)
 
       type is (system_mxll_t)
         select case(calc_mode_id)
         case (CM_TD)
-           call td_run(sys, fromScratch)
+           call td_run_mxll(sys, fromScratch)
         case default
            message(1) = "Maxwell systems currently support only TD propagation"
            call messages_info(1)
@@ -260,7 +261,7 @@ contains
           case(CM_TD)
             if(sys%gr%sb%kpoints%use_symmetries) &
               call messages_experimental("KPoints symmetries with CalculationMode = td")
-            call td_run(sys, fromScratch)
+            call td_run_elec(sys, fromScratch)
           case(CM_LR_POL)
             if(sys%gr%sb%kpoints%use_symmetries) &
               call messages_experimental("KPoints symmetries with CalculationMode = em_resp")
@@ -320,7 +321,6 @@ contains
         message(1) = "Unknow system type."
         call messages_fatal(1)
       end select
-      call systems%next()
     end do
 
     ! Finalize systems

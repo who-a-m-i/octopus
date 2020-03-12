@@ -37,7 +37,6 @@ module system_mxll_oct_m
   use simul_box_oct_m
   use sort_oct_m
   use space_oct_m
-  use system_abst_oct_m
   use states_mxll_oct_m
   use system_oct_m
   
@@ -53,17 +52,23 @@ module system_mxll_oct_m
     MULTIGRID_MX_TO_MA_EQUAL   = 1,       &
     MULTIGRID_MX_TO_MA_LARGE   = 2
 
-  type, extends(system_abst_t) :: system_mxll_t
+  type :: system_mxll_t
     ! Components are public by default
     type(states_mxll_t), pointer :: st    !< the states
     type(hamiltonian_mxll_t)     :: hm
+    type(space_t)                :: space
+    type(geometry_t)             :: geo
+    type(grid_t),        pointer :: gr    !< the mesh
+    type(output_t)               :: outp  !< the output
+    type(multicomm_t)            :: mc    !< index and domain communicators
+    type(namespace_t)            :: namespace
   end type system_mxll_t
 
 contains
   
   !----------------------------------------------------------
-  subroutine system_mxll_init(sys, namespace)
-    type(system_mxll_t), intent(inout) :: sys
+  function system_mxll_init(namespace) result(sys)
+    class(system_mxll_t),    pointer    :: sys
     type(namespace_t), intent(in)  :: namespace
     
     type(profile_t), save :: prof
@@ -135,7 +140,7 @@ contains
       POP_SUB(system_mxll_init.parallel_init)
     end subroutine parallel_mxll_init
 
-  end subroutine system_mxll_init
+  end function system_mxll_init
 
   !----------------------------------------------------------
   subroutine system_mxll_end(sys)

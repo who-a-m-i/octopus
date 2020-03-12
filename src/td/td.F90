@@ -67,7 +67,6 @@ module td_oct_m
   use states_mxll_oct_m
   use states_mxll_restart_oct_m
   use system_oct_m
-  use system_abst_oct_m
   use system_mxll_oct_m
   use td_write_oct_m
   use types_oct_m
@@ -83,7 +82,8 @@ module td_oct_m
   private
   public ::               &
     td_t,                 &
-    td_run,               &
+    td_run_elec,          &
+    td_run_mxll,          &
     td_run_init,          &
     td_init,              &
     td_end,               &
@@ -133,8 +133,8 @@ contains
   ! ---------------------------------------------------------
 
   subroutine td_init(td, sys)
-    type(td_t),            intent(inout) :: td
-    class(system_abst_t),        intent(inout) :: sys
+    type(td_t),      intent(inout) :: td
+    class(*),        intent(inout) :: sys
 
     integer :: default
     FLOAT   :: spacing, default_dt, propagation_time
@@ -184,80 +184,130 @@ contains
 
       call messages_print_var_value(stdout, 'TDIonicTimeScale', td%mu)
 
+      !%Variable TDTimeStep
+      !%Type float
+      !%Section Time-Dependent::Propagation
+      !%Description
+      !% The time-step for the time propagation. For most propagators you
+      !% want to use the largest value that is possible without the
+      !% evolution becoming unstable.
+      !%
+      !% The default value is the maximum value that we have found
+      !% empirically that is stable for the spacing <math>h</math>:
+      !% <math>dt = 0.0426 - 0.207 h + 0.808 h^2</math>
+      !% (from parabolic fit to Fig. 4 of http://dx.doi.org/10.1021/ct800518j,
+      !% probably valid for 3D systems only).
+      !% However, you might need to adjust this value.
+      !%End
+
+      spacing = minval(sys%gr%mesh%spacing(1:sys%gr%sb%dim))
+      default_dt = CNST(0.0426) - CNST(0.207)*spacing + CNST(0.808)*spacing**2
+      default_dt = default_dt*td%mu
+
+      call parse_variable(sys%namespace, 'TDTimeStep', default_dt, td%dt, unit = units_inp%time)
+
+      if (td%dt <= M_ZERO) then
+        write(message(1),'(a)') 'Input: TDTimeStep must be positive.'
+        call messages_fatal(1, namespace=sys%namespace)
+      end if
+
+      call messages_print_var_value(stdout, 'TDTimeStep', td%dt, unit = units_out%time)
+
+      if(parse_is_defined(sys%namespace, 'TDMaxSteps') .and. parse_is_defined(sys%namespace, 'TDPropagationTime')) then
+        call messages_write('You cannot set TDMaxSteps and TDPropagationTime at the same time')
+        call messages_fatal(namespace=sys%namespace)
+      end if
+
+    type is(system_mxll_t)
+
+      spacing = minval(sys%gr%mesh%spacing(1:sys%gr%sb%dim))
+      default_dt = CNST(0.0426) - CNST(0.207)*spacing + CNST(0.808)*spacing**2
+      default_dt = default_dt*td%mu
+
+      call parse_variable(sys%namespace, 'TDTimeStep', default_dt, td%dt, unit = units_inp%time)
+
+      if (td%dt <= M_ZERO) then
+        write(message(1),'(a)') 'Input: TDTimeStep must be positive.'
+        call messages_fatal(1, namespace=sys%namespace)
+      end if
+
+      call messages_print_var_value(stdout, 'TDTimeStep', td%dt, unit = units_out%time)
+
+      if(parse_is_defined(sys%namespace, 'TDMaxSteps') .and. parse_is_defined(sys%namespace, 'TDPropagationTime')) then
+        call messages_write('You cannot set TDMaxSteps and TDPropagationTime at the same time')
+        call messages_fatal(namespace=sys%namespace)
+      end if
+
+    class default
+      message(1) = "Unsupported system type."
+      call messages_fatal(1)
     end select
 
-    !%Variable TDTimeStep
-    !%Type float
-    !%Section Time-Dependent::Propagation
-    !%Description
-    !% The time-step for the time propagation. For most propagators you
-    !% want to use the largest value that is possible without the
-    !% evolution becoming unstable.
-    !%
-    !% The default value is the maximum value that we have found
-    !% empirically that is stable for the spacing <math>h</math>:
-    !% <math>dt = 0.0426 - 0.207 h + 0.808 h^2</math>
-    !% (from parabolic fit to Fig. 4 of http://dx.doi.org/10.1021/ct800518j,
-    !% probably valid for 3D systems only).
-    !% However, you might need to adjust this value.
-    !%End
+    select type (sys)
+    type is (system_t)
+      !%Variable TDPropagationTime
+      !%Type float
+      !%Section Time-Dependent::Propagation
+      !%Description
+      !% The length of the time propagation. You cannot set this variable
+      !% at the same time as <tt>TDMaxSteps</tt>. By default this variable will
+      !% not be used.
+      !%
+      !% The units for this variable are <math>\hbar</math>/Hartree (or <math>\hbar</math>/eV if you
+      !% selected <tt>ev_angstrom</tt> as input units). The approximate conversions to
+      !% femtoseconds are 1 fs = 41.34 <math>\hbar</math>/Hartree = 1.52 <math>\hbar</math>/eV.
+      !%End
+      call parse_variable(sys%namespace, 'TDPropagationTime', CNST(-1.0), propagation_time, unit = units_inp%time)
 
-    spacing = minval(sys%gr%mesh%spacing(1:sys%gr%sb%dim))
-    default_dt = CNST(0.0426) - CNST(0.207)*spacing + CNST(0.808)*spacing**2
-    default_dt = default_dt*td%mu
+      call messages_obsolete_variable(sys%namespace, 'TDMaximumIter', 'TDMaxSteps')
 
-    call parse_variable(sys%namespace, 'TDTimeStep', default_dt, td%dt, unit = units_inp%time)
+      !%Variable TDMaxSteps
+      !%Type integer
+      !%Default 1500
+      !%Section Time-Dependent::Propagation
+      !%Description
+      !% Number of time-propagation steps that will be performed. You
+      !% cannot use this variable together with <tt>TDPropagationTime</tt>.
+      !%End
+      default = 1500
+      if(propagation_time > CNST(0.0)) default = nint(propagation_time/td%dt)
+      call parse_variable(sys%namespace, 'TDMaxSteps', default, td%max_iter)
 
-    if (td%dt <= M_ZERO) then
-      write(message(1),'(a)') 'Input: TDTimeStep must be positive.'
-      call messages_fatal(1, namespace=sys%namespace)
-    end if
+      if(propagation_time <= CNST(0.0)) propagation_time = td%dt*td%max_iter
 
-    call messages_print_var_value(stdout, 'TDTimeStep', td%dt, unit = units_out%time)
-    
-    if(parse_is_defined(sys%namespace, 'TDMaxSteps') .and. parse_is_defined(sys%namespace, 'TDPropagationTime')) then
-      call messages_write('You cannot set TDMaxSteps and TDPropagationTime at the same time')
-      call messages_fatal(namespace=sys%namespace)
-    end if
+      call messages_print_var_value(stdout, 'TDPropagationTime', propagation_time, unit = units_out%time)
+      call messages_print_var_value(stdout, 'TDMaxSteps', td%max_iter)
 
-    !%Variable TDPropagationTime
-    !%Type float
-    !%Section Time-Dependent::Propagation
-    !%Description
-    !% The length of the time propagation. You cannot set this variable
-    !% at the same time as <tt>TDMaxSteps</tt>. By default this variable will
-    !% not be used.
-    !%
-    !% The units for this variable are <math>\hbar</math>/Hartree (or <math>\hbar</math>/eV if you
-    !% selected <tt>ev_angstrom</tt> as input units). The approximate conversions to
-    !% femtoseconds are 1 fs = 41.34 <math>\hbar</math>/Hartree = 1.52 <math>\hbar</math>/eV.
-    !%End
-    call parse_variable(sys%namespace, 'TDPropagationTime', CNST(-1.0), propagation_time, unit = units_inp%time)
+      if(td%max_iter < 1) then
+        write(message(1), '(a,i6,a)') "Input: '", td%max_iter, "' is not a valid value for TDMaxSteps."
+        message(2) = '(TDMaxSteps <= 1)'
+        call messages_fatal(2, namespace=sys%namespace)
+      end if
 
-    call messages_obsolete_variable(sys%namespace, 'TDMaximumIter', 'TDMaxSteps')
+    type is(system_mxll_t)
+      call parse_variable(sys%namespace, 'TDPropagationTime', CNST(-1.0), propagation_time, unit = units_inp%time)
 
-    !%Variable TDMaxSteps
-    !%Type integer
-    !%Default 1500
-    !%Section Time-Dependent::Propagation
-    !%Description
-    !% Number of time-propagation steps that will be performed. You
-    !% cannot use this variable together with <tt>TDPropagationTime</tt>.
-    !%End
-    default = 1500
-    if(propagation_time > CNST(0.0)) default = nint(propagation_time/td%dt)
-    call parse_variable(sys%namespace, 'TDMaxSteps', default, td%max_iter)
+      call messages_obsolete_variable(sys%namespace, 'TDMaximumIter', 'TDMaxSteps')
 
-    if(propagation_time <= CNST(0.0)) propagation_time = td%dt*td%max_iter
+      default = 1500
+      if(propagation_time > CNST(0.0)) default = nint(propagation_time/td%dt)
+      call parse_variable(sys%namespace, 'TDMaxSteps', default, td%max_iter)
 
-    call messages_print_var_value(stdout, 'TDPropagationTime', propagation_time, unit = units_out%time)
-    call messages_print_var_value(stdout, 'TDMaxSteps', td%max_iter)
+      if(propagation_time <= CNST(0.0)) propagation_time = td%dt*td%max_iter
 
-    if(td%max_iter < 1) then
-      write(message(1), '(a,i6,a)') "Input: '", td%max_iter, "' is not a valid value for TDMaxSteps."
-      message(2) = '(TDMaxSteps <= 1)'
-      call messages_fatal(2, namespace=sys%namespace)
-    end if
+      call messages_print_var_value(stdout, 'TDPropagationTime', propagation_time, unit = units_out%time)
+      call messages_print_var_value(stdout, 'TDMaxSteps', td%max_iter)
+
+      if(td%max_iter < 1) then
+        write(message(1), '(a,i6,a)') "Input: '", td%max_iter, "' is not a valid value for TDMaxSteps."
+        message(2) = '(TDMaxSteps <= 1)'
+        call messages_fatal(2, namespace=sys%namespace)
+      end if
+
+    class default
+      message(1) = "Unsupported system type."
+      call messages_fatal(1)
+    end select    
 
     td%iter = 0
 
@@ -439,9 +489,9 @@ contains
 
   ! ---------------------------------------------------------
   
-  subroutine td_run(sys, fromScratch)
-    class(system_abst_t), target, intent(inout) :: sys
-    logical,                intent(inout) :: fromScratch
+  subroutine td_run_elec(sys, fromScratch)
+    class(system_t), target, intent(inout) :: sys
+    logical,                 intent(inout) :: fromScratch
 
     type(td_t)                   :: td
     type(td_write_t)             :: write_handler
@@ -457,412 +507,193 @@ contains
     type(profile_t),        save :: prof
     type(restart_t)              :: restart_load, restart_dump
 
-    type(restart_t)            :: restart_mxll, restart_mxll_dump
-    CMPLX, allocatable         :: rs_current_density_ext_t1(:,:), rs_current_density_ext_t2(:,:)
-    CMPLX, allocatable         :: rs_charge_density_ext_t1(:), rs_charge_density_ext_t2(:)
-    CMPLX, allocatable         :: rs_state_init(:,:), rs_state_vac_fluc(:,:)
-    FLOAT                      :: bc_bounds(2,MAX_DIM), dt_bounds(2,MAX_DIM)
-    
-    PUSH_SUB(td_run)
-
+    PUSH_SUB(td_run_elec)
 
     call td_init(td, sys)
 
-    select type (sys)
-    type is (system_t)
 
-      ! some shortcuts
-      gr  => sys%gr
-      geo => sys%geo
-      st  => sys%st
+    ! some shortcuts
+    gr  => sys%gr
+    geo => sys%geo
+    st  => sys%st
 
-      ! Allocate wavefunctions during time-propagation
-      if(td%dynamics == EHRENFEST) then
-        !Note: this is not really clean to do this
-        if(sys%hm%lda_u_level /= DFT_U_NONE .and. states_are_real(st)) then
-          call lda_u_end(sys%hm%lda_u)
-          !complex wfs are required for Ehrenfest
-          call states_elec_allocate_wfns(st, gr%mesh, TYPE_CMPLX, packed=.true.)
-          call lda_u_init(sys%hm%lda_u, sys%namespace, sys%hm%lda_u_level, gr, geo, st, sys%hm%psolver)
-        else
-          !complex wfs are required for Ehrenfest
-          call states_elec_allocate_wfns(st, gr%mesh, TYPE_CMPLX, packed=.true.)
-        end if 
+    ! Allocate wavefunctions during time-propagation
+    if(td%dynamics == EHRENFEST) then
+      !Note: this is not really clean to do this
+      if(sys%hm%lda_u_level /= DFT_U_NONE .and. states_are_real(st)) then
+        call lda_u_end(sys%hm%lda_u)
+        !complex wfs are required for Ehrenfest
+        call states_elec_allocate_wfns(st, gr%mesh, TYPE_CMPLX, packed=.true.)
+        call lda_u_init(sys%hm%lda_u, sys%namespace, sys%hm%lda_u_level, gr, geo, st, sys%hm%psolver)
       else
-        call states_elec_allocate_wfns(st, gr%mesh, packed=.true.)
-        call scf_init(td%scf, sys%namespace, sys%gr, sys%geo, sys%st, sys%mc, sys%hm)
+        !complex wfs are required for Ehrenfest
+        call states_elec_allocate_wfns(st, gr%mesh, TYPE_CMPLX, packed=.true.)
+      end if 
+    else
+      call states_elec_allocate_wfns(st, gr%mesh, packed=.true.)
+      call scf_init(td%scf, sys%namespace, sys%gr, sys%geo, sys%st, sys%mc, sys%hm)
+    end if
+
+    if(sys%hm%scdm_EXX) then
+      call scdm_init(sys%hm%scdm, sys%namespace, st, gr%der, sys%hm%psolver%cube, operate_on_scdm = .true.)
+      ! make sure scdm is constructed as soon as it is needed
+      scdm_is_local = .false.
+    end if
+
+    if (gauge_field_is_applied(sys%hm%ep%gfield)) then
+      !if the gauge field is applied, we need to tell v_ks to calculate the current
+      call v_ks_calculate_current(sys%ks, .true.)
+
+      ! initialize the vector field and update the hamiltonian
+      call gauge_field_init_vec_pot(sys%hm%ep%gfield, gr%sb, st)
+      call hamiltonian_elec_update(sys%hm, gr%mesh, sys%namespace, time = td%dt*td%iter)
+    end if
+
+    call init_wfs()
+
+    if(td%iter >= td%max_iter) then
+      call end_()
+      POP_SUB(td_run_elec)
+      return
+    end if
+
+    ! Calculate initial forces and kinetic energy
+    if(ion_dynamics_ions_move(td%ions)) then
+      if(td%iter > 0) then
+        call td_read_coordinates()
+        call hamiltonian_elec_epot_generate(sys%hm, sys%namespace, gr, geo, st, time = td%iter*td%dt)
       end if
 
-      if(sys%hm%scdm_EXX) then
-        call scdm_init(sys%hm%scdm, sys%namespace, st, gr%der, sys%hm%psolver%cube, operate_on_scdm = .true.)
-        ! make sure scdm is constructed as soon as it is needed
-        scdm_is_local = .false.
-      end if
+      call forces_calculate(gr, sys%namespace, geo, sys%hm, st, sys%ks, t = td%iter*td%dt, dt = td%dt)
 
-      if (gauge_field_is_applied(sys%hm%ep%gfield)) then
-        !if the gauge field is applied, we need to tell v_ks to calculate the current
-        call v_ks_calculate_current(sys%ks, .true.)
-
-        ! initialize the vector field and update the hamiltonian
-        call gauge_field_init_vec_pot(sys%hm%ep%gfield, gr%sb, st)
-        call hamiltonian_elec_update(sys%hm, gr%mesh, sys%namespace, time = td%dt*td%iter)
-      end if
-
-      call init_wfs()
-
-      if(td%iter >= td%max_iter) then
-        call end_()
-        POP_SUB(td_run)
-        return
-      end if
-
-      ! Calculate initial forces and kinetic energy
-      if(ion_dynamics_ions_move(td%ions)) then
-        if(td%iter > 0) then
-          call td_read_coordinates()
-          call hamiltonian_elec_epot_generate(sys%hm, sys%namespace, gr, geo, st, time = td%iter*td%dt)
-        end if
-
+      geo%kinetic_energy = ion_dynamics_kinetic_energy(geo)
+    else
+      if(bitand(sys%outp%what, OPTION__OUTPUT__FORCES) /= 0) then
         call forces_calculate(gr, sys%namespace, geo, sys%hm, st, sys%ks, t = td%iter*td%dt, dt = td%dt)
-
-        geo%kinetic_energy = ion_dynamics_kinetic_energy(geo)
-      else
-        if(bitand(sys%outp%what, OPTION__OUTPUT__FORCES) /= 0) then
-          call forces_calculate(gr, sys%namespace, geo, sys%hm, st, sys%ks, t = td%iter*td%dt, dt = td%dt)
-        end if
       end if
+    end if
 
-      call td_write_init(write_handler, sys%namespace, sys%outp, gr, st, sys%hm, geo, sys%ks, &
-        ion_dynamics_ions_move(td%ions), gauge_field_is_applied(sys%hm%ep%gfield), &
-        sys%hm%ep%kick, td%iter, td%max_iter, td%dt, sys%mc)
+    call td_write_init(write_handler, sys%namespace, sys%outp, gr, st, sys%hm, geo, sys%ks, &
+      ion_dynamics_ions_move(td%ions), gauge_field_is_applied(sys%hm%ep%gfield), &
+      sys%hm%ep%kick, td%iter, td%max_iter, td%dt, sys%mc)
 
-      if(td%scissor > M_EPSILON) then
-        call scissor_init(sys%hm%scissor, sys%namespace, st, gr, sys%hm%d, td%scissor, sys%mc)
-      end if
+    if(td%scissor > M_EPSILON) then
+      call scissor_init(sys%hm%scissor, sys%namespace, st, gr, sys%hm%d, td%scissor, sys%mc)
+    end if
 
-      if(td%iter == 0) call td_run_zero_iter()
+    if(td%iter == 0) call td_run_zero_iter()
 
-      if (gauge_field_is_applied(sys%hm%ep%gfield)) call gauge_field_get_force(sys%hm%ep%gfield, gr, st)
+    if (gauge_field_is_applied(sys%hm%ep%gfield)) call gauge_field_get_force(sys%hm%ep%gfield, gr, st)
 
-      !call td_check_trotter(td, sys, h)
-      td%iter = td%iter + 1
+    !call td_check_trotter(td, sys, h)
+    td%iter = td%iter + 1
 
-      call restart_init(restart_dump, sys%namespace, RESTART_TD, RESTART_TYPE_DUMP, sys%mc, ierr, mesh=gr%mesh)
-      if (ion_dynamics_ions_move(td%ions) .and. td%recalculate_gs) then
-        ! We will also use the TD restart directory as temporary storage during the time propagation
-        call restart_init(restart_load, sys%namespace, RESTART_TD, RESTART_TYPE_LOAD, sys%mc, ierr, mesh=gr%mesh)
-      end if
+    call restart_init(restart_dump, sys%namespace, RESTART_TD, RESTART_TYPE_DUMP, sys%mc, ierr, mesh=gr%mesh)
+    if (ion_dynamics_ions_move(td%ions) .and. td%recalculate_gs) then
+      ! We will also use the TD restart directory as temporary storage during the time propagation
+      call restart_init(restart_load, sys%namespace, RESTART_TD, RESTART_TYPE_LOAD, sys%mc, ierr, mesh=gr%mesh)
+    end if
 
-      call messages_print_stress(stdout, "Time-Dependent Simulation", namespace=sys%namespace)
-      call print_header()
+    call messages_print_stress(stdout, "Time-Dependent Simulation", namespace=sys%namespace)
+    call print_header()
 
-      if(td%pesv%calc_spm .or. td%pesv%calc_mask .and. fromScratch) then
-        call pes_init_write(td%pesv,gr%mesh,st, sys%namespace)
-      end if
+    if(td%pesv%calc_spm .or. td%pesv%calc_mask .and. fromScratch) then
+      call pes_init_write(td%pesv,gr%mesh,st, sys%namespace)
+    end if
 
-      if(st%d%pack_states .and. hamiltonian_elec_apply_packed(sys%hm)) call st%pack()
+    if(st%d%pack_states .and. hamiltonian_elec_apply_packed(sys%hm)) call st%pack()
 
-      etime = loct_clock()
-      ! This is the time-propagation loop. It starts at t=0 and finishes
-      ! at td%max_iter*dt. The index i runs from 1 to td%max_iter, and
-      ! step "iter" means propagation from (iter-1)*dt to iter*dt.
-      propagation: do iter = td%iter, td%max_iter
+    etime = loct_clock()
+    ! This is the time-propagation loop. It starts at t=0 and finishes
+    ! at td%max_iter*dt. The index i runs from 1 to td%max_iter, and
+    ! step "iter" means propagation from (iter-1)*dt to iter*dt.
+    propagation: do iter = td%iter, td%max_iter
 
-        stopping = clean_stop(sys%mc%master_comm) .or. walltimer_alarm()
+      stopping = clean_stop(sys%mc%master_comm) .or. walltimer_alarm()
 
 #ifdef HAVE_MPI
-        call MPI_Allreduce(stopping, stopping_tmp, 1, MPI_LOGICAL, MPI_LOR, sys%mc%master_comm, mpi_err)
-        stopping = stopping_tmp
+      call MPI_Allreduce(stopping, stopping_tmp, 1, MPI_LOGICAL, MPI_LOR, sys%mc%master_comm, mpi_err)
+      stopping = stopping_tmp
 #endif      
 
-        call profiling_in(prof, "TIME_STEP")
+      call profiling_in(prof, "TIME_STEP")
 
-        if(iter > 1) then
-          if( ((iter-1)*td%dt <= sys%hm%ep%kick%time) .and. (iter*td%dt > sys%hm%ep%kick%time) ) then
-            if( .not.sys%hm%pcm%localf ) then
-              call kick_apply(gr%mesh, st, td%ions, geo, sys%hm%ep%kick, sys%hm%psolver)
-            else
-              call kick_apply(gr%mesh, st, td%ions, geo, sys%hm%ep%kick, sys%hm%psolver, pcm = sys%hm%pcm)
-            end if
-            call td_write_kick(sys%outp, sys%namespace, gr%mesh, sys%hm%ep%kick, geo, iter)
-            !We activate the sprial BC only after the kick, 
-            !to be sure that the first iteration corresponds to the ground state
-            if(gr%der%boundaries%spiralBC) gr%der%boundaries%spiral = .true.
+      if(iter > 1) then
+        if( ((iter-1)*td%dt <= sys%hm%ep%kick%time) .and. (iter*td%dt > sys%hm%ep%kick%time) ) then
+          if( .not.sys%hm%pcm%localf ) then
+            call kick_apply(gr%mesh, st, td%ions, geo, sys%hm%ep%kick, sys%hm%psolver)
+          else
+            call kick_apply(gr%mesh, st, td%ions, geo, sys%hm%ep%kick, sys%hm%psolver, pcm = sys%hm%pcm)
           end if
+          call td_write_kick(sys%outp, sys%namespace, gr%mesh, sys%hm%ep%kick, geo, iter)
+          !We activate the sprial BC only after the kick, 
+          !to be sure that the first iteration corresponds to the ground state
+          if(gr%der%boundaries%spiralBC) gr%der%boundaries%spiral = .true.
         end if
-
-        ! in case use scdm localized states for exact exchange and request a new localization             
-        if(sys%hm%scdm_EXX) scdm_is_local = .false.
-
-        ! time iterate the system, one time step.
-        select case(td%dynamics)
-        case(EHRENFEST)
-          call propagator_dt(sys%ks, sys%namespace, sys%hm, gr, st, td%tr, iter*td%dt, td%dt, &
-            td%energy_update_iter*td%mu, iter, td%ions, geo, sys%outp, scsteps = scsteps, &
-            update_energy = (mod(iter, td%energy_update_iter) == 0) .or. (iter == td%max_iter) )
-        case(BO)
-          call propagator_dt_bo(td%scf, sys%namespace, gr, sys%ks, st, sys%hm, geo, sys%mc, sys%outp, iter, td%dt, &
-            td%ions, scsteps)
-        end select
-
-        !Apply mask absorbing boundaries
-        if(sys%hm%bc%abtype == MASK_ABSORBING) call zvmask(gr%mesh, sys%hm, st) 
-
-        !Photoelectron stuff 
-        if (td%pesv%calc_spm .or. td%pesv%calc_mask .or. td%pesv%calc_flux) then
-          call pes_calc(td%pesv, sys%namespace, gr%mesh, st, td%dt, iter, gr, sys%hm, stopping)
-        end if
-
-        call td_write_iter(write_handler, sys%namespace, sys%outp, gr, st, sys%hm, geo, sys%hm%ep%kick, td%dt, iter)
-
-        ! write down data
-        call check_point()
-
-        ! check if debug mode should be enabled or disabled on the fly
-        call io_debug_on_the_fly(sys%namespace)
-
-        call profiling_out(prof)
-        if (stopping) exit
-
-      end do propagation
-
-      if(st%d%pack_states .and. hamiltonian_elec_apply_packed(sys%hm)) call st%unpack()
-
-      call restart_end(restart_dump)
-      if (ion_dynamics_ions_move(td%ions) .and. td%recalculate_gs) call restart_end(restart_load)
-      call td_write_end(write_handler)
-      call end_()
-
-    type is (system_mxll_t)
-
-      SAFE_ALLOCATE(sys%st%energy_rate(1:td%max_iter)) 
-      SAFE_ALLOCATE(sys%st%delta_energy(1:td%max_iter))
-      SAFE_ALLOCATE(sys%st%energy_via_flux_calc(1:td%max_iter))
-      SAFE_ALLOCATE(sys%st%trans_energy_rate(1:td%max_iter))
-      SAFE_ALLOCATE(sys%st%trans_delta_energy(1:td%max_iter))
-      SAFE_ALLOCATE(sys%st%trans_energy_via_flux_calc(1:td%max_iter))
-      SAFE_ALLOCATE(sys%st%plane_waves_energy_rate(1:td%max_iter))
-      SAFE_ALLOCATE(sys%st%plane_waves_delta_energy(1:td%max_iter))
-      SAFE_ALLOCATE(sys%st%plane_waves_energy_via_flux_calc(1:td%max_iter))
-      sys%st%energy_rate = M_ZERO
-      sys%st%delta_energy = M_ZERO
-      sys%st%energy_via_flux_calc = M_ZERO
-      sys%st%trans_energy_rate = M_ZERO
-      sys%st%trans_delta_energy = M_ZERO
-      sys%st%trans_energy_via_flux_calc = M_ZERO
-      sys%st%plane_waves_energy_rate = M_ZERO
-      sys%st%plane_waves_delta_energy = M_ZERO
-      sys%st%plane_waves_energy_via_flux_calc = M_ZERO
-
-      SAFE_ALLOCATE(rs_current_density_ext_t1(1:sys%gr%mesh%np_part,1:sys%st%d%dim))
-      SAFE_ALLOCATE(rs_current_density_ext_t2(1:sys%gr%mesh%np_part,1:sys%st%d%dim))
-      SAFE_ALLOCATE(rs_charge_density_ext_t1(1:sys%gr%mesh%np_part))
-      SAFE_ALLOCATE(rs_charge_density_ext_t2(1:sys%gr%mesh%np_part))
-
-      SAFE_ALLOCATE(rs_state_init(1:sys%gr%mesh%np_part, 1:sys%st%d%dim)) 
-      rs_state_init(:,:) = M_z0
-
-      td%energy_update_iter = 1
-      
-      call propagator_mxll_init(sys%gr, sys%namespace, sys%st, sys%hm, td%tr_mxll)
-      call states_mxll_allocate(sys%st, sys%gr%mesh)
-      call external_current_init(sys%st, sys%namespace, sys%gr%mesh) 
-      sys%hm%propagation_apply = .true.
-
-      if (parse_is_defined(sys%namespace, 'UserDefinedMaxwellIncidentWaves') .and. (td%tr_mxll%bc_plane_waves)) then
-        SAFE_ALLOCATE(sys%st%rs_state_plane_waves(1:sys%gr%mesh%np_part, 1:sys%st%d%dim))
-        sys%st%rs_state_plane_waves = M_z0
       end if
 
-      sys%st%rs_state_trans = sys%st%rs_state ! no mx_ma coupling
+      ! in case use scdm localized states for exact exchange and request a new localization             
+      if(sys%hm%scdm_EXX) scdm_is_local = .false.
 
-      sys%hm%plane_waves_apply = .true.
-      sys%hm%spatial_constant_apply = .true.
-      call bc_mxll_init(sys%hm%bc, sys%namespace, sys%gr, sys%st, sys%gr%sb, sys%geo, td%dt/td%tr_mxll%inter_steps)
-      bc_bounds(:,:) = sys%hm%bc%bc_bounds(:,:)
-      call inner_and_outer_points_mapping(sys%gr%mesh, sys%st, bc_bounds)
-      dt_bounds(2,:) = bc_bounds(1,:)
-      dt_bounds(1,:) = bc_bounds(1,:) - sys%gr%der%order * sys%gr%mesh%spacing(:)
-      call surface_grid_points_mapping(sys%gr%mesh, sys%st, dt_bounds)
+      ! time iterate the system, one time step.
+      select case(td%dynamics)
+      case(EHRENFEST)
+        call propagator_dt(sys%ks, sys%namespace, sys%hm, gr, st, td%tr, iter*td%dt, td%dt, &
+          td%energy_update_iter*td%mu, iter, td%ions, geo, sys%outp, scsteps = scsteps, &
+          update_energy = (mod(iter, td%energy_update_iter) == 0) .or. (iter == td%max_iter) )
+      case(BO)
+        call propagator_dt_bo(td%scf, sys%namespace, gr, sys%ks, st, sys%hm, geo, sys%mc, sys%outp, iter, td%dt, &
+          td%ions, scsteps)
+      end select
 
-      ! ! Restart stuff
+      !Apply mask absorbing boundaries
+      if(sys%hm%bc%abtype == MASK_ABSORBING) call zvmask(gr%mesh, sys%hm, st) 
 
-      ! ! initialization of fft variables -- not used from the moment
-      !fft_check = .false. 
-
-      !! We need to have Renes FFT routines for the CPML
-      ! if (sys%hm%bc%bc_ab_type(idim) == OPTION__MAXWELLABSORBINGBOUNDARIES__CPML) fft_check = .true.
-
-      ! if (fft_check) then
-      !   sys%hm%cube%cube = .true.
-      !   !   ! Documentation in cube.F90
-      !   call parse_variable(sys%namespace, 'FFTLibrary', FFTLIB_FFTW, fft_library)
-      !   call cube_init(sys%hm%cube, sys%sys%gr%mesh%idx%ll, sys%sys%gr%sb, fft_type=FFT_COMPLEX, fft_library=fft_library,&
-      !     nn_out=ll, dont_optimize=.true., mpi_grp=sys%gr%mesh%mpi_grp, need_partition=.true., &
-      !     spacing=sys%gr%mesh%spacing)
-      !   call rs_state_to_cube_map(sys%gr, sys%hm, sys%st)
-      !   if (sys%hm%cube%parallel_in_domains) then
-      !     call mesh_cube_parallel_map_init(sys%hm%mesh_cube_map, sys%gr%der%mesh, sys%hm%cube)
-      !   end if
-      ! end if
-
-      if (fromScratch) then
-        call restart_init(restart_mxll, sys%namespace, RESTART_MAXWELL, RESTART_TYPE_LOAD, sys%mc, ierr, &
-          mesh=sys%gr%mesh, exact=.true.)          
-        if (parse_is_defined(sys%namespace, 'UserDefinedInitialMaxwellStates')) then
-          call states_mxll_read_user_def(sys%gr%mesh, sys%st, rs_state_init, sys%namespace)
-          print *,'Setting initial EM field inside box'
-          sys%st%rs_state = sys%st%rs_state + rs_state_init
-          if (td%tr_mxll%bc_plane_waves) then
-            sys%st%rs_state_plane_waves = rs_state_init
-          end if
-          if (td%tr_mxll%bc_constant) &
-            sys%st%rs_state_const(:) = rs_state_init(sys%gr%mesh%idx%lxyz_inv(0,0,0),:)
-          call constant_boundaries_calculation(td%tr_mxll%bc_constant, sys%hm%bc, sys%hm, sys%st, sys%st%rs_state)
-        end if
-        call restart_end(restart_mxll)
+      !Photoelectron stuff 
+      if (td%pesv%calc_spm .or. td%pesv%calc_mask .or. td%pesv%calc_flux) then
+        call pes_calc(td%pesv, sys%namespace, gr%mesh, st, td%dt, iter, gr, sys%hm, stopping)
       end if
 
-      if (parse_is_defined(sys%namespace, 'UserDefinedInitialMaxwellStates')) then
-        SAFE_DEALLOCATE_A(rs_state_init)
-      end if
+      call td_write_iter(write_handler, sys%namespace, sys%outp, gr, st, sys%hm, geo, sys%hm%ep%kick, td%dt, iter)
 
-      call hamiltonian_mxll_update(sys%hm, time = td%iter*td%dt)
+      ! write down data
+      call check_point()
 
-      if(td%iter >= td%max_iter) then
-        ! free memory
-        call states_mxll_end(sys%st)
-        call td_end(td)
-        POP_SUB(td_run)
-        return
-      end if
+      ! check if debug mode should be enabled or disabled on the fly
+      call io_debug_on_the_fly(sys%namespace)
 
-      ! calculate Maxwell energy density
-      call energy_density_calc(sys%gr, sys%st, sys%st%rs_state, sys%hm%energy_density(:), sys%hm%e_energy_density(:), &
-        sys%hm%b_energy_density(:), sys%hm%plane_waves, sys%st%rs_state_plane_waves, sys%hm%energy_density_plane_waves(:))
+      call profiling_out(prof)
+      if (stopping) exit
 
-      ! calculate Maxwell energy
-      call energy_mxll_calc(sys%gr, sys%st, sys%hm, sys%st%rs_state, &
-        sys%hm%energy, sys%hm%e_energy, sys%hm%b_energy, sys%hm%energy_boundaries, &
-        sys%st%rs_state_plane_waves, sys%hm%energy_plane_waves)
+    end do propagation
 
-      sys%st%rs_state_trans(:,:) = sys%st%rs_state
+    if(st%d%pack_states .and. hamiltonian_elec_apply_packed(sys%hm)) call st%unpack()
 
-      call td_write_mxll_init(write_handler, sys%namespace, sys%gr, sys%st, sys%hm, td%iter, td%max_iter, td%dt)
+    call restart_end(restart_dump)
+    if (ion_dynamics_ions_move(td%ions) .and. td%recalculate_gs) call restart_end(restart_load)
+    call td_write_end(write_handler)
+    call end_()
 
-      call get_rs_state_at_point(sys%st%selected_points_rs_state, sys%st%rs_state, sys%st%selected_points_coordinate,&
-        sys%st, sys%gr%mesh)
-
-      if(td%iter == 0) then
-        call td_write_mxll_iter(write_handler, sys%gr, sys%st, sys%hm, td%dt, 0)
-        call td_write_mxll_free_data(write_handler, sys%namespace, sys%gr, sys%st, sys%hm, sys%geo, sys%outp, 0, td%dt)
-      end if
-
-      !call td_check_trotter(td, sys, h)
-      td%iter = td%iter + 1
-
-      call restart_init(restart_mxll_dump, sys%namespace, RESTART_TD, RESTART_TYPE_DUMP, sys%mc, ierr, &
-        mesh=sys%gr%mesh)
-
-      call messages_print_stress(stdout, "Time-Dependent Simulation")
-
-      write(message(1), '(a10,1x,a10,1x,a20,1x,a18)') 'Iter ', 'Time ',  'Maxwell energy', 'Elapsed Time'
-      call messages_info(1)
-      call messages_print_stress(stdout)
-
-      write(message(1), '(i8,1x,f13.6,2x,f16.6,6x,f13.6)') 0,                  &
-        units_from_atomic(units_out%time, M_ZERO),                         &
-        units_from_atomic(units_out%energy, sys%hm%energy),    &
-        M_ZERO
-      call messages_info(1)
-      
-      etime = loct_clock()
-      propagation_mxll: do iter = td%iter, td%max_iter
-
-        stopping = clean_stop(sys%mc%master_comm)
-        call profiling_in(prof, "TIME_STEP")
-
-        ! Propagation
-
-        ! calculation of external RS density at time (time-dt)
-        rs_current_density_ext_t1 = M_z0
-        if (sys%hm%current_density_ext_flag) then
-          call get_rs_density_ext(sys%st, sys%gr%mesh, iter*td%dt-td%dt, rs_current_density_ext_t1)
-        end if
-
-        ! calculation of external RS density at time (time)
-        rs_current_density_ext_t2 = M_z0
-        if (sys%hm%current_density_ext_flag) then
-          call get_rs_density_ext(sys%st, sys%gr%mesh, iter*td%dt, rs_current_density_ext_t2)
-        end if
-
-        rs_charge_density_ext_t1 = M_z0
-        rs_charge_density_ext_t2 = M_z0
-
-        ! Propagation dt with H_maxwell
-        call propagation_mxll_etrs(sys%hm, sys%namespace, sys%gr, sys%st, td%tr_mxll, sys%st%rs_state, &
-          rs_current_density_ext_t1, rs_current_density_ext_t2, rs_charge_density_ext_t1, &
-          rs_charge_density_ext_t2, iter*td%dt-td%dt, td%dt, sys%st%rs_state)
-
-        sys%st%rs_state_trans(:,:) = sys%st%rs_state
-
-        ! calculate Maxwell energy density
-        call energy_density_calc(sys%gr, sys%st, sys%st%rs_state, sys%hm%energy_density, sys%hm%e_energy_density, &
-          sys%hm%b_energy_density, sys%hm%plane_waves, sys%st%rs_state_plane_waves, &
-          sys%hm%energy_density_plane_waves(:))
-
-        ! calculate Maxwell energy
-        call energy_mxll_calc(sys%gr, sys%st, sys%hm, sys%st%rs_state, sys%hm%energy, sys%hm%e_energy, sys%hm%b_energy,&
-          sys%hm%energy_boundaries, sys%st%rs_state_plane_waves, sys%hm%energy_plane_waves)
-
-
-        ! calculate Maxwell energy rate -- not necessary
-        ! calculate Maxwell energy of incident waves -- not necessary
-
-        ! get RS state values for selected points
-        call get_rs_state_at_point(sys%st%selected_points_rs_state(:,:), sys%st%rs_state, sys%st%selected_points_coordinate(:,:),&
-          sys%st, sys%gr%mesh)
-
-        write(message(1), '(i8,1x,f13.6,2x,f16.6,6x,f13.6)') iter,           &
-          units_from_atomic(units_out%time, iter*td%dt),                     &
-          units_from_atomic(units_out%energy, sys%hm%energy),    &
-          loct_clock() - etime
-        call messages_info(1)
-        etime = loct_clock()
-
-        call td_write_mxll_iter(write_handler, sys%gr, sys%st, sys%hm, td%dt, iter)
-
-        ! write down data
-        if ((sys%outp%output_interval > 0 .and. mod(iter, sys%outp%output_interval) == 0) .or. &
-          iter == td%max_iter .or. stopping) then
-          call td_write_mxll_free_data(write_handler, sys%namespace, sys%gr, sys%st, sys%hm, sys%geo, sys%outp, iter, td%dt)
-        end if
-
-        if (mod(iter, sys%outp%restart_write_interval) == 0 .or. iter == td%max_iter .or. stopping) then ! restart
-          call td_dump_mxll(restart_mxll_dump, sys%gr, sys%st, sys%hm, td, iter, ierr)
-          if (ierr /= 0) then
-            message(1) = "Unable to write time-dependent restart information."
-            call messages_warning(1)
-          end if
-        end if
-
-        call profiling_out(prof)
-        if (stopping) exit
-
-      end do propagation_mxll
-
-      ! if(st%d%pack_states .and. hamiltonian_apply_packed(hm, sys%gr%mesh)) call states_unpack(st)
-
-      call restart_end(restart_mxll_dump)
-
-      ! free memory
-      call states_mxll_end(sys%st)
-
-    end select
-
-    POP_SUB(td_run)
+    POP_SUB(td_run_elec)
 
   contains
+ 
+    ! ---------------------------------------------------------
+    subroutine end_()
+      PUSH_SUB(td_run_elec.end_)
+
+      select type (sys)
+      type is (system_t)
+
+      ! free memory
+      call states_elec_deallocate_wfns(st)
+      call td_end(td)
+      if (ion_dynamics_ions_move(td%ions) .and. td%recalculate_gs) call restart_end(restart_load)
+
+      end select
+
+      POP_SUB(td_run_elec.end_)
+    end subroutine end_
 
     subroutine print_header()
 
@@ -875,7 +706,7 @@ contains
 
     ! ---------------------------------------------------------
     subroutine check_point()
-      PUSH_SUB(td_run.check_point)
+      PUSH_SUB(td_run_elec.check_point)
 
       select type (sys)
       type is (system_t)
@@ -928,25 +759,8 @@ contains
       end if
       end select
 
-      POP_SUB(td_run.check_point)
+      POP_SUB(td_run_elec.check_point)
     end subroutine check_point
-
-    ! ---------------------------------------------------------
-    subroutine end_()
-      PUSH_SUB(td_run.end_)
-
-      select type (sys)
-      type is (system_t)
-
-      ! free memory
-      call states_elec_deallocate_wfns(st)
-      call td_end(td)
-      if (ion_dynamics_ions_move(td%ions) .and. td%recalculate_gs) call restart_end(restart_load)
-
-      end select
-
-      POP_SUB(td_run.end_)
-    end subroutine end_
 
     ! ---------------------------------------------------------
     subroutine init_wfs()
@@ -956,7 +770,7 @@ contains
       logical :: freeze_hxc, freeze_occ, freeze_u
       type(restart_t) :: restart, restart_frozen
 
-      PUSH_SUB(td_run.init_wfs)
+      PUSH_SUB(td_run_elec.init_wfs)
 
       select type (sys)
       type is (system_t)
@@ -1173,13 +987,13 @@ contains
 
       end select
 
-      POP_SUB(td_run.init_wfs)
+      POP_SUB(td_run_elec.init_wfs)
     end subroutine init_wfs
 
 
     ! ---------------------------------------------------------
     subroutine td_run_zero_iter()
-      PUSH_SUB(td_run.td_run_zero_iter)
+      PUSH_SUB(td_run_elec.td_run_zero_iter)
 
       select type (sys)
       type is (system_t)
@@ -1209,18 +1023,16 @@ contains
 
       end select
 
-      POP_SUB(td_run.td_run_zero_iter)
+      POP_SUB(td_run_elec.td_run_zero_iter)
     end subroutine td_run_zero_iter
 
 
     ! ---------------------------------------------------------
     !> reads the pos and vel from coordinates file
     subroutine td_read_coordinates() 
+ 
       integer :: iatom, iter, iunit
       PUSH_SUB(td_run.td_read_coordinates)
-
-      select type (sys)
-      type is (system_t)
 
       call io_assign(iunit)
       iunit = io_open(io_workpath('td.general/coordinates', sys%namespace), sys%namespace, action='read', status='old')
@@ -1253,20 +1065,282 @@ contains
       end do
 
       call io_close(iunit)
-      end select
       
       POP_SUB(td_run.td_read_coordinates)
     end subroutine td_read_coordinates
 
-  end subroutine td_run
+  end subroutine td_run_elec 
+
+  ! ---------------------------------------------------------
+
+  subroutine td_run_mxll(sys, fromScratch)
+    class(system_mxll_t), target, intent(inout) :: sys
+    logical,                      intent(inout) :: fromScratch
+
+    type(td_t)                   :: td
+    type(td_write_t)             :: write_handler
+    type(grid_t),        pointer :: gr   ! some shortcuts
+    type(states_mxll_t), pointer :: st
+    type(geometry_t),    pointer :: geo
+    logical                      :: stopping
+#ifdef HAVE_MPI
+    logical                      :: stopping_tmp
+#endif
+    integer                      :: iter, ierr, scsteps
+    real(8)                      :: etime
+    type(profile_t),        save :: prof
+    type(restart_t)              :: restart_load, restart_dump
+
+    type(restart_t)            :: restart_mxll, restart_mxll_dump
+    CMPLX, allocatable         :: rs_current_density_ext_t1(:,:), rs_current_density_ext_t2(:,:)
+    CMPLX, allocatable         :: rs_charge_density_ext_t1(:), rs_charge_density_ext_t2(:)
+    CMPLX, allocatable         :: rs_state_init(:,:), rs_state_vac_fluc(:,:)
+    FLOAT                      :: bc_bounds(2,MAX_DIM), dt_bounds(2,MAX_DIM)
+
+    PUSH_SUB(td_run_elec)
+
+    call td_init(td, sys)
+
+
+    ! some shortcuts
+    gr  => sys%gr
+    geo => sys%geo
+    st  => sys%st
+
+    SAFE_ALLOCATE(sys%st%energy_rate(1:td%max_iter)) 
+    SAFE_ALLOCATE(sys%st%delta_energy(1:td%max_iter))
+    SAFE_ALLOCATE(sys%st%energy_via_flux_calc(1:td%max_iter))
+    SAFE_ALLOCATE(sys%st%trans_energy_rate(1:td%max_iter))
+    SAFE_ALLOCATE(sys%st%trans_delta_energy(1:td%max_iter))
+    SAFE_ALLOCATE(sys%st%trans_energy_via_flux_calc(1:td%max_iter))
+    SAFE_ALLOCATE(sys%st%plane_waves_energy_rate(1:td%max_iter))
+    SAFE_ALLOCATE(sys%st%plane_waves_delta_energy(1:td%max_iter))
+    SAFE_ALLOCATE(sys%st%plane_waves_energy_via_flux_calc(1:td%max_iter))
+    sys%st%energy_rate = M_ZERO
+    sys%st%delta_energy = M_ZERO
+    sys%st%energy_via_flux_calc = M_ZERO
+    sys%st%trans_energy_rate = M_ZERO
+    sys%st%trans_delta_energy = M_ZERO
+    sys%st%trans_energy_via_flux_calc = M_ZERO
+    sys%st%plane_waves_energy_rate = M_ZERO
+    sys%st%plane_waves_delta_energy = M_ZERO
+    sys%st%plane_waves_energy_via_flux_calc = M_ZERO
+
+    SAFE_ALLOCATE(rs_current_density_ext_t1(1:sys%gr%mesh%np_part,1:sys%st%d%dim))
+    SAFE_ALLOCATE(rs_current_density_ext_t2(1:sys%gr%mesh%np_part,1:sys%st%d%dim))
+    SAFE_ALLOCATE(rs_charge_density_ext_t1(1:sys%gr%mesh%np_part))
+    SAFE_ALLOCATE(rs_charge_density_ext_t2(1:sys%gr%mesh%np_part))
+
+    SAFE_ALLOCATE(rs_state_init(1:sys%gr%mesh%np_part, 1:sys%st%d%dim)) 
+    rs_state_init(:,:) = M_z0
+
+    td%energy_update_iter = 1
+    
+    call propagator_mxll_init(sys%gr, sys%namespace, sys%st, sys%hm, td%tr_mxll)
+    call states_mxll_allocate(sys%st, sys%gr%mesh)
+    call external_current_init(sys%st, sys%namespace, sys%gr%mesh) 
+    sys%hm%propagation_apply = .true.
+
+    if (parse_is_defined(sys%namespace, 'UserDefinedMaxwellIncidentWaves') .and. (td%tr_mxll%bc_plane_waves)) then
+      SAFE_ALLOCATE(sys%st%rs_state_plane_waves(1:sys%gr%mesh%np_part, 1:sys%st%d%dim))
+      sys%st%rs_state_plane_waves = M_z0
+    end if
+
+    sys%st%rs_state_trans = sys%st%rs_state ! no mx_ma coupling
+
+    sys%hm%plane_waves_apply = .true.
+    sys%hm%spatial_constant_apply = .true.
+    call bc_mxll_init(sys%hm%bc, sys%namespace, sys%gr, sys%st, sys%gr%sb, sys%geo, td%dt/td%tr_mxll%inter_steps)
+    bc_bounds(:,:) = sys%hm%bc%bc_bounds(:,:)
+    call inner_and_outer_points_mapping(sys%gr%mesh, sys%st, bc_bounds)
+    dt_bounds(2,:) = bc_bounds(1,:)
+    dt_bounds(1,:) = bc_bounds(1,:) - sys%gr%der%order * sys%gr%mesh%spacing(:)
+    call surface_grid_points_mapping(sys%gr%mesh, sys%st, dt_bounds)
+
+    ! ! Restart stuff
+
+    ! ! initialization of fft variables -- not used from the moment
+    !fft_check = .false. 
+
+    !! We need to have Renes FFT routines for the CPML
+    ! if (sys%hm%bc%bc_ab_type(idim) == OPTION__MAXWELLABSORBINGBOUNDARIES__CPML) fft_check = .true.
+
+    ! if (fft_check) then
+    !   sys%hm%cube%cube = .true.
+    !   !   ! Documentation in cube.F90
+    !   call parse_variable(sys%namespace, 'FFTLibrary', FFTLIB_FFTW, fft_library)
+    !   call cube_init(sys%hm%cube, sys%sys%gr%mesh%idx%ll, sys%sys%gr%sb, fft_type=FFT_COMPLEX, fft_library=fft_library,&
+    !     nn_out=ll, dont_optimize=.true., mpi_grp=sys%gr%mesh%mpi_grp, need_partition=.true., &
+    !     spacing=sys%gr%mesh%spacing)
+    !   call rs_state_to_cube_map(sys%gr, sys%hm, sys%st)
+    !   if (sys%hm%cube%parallel_in_domains) then
+    !     call mesh_cube_parallel_map_init(sys%hm%mesh_cube_map, sys%gr%der%mesh, sys%hm%cube)
+    !   end if
+    ! end if
+
+    if (fromScratch) then
+      call restart_init(restart_mxll, sys%namespace, RESTART_MAXWELL, RESTART_TYPE_LOAD, sys%mc, ierr, &
+        mesh=sys%gr%mesh, exact=.true.)          
+      if (parse_is_defined(sys%namespace, 'UserDefinedInitialMaxwellStates')) then
+        call states_mxll_read_user_def(sys%gr%mesh, sys%st, rs_state_init, sys%namespace)
+        print *,'Setting initial EM field inside box'
+        sys%st%rs_state = sys%st%rs_state + rs_state_init
+        if (td%tr_mxll%bc_plane_waves) then
+          sys%st%rs_state_plane_waves = rs_state_init
+        end if
+        if (td%tr_mxll%bc_constant) &
+          sys%st%rs_state_const(:) = rs_state_init(sys%gr%mesh%idx%lxyz_inv(0,0,0),:)
+        call constant_boundaries_calculation(td%tr_mxll%bc_constant, sys%hm%bc, sys%hm, sys%st, sys%st%rs_state)
+      end if
+      call restart_end(restart_mxll)
+    end if
+
+    if (parse_is_defined(sys%namespace, 'UserDefinedInitialMaxwellStates')) then
+      SAFE_DEALLOCATE_A(rs_state_init)
+    end if
+
+    call hamiltonian_mxll_update(sys%hm, time = td%iter*td%dt)
+
+    if(td%iter >= td%max_iter) then
+      ! free memory
+      call states_mxll_end(sys%st)
+      call td_end(td)
+      POP_SUB(td_run_mxwll)
+      return
+    end if
+
+    ! calculate Maxwell energy density
+    call energy_density_calc(sys%gr, sys%st, sys%st%rs_state, sys%hm%energy_density(:), sys%hm%e_energy_density(:), &
+      sys%hm%b_energy_density(:), sys%hm%plane_waves, sys%st%rs_state_plane_waves, sys%hm%energy_density_plane_waves(:))
+
+    ! calculate Maxwell energy
+    call energy_mxll_calc(sys%gr, sys%st, sys%hm, sys%st%rs_state, &
+      sys%hm%energy, sys%hm%e_energy, sys%hm%b_energy, sys%hm%energy_boundaries, &
+      sys%st%rs_state_plane_waves, sys%hm%energy_plane_waves)
+
+    sys%st%rs_state_trans(:,:) = sys%st%rs_state
+
+    call td_write_mxll_init(write_handler, sys%namespace, sys%gr, sys%st, sys%hm, td%iter, td%max_iter, td%dt)
+
+    call get_rs_state_at_point(sys%st%selected_points_rs_state, sys%st%rs_state, sys%st%selected_points_coordinate,&
+      sys%st, sys%gr%mesh)
+
+    if(td%iter == 0) then
+      call td_write_mxll_iter(write_handler, sys%gr, sys%st, sys%hm, td%dt, 0)
+      call td_write_mxll_free_data(write_handler, sys%namespace, sys%gr, sys%st, sys%hm, sys%geo, sys%outp, 0, td%dt)
+    end if
+
+    !call td_check_trotter(td, sys, h)
+    td%iter = td%iter + 1
+
+    call restart_init(restart_mxll_dump, sys%namespace, RESTART_TD, RESTART_TYPE_DUMP, sys%mc, ierr, &
+      mesh=sys%gr%mesh)
+
+    call messages_print_stress(stdout, "Time-Dependent Simulation")
+
+    write(message(1), '(a10,1x,a10,1x,a20,1x,a18)') 'Iter ', 'Time ',  'Maxwell energy', 'Elapsed Time'
+    call messages_info(1)
+    call messages_print_stress(stdout)
+
+    write(message(1), '(i8,1x,f13.6,2x,f16.6,6x,f13.6)') 0,                  &
+      units_from_atomic(units_out%time, M_ZERO),                         &
+      units_from_atomic(units_out%energy, sys%hm%energy),    &
+      M_ZERO
+    call messages_info(1)
+    
+    etime = loct_clock()
+    propagation_mxll: do iter = td%iter, td%max_iter
+
+      stopping = clean_stop(sys%mc%master_comm)
+      call profiling_in(prof, "TIME_STEP")
+
+      ! Propagation
+
+      ! calculation of external RS density at time (time-dt)
+      rs_current_density_ext_t1 = M_z0
+      if (sys%hm%current_density_ext_flag) then
+        call get_rs_density_ext(sys%st, sys%gr%mesh, iter*td%dt-td%dt, rs_current_density_ext_t1)
+      end if
+
+      ! calculation of external RS density at time (time)
+      rs_current_density_ext_t2 = M_z0
+      if (sys%hm%current_density_ext_flag) then
+        call get_rs_density_ext(sys%st, sys%gr%mesh, iter*td%dt, rs_current_density_ext_t2)
+      end if
+
+      rs_charge_density_ext_t1 = M_z0
+      rs_charge_density_ext_t2 = M_z0
+
+      ! Propagation dt with H_maxwell
+      call propagation_mxll_etrs(sys%hm, sys%namespace, sys%gr, sys%st, td%tr_mxll, sys%st%rs_state, &
+        rs_current_density_ext_t1, rs_current_density_ext_t2, rs_charge_density_ext_t1, &
+        rs_charge_density_ext_t2, iter*td%dt-td%dt, td%dt, sys%st%rs_state)
+
+      sys%st%rs_state_trans(:,:) = sys%st%rs_state
+
+      ! calculate Maxwell energy density
+      call energy_density_calc(sys%gr, sys%st, sys%st%rs_state, sys%hm%energy_density, sys%hm%e_energy_density, &
+        sys%hm%b_energy_density, sys%hm%plane_waves, sys%st%rs_state_plane_waves, &
+        sys%hm%energy_density_plane_waves(:))
+
+      ! calculate Maxwell energy
+      call energy_mxll_calc(sys%gr, sys%st, sys%hm, sys%st%rs_state, sys%hm%energy, sys%hm%e_energy, sys%hm%b_energy,&
+        sys%hm%energy_boundaries, sys%st%rs_state_plane_waves, sys%hm%energy_plane_waves)
+
+
+      ! calculate Maxwell energy rate -- not necessary
+      ! calculate Maxwell energy of incident waves -- not necessary
+
+      ! get RS state values for selected points
+      call get_rs_state_at_point(sys%st%selected_points_rs_state(:,:), sys%st%rs_state, sys%st%selected_points_coordinate(:,:),&
+        sys%st, sys%gr%mesh)
+
+      write(message(1), '(i8,1x,f13.6,2x,f16.6,6x,f13.6)') iter,           &
+        units_from_atomic(units_out%time, iter*td%dt),                     &
+        units_from_atomic(units_out%energy, sys%hm%energy),    &
+        loct_clock() - etime
+      call messages_info(1)
+      etime = loct_clock()
+
+      call td_write_mxll_iter(write_handler, sys%gr, sys%st, sys%hm, td%dt, iter)
+
+      ! write down data
+      if ((sys%outp%output_interval > 0 .and. mod(iter, sys%outp%output_interval) == 0) .or. &
+        iter == td%max_iter .or. stopping) then
+        call td_write_mxll_free_data(write_handler, sys%namespace, sys%gr, sys%st, sys%hm, sys%geo, sys%outp, iter, td%dt)
+      end if
+
+      if (mod(iter, sys%outp%restart_write_interval) == 0 .or. iter == td%max_iter .or. stopping) then ! restart
+        call td_dump_mxll(restart_mxll_dump, sys%gr, sys%st, sys%hm, td, iter, ierr)
+        if (ierr /= 0) then
+          message(1) = "Unable to write time-dependent restart information."
+          call messages_warning(1)
+        end if
+      end if
+
+      call profiling_out(prof)
+      if (stopping) exit
+
+    end do propagation_mxll
+
+    ! if(st%d%pack_states .and. hamiltonian_apply_packed(hm, sys%gr%mesh)) call states_unpack(st)
+
+    call restart_end(restart_mxll_dump)
+
+    ! free memory
+    call states_mxll_end(sys%st)
+
+    POP_SUB(td_run_mxwll)
+
+  end subroutine td_run_mxll
 
 
   !----------------------------------------------------------
   subroutine td_dump_mxll(restart, gr, st, hm, td, iter, ierr)
     type(restart_t),            intent(in)  :: restart
     type(grid_t),               intent(in)  :: gr
-    type(states_mxll_t),             intent(in)  :: st
-    type(hamiltonian_mxll_t),        intent(in)  :: hm
+    type(states_mxll_t),        intent(in)  :: st
+    type(hamiltonian_mxll_t),   intent(in)  :: hm
     type(td_t),                 intent(in)  :: td
     integer,                    intent(in)  :: iter
     integer,                    intent(out) :: ierr

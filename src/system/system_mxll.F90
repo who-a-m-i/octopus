@@ -68,13 +68,15 @@ contains
   
   !----------------------------------------------------------
   function system_mxll_init(namespace) result(sys)
-    class(system_mxll_t),    pointer    :: sys
+    class(system_mxll_t),  pointer    :: sys
     type(namespace_t), intent(in)  :: namespace
     
     type(profile_t), save :: prof
 
     PUSH_SUB(system_mxll_init)
     call profiling_in(prof,"SYSTEM_INIT")
+
+    SAFE_ALLOCATE(sys)
 
     SAFE_ALLOCATE(sys%gr)
     SAFE_ALLOCATE(sys%st)
